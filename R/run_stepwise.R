@@ -223,24 +223,68 @@ relative_display_path <- function(path, root) {
 }
 
 build_payload <- function(model_dir, step_id) {
-  if (!requireNamespace("mfclshiny", quietly = TRUE)) {
-    stop("mfclshiny is required to write model_payload.rds for ", step_id, call. = FALSE)
-  }
-  status <- tryCatch({
-    if ("build_model_payload" %in% getNamespaceExports("mfclshiny")) {
-      mfclshiny::build_model_payload(model_dir, overwrite = TRUE, recursive = FALSE)
-    } else if ("build_model_payloads" %in% getNamespaceExports("mfclshiny")) {
-      mfclshiny::build_model_payloads(model_dir, recursive = FALSE, overwrite = TRUE)
-    } else {
-      stop("mfclshiny does not export build_model_payload/build_model_payloads")
-    }
-    "ok"
-  }, error = function(e) paste("error:", conditionMessage(e)))
+  attempts <- character()
   payload_file <- file.path(model_dir, "model_payload.rds")
-  if (!identical(status, "ok") || !file.exists(payload_file)) {
-    stop("model_payload.rds was not created for ", step_id, " (", status, ")", call. = FALSE)
+
+  try_builder <- function(label, expr) {
+    attempts <<- c(attempts, label)
+    tryCatch({
+      force(expr)
+      if (file.exists(payload_file)) return(TRUE)
+      FALSE
+    }, error = function(e) {
+      attempts <<- c(attempts, paste0(label, " error: ", conditionMessage(e)))
+      FALSE
+    })
   }
-  status
+
+  validate_payload_file <- function(method) {
+    payload <- tryCatch(readRDS(payload_file), error = function(e) NULL)
+    if (is.null(tryCatch(payload$data$RepOut, error = function(e) NULL))) {
+      stop("model_payload.rds for ", step_id, " does not contain data$RepOut.", call. = FALSE)
+    }
+    method
+  }
+
+  if (requireNamespace("mfclshiny", quietly = TRUE)) {
+    if ("build_model_payload" %in% getNamespaceExports("mfclshiny")) {
+      if (try_builder("mfclshiny::build_model_payload", {
+        mfclshiny::build_model_payload(
+          model_dir,
+          output_file = payload_file,
+          overwrite = TRUE,
+          recursive = FALSE
+        )
+      })) {
+        return(validate_payload_file("mfclshiny::build_model_payload"))
+      }
+    }
+    if ("build_model_payloads" %in% getNamespaceExports("mfclshiny")) {
+      if (try_builder("mfclshiny::build_model_payloads", {
+        mfclshiny::build_model_payloads(model_dir, recursive = FALSE, overwrite = TRUE)
+      })) {
+        return(validate_payload_file("mfclshiny::build_model_payloads"))
+      }
+    }
+  }
+
+  if (requireNamespace("mfclrtmb", quietly = TRUE) &&
+      "write_mfcl_shiny_payload" %in% getNamespaceExports("mfclrtmb")) {
+    if (try_builder("mfclrtmb::write_mfcl_shiny_payload", {
+      mfclrtmb::write_mfcl_shiny_payload(output_dir = model_dir, input_dir = model_dir, payload_file = payload_file)
+    })) {
+      return(validate_payload_file("mfclrtmb::write_mfcl_shiny_payload"))
+    }
+  }
+
+  if (!file.exists(payload_file)) {
+    stop(
+      "model_payload.rds was not created for ", step_id,
+      ". Tried: ", paste(attempts, collapse = " | "),
+      call. = FALSE
+    )
+  }
+  validate_payload_file(paste(attempts, collapse = " | "))
 }
 
 root <- getwd()
