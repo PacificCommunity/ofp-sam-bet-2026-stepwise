@@ -1,0 +1,7 @@
+outputs/
+inputs/
+work/
+.R-library/
+.kflow-runtime-cache/
+.Rhistory
+.RData

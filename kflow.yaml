@@ -1,0 +1,23 @@
+name: ofp-sam-bet-2026-stepwise
+description: Run numbered BET 2026 stepwise MFCL model folders.
+command: bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow:v1.5
+resources:
+  cpus: 2
+  memory: 12GB
+  disk: 8GB
+output_patterns:
+  - outputs/**
+job_config:
+  optional:
+    - RUN_LABEL
+    - JOB_TITLE
+    - FLOW_GROUP
+    - SOURCE_REPO
+    - SOURCE_REF
+    - STEP_SELECT
+    - PROGRAM_PATH
+    - SMOKE_FEVALS
+    - MFCL_LIVE_LOG
+    - KFLOW_RUNTIME_PACKAGES
+
