@@ -3,7 +3,7 @@
 # This is the main file to edit when adding, selecting, naming, or lightly
 # changing model runs. Each row in `stepwise_models` points to one independent
 # model folder under `steps/`.
-# For the human-readable guide, run `make docs` to render stepwise-guide.qmd.
+# See README.md for the human-readable guide.
 #
 # Common launch examples:
 #   STEP_SELECT=01-base-11par
