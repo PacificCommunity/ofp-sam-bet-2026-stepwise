@@ -148,7 +148,7 @@ smoke_switch_args <- function(fevals = 1L) {
     1, 189, 1,
     1, 190, 1,
     1, 188, 1,
-    1, 187, 0,
+    1, 187, 1,
     1, 186, 0
   )
   c("-switch", as.character(length(switches) / 3L), as.character(switches))
@@ -401,7 +401,15 @@ for (i in seq_len(nrow(step_table))) {
 
   step_out <- file.path(out_dir, "models", step_id)
   dir.create(step_out, recursive = TRUE, showWarnings = FALSE)
-  keep <- unique(c(final_output_par, "model_payload.rds"))
+  keep <- unique(c(
+    final_output_par,
+    "model_payload.rds",
+    "temporary_tag_report",
+    "fishery_map.R",
+    "tag_rep_map.R",
+    frq,
+    list.files(model_dir, pattern = "[.]tag$", full.names = FALSE)
+  ))
   for (file in keep) {
     src <- file.path(model_dir, file)
     if (file.exists(src)) file.copy(src, file.path(step_out, basename(file)), overwrite = TRUE)
@@ -418,6 +426,7 @@ for (i in seq_len(nrow(step_table))) {
     objective = footer[["objective"]],
     max_gradient = footer[["max_gradient"]],
     payload = file.exists(file.path(step_out, "model_payload.rds")),
+    temporary_tag_report = file.exists(file.path(step_out, "temporary_tag_report")),
     payload_status = payload_status,
     stringsAsFactors = FALSE
   )
