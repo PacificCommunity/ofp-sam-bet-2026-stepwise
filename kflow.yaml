@@ -25,6 +25,13 @@ resources:
   memory: 12GB
   disk: 8GB
 
+exclude_machines:
+  - nouofpcand05
+  - nouofpcand14
+  - nouofpcand16
+  - nouofpcand17
+  - nouofpcand19
+
 env:
   # Default selected model folder. Override per job in the Kflow job config.
   # Examples: 01-base-11par, 01-base-11par,03-review-11par, all
