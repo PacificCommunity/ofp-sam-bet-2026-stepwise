@@ -1,6 +1,13 @@
 # BET 2026 Stepwise
 
+[![Kflow ready task](kflow-ready.svg)](kflow.yaml)
+
 Kflow task repository for BET 2026 stepwise MFCL model runs.
+
+This repository is Kflow-ready: Kflow discovers and runs it from
+[`kflow.yaml`](kflow.yaml), records each stepwise job as a reproducible
+workflow artifact, and passes compact model payloads to the downstream results
+task.
 
 This repository is organized around numbered model folders under `steps/`. Each
 folder is one independent model that can be run alone, together with selected
