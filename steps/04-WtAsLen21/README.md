@@ -12,7 +12,7 @@ Transition step using the 2026 weights-as-lengths frequency file, chopped back t
 ## Inputs
 
 - `bet.frq`: `bet.2026.wt.as.len.frq`, chopped to 2021
-- `bet.ini`: `bet.2026.ini`, FixM M row applied; inserted MFCL 1007 tag flags for 91 release groups with 2 mixing periods and reporting rates excluded during mixing
+- `bet.ini`: `bet.2026.ini`, FixM M row applied; inserted MFCL 1007 tag flags for 91 release groups with 2 mixing periods and reporting rates excluded during mixing; set terminal-year tag release groups 18,58 to 1 mixing period so chopped terminal-year models do not exceed the terminal period
 - `bet.tag`: `bet.2026.low.recaps.removed.tag`
 - `bet.age_length`: `bet.2023.new-structure.age_length` (old CAAL)
 - `input_manifest.csv`: machine-readable source/input notes

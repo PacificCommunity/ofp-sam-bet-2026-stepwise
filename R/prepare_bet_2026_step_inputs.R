@@ -103,7 +103,28 @@ first_data_line_after <- function(lines, marker_i) {
   stop("Could not find data line after line ", marker_i, call. = FALSE)
 }
 
-ensure_ini_tag_flags <- function(path, n_tag_groups, default_mixing_period = 2L) {
+tag_release_table <- function(path) {
+  lines <- readLines(path, warn = FALSE)
+  marker <- grep("^# *[0-9]+ +- RELEASE REGION", lines)
+  if (!length(marker)) {
+    stop("Could not find tag release blocks in ", path, call. = FALSE)
+  }
+  do.call(rbind, lapply(seq_along(marker), function(i) {
+    words <- read_words(lines[[marker[[i]] + 1L]])
+    if (length(words) < 3L) {
+      stop("Malformed tag release row in ", path, " after line ", marker[[i]], call. = FALSE)
+    }
+    data.frame(
+      tag_group = i,
+      release_region = as.integer(words[[1L]]),
+      release_year = as.integer(words[[2L]]),
+      release_month = as.integer(words[[3L]])
+    )
+  }))
+}
+
+ensure_ini_tag_flags <- function(path, n_tag_groups, default_mixing_period = 2L,
+                                 tag_path = NULL, terminal_year = NA_integer_) {
   eol <- file_eol(path)
   lines <- readLines(path, warn = FALSE)
   marker <- grep("^# ini version number$", trimws(lines))
@@ -124,12 +145,12 @@ ensure_ini_tag_flags <- function(path, n_tag_groups, default_mixing_period = 2L)
     flag_block <- c("# tag flags", rep(flag_row, n_tag_groups))
     lines[[version_i]] <- "1007"
     lines <- c(lines[seq_len(age_value_i)], flag_block, lines[(age_value_i + 1L):length(lines)])
-    writeLines(lines, path, sep = eol, useBytes = TRUE)
-    return(paste0(
+    notes <- c(notes, paste0(
       "inserted MFCL 1007 tag flags for ", n_tag_groups,
       " release groups with ", default_mixing_period,
       " mixing periods and reporting rates excluded during mixing"
     ))
+    tag_marker <- grep("^# tag flags$", trimws(lines))
   }
 
   if (length(tag_marker) != 1L) {
@@ -150,14 +171,26 @@ ensure_ini_tag_flags <- function(path, n_tag_groups, default_mixing_period = 2L)
   }
 
   zero_fixed <- 0L
+  terminal_fixed <- integer()
+  terminal_groups <- integer()
+  if (!is.na(terminal_year) && !is.null(tag_path) && file.exists(tag_path)) {
+    releases <- tag_release_table(tag_path)
+    terminal_groups <- releases$tag_group[releases$release_year >= terminal_year]
+  }
+
   for (i in flag_idx) {
     words <- read_words(lines[[i]])
     if (length(words) != 10L) {
       stop("Malformed tag flag row in ", path, " at line ", i, call. = FALSE)
     }
+    tag_group <- i - tag_marker
     if (as.integer(words[[1L]]) < 1L) {
       words[[1L]] <- "1"
       zero_fixed <- zero_fixed + 1L
+    }
+    if (tag_group %in% terminal_groups && as.integer(words[[1L]]) > 1L) {
+      words[[1L]] <- "1"
+      terminal_fixed <- c(terminal_fixed, tag_group)
     }
     lines[[i]] <- paste(words, collapse = " ")
   }
@@ -170,6 +203,13 @@ ensure_ini_tag_flags <- function(path, n_tag_groups, default_mixing_period = 2L)
     notes <- c(notes, paste0(
       "raised ", zero_fixed,
       " zero tag mixing periods to 1 because MFCL >=2.2.7.5 disallows 0"
+    ))
+  }
+  if (length(terminal_fixed)) {
+    notes <- c(notes, paste0(
+      "set terminal-year tag release groups ",
+      paste(terminal_fixed, collapse = ","),
+      " to 1 mixing period so chopped terminal-year models do not exceed the terminal period"
     ))
   }
   if (length(notes)) {
@@ -665,15 +705,21 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   ensure_frq_fishery_region_locations(frq_out)
   frq_counts <- frq_header_counts(readLines(frq_out, warn = FALSE), frq_out)
   ini_out <- file.path(model_dir, "bet.ini")
+  tag_out <- file.path(model_dir, "bet.tag")
   copy_one(ini_source, ini_out)
+  copy_one(tag_source, tag_out)
   apply_fixm_m(ini_out)
-  ini_tag_note <- ensure_ini_tag_flags(ini_out, frq_counts$n_tag_groups)
+  ini_tag_note <- ensure_ini_tag_flags(
+    ini_out,
+    frq_counts$n_tag_groups,
+    tag_path = tag_out,
+    terminal_year = frq_chop_year
+  )
   ini_notes <- c("FixM M row applied", ini_tag_note)
   ini_note <- paste(ini_notes[nzchar(ini_notes)], collapse = "; ")
   if (nzchar(ini_tag_note) && "bet.ini" %in% names(input_notes)) {
     input_notes[["bet.ini"]] <- paste(input_notes[["bet.ini"]], ini_tag_note, sep = "; ")
   }
-  copy_one(tag_source, file.path(model_dir, "bet.tag"))
   copy_one(age_source, file.path(model_dir, "bet.age_length"))
   copy_one(file.path(root, "steps", "03-RegFish", "model", "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
   copy_one(file.path(root, "steps", "03-RegFish", "model", "fishery_map.R"), file.path(model_dir, "fishery_map.R"))
