@@ -62,7 +62,7 @@ make kflow STEP_SELECT=01-base-11par,03-review-11par
 | `flow_group` | `bet-2026-base` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `mfcl_fevals` | `blank` | Blank uses the row-level `fevals` value; a number overrides selected rows. |
-| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v1.6` | Docker image used by Kflow and local Docker runs. |
+| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v1.7` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 
 

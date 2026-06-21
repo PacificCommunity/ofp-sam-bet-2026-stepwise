@@ -88,7 +88,7 @@ readme_section <- function(lines, heading, body) {
 }
 
 kflow <- yaml_value("kflow.yaml")
-docker_image <- if (is.null(kflow$docker_image)) "ghcr.io/pacificcommunity/tuna-flow:v1.5" else kflow$docker_image
+docker_image <- if (is.null(kflow$docker_image)) "ghcr.io/pacificcommunity/tuna-flow:v1.7" else kflow$docker_image
 program_path <- tryCatch(kflow$env$PROGRAM_PATH, error = function(e) NULL)
 if (is.null(program_path) || !nzchar(program_path)) {
   program_path <- "/home/mfcl/mfclo64"
