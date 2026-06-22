@@ -25,8 +25,9 @@ Nick's suggestion.
 | File shape | Verified each `bet.reg_scaling` has 292 rows and 5 columns, matching full 1952-2024 quarterly periods and 5 regions. |
 | Early phases | PHASE 1-4 retain the current `CPUE_scaling` setup: index fisheries 29-33 share CPUE group 29 and selectivity group 25. |
 | PHASE 5 switch | PHASE 5 switches to `Prior_reg_biomass`: index CPUE groups become 29-33, fish flag 94 is set to 0, and index selectivity groups become 25-29. |
-| Doitall flags | Added `1 77 50`, `1 78 1`, `1 79 0`, `1 80 0`, and `1 81 1` in PHASE 5 for the MVN regional-scaling penalty. |
+| Doitall flags | Added `1 77 50`, `1 78 1`, `1 79 290`, `1 80 0`, and `1 81 1` in PHASE 5 for the MVN regional-scaling penalty. |
 | Reproducibility | Updated `R/prepare_bet_2026_step_inputs.R` so regeneration preserves the files, flags, manifests, and READMEs. |
+| Run safety | Added `set -eu` to `doitall.sh` so an MFCL failure stops the job immediately instead of continuing with missing `.par` files. |
 
 ## Flag Interpretation
 
@@ -35,7 +36,10 @@ Nick's suggestion.
 - `fish_flags(i,94)=1` allows unequal assumed sigma values within a grouped CPUE likelihood.
 - `parest_flags(77)>0` activates the regional-scaling penalty and sets its weight.
 - `parest_flags(78)=1` uses the mean regional-scaling target.
-- `parest_flags(79)=0` and `parest_flags(80)=0` use all model periods.
+- `parest_flags(79)` is interpreted by MFCL as `preg_start = nyears - flag79 + 1`.
+- `parest_flags(79)=290` starts the 292-period full-2024 regional-scaling
+  prior at period 3, matching the first period covered by all index fisheries.
+- `parest_flags(80)=0` ends at the terminal model period.
 - `parest_flags(81)=1` uses the multivariate-normal penalty.
 
 ## Current Assumptions
@@ -46,6 +50,8 @@ Nick's suggestion.
 - Steps `06-12` use the 09/06/2026 `Prior_reg_biomass` pattern from PHASE 5.
 - The initial regional-scaling weight is `parest_flags(77)=50`; 150, 500, and
   3000 remain documented candidates for later sensitivity or tuning.
+- The regional-scaling prior starts at period 3 because MFCL rejects period 1
+  when an index fishery starts later than period 1.
 - Arni's 19/06/2026 sigma values are retained in `fish_flags(92)` unless later
   residual diagnostics indicate they should be changed.
 
@@ -57,6 +63,8 @@ Nick's suggestion.
   group 25.
 - `06-Full2024` through `12-DataWeight40` now keep that shared index selectivity
   in PHASE 1 and switch to groups 25-29 in PHASE 5.
+- `parest_flags(79)=290` was chosen from the MFCL source interpretation:
+  `292 - 290 + 1 = 3`.
 
 ## Still To Review
 

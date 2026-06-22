@@ -25,12 +25,10 @@ resources:
   memory: 12GB
   disk: 8GB
 
-exclude_machines:
-  - nouofpcand05
-  - nouofpcand14
-  - nouofpcand16
-  - nouofpcand17
-  - nouofpcand19
+# Default is intentionally empty. Add machines only for a temporary launch or
+# let Kflow's scheduler-health auto-exclude handle currently bad nodes.
+exclude_machines: []
+exclude_slots: []
 
 env:
   # Default selected model folder. Override per job in the Kflow job config.

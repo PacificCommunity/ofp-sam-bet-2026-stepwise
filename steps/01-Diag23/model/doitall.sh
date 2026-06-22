@@ -1,6 +1,7 @@
 #!/bin/sh
+set -eu
 
-program_path=${PROGRAM_PATH}
+program_path=${PROGRAM_PATH:-}
 
 if [ -z "$program_path" ]; then
   echo "PROGRAM_PATH is not set. Exiting."

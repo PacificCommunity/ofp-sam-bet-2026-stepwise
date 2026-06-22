@@ -124,8 +124,12 @@ def build_payload(
         "stream_error": config.get("stream_error", existing.get("stream_error", True)),
         "ghcr_login": config.get("ghcr_login", existing.get("ghcr_login", False)),
         "slot_requirements": config.get("slot_requirements", existing.get("slot_requirements", "")),
-        "exclude_machines": config.get("exclude_machines", existing.get("exclude_machines", [])),
-        "exclude_slots": config.get("exclude_slots", existing.get("exclude_slots", [])),
+        # Do not preserve stale node exclusions from an existing Kflow task.
+        # If a repo wants a fixed exclusion it must say so explicitly in
+        # kflow.yaml; otherwise the registered task should launch without
+        # manual exclusions and let scheduler-health auto-exclude bad nodes.
+        "exclude_machines": config.get("exclude_machines", []),
+        "exclude_slots": config.get("exclude_slots", []),
         "env": config.get("env", {}),
         "tags": config.get("tags", {}),
         "metadata": metadata,

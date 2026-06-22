@@ -1,5 +1,9 @@
 root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
-input_root <- "/home/kyuhank/Desktop/SPC/bet_2026_input_repos"
+input_root <- Sys.getenv(
+  "BET_2026_INPUT_ROOT",
+  file.path(dirname(root), "input-repos")
+)
+input_root <- normalizePath(input_root, winslash = "/", mustWork = TRUE)
 
 frq_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-frq-build", "BET")
 ini_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-build-ini", "BET")
@@ -8,6 +12,20 @@ age_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-age-length-build", "BET"
 reg_scaling_source <- file.path(frq_root, "bet.2026.reg_scaling")
 
 fixm_age_par_value <- "-2.54917483258212e+00"
+
+public_source_path <- function(path) {
+  if (!nzchar(path)) return(path)
+  norm <- normalizePath(path, winslash = "/", mustWork = FALSE)
+  root_prefix <- paste0(normalizePath(root, winslash = "/", mustWork = TRUE), "/")
+  input_prefix <- paste0(normalizePath(input_root, winslash = "/", mustWork = TRUE), "/")
+  if (startsWith(norm, root_prefix)) {
+    return(substring(norm, nchar(root_prefix) + 1L))
+  }
+  if (startsWith(norm, input_prefix)) {
+    return(file.path("input-repos", substring(norm, nchar(input_prefix) + 1L)))
+  }
+  norm
+}
 
 copy_one <- function(from, to) {
   if (!file.exists(from)) stop("Missing source file: ", from, call. = FALSE)
@@ -548,7 +566,7 @@ write_manifest <- function(step_dir, entries) {
     data.frame(
       role = x$role,
       file = x$file,
-      source = x$source,
+      source = public_source_path(x$source),
       note = x$note,
       stringsAsFactors = FALSE
     )
@@ -675,7 +693,9 @@ apply_data_weighting <- function(lines) {
 
 apply_regional_scaling_phase5 <- function(lines, weight = 50L,
                                           use_mean = TRUE,
-                                          use_mvn = TRUE) {
+                                          use_mvn = TRUE,
+                                          periods_from_end = 290L,
+                                          start_period = 3L) {
   if (any(grepl("Nick's suggestion, 09/06/2026", lines, fixed = TRUE))) {
     return(lines)
   }
@@ -708,7 +728,11 @@ apply_regional_scaling_phase5 <- function(lines, weight = 50L,
     "# MFCL reads bet.reg_scaling when parest flag 77 is > 0.",
     sprintf("  1 77 %d   # MVN regional-scaling penalty weight; CV about 0.1 in the 09/06/2026 note", as.integer(weight)),
     sprintf("  1 78 %d    # use mean regional-scaling target", as.integer(isTRUE(use_mean))),
-    "  1 79 0    # default: use all model periods",
+    sprintf(
+      "  1 79 %d  # start regional-scaling prior at period %d; index fishery coverage starts there",
+      as.integer(periods_from_end),
+      as.integer(start_period)
+    ),
     "  1 80 0    # default: end at terminal model period",
     sprintf("  1 81 %d    # use multivariate-normal regional-scaling penalty", as.integer(isTRUE(use_mvn)))
   )
@@ -748,8 +772,12 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           opr = FALSE,
                           data_weighting = FALSE,
                           regional_scaling = FALSE,
-                          regional_scaling_periods = 292L) {
+                          regional_scaling_periods = 292L,
+                          regional_scaling_start_period = 3L) {
   lines <- readLines(from, warn = FALSE)
+  if (!any(grepl("^set -eu$", lines))) {
+    lines <- append(lines, "set -eu", after = 1L)
+  }
   if (isTRUE(mix_from_ini)) {
     target <- grep("-9999 1 2", lines, fixed = TRUE)
     if (length(target)) {
@@ -767,7 +795,11 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     lines <- apply_data_weighting(lines)
   }
   if (isTRUE(regional_scaling)) {
-    lines <- apply_regional_scaling_phase5(lines)
+    lines <- apply_regional_scaling_phase5(
+      lines,
+      periods_from_end = regional_scaling_periods - regional_scaling_start_period + 1L,
+      start_period = regional_scaling_start_period
+    )
   }
   writeLines(lines, to, useBytes = TRUE)
   Sys.chmod(to, mode = "0755")
@@ -837,6 +869,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   has_reg_scaling <- nzchar(reg_scaling_source)
   if (has_reg_scaling) {
     copy_one(reg_scaling_source, file.path(model_dir, "bet.reg_scaling"))
+    regional_scaling_periods <- length(readLines(reg_scaling_source, warn = FALSE))
     if (!"bet.reg_scaling" %in% names(input_notes)) {
       input_notes[["bet.reg_scaling"]] <-
         "`bet.2026.reg_scaling` global CPUE regional-scaling matrix, 292 quarterly rows x 5 regions"
@@ -845,8 +878,14 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       control_notes,
       paste(
         "`bet.reg_scaling` is read by MFCL starting in PHASE 5 because",
-        "`parest_flags(77)=50`; flags 77-81 follow Nick's",
+        "`parest_flags(77)=50`; `parest_flags(79)` starts the prior",
+        "at the first period covered by all index fisheries; flags 77-81 follow Nick's",
         "09/06/2026 regional-scaling suggestion."
+      ),
+      paste(
+        "For the 292-period full-2024 models, `parest_flags(79)=290`",
+        "means `292 - 290 + 1 = 3`, so the regional-scaling prior starts",
+        "at period 3 instead of the invalid period-1 default."
       ),
       paste(
         "PHASE 1-4 retain the current CPUE_scaling setup: index fisheries",
@@ -860,6 +899,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       )
     )
   }
+  control_notes <- c(
+    control_notes,
+    "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files."
+  )
   copy_one(file.path(root, "steps", "03-RegFish", "model", "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
   fishery_map_out <- file.path(model_dir, "fishery_map.R")
   copy_one(file.path(root, "steps", "03-RegFish", "model", "fishery_map.R"), fishery_map_out)
@@ -874,7 +917,8 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     size_based_selectivity = isTRUE(doitall_edits$size_based_selectivity),
     opr = isTRUE(doitall_edits$opr),
     data_weighting = isTRUE(doitall_edits$data_weighting),
-    regional_scaling = has_reg_scaling
+    regional_scaling = has_reg_scaling,
+    regional_scaling_periods = if (has_reg_scaling) regional_scaling_periods else 292L
   )
 
   entries <- list(
@@ -884,8 +928,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     list(role = "age_length", file = "bet.age_length", source = age_source, note = "CAAL input"),
     list(role = "doitall", file = "doitall.sh", source = "steps/03-RegFish/model/doitall.sh", note = paste(c(
       ifelse(mix_from_ini, "mixing override removed", "03-RegFish 5-region controls retained"),
-      if (has_reg_scaling) "regional scaling Prior_reg_biomass switch applied in PHASE 5 with flags 77-81",
+      if (has_reg_scaling) "regional scaling Prior_reg_biomass switch applied in PHASE 5 with flags 77-81 and prior start period 3",
       if (has_reg_scaling) "index CPUE/selectivity groups unshared from PHASE 5",
+      "doitall exits immediately on MFCL command failure",
       if (isTRUE(doitall_edits$size_based_selectivity)) "fish flag 26 set to 3",
       if (isTRUE(doitall_edits$opr)) "OPR recruitment flags applied",
       if (isTRUE(doitall_edits$data_weighting)) "global LF/WF divisors set to 40"
@@ -934,7 +979,8 @@ write_readme(
   ),
   c(
     "Inherited 9-region `doitall.sh` retained.",
-    "Survey index fishery sigma settings are the BET 2023 region-specific values."
+    "Survey index fishery sigma settings are the BET 2023 region-specific values.",
+    "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files."
   ),
   c(
     "This is a baseline reference step; no 2026 input updates are intended here.",
@@ -960,7 +1006,8 @@ write_readme(
   ),
   c(
     "Inherited 9-region `doitall.sh` retained.",
-    "This step is used as the reference for the M row copied into 03+."
+    "This step is used as the reference for the M row copied into 03+.",
+    "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files."
   ),
   c(
     "Confirm the FixM M row reproduces the intended fixed-M diagnostic before comparing against 03+.",
@@ -1002,7 +1049,8 @@ write_readme(
   c(
     "5-region fishery/tag/selectivity controls are remapped in `doitall.sh`.",
     "Index fisheries 29-33 use sigmas 0.28, 0.20, 0.22, 0.21, and 0.24.",
-    "The `-9999 1 2` all-release mixing-period setting is retained for this pre-mix step."
+    "The `-9999 1 2` all-release mixing-period setting is retained for this pre-mix step.",
+    "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files."
   ),
   c(
     "After fitting, review the 5-region selectivity/tag grouping inherited from the workbook mapping.",

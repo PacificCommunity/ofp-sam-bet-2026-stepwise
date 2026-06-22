@@ -1,6 +1,7 @@
 #!/bin/sh
+set -eu
 
-program_path=${PROGRAM_PATH}
+program_path=${PROGRAM_PATH:-}
 
 if [ -z "$program_path" ]; then
   echo "PROGRAM_PATH is not set. Exiting."
@@ -311,7 +312,7 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
 # MFCL reads bet.reg_scaling when parest flag 77 is > 0.
   1 77 50   # MVN regional-scaling penalty weight; CV about 0.1 in the 09/06/2026 note
   1 78 1    # use mean regional-scaling target
-  1 79 0    # default: use all model periods
+  1 79 290  # start regional-scaling prior at period 3; index fishery coverage starts there
   1 80 0    # default: end at terminal model period
   1 81 1    # use multivariate-normal regional-scaling penalty
 PHASE5

@@ -22,6 +22,7 @@ Transition step using the 2026 weights-as-lengths frequency file, chopped back t
 
 - 03-RegFish 5-region `doitall.sh` controls retained.
 - The all-release-group `-9999 1 2` mixing-period override is retained because this step uses the 03-RegFish 90-release tag set.
+- `doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.
 
 ## Run Note
 
