@@ -25,7 +25,26 @@ model structure.
 - Made 04/05 use the 03-RegFish 90-release `.ini/.tag` setup and reset their
   chopped `.frq` tag-group header from 91 to 90.
 
-## Mental Model
+## Examples
+
+- Fishery regions:
+  before, `.frq` had 33 fisheries in the header but only 28 region entries.
+  After, the line ends with index fishery regions `1 2 3 4 5`.
+- Tag flags:
+  before, some 1007 `.ini` files jumped from `# number of age classes` to the
+  next block. After, they include one `# tag flags` row per tag release group.
+- Mix periods:
+  before, some 08-12 release groups had mixing period `0`. After, those rows
+  start with `1`, which current MFCL accepts.
+- Absent LF records:
+  before, some `.frq` records had `-1` followed by leftover LF bins. After,
+  those records are normalized so MFCL reads the next fields correctly.
+- 04/05 chopped tag setup:
+  before, the 2021-chopped `.frq` still declared 91 tag groups and used 2026
+  `.ini/.tag`. After, 04/05 declare 90 tag groups and use the 03-RegFish
+  90-release `.ini/.tag`.
+
+## Core Idea
 
 MFCL needs `.frq`, `.ini`, `.tag`, `.age_length`, and `doitall.sh` to agree on
 the same structure: fishery count, tag group count, terminal year, and tag
