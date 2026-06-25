@@ -1120,8 +1120,7 @@ write_readme <- function(step_dir, title, summary, bullets, inputs, controls,
     "",
     "## Status",
     "",
-    status,
-    ""
+    status
   )
   writeLines(lines, file.path(step_dir, "README.md"), useBytes = TRUE)
 }
@@ -1158,7 +1157,7 @@ apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
     stop("Unexpected phase-3 recruitment flag block for OPR", call. = FALSE)
   }
   new_block <- c(
-    "# OPR settings. John Hampton's BET OPR screening rank-1 model: 69-01-50-50.",
+    "# OPR settings. BET OPR screening rank-1 model: 69-01-50-50.",
     "  1 149 0   # turn off recruitment-deviation penalty for OPR",
     "  1 398 0   # turn off arithmetic-mean terminal fixed-recruitment option for OPR",
     "  1 400 0   # clear fixed terminal recruitment-deviate block for OPR",
@@ -1173,7 +1172,7 @@ apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
     "  1 210 0   # OPR region end window: 0 inherits parest_flag(202)",
     "  1 212 0   # OPR season end window: 0 inherits parest_flag(202)",
     "  1 214 0   # OPR region-season end window: 0 inherits parest_flag(202)",
-    "  2 30 1    # keep age_flag(30) on; John/Nick found OPR coefficients are otherwise not activated",
+    "  2 30 1    # keep age_flag(30) on so current MFCL activates OPR coefficients",
     "  2 70 0    # turn off mean+deviate regional recruitment time series",
     "  2 71 0    # turn off regional recruitment distribution deviations",
     "  2 178 0   # turn off regional recruitment sum-product constraint",
@@ -1197,7 +1196,7 @@ apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
   if (length(phase3_eval) != 1L) {
     stop("Expected one PHASE3 function-evaluation line for OPR", call. = FALSE)
   }
-  lines[[phase3_eval]] <- "  1 1 500  # function evaluations, matching John Hampton's OPR doitall example"
+  lines[[phase3_eval]] <- "  1 1 500  # function evaluations from the OPR screening doitall example"
 
   region_flags <- grep("^[[:space:]]*-100000[[:space:]]+[1-5][[:space:]]+1([[:space:]]|$)", lines)
   if (!length(region_flags)) {
@@ -1231,7 +1230,7 @@ apply_regional_scaling_phase5 <- function(lines, weight = 50L,
                                           end_periods_from_end = 220L,
                                           start_period = 53L,
                                           end_period = 72L) {
-  if (any(grepl("Nick's suggestion, 09/06/2026", lines, fixed = TRUE))) {
+  if (any(grepl("Regional-scaling MVN prior.", lines, fixed = TRUE))) {
     return(lines)
   }
   if (any(grepl("^[[:space:]]*1[[:space:]]+77[[:space:]]+", lines))) {
@@ -1246,7 +1245,7 @@ apply_regional_scaling_phase5 <- function(lines, weight = 50L,
     stop("Expected one PHASE5 heredoc end before inserting regional scaling flags", call. = FALSE)
   }
   block <- c(
-    "# Regional-scaling MVN prior. Nick's suggestion, 09/06/2026.",
+    "# Regional-scaling MVN prior.",
     "# PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass.",
     "# Ungroup index CPUE likelihood and remove grouped-sigma override.",
     "  -29 99 29  -29 94 0  # Index R1",
@@ -1261,7 +1260,7 @@ apply_regional_scaling_phase5 <- function(lines, weight = 50L,
     "  -32 24 28  # Index R4",
     "  -33 24 29  # Index R5",
     "# MFCL reads bet.reg_scaling when parest flag 77 is > 0.",
-    sprintf("  1 77 %d   # MVN regional-scaling penalty weight; CV about 0.1 in the 09/06/2026 note", as.integer(weight)),
+    sprintf("  1 77 %d   # MVN regional-scaling penalty weight; CV about 0.1", as.integer(weight)),
     sprintf("  1 78 %d    # use mean regional-scaling target", as.integer(isTRUE(use_mean))),
     sprintf(
       "  1 79 %d  # start regional-scaling prior at period %d; 1965-1969 CPUE covariance window",
@@ -1417,7 +1416,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       stop("Effort-creep transform is only implemented for full-year frq files", call. = FALSE)
     }
     write_frq_with_effort_creep(frq_source, frq_out)
-    frq_note <- "copied with John Hampton 19/06/2026 effort-creep multiplier applied to index fisheries 29-33: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024"
+    frq_note <- "copied with agreed effort-creep multiplier applied to index fisheries 29-33: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024"
   } else if (is.na(frq_chop_year)) {
     copy_one(frq_source, frq_out)
     frq_note <- "copied without year chopping"
@@ -1503,12 +1502,12 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       control_notes,
       paste(
         "`bet.reg_scaling` is read by MFCL starting in PHASE 5 because",
-        "`parest_flags(77)=50`; flags 77-81 follow Nick's",
-        "09/06/2026 regional-scaling suggestion."
+        "`parest_flags(77)=50`; flags 77-81 configure the",
+        "regional-scaling MVN prior."
       ),
       paste(
         "The active `bet.reg_scaling` window is periods 53-72",
-        paste0("(", reg_scaling_active_years, ") because Thom's global CPUE"),
+        paste0("(", reg_scaling_active_years, ") because the global CPUE"),
         "covariance matrices were estimated from data fitted over 1965 through the end of 1969, the period with the highest spatial-temporal coverage."
       ),
       paste(
@@ -1519,7 +1518,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       paste(
         "PHASE 1-4 retain the current CPUE_scaling setup: index fisheries",
         "29-33 share CPUE group 29, share selectivity group 25, and keep",
-        "Arni's 19/06/2026 sigma settings."
+        "the 2026 index-fishery sigma settings."
       ),
       paste(
         "PHASE 5 switches to Prior_reg_biomass: index CPUE groups become",
@@ -1530,9 +1529,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   }
   control_notes <- c(
     control_notes,
-    "Following John Hampton's June 2026 MFCL input checks, generated `.frq` files must include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files must carry explicit tag flags immediately after `# number of age classes`.",
+    "Generated `.frq` files include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files carry explicit tag flags immediately after `# number of age classes`.",
     "Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.",
-    "Following Nick Davies's June 2026 MFCL-version note, `age_flags(128)` is kept at 100 so the latest MFCL interprets the initial equilibrium natural-mortality multiplier as 1.0.",
+    "`age_flags(128)` is kept at 100 so the current MFCL reader interprets the initial equilibrium natural-mortality multiplier as 1.0.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
     "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders."
   )
@@ -1635,6 +1634,7 @@ write_readme(
   ),
   c(
     "Inherited 9-region `doitall.sh` retained.",
+    "The step output includes `bet-2023-nine-region.geojson` as a display-only MFCL Shiny map asset; it does not change MFCL inputs.",
     "`bet.ini` now carries 118 explicit MFCL 1007 tag-flag rows matching `bet.tag`; the inherited `-9999 1 2` control remains consistent with those rows.",
     "Survey index fishery sigma settings are the BET 2023 region-specific values.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
@@ -1666,6 +1666,7 @@ write_readme(
   c(
     "Inherited 9-region `doitall.sh` retained.",
     "This step is used as the reference for the M row copied into 03+.",
+    "The step output includes `bet-2023-nine-region.geojson` as a display-only MFCL Shiny map asset; it does not change MFCL inputs.",
     "`bet.ini` now carries 118 explicit MFCL 1007 tag-flag rows matching `bet.tag`; the inherited `-9999 1 2` control remains consistent with those rows.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
     "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders."
@@ -1748,7 +1749,7 @@ write_readme(
     ),
     "Regenerates `tag_rep_map.R` from the five MFCL reporting-rate matrices in `bet.ini` plus release metadata in `bet.tag`.",
     paste0("Normalizes ", n_normalized_03, " old records that had an absent-LF sentinel followed by stray LF bins."),
-    "Applies Arni's 19/06/2026 CPUE index sigma suggestions for index fisheries 29-33.",
+    "Applies the 2026 CPUE index sigma settings for index fisheries 29-33.",
     "Applies FixM M row while retaining the 5-region `.ini` structure.",
     "Inserts default MFCL 1007 tag flags for the pre-mix step: 2 mixing periods and reporting rates excluded during mixing."
   ),
@@ -2052,10 +2053,10 @@ make_step(
   mix_from_ini = TRUE,
   doitall_edits = list(size_based_selectivity = TRUE, opr = TRUE),
   title = "10 OPR",
-  summary = "Orthogonal polynomial recruitment step using the best BET OPR setting from John Hampton's screening.",
+  summary = "Orthogonal polynomial recruitment step using the best-ranked BET OPR screening setting.",
   bullets = c(
     "Uses the same input files as 09-SizeBasedSel.",
-    "Applies the BIGEYE AIC rank-1 OPR model from John Hampton's BET OPR screening: `69-01-50-50`.",
+    "Applies the BIGEYE AIC rank-1 OPR screening model: `69-01-50-50`.",
     "The OPR comparison was run on the BET 4R model, but this step carries the best-ranked setting into the current 5-region stepwise path.",
     "OPR controls are applied in PHASE 3 of `doitall.sh`, so early phases still use the pre-OPR recruitment setup before the transfer."
   ),
@@ -2068,18 +2069,18 @@ make_step(
   control_notes = c(
     "`-999 26 3` is retained from 09-SizeBasedSel.",
     "PHASE 1 and PHASE 2 retain the pre-OPR recruitment setup.",
-    "`1 149 0`, `1 398 0`, `1 400 0`, `2 177 0`, `2 32 0`, and `2 113 0` are applied at PHASE 3 for the OPR transfer, matching John Hampton's OPR `doitall` example except for obsolete `parest_flag(221)`.",
+    "`1 149 0`, `1 398 0`, `1 400 0`, `2 177 0`, `2 32 0`, and `2 113 0` are applied at PHASE 3 for the OPR transfer, matching the OPR screening `doitall` example except for obsolete `parest_flag(221)`.",
     "`1 155 69` sets the OPR year effect from the `69-01-50-50` setting. `parest_flag(221)` is not set because current MFCL treats it as an obsolete/commented-out legacy year-effect override; the active source reads the year degree from `parest_flag(155)`.",
     "`1 217 1`, `1 216 50`, and `1 218 50` set season, region, and region-season interaction effects.",
     "`1 202 2` sets the OPR end window to the last 2 real years, where the orthogonal-polynomial basis is held at the lower-degree/constant-end form. `1 210 0`, `1 212 0`, and `1 214 0` do not turn that off; in current MFCL, zero means the region, season, and region-season effects inherit `parest_flag(202)`. Use `-1` to turn an end window off.",
-    "`2 30 1` is deliberately retained at the OPR phase because John Hampton's 25/05/2026 note says `age_flag(30)=1` is currently needed for MFCL to activate the OPR polynomial coefficients.",
+    "`2 30 1` is deliberately retained at the OPR phase because current MFCL requires `age_flag(30)=1` to activate the OPR polynomial coefficients.",
     "`2 70`, `2 71`, `2 178`, and `-100000 1:5` recruitment-distribution controls are turned off at the OPR phase.",
-    "PHASE 3 uses 500 function evaluations, matching John Hampton's OPR `doitall` example."
+    "PHASE 3 uses 500 function evaluations, matching the OPR screening `doitall` example."
   ),
   run_notes = c(
     mix_period_alignment_run_notes,
-    "The step-specific OPR change follows John Hampton's BET OPR screening: the BET 4R rank-1 AIC setting `69-01-50-50` is carried into this 5-region path. The README records that this is an applied transfer from the 4R screening, not a separate 5-region OPR search.",
-    "John's 25/05/2026 email notes that Nick and John expected DEVS-related flags to be off for OPR, but found `age_flag(30)=1` must remain on or MFCL does not activate the OPR recruitment-polynomial coefficients; the step therefore keeps `2 30 1` while turning off `2 70`, `2 71`, `2 178`, and the `-100000 1:5` regional recruitment-distribution flags."
+    "The step-specific OPR change follows the BET OPR screening: the BET 4R rank-1 AIC setting `69-01-50-50` is carried into this 5-region path. The README records that this is an applied transfer from the 4R screening, not a separate 5-region OPR search.",
+    "The OPR transfer keeps `2 30 1` because current MFCL does not activate the OPR recruitment-polynomial coefficients without it; the step turns off `2 70`, `2 71`, `2 178`, and the `-100000 1:5` regional recruitment-distribution flags."
   ),
   outstanding = c(
     "After fitting, confirm the 5-region model behaves consistently with the 4R BET OPR screening result.",
@@ -2101,8 +2102,8 @@ make_step(
   summary = "Minimum effort-creep scenario applied to the regional index fisheries.",
   bullets = c(
     "Uses 10-OPR controls and applies an effort-creep transform to index fisheries 29-33 in `bet.frq`.",
-    "Retains the `69-01-50-50` OPR setting selected from John Hampton's BET 4R OPR screening.",
-    "The transform follows John Hampton's 19/06/2026 effort-creep note: effort is multiplied by a piecewise linear multiplier, 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024.",
+    "Retains the `69-01-50-50` OPR setting selected from the BET 4R OPR screening.",
+    "The effort-creep transform multiplies index-fishery effort by a piecewise linear multiplier: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024.",
     "Only positive index-fishery effort values are changed; extraction fisheries and size compositions are untouched."
   ),
   input_notes = c(
@@ -2112,13 +2113,13 @@ make_step(
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
-    "10-OPR `doitall.sh` controls are retained, including the explicit `2 30 1` OPR safeguard from John/Nick's note.",
+    "10-OPR `doitall.sh` controls are retained, including the explicit `2 30 1` OPR activation safeguard.",
     "No extra MFCL flag is used for effort creep; the change is in the index-fishery effort values in `bet.frq`."
   ),
   run_notes = c(
     mix_period_alignment_run_notes,
     "The effort-creep `.frq` is generated from the full 2024 plus-length source by changing only positive effort values for index fisheries 29-33; extraction fisheries and size-composition records are left as in the source file.",
-    "The implemented multiplier is 1.00 in 1952, 1.24 in 1976, and 1.48 in 2024; this applies John Hampton's 19/06/2026 email description rather than extending the 1%/yr rate through the full time series."
+    "The implemented multiplier is 1.00 in 1952, 1.24 in 1976, and 1.48 in 2024; this applies the agreed piecewise effort-creep scenario rather than extending the 1%/yr rate through the full time series."
   ),
   outstanding = c(
     "After fitting, review the index residuals and implied CPUE scaling against 10-OPR to confirm this agreed effort-creep scenario behaves as expected."
@@ -2149,7 +2150,7 @@ make_step(
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
-    "10-OPR `doitall.sh` controls are retained, including the explicit `2 30 1` OPR safeguard from John/Nick's note.",
+    "10-OPR `doitall.sh` controls are retained, including the explicit `2 30 1` OPR activation safeguard.",
     "`-999 49 40` and `-999 50 40` replace the global LF/WF divisor-20 settings.",
     "Fishery-specific divisor-40 settings inherited from 03-RegFish are retained."
   ),

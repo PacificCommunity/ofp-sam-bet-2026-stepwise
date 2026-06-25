@@ -30,9 +30,9 @@ Transition step using 2026 weights-as-lengths plus observed lengths chopped to 2
 
 - 03-RegFish 5-region `doitall.sh` controls retained.
 - The all-release-group `-9999 1 2` mixing-period override is retained because this step uses the 03-RegFish 96-release tag set.
-- Following John Hampton's June 2026 MFCL input checks, generated `.frq` files must include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files must carry explicit tag flags immediately after `# number of age classes`.
+- Generated `.frq` files include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files carry explicit tag flags immediately after `# number of age classes`.
 - Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.
-- Following Nick Davies's June 2026 MFCL-version note, `age_flags(128)` is kept at 100 so the latest MFCL interprets the initial equilibrium natural-mortality multiplier as 1.0.
+- `age_flags(128)` is kept at 100 so the current MFCL reader interprets the initial equilibrium natural-mortality multiplier as 1.0.
 - `doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.
 - PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders.
 
@@ -52,4 +52,3 @@ Transition step using 2026 weights-as-lengths plus observed lengths chopped to 2
 ## Status
 
 Ready for Kflow smoke runs; full MFCL fit not run here.
-

@@ -29,8 +29,8 @@ bet_region_map_default_vertices <- function() {
 
 bet_nine_region_map_default_vertices <- function() {
   # Display-only 2023 BET 9-region diagnostic map used by 01/02.
-  # Vertices are the exterior boundaries of the rectangles in
-  # regions_BET_2023_9R.csv from the size-comps input repository.
+  # Vertices are the exterior boundaries of the 2023 MufArea rectangles from
+  # the size-composition input repository.
   make_region <- function(region, label, lon, lat) {
     data.frame(
       region = as.integer(region),

@@ -1,7 +1,7 @@
 # OPR Screening Summary
 
-Source: John Hampton's BET OPR screening slides and OPR `doitall` example,
-provided for the BET/YFT 2026 assessment work.
+Source: the BET OPR screening slides and OPR `doitall` example prepared for
+the BET/YFT 2026 assessment work.
 
 The screening applied OPR settings to final converged fits and compared models
 with AIC. The BET screening used the 4R model, not this final 5-region stepwise
@@ -27,10 +27,10 @@ stepwise OPR choice.
 - `1 218 50`: region-season interaction effect.
 - `1 202 2`: OPR end window for the year effect; the last 2 real years use the lower-degree/constant-end basis.
 - `1 210 0`, `1 212 0`, and `1 214 0`: region, season, and region-season end-window controls. In current MFCL, `0` means inherit `parest_flag(202)`, so these also use the last-2-real-year end window. Use `-1` to turn an end window off.
-- `1 149 0`, `1 398 0`, `1 400 0`, `2 177 0`, `2 32 0`, and `2 113 0`: OPR transfer controls copied from John's OPR `doitall` example.
-- `2 30 1`: kept on because John and Nick found the OPR coefficients are otherwise not activated.
-- `2 70 0`, `2 71 0`, `2 178 0`, and `-100000 1:5 0`: regional recruitment-deviation/distribution controls turned off at the OPR phase. John's 4-region example turns off regions 1-4; this 5-region step turns off regions 1-5.
-- `1 1 500`: PHASE 3 function-evaluation setting copied from John's OPR `doitall` example.
+- `1 149 0`, `1 398 0`, `1 400 0`, `2 177 0`, `2 32 0`, and `2 113 0`: OPR transfer controls from the screening `doitall` example.
+- `2 30 1`: kept on because current MFCL requires this flag for the OPR polynomial coefficients to activate.
+- `2 70 0`, `2 71 0`, `2 178 0`, and `-100000 1:5 0`: regional recruitment-deviation/distribution controls turned off at the OPR phase. The 4-region screening example turns off regions 1-4; this 5-region step turns off regions 1-5.
+- `1 1 500`: PHASE 3 function-evaluation setting from the screening `doitall` example.
 
 `parest_flag(221)` is not part of the active OPR setup. The current MFCL source
 has the old `221` year-effect override in a commented-out block, and the manual

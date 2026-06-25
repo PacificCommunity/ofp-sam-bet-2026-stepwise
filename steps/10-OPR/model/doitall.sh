@@ -56,7 +56,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # Survey fisheries defined
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
 # fish flag 66 = 0. The freq file supplies the temporal sigma pattern.
-# Arni's suggestion, 19/06/2026.
+# 2026 index-fishery sigma settings.
   -29 94 1       -29 92 28   -29 66 0  # Index R1, sigma 0.28
   -30 94 1       -30 92 20   -30 66 0  # Index R2, sigma 0.20
   -31 94 1       -31 92 22   -31 66 0  # Index R3, sigma 0.22
@@ -270,7 +270,7 @@ PHASE2
 # ---------
 
 $program_path bet.frq 02.par 03.par -file - <<PHASE3
-# OPR settings. John Hampton's BET OPR screening rank-1 model: 69-01-50-50.
+# OPR settings. BET OPR screening rank-1 model: 69-01-50-50.
   1 149 0   # turn off recruitment-deviation penalty for OPR
   1 398 0   # turn off arithmetic-mean terminal fixed-recruitment option for OPR
   1 400 0   # clear fixed terminal recruitment-deviate block for OPR
@@ -285,7 +285,7 @@ $program_path bet.frq 02.par 03.par -file - <<PHASE3
   1 210 0   # OPR region end window: 0 inherits parest_flag(202)
   1 212 0   # OPR season end window: 0 inherits parest_flag(202)
   1 214 0   # OPR region-season end window: 0 inherits parest_flag(202)
-  2 30 1    # keep age_flag(30) on; John/Nick found OPR coefficients are otherwise not activated
+  2 30 1    # keep age_flag(30) on so current MFCL activates OPR coefficients
   2 70 0    # turn off mean+deviate regional recruitment time series
   2 71 0    # turn off regional recruitment distribution deviations
   2 178 0   # turn off regional recruitment sum-product constraint
@@ -294,7 +294,7 @@ $program_path bet.frq 02.par 03.par -file - <<PHASE3
   -100000 3 0  # turn off time-invariant recruitment distribution, region 3
   -100000 4 0  # turn off time-invariant recruitment distribution, region 4
   -100000 5 0  # turn off time-invariant recruitment distribution, region 5
-  1 1 500  # function evaluations, matching John Hampton's OPR doitall example
+  1 1 500  # function evaluations from the OPR screening doitall example
 PHASE3
 
 # ---------
@@ -317,7 +317,7 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -100000 3 0 # distribution
   -100000 4 0 # of
   -100000 5 0 # recruitment
-# Regional-scaling MVN prior. Nick's suggestion, 09/06/2026.
+# Regional-scaling MVN prior.
 # PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass.
 # Ungroup index CPUE likelihood and remove grouped-sigma override.
   -29 99 29  -29 94 0  # Index R1
@@ -332,7 +332,7 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -32 24 28  # Index R4
   -33 24 29  # Index R5
 # MFCL reads bet.reg_scaling when parest flag 77 is > 0.
-  1 77 50   # MVN regional-scaling penalty weight; CV about 0.1 in the 09/06/2026 note
+  1 77 50   # MVN regional-scaling penalty weight; CV about 0.1
   1 78 1    # use mean regional-scaling target
   1 79 240  # start regional-scaling prior at period 53; 1965-1969 CPUE covariance window
   1 80 220  # end regional-scaling prior at period 72; 1965-1969 CPUE covariance window

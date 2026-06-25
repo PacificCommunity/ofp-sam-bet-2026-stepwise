@@ -11,7 +11,7 @@ First 5-region / 33-fishery BET input step, ending in 2021.
 - Uses the old/restructured tag setup with 96 release groups and 97 tag-event rows including pooled tags.
 - Regenerates `tag_rep_map.R` from the five MFCL reporting-rate matrices in `bet.ini` plus release metadata in `bet.tag`.
 - Normalizes 0 old records that had an absent-LF sentinel followed by stray LF bins.
-- Applies Arni's 19/06/2026 CPUE index sigma suggestions for index fisheries 29-33.
+- Applies the 2026 CPUE index sigma settings for index fisheries 29-33.
 - Applies FixM M row while retaining the 5-region `.ini` structure.
 - Inserts default MFCL 1007 tag flags for the pre-mix step: 2 mixing periods and reporting rates excluded during mixing.
 
@@ -49,4 +49,3 @@ First 5-region / 33-fishery BET input step, ending in 2021.
 ## Status
 
 Ready for Kflow smoke runs; full MFCL fit not run here.
-

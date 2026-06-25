@@ -56,7 +56,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # Survey fisheries defined
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
 # fish flag 66 = 0. The freq file supplies the temporal sigma pattern.
-# Arni's suggestion, 19/06/2026.
+# 2026 index-fishery sigma settings.
   -29 94 1       -29 92 28   -29 66 0  # Index R1, sigma 0.28
   -30 94 1       -30 92 20   -30 66 0  # Index R2, sigma 0.20
   -31 94 1       -31 92 22   -31 66 0  # Index R3, sigma 0.22

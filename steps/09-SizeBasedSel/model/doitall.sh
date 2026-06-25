@@ -56,7 +56,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # Survey fisheries defined
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
 # fish flag 66 = 0. The freq file supplies the temporal sigma pattern.
-# Arni's suggestion, 19/06/2026.
+# 2026 index-fishery sigma settings.
   -29 94 1       -29 92 28   -29 66 0  # Index R1, sigma 0.28
   -30 94 1       -30 92 20   -30 66 0  # Index R2, sigma 0.20
   -31 94 1       -31 92 22   -31 66 0  # Index R3, sigma 0.22
@@ -296,7 +296,7 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -100000 3 1  # distribution
   -100000 4 1  # of
   -100000 5 1  # recruitment
-# Regional-scaling MVN prior. Nick's suggestion, 09/06/2026.
+# Regional-scaling MVN prior.
 # PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass.
 # Ungroup index CPUE likelihood and remove grouped-sigma override.
   -29 99 29  -29 94 0  # Index R1
@@ -311,7 +311,7 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -32 24 28  # Index R4
   -33 24 29  # Index R5
 # MFCL reads bet.reg_scaling when parest flag 77 is > 0.
-  1 77 50   # MVN regional-scaling penalty weight; CV about 0.1 in the 09/06/2026 note
+  1 77 50   # MVN regional-scaling penalty weight; CV about 0.1
   1 78 1    # use mean regional-scaling target
   1 79 240  # start regional-scaling prior at period 53; 1965-1969 CPUE covariance window
   1 80 220  # end regional-scaling prior at period 72; 1965-1969 CPUE covariance window

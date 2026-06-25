@@ -1,5 +1,7 @@
 # BET 2026 Stepwise
 
+[![Kflow ready task](kflow-ready.svg)](kflow.yaml)
+
 This repository stores the BET 2026 MFCL stepwise model inputs. Each numbered
 folder under `steps/` is one model in the stepwise path, with its model folder
 and notes.
@@ -30,10 +32,10 @@ and notes.
 - `debugging/`: troubleshooting records and checks made while preparing the inputs.
 - `R/prepare_bet_2026_step_inputs.R`: reproducible input-generation script.
 
-## Current Notes
+## Assessment Notes
 
-- Steps 06-12 use `bet.reg_scaling` over periods 53-72, matching Thom's 1965-1969 global CPUE covariance window.
-- Step 11 applies John Hampton's effort-creep note to index fisheries 29-33: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024.
+- Steps 06-12 use `bet.reg_scaling` over periods 53-72, matching the 1965-1969 global CPUE covariance-estimation window with the broadest spatial-temporal coverage.
+- Step 11 applies the agreed index-fishery effort-creep scenario to fisheries 29-33: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024.
 - Steps 01-02 use the 2023 BET 9-region GeoJSON asset; steps 03-12 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md).
 - `tag_rep_map.R` files are generated audit maps derived from `bet.ini` reporting-rate matrices and `bet.tag` release metadata; MFCL reads the `.ini`, not `tag_rep_map.R`. The reporting-rate grouping tables are in [`docs/tag-reporting-groups.md`](docs/tag-reporting-groups.md).
 
