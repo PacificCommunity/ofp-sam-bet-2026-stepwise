@@ -135,8 +135,8 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
       ggplot2::geom_polygon(
         data = world,
         ggplot2::aes(.data$long, .data$lat, group = .data$group),
-        fill = "#e9dfc6",
-        colour = "#c2bba8",
+        fill = "#e7ddc6",
+        colour = "#c8c0ac",
         linewidth = 0.2
       )
   }
@@ -144,7 +144,7 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
     ggplot2::geom_polygon(
       data = closed,
       ggplot2::aes(.data$lon, .data$lat, group = .data$region_factor, fill = .data$region_factor),
-      alpha = 0.38,
+      alpha = 0.20,
       colour = "#102b38",
       linewidth = 0.72
     ) +
@@ -167,11 +167,12 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
     ggplot2::geom_label(
       data = coord_labels,
       ggplot2::aes(.data$lon, .data$lat, label = .data$label, hjust = .data$hjust, vjust = .data$vjust),
-      size = 2.25,
-      linewidth = 0.16,
-      label.padding = grid::unit(1.0, "pt"),
-      label.r = grid::unit(2.0, "pt"),
-      fill = "#fffaf4",
+      size = 3.05,
+      fontface = "bold",
+      linewidth = 0.18,
+      label.padding = grid::unit(1.6, "pt"),
+      label.r = grid::unit(2.2, "pt"),
+      fill = "#fffdf7",
       colour = "#8a2730",
       alpha = 0.95
     ) +
@@ -191,7 +192,7 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
       breaks = c(-40, -20, 0, 20, 40, 50),
       labels = bet_region_map_lat_label
     ) +
-    ggplot2::scale_fill_manual(values = rep(c("#cfe8f4", "#d9ead3", "#f1e7c6", "#f3d3c7", "#dddff2"), 2), guide = "none") +
+    ggplot2::scale_fill_manual(values = rep(c("#dceff8", "#e6f2df", "#f6efd8", "#f7e3dc", "#e8e8f6"), 2), guide = "none") +
     ggplot2::labs(
       title = NULL,
       subtitle = NULL,

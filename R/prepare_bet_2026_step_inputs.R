@@ -13,6 +13,11 @@ reg_scaling_source <- file.path(frq_root, "bet.2026.reg_scaling")
 
 fixm_age_par_value <- "-2.54917483258212e+00"
 
+region_map_helper <- file.path(root, "R", "write_bet_region_map_assets.R")
+if (file.exists(region_map_helper)) {
+  source(region_map_helper, local = TRUE)
+}
+
 public_source_path <- function(path) {
   if (!nzchar(path)) return(path)
   norm <- normalizePath(path, winslash = "/", mustWork = FALSE)
@@ -961,6 +966,16 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     apply_regional_index_selectivity_map(fishery_map_out)
   }
   write_generated_tag_rep_map(model_dir)
+  has_region_map <- identical(frq_counts$n_regions, 5L) &&
+    exists("write_bet_region_map_assets", mode = "function")
+  if (has_region_map) {
+    write_bet_region_map_assets(model_dir, stem = "bet.region_map")
+    input_notes <- c(
+      input_notes,
+      "bet.region_map.geojson" = "default BET 2026 5-region shape for mfclshiny/report maps",
+      "bet.region_map-vertices.csv" = "same map as a lightweight coordinate table"
+    )
+  }
   write_doitall(
     file.path(root, "steps", "03-RegFish", "model", "doitall.sh"),
     file.path(model_dir, "doitall.sh"),
@@ -994,6 +1009,16 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       source = reg_scaling_source,
       note = "global CPUE regional-scaling matrix for MFCL parest flags 77-81"
     )), after = 4L)
+  }
+  if (has_region_map) {
+    entries <- c(
+      entries,
+      list(
+        list(role = "region_map", file = "bet.region_map.geojson", source = "R/write_bet_region_map_assets.R", note = "default BET 2026 5-region polygon shape; used automatically by mfclshiny when present"),
+        list(role = "region_map", file = "bet.region_map-vertices.csv", source = "R/write_bet_region_map_assets.R", note = "portable vertex table for the same 5-region shape"),
+        list(role = "region_map", file = "bet.region_map-map.png", source = "R/write_bet_region_map_assets.R", note = "lightweight preview map")
+      )
+    )
   }
   write_manifest(step_dir, entries)
   outstanding <- c(
@@ -1082,6 +1107,9 @@ frq_counts_03 <- frq_header_counts(readLines(file.path(root, "steps", "03-RegFis
 ini_tag_note_03 <- ensure_ini_tag_flags(file.path(root, "steps", "03-RegFish", "model", "bet.ini"),
                                         frq_counts_03$n_tag_groups)
 write_generated_tag_rep_map(file.path(root, "steps", "03-RegFish", "model"))
+if (identical(frq_counts_03$n_regions, 5L) && exists("write_bet_region_map_assets", mode = "function")) {
+  write_bet_region_map_assets(file.path(root, "steps", "03-RegFish", "model"), stem = "bet.region_map")
+}
 
 write_readme(
   file.path(root, "steps", "03-RegFish"),
@@ -1102,7 +1130,9 @@ write_readme(
     "bet.frq" = "5-region, 33-fishery structure, terminal year 2021",
     "bet.ini" = "5-region ini with FixM M row and explicit default tag flags",
     "bet.tag" = "90 release-group tag input with low recap groups removed",
-    "bet.age_length" = "old CAAL / age_length re-assigned to new fisheries"
+    "bet.age_length" = "old CAAL / age_length re-assigned to new fisheries",
+    "bet.region_map.geojson" = "default BET 2026 5-region shape for mfclshiny/report maps",
+    "bet.region_map-vertices.csv" = "same map as a lightweight coordinate table"
   ),
   c(
     "5-region fishery/tag/selectivity controls are remapped in `doitall.sh`.",
