@@ -33,6 +33,9 @@ Release-group-specific tag mixing periods using the 0.2 KS diagnostic cutoff.
 - For the 292-period full-2024 models, `parest_flags(79)=290` means `292 - 290 + 1 = 3`, so the regional-scaling prior starts at period 3 instead of the invalid period-1 default.
 - PHASE 1-4 retain the current CPUE_scaling setup: index fisheries 29-33 share CPUE group 29, share selectivity group 25, and keep Arni's 19/06/2026 sigma settings.
 - PHASE 5 switches to Prior_reg_biomass: index CPUE groups become 29-33, fish flag 94 is set to 0, and index selectivity groups become 25-29.
+- Following John Hampton's June 2026 MFCL input checks, generated `.frq` files must include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files must carry explicit tag flags immediately after `# number of age classes`.
+- Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.
+- Following Nick Davies's June 2026 MFCL-version note, `age_flags(128)` is kept at 100 so the latest MFCL interprets the initial equilibrium natural-mortality multiplier as 1.0.
 - `doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.
 - PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders.
 
@@ -40,7 +43,7 @@ Release-group-specific tag mixing periods using the 0.2 KS diagnostic cutoff.
 
 - Confirm that the 0.2 KS mix-period ini is the main 12-step path; the 0.15 version remains a sensitivity candidate.
 - After fitting, inspect tag residuals and release-group behavior before tuning tag-reporting assumptions further.
-- Local MFCL `-makepar` smoke still reports 30 `caught before it was released` tag recapture warnings; review upstream tag prep before final production runs.
+- Local MFCL `-makepar` smoke can still report nonzero tag recapture timing or fishery-realization warnings; review upstream tag prep before final production runs.
 
 ## Status
 

@@ -546,6 +546,50 @@ ensure_ini_tag_flags <- function(path, n_tag_groups, default_mixing_period = 2L,
   invisible("")
 }
 
+ensure_ini_tag_shed_rates <- function(path, n_tag_groups) {
+  eol <- file_eol(path)
+  lines <- readLines(path, warn = FALSE)
+  marker <- grep(
+    "^#[[:space:]]*tag[[:space:]]+shed[[:space:]]+rate[[:space:]]*$",
+    trimws(lines)
+  )
+  if (length(marker) != 1L) {
+    stop("Expected one # tag shed rate block in ", path, call. = FALSE)
+  }
+  value_i <- first_data_line_after(lines, marker)
+  values <- read_words(lines[[value_i]])
+  if (length(values) == n_tag_groups) return(invisible(""))
+
+  old_count <- length(values)
+  note <- ""
+  if (old_count < n_tag_groups) {
+    values <- c(values, rep("0", n_tag_groups - old_count))
+    note <- paste0(
+      "padded tag shed-rate vector from ", old_count, " to ",
+      n_tag_groups, " release groups with zero shed rates"
+    )
+  } else {
+    extra <- values[seq.int(n_tag_groups + 1L, old_count)]
+    if (any(suppressWarnings(as.numeric(extra)) != 0)) {
+      stop(
+        "Tag shed-rate vector in ", path, " has ", old_count,
+        " values for ", n_tag_groups,
+        " release groups, and the extra values are not all zero.",
+        call. = FALSE
+      )
+    }
+    values <- values[seq_len(n_tag_groups)]
+    note <- paste0(
+      "trimmed tag shed-rate vector from ", old_count, " to ",
+      n_tag_groups, " release groups"
+    )
+  }
+
+  lines[[value_i]] <- paste(values, collapse = " ")
+  writeLines(lines, path, sep = eol, useBytes = TRUE)
+  note
+}
+
 frq_header_counts <- function(lines, path = "<frq>") {
   header_i <- grep("^[[:space:]]*[0-9]+[[:space:]]+[0-9]+[[:space:]]+", lines)
   if (!length(header_i)) {
@@ -1245,7 +1289,13 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       " records with stray absent-LF bins"
     )
   }
-  ensure_frq_fishery_region_locations(frq_out)
+  fixed_fishery_regions <- ensure_frq_fishery_region_locations(frq_out)
+  if (isTRUE(fixed_fishery_regions)) {
+    frq_note <- paste0(
+      frq_note,
+      "; completed the fishery-region location line for all fisheries, including index fisheries"
+    )
+  }
   if (!is.na(frq_tag_groups) && set_frq_tag_group_count(frq_out, frq_tag_groups)) {
     frq_note <- paste0(
       frq_note,
@@ -1271,9 +1321,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     tag_path = tag_out,
     terminal_year = frq_chop_year
   )
-  ini_notes <- c("FixM M row applied", tag_rep_repair_note, ini_tag_note)
+  ini_shed_note <- ensure_ini_tag_shed_rates(ini_out, frq_counts$n_tag_groups)
+  ini_notes <- c("FixM M row applied", tag_rep_repair_note, ini_tag_note, ini_shed_note)
   ini_note <- paste(ini_notes[nzchar(ini_notes)], collapse = "; ")
-  visible_ini_notes <- c(tag_rep_repair_note, ini_tag_note)
+  visible_ini_notes <- c(tag_rep_repair_note, ini_tag_note, ini_shed_note)
   visible_ini_notes <- visible_ini_notes[nzchar(visible_ini_notes)]
   if (length(visible_ini_notes) && "bet.ini" %in% names(input_notes)) {
     input_notes[["bet.ini"]] <- paste(
@@ -1317,6 +1368,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   }
   control_notes <- c(
     control_notes,
+    "Following John Hampton's June 2026 MFCL input checks, generated `.frq` files must include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files must carry explicit tag flags immediately after `# number of age classes`.",
+    "Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.",
+    "Following Nick Davies's June 2026 MFCL-version note, `age_flags(128)` is kept at 100 so the latest MFCL interprets the initial equilibrium natural-mortality multiplier as 1.0.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
     "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders."
   )
@@ -1372,7 +1426,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   write_manifest(step_dir, entries)
   outstanding <- c(
     outstanding,
-    "Local MFCL `-makepar` smoke still reports 30 `caught before it was released` tag recapture warnings; review upstream tag prep before final production runs."
+    "Local MFCL `-makepar` smoke can still report nonzero tag recapture timing or fishery-realization warnings; review upstream tag prep before final production runs."
   )
   write_readme(
     step_dir = step_dir,
