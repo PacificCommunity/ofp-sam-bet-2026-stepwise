@@ -75,8 +75,8 @@ env:
   # token from Kflow. Leave these true for cluster jobs.
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
   KFLOW_RUNTIME_UPDATE: auto
-  KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@02f5bbd
-  MFCLSHINY_GITHUB_REF: "02f5bbd"
+  KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@accbb86
+  MFCLSHINY_GITHUB_REF: "accbb86"
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   KFLOW_REPORT_COMMIT_GENERATED: "true"
@@ -104,7 +104,7 @@ local_apps:
       VECLIB_MAXIMUM_THREADS: "1"
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
-      MFCLSHINY_GITHUB_REF: "02f5bbd"
+      MFCLSHINY_GITHUB_REF: "accbb86"
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_REPORT_DPI: "96"
       MFCLSHINY_OPTIMIZE_FIGURES: "true"
@@ -133,7 +133,7 @@ local_apps:
       dir.create(lib, recursive = TRUE, showWarnings = FALSE)
       .libPaths(unique(c(lib, .libPaths())))
 
-      mfclshiny_ref <- Sys.getenv("MFCLSHINY_GITHUB_REF", "02f5bbd")
+      mfclshiny_ref <- Sys.getenv("MFCLSHINY_GITHUB_REF", "accbb86")
       cleanup_stale_locks <- function() {
         lock_dirs <- Sys.glob(file.path(lib, "00LOCK*"))
         if (length(lock_dirs)) {
@@ -306,8 +306,8 @@ triggers:
         KFLOW_REPORT_PUBLISH_REQUIRED: "{{ job.config.KFLOW_REPORT_PUBLISH_REQUIRED }}"
         KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
         KFLOW_RUNTIME_UPDATE: auto
-        KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@02f5bbd
-        MFCLSHINY_GITHUB_REF: "02f5bbd"
+        KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@accbb86
+        MFCLSHINY_GITHUB_REF: "accbb86"
         MFCLSHINY_REPORT_DPI: "180"
         MFCLSHINY_OPTIMIZE_FIGURES: "false"
         PLOT_OPTIMIZE_FIGURES: "true"
