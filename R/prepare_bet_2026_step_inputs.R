@@ -1611,6 +1611,20 @@ regfish_ini <- file.path(root, "steps", "03-RegFish", "model", "bet.ini")
 regfish_tag <- file.path(root, "steps", "03-RegFish", "model", "bet.tag")
 full_plus_frq <- file.path(frq_root, "bet.2026.wt.as.len.plus.len.frq")
 wt_as_len_frq <- file.path(frq_root, "bet.2026.wt.as.len.frq")
+full_2024_alignment_run_notes <- c(
+  "The first full-2024 Kflow attempt failed during MFCL `-makepar`, before any fit output was available. The logged fatal sequence was `initial_tag_year(2) 157`, `Error reading region_flags`, and `Bounds error reading pmature(34) in par file value is 0`; downstream payload creation then failed because no MFCL output folder existed.",
+  "The failure was traced to using the 2026 `.frq/.tag` release-group count with a source `bet.2026.ini` whose tag controls were shorter: the selected `.frq` and `.tag` had 98 release groups, while the ini tag flags and tag shed-rate vector only covered 91 groups and the tag reporting-rate matrices were missing the 7 new release rows.",
+  "Generated inputs now repair only the `.ini` alignment: missing tag reporting-rate rows 92-98 are filled by matching tag program, region, year, and month from `bet.2023.new.structure.ini`; explicit MFCL 1007 tag flags are padded to 98 rows; and `# tag shed rate` is padded from 91 to 98 zero shed rates.",
+  "The 2026 tag file itself is kept from `bet.2026.low.recaps.removed.tag`; no tag release or recapture rows were deleted to suppress warnings.",
+  "After the alignment repair, `mfclo64 bet.frq bet.ini 00.par -makepar` exits 0 and creates `00.par` for 06-Full2024 and 07-CAAL2026 in the `tuna-flow:v1.10` image."
+)
+mix_period_alignment_run_notes <- c(
+  "These steps were audited after the 06/07 full-2024 failure because they use the same 98-release 2026 `.frq` and `.tag` family.",
+  "The mix-period ini family already carries release-group-specific tag controls, so the generated `doitall.sh` removes the inherited `-9999 1 2` override and lets the ini tag flags drive the mixing-period settings.",
+  "Generation still validates the same release-group alignment checks as 06/07: tag flags, tag shed rate, and the five tag reporting-rate matrices must match the 98 selected release groups plus the pooled reporting row where appropriate.",
+  "Zero mixing-period values in the source mix-period ini are raised to 1 because the current MFCL reader disallows 0; this is an ini-control normalization, not a deletion of tag data.",
+  "Local `mfclo64 bet.frq bet.ini 00.par -makepar` smoke tests now exit 0 and create `00.par` for 08-MixPeriod02 through 12-DataWeight40 in the `tuna-flow:v1.10` image."
+)
 
 make_step(
   step_id = "04-WtAsLen21",
@@ -1658,6 +1672,7 @@ make_step(
       frq_counts_03$n_tag_groups,
       "."
     ),
+    "No tag release or recapture rows were deleted to silence warnings; this step only changes which already-prepared input family is paired with the chopped 2026 size/catch records.",
     "Local `mfclo64 bet.frq bet.ini 00.par -makepar` now exits 0 and creates `00.par`; the remaining 30 `caught before it was released` messages are the known upstream tag-prep warnings also seen in 03."
   ),
   outstanding = c(
@@ -1712,6 +1727,7 @@ make_step(
       frq_counts_03$n_tag_groups,
       "."
     ),
+    "No tag release or recapture rows were deleted to silence warnings; this step only changes which already-prepared input family is paired with the chopped 2026 size/catch records.",
     "Local `mfclo64 bet.frq bet.ini 00.par -makepar` now exits 0 and creates `00.par`; the remaining 30 `caught before it was released` messages are the known upstream tag-prep warnings also seen in 03."
   ),
   outstanding = c(
@@ -1744,6 +1760,7 @@ make_step(
     "03-RegFish 5-region `doitall.sh` controls retained.",
     "The all-release-group mixing period remains fixed at 2 for this pre-mix step."
   ),
+  run_notes = full_2024_alignment_run_notes,
   outstanding = c(
     "Full 2024 input behavior still needs a real MFCL fit and residual/CPUE-sigma review.",
     "This step intentionally keeps old CAAL so the CAAL update is isolated in 07-CAAL2026."
@@ -1775,6 +1792,7 @@ make_step(
     "03-RegFish 5-region `doitall.sh` controls retained.",
     "The all-release-group mixing period remains fixed at 2 for this pre-mix step."
   ),
+  run_notes = full_2024_alignment_run_notes,
   outstanding = c(
     "After fitting, compare CAAL likelihood and age residuals against 06-Full2024.",
     "Confirm the 2026 CAAL source remains the chosen final CAAL file before later sensitivity runs."
@@ -1807,6 +1825,7 @@ make_step(
     "The all-release-group mixing-period override is removed.",
     "All other 03-RegFish 5-region fishery, tag recapture, selectivity, and CPUE sigma controls are retained."
   ),
+  run_notes = mix_period_alignment_run_notes,
   outstanding = c(
     "Confirm that the 0.2 KS mix-period ini is the main 12-step path; the 0.15 version remains a sensitivity candidate.",
     "After fitting, inspect tag residuals and release-group behavior before tuning tag-reporting assumptions further."
@@ -1838,6 +1857,10 @@ make_step(
   control_notes = c(
     "The all-release-group mixing-period override remains removed.",
     "`-999 26 3` is applied for size-based selectivity."
+  ),
+  run_notes = c(
+    mix_period_alignment_run_notes,
+    "The extra step-specific change after the mix-period audit is limited to fish flag 26: `doitall.sh` sets `-999 26 3` for the size-based selectivity experiment."
   ),
   outstanding = c(
     "Confirm with the modelling group that BET should use the same flag-26 setting as the YFT 2026 size-based selectivity experiment.",
@@ -1877,6 +1900,10 @@ make_step(
     "`1 202 2`, `1 210 0`, `1 212 0`, and `1 214 0` apply the terminal constraints shown in John's example `do-OPR` file.",
     "`2 70`, `2 71`, `2 178`, and `-100000 1:5` recruitment-distribution controls are turned off at the OPR phase."
   ),
+  run_notes = c(
+    mix_period_alignment_run_notes,
+    "The step-specific OPR change follows John Hampton's `OPR.pptx` screening: the BET 4R rank-1 AIC setting `69-01-50-50` is carried into this 5-region path. The README records that this is an applied transfer from the 4R screening, not a separate 5-region OPR search."
+  ),
   outstanding = c(
     "After fitting, confirm the 5-region model behaves consistently with the 4R BET OPR screening result.",
     "If diagnostics disagree with the 4R screening, revisit the other BET-ranked options from `OPR.pptx`."
@@ -1911,6 +1938,11 @@ make_step(
     "10-OPR `doitall.sh` controls are retained.",
     "No extra MFCL flag is used for effort creep; the change is in the index-fishery effort values in `bet.frq`."
   ),
+  run_notes = c(
+    mix_period_alignment_run_notes,
+    "The effort-creep `.frq` is generated from the full 2024 plus-length source by changing only positive effort values for index fisheries 29-33; extraction fisheries and size-composition records are left as in the source file.",
+    "Because the available upstream effort-creep reference was not a finalized 5-region BET `.frq`, this step documents the implemented transform and leaves confirmation as an outstanding check."
+  ),
   outstanding = c(
     "Confirm that this 1 percent per year linear creep is the intended BET spatial minimum-effort-creep scenario.",
     "Not yet checked against a separately generated 5-region effort-creep `.frq` because the input repo currently exposes only the single-region eff-creep output."
@@ -1943,6 +1975,10 @@ make_step(
   control_notes = c(
     "`-999 49 40` and `-999 50 40` replace the global LF/WF divisor-20 settings.",
     "Fishery-specific divisor-40 settings inherited from 03-RegFish are retained."
+  ),
+  run_notes = c(
+    mix_period_alignment_run_notes,
+    "The step-specific data-weighting change is limited to the global LF/WF sample-size divisors: `-999 49 40` and `-999 50 40` replace the divisor-20 settings. This was documented as an initial runnable weighting scenario, not a final tuned weighting scheme."
   ),
   outstanding = c(
     "This is a first runnable manual weighting scenario, not a final tuned weighting scheme.",
