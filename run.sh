@@ -262,7 +262,7 @@ changed_par_summary() {
 }
 
 publish_final_pars() {
-  truthy_env STEPWISE_COMMIT_FINAL_PARS true || return 0
+  truthy_env STEPWISE_COMMIT_FINAL_PARS false || return 0
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     publish_fail "Cannot commit final .par files because this is not a git checkout."
     return $?
@@ -326,7 +326,7 @@ EOF
   )
   git commit -m "$subject" -m "$body"
 
-  truthy_env STEPWISE_PUSH_FINAL_PARS true || {
+  truthy_env STEPWISE_PUSH_FINAL_PARS false || {
     echo "[stepwise-par-publish] Final .par files committed locally; push disabled."
     return 0
   }

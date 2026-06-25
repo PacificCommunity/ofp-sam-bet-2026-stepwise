@@ -104,7 +104,10 @@ defaults <- data.frame(
     "program_path",
     "stepwise_save_final_par",
     "stepwise_commit_final_pars",
-    "stepwise_push_final_pars"
+    "stepwise_push_final_pars",
+    "par_source_job",
+    "stepwise_par_source_dir",
+    "kflow_input_jobs"
   ),
   value = c(
     stepwise_value("default_step_select", "01-base-11par"),
@@ -113,9 +116,12 @@ defaults <- data.frame(
     stepwise_value("mfcl_fevals", ""),
     docker_image,
     program_path,
-    tryCatch(kflow$env$STEPWISE_SAVE_FINAL_PAR, error = function(e) "true"),
-    tryCatch(kflow$env$STEPWISE_COMMIT_FINAL_PARS, error = function(e) "true"),
-    tryCatch(kflow$env$STEPWISE_PUSH_FINAL_PARS, error = function(e) "true")
+    tryCatch(kflow$env$STEPWISE_SAVE_FINAL_PAR, error = function(e) "false"),
+    tryCatch(kflow$env$STEPWISE_COMMIT_FINAL_PARS, error = function(e) "false"),
+    tryCatch(kflow$env$STEPWISE_PUSH_FINAL_PARS, error = function(e) "false"),
+    tryCatch(kflow$env$PAR_SOURCE_JOB, error = function(e) ""),
+    tryCatch(kflow$env$STEPWISE_PAR_SOURCE_DIR, error = function(e) ""),
+    tryCatch(kflow$env$KFLOW_INPUT_JOBS, error = function(e) "")
   ),
   meaning = c(
     "Model selection used when `STEP_SELECT` is not supplied.",
@@ -124,9 +130,12 @@ defaults <- data.frame(
     "Blank uses the row-level `fevals` value; a number overrides selected rows.",
     "Docker image used by Kflow and local Docker runs.",
     "MFCL executable path inside the Docker image.",
-    "Save the final `.par` back into `steps/<step_id>/model/` after a successful run.",
-    "Create a narrow KflowBot commit containing only saved final `.par` files.",
-    "Push the saved final `.par` commit to the current branch."
+    "Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`.",
+    "Optional: create a narrow KflowBot commit containing saved final `.par` files. Off by default to avoid concurrent job push conflicts.",
+    "Optional: push the saved final `.par` commit to the current branch. Off by default.",
+    "Optional previous Kflow job number/reference used with `RUN_MODE=job_par`.",
+    "Optional local folder to search for previous output `.par` files when testing `RUN_MODE=job_par` outside Kflow.",
+    "Optional Kflow input job number(s) to attach. For `.par` reruns, set this to the same previous same-step job as `PAR_SOURCE_JOB`."
   ),
   stringsAsFactors = FALSE
 )

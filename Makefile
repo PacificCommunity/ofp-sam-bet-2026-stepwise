@@ -33,14 +33,17 @@ FEVALS ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELP
 
 KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES ?= $(call yml,y$$env$$KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES,true)
 KFLOW_RUNTIME_UPDATE ?= $(call yml,y$$env$$KFLOW_RUNTIME_UPDATE,auto)
-KFLOW_RUNTIME_PACKAGES ?= $(call yml,y$$env$$KFLOW_RUNTIME_PACKAGES,mfclshiny=PacificCommunity/mfclshiny@ce4416c)
-MFCLSHINY_GITHUB_REF ?= $(call yml,y$$env$$MFCLSHINY_GITHUB_REF,ce4416c)
+KFLOW_RUNTIME_PACKAGES ?= $(call yml,y$$env$$KFLOW_RUNTIME_PACKAGES,mfclshiny=PacificCommunity/mfclshiny@02f5bbd)
+MFCLSHINY_GITHUB_REF ?= $(call yml,y$$env$$MFCLSHINY_GITHUB_REF,02f5bbd)
 KFLOW_RUNTIME_GITHUB_AUTH ?= $(call yml,y$$env$$KFLOW_RUNTIME_GITHUB_AUTH,true)
 KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME ?= $(call yml,y$$env$$KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME,true)
-STEPWISE_SAVE_FINAL_PAR ?= $(call yml,y$$env$$STEPWISE_SAVE_FINAL_PAR,true)
-STEPWISE_COMMIT_FINAL_PARS ?= $(call yml,y$$env$$STEPWISE_COMMIT_FINAL_PARS,true)
-STEPWISE_PUSH_FINAL_PARS ?= $(call yml,y$$env$$STEPWISE_PUSH_FINAL_PARS,true)
-STEPWISE_PUBLISH_REQUIRED ?= $(call yml,y$$env$$STEPWISE_PUBLISH_REQUIRED,true)
+STEPWISE_SAVE_FINAL_PAR ?= $(call yml,y$$env$$STEPWISE_SAVE_FINAL_PAR,false)
+STEPWISE_COMMIT_FINAL_PARS ?= $(call yml,y$$env$$STEPWISE_COMMIT_FINAL_PARS,false)
+STEPWISE_PUSH_FINAL_PARS ?= $(call yml,y$$env$$STEPWISE_PUSH_FINAL_PARS,false)
+STEPWISE_PUBLISH_REQUIRED ?= $(call yml,y$$env$$STEPWISE_PUBLISH_REQUIRED,false)
+PAR_SOURCE_JOB ?= $(call yml,y$$env$$PAR_SOURCE_JOB,)
+STEPWISE_PAR_SOURCE_DIR ?= $(call yml,y$$env$$STEPWISE_PAR_SOURCE_DIR,)
+KFLOW_INPUT_JOBS ?= $(call yml,y$$env$$KFLOW_INPUT_JOBS,)
 
 .PHONY: help setup hooks readme list clean fix-permissions local docker kflow kflow-register kflow-register-chain
 
@@ -74,7 +77,8 @@ help:
 	  'BET_PHASE10_11_CONVERGENCE=-3 is the quick default for PHASE 10/11. Set -5 for strict runs.' \
 		  '' \
 		  'Note: MFCL_FEVALS is applied by the runner only for last_par/single; doitall.sh must read it explicitly.' \
-		  'After a successful run, final .par files are saved under steps/<step>/model and can be reused with RUN_MODE=latest_par.' \
+		  'After a successful run, final .par files are archived under outputs/models/<step>/final.par.' \
+		  'Use RUN_MODE=job_par with PAR_SOURCE_JOB and KFLOW_INPUT_JOBS set to the previous same-step job number.' \
 		  '' \
 		  'Common overrides: STEP_SELECT, RUN_MODE, INPUT_PAR, MFCL_FEVALS, MFCL_LIVE_LOG, TRIGGER_NEXT, OUTPUT_DIR.'
 
@@ -130,6 +134,9 @@ local: readme
 	STEPWISE_COMMIT_FINAL_PARS='$(STEPWISE_COMMIT_FINAL_PARS)' \
 	STEPWISE_PUSH_FINAL_PARS='$(STEPWISE_PUSH_FINAL_PARS)' \
 	STEPWISE_PUBLISH_REQUIRED='$(STEPWISE_PUBLISH_REQUIRED)' \
+	PAR_SOURCE_JOB='$(PAR_SOURCE_JOB)' \
+	STEPWISE_PAR_SOURCE_DIR='$(STEPWISE_PAR_SOURCE_DIR)' \
+	KFLOW_INPUT_JOBS='$(KFLOW_INPUT_JOBS)' \
 	bash run.sh
 
 docker: readme
@@ -171,6 +178,9 @@ docker: readme
 	  -e STEPWISE_COMMIT_FINAL_PARS='$(STEPWISE_COMMIT_FINAL_PARS)' \
 	  -e STEPWISE_PUSH_FINAL_PARS='$(STEPWISE_PUSH_FINAL_PARS)' \
 	  -e STEPWISE_PUBLISH_REQUIRED='$(STEPWISE_PUBLISH_REQUIRED)' \
+	  -e PAR_SOURCE_JOB='$(PAR_SOURCE_JOB)' \
+	  -e STEPWISE_PAR_SOURCE_DIR='$(STEPWISE_PAR_SOURCE_DIR)' \
+	  -e KFLOW_INPUT_JOBS='$(KFLOW_INPUT_JOBS)' \
 	  -e GITHUB_PAT="$$token" \
 	  -e GH_TOKEN="$$token" \
 	  '$(DOCKER_IMAGE)' \
@@ -178,7 +188,7 @@ docker: readme
 
 kflow: readme
 	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before running make kflow.' >&2; exit 2; }
-		@STEP_SELECT='$(STEP_SELECT)' MFCL_FEVALS='$(MFCL_FEVALS)' MFCL_LIVE_LOG='$(MFCL_LIVE_LOG)' BET_PHASE10_11_CONVERGENCE='$(BET_PHASE10_11_CONVERGENCE)' FLOW_GROUP='$(FLOW_GROUP)' JOB_TITLE='$(JOB_TITLE)' MODEL_LABEL='$(MODEL_LABEL)' JOB_KEY='$(JOB_KEY)' RUN_MODE='$(RUN_MODE)' INPUT_PAR='$(INPUT_PAR)' FRQ='$(FRQ)' OUTPUT_PAR='$(OUTPUT_PAR)' FEVALS='$(FEVALS)' TRIGGER_NEXT='$(TRIGGER_NEXT)' STEPWISE_SAVE_FINAL_PAR='$(STEPWISE_SAVE_FINAL_PAR)' STEPWISE_COMMIT_FINAL_PARS='$(STEPWISE_COMMIT_FINAL_PARS)' STEPWISE_PUSH_FINAL_PARS='$(STEPWISE_PUSH_FINAL_PARS)' STEPWISE_PUBLISH_REQUIRED='$(STEPWISE_PUBLISH_REQUIRED)' KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES='$(KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES)' KFLOW_RUNTIME_UPDATE='$(KFLOW_RUNTIME_UPDATE)' KFLOW_RUNTIME_PACKAGES='$(KFLOW_RUNTIME_PACKAGES)' MFCLSHINY_GITHUB_REF='$(MFCLSHINY_GITHUB_REF)' KFLOW_RUNTIME_GITHUB_AUTH='$(KFLOW_RUNTIME_GITHUB_AUTH)' KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME='$(KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME)' python3 -c 'import json, os; keys=("STEP_SELECT","MFCL_FEVALS","MFCL_LIVE_LOG","BET_PHASE10_11_CONVERGENCE","FLOW_GROUP","JOB_TITLE","MODEL_LABEL","JOB_KEY","RUN_MODE","INPUT_PAR","FRQ","OUTPUT_PAR","FEVALS","STEPWISE_SAVE_FINAL_PAR","STEPWISE_COMMIT_FINAL_PARS","STEPWISE_PUSH_FINAL_PARS","STEPWISE_PUBLISH_REQUIRED","KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES","KFLOW_RUNTIME_UPDATE","KFLOW_RUNTIME_PACKAGES","MFCLSHINY_GITHUB_REF","KFLOW_RUNTIME_GITHUB_AUTH","KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME"); env={k:os.environ[k] for k in keys if os.environ.get(k,"")}; payload={"env":env,"tags":{"stage":"stepwise","flow":os.environ["FLOW_GROUP"],"step":os.environ["STEP_SELECT"],"model_label":os.environ["MODEL_LABEL"],"job_key":os.environ["JOB_KEY"],"run_mode":os.environ["RUN_MODE"],"trigger_next":os.environ["TRIGGER_NEXT"]}}; flag=os.environ["TRIGGER_NEXT"].strip().lower(); payload.update({"triggers": {}} if flag in ("0","false","no","off","none","skip") else {}); print(json.dumps(payload))' | curl -sS -H "Authorization: Bearer $${KFLOW_API_TOKEN}" -H 'Content-Type: application/json' -X POST "$(KFLOW_URL)/api/job/$(KFLOW_TASK)" -d @-
+		@STEP_SELECT='$(STEP_SELECT)' MFCL_FEVALS='$(MFCL_FEVALS)' MFCL_LIVE_LOG='$(MFCL_LIVE_LOG)' BET_PHASE10_11_CONVERGENCE='$(BET_PHASE10_11_CONVERGENCE)' FLOW_GROUP='$(FLOW_GROUP)' JOB_TITLE='$(JOB_TITLE)' MODEL_LABEL='$(MODEL_LABEL)' JOB_KEY='$(JOB_KEY)' RUN_MODE='$(RUN_MODE)' INPUT_PAR='$(INPUT_PAR)' PAR_SOURCE_JOB='$(PAR_SOURCE_JOB)' STEPWISE_PAR_SOURCE_DIR='$(STEPWISE_PAR_SOURCE_DIR)' KFLOW_INPUT_JOBS='$(KFLOW_INPUT_JOBS)' FRQ='$(FRQ)' OUTPUT_PAR='$(OUTPUT_PAR)' FEVALS='$(FEVALS)' TRIGGER_NEXT='$(TRIGGER_NEXT)' STEPWISE_SAVE_FINAL_PAR='$(STEPWISE_SAVE_FINAL_PAR)' STEPWISE_COMMIT_FINAL_PARS='$(STEPWISE_COMMIT_FINAL_PARS)' STEPWISE_PUSH_FINAL_PARS='$(STEPWISE_PUSH_FINAL_PARS)' STEPWISE_PUBLISH_REQUIRED='$(STEPWISE_PUBLISH_REQUIRED)' KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES='$(KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES)' KFLOW_RUNTIME_UPDATE='$(KFLOW_RUNTIME_UPDATE)' KFLOW_RUNTIME_PACKAGES='$(KFLOW_RUNTIME_PACKAGES)' MFCLSHINY_GITHUB_REF='$(MFCLSHINY_GITHUB_REF)' KFLOW_RUNTIME_GITHUB_AUTH='$(KFLOW_RUNTIME_GITHUB_AUTH)' KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME='$(KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME)' python3 -c 'import json, os, re; keys=("STEP_SELECT","MFCL_FEVALS","MFCL_LIVE_LOG","BET_PHASE10_11_CONVERGENCE","FLOW_GROUP","JOB_TITLE","MODEL_LABEL","JOB_KEY","RUN_MODE","INPUT_PAR","PAR_SOURCE_JOB","STEPWISE_PAR_SOURCE_DIR","KFLOW_INPUT_JOBS","FRQ","OUTPUT_PAR","FEVALS","STEPWISE_SAVE_FINAL_PAR","STEPWISE_COMMIT_FINAL_PARS","STEPWISE_PUSH_FINAL_PARS","STEPWISE_PUBLISH_REQUIRED","KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES","KFLOW_RUNTIME_UPDATE","KFLOW_RUNTIME_PACKAGES","MFCLSHINY_GITHUB_REF","KFLOW_RUNTIME_GITHUB_AUTH","KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME"); env={k:os.environ[k] for k in keys if os.environ.get(k,"")}; payload={"env":env,"tags":{"stage":"stepwise","flow":os.environ["FLOW_GROUP"],"step":os.environ["STEP_SELECT"],"model_label":os.environ["MODEL_LABEL"],"job_key":os.environ["JOB_KEY"],"run_mode":os.environ["RUN_MODE"],"trigger_next":os.environ["TRIGGER_NEXT"]}}; raw=os.environ.get("KFLOW_INPUT_JOBS","").strip(); vals=[v.lstrip("#") for v in re.split(r"[\\s,]+", raw) if v.strip()] if raw.lower() not in ("","0","false","no","off","none","skip") else []; payload.update({"input_jobs":vals,"metadata":{"input_jobs_override":True}}) if vals else None; flag=os.environ["TRIGGER_NEXT"].strip().lower(); payload.update({"triggers": {}} if flag in ("0","false","no","off","none","skip") else {}); print(json.dumps(payload))' | curl -sS -H "Authorization: Bearer $${KFLOW_API_TOKEN}" -H 'Content-Type: application/json' -X POST "$(KFLOW_URL)/api/job/$(KFLOW_TASK)" -d @-
 	@printf '\n'
 
 kflow-register:

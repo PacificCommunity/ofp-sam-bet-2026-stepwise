@@ -119,6 +119,10 @@ is_latest_par_mode <- function(run_mode) {
   run_mode %in% c("last", "latest", "last_par", "latest_par", "par", "single", "single_par")
 }
 
+is_job_par_mode <- function(run_mode) {
+  run_mode %in% c("job_par", "previous_job_par", "input_job_par", "kflow_job_par")
+}
+
 truthy <- function(x, default = TRUE) {
   if (is.null(x) || !length(x) || !nzchar(as.character(x[[1]]))) return(default)
   tolower(trimws(as.character(x[[1]]))) %in% c("1", "true", "yes", "y", "on")
@@ -251,6 +255,76 @@ relative_display_path <- function(path, root) {
   sub(paste0("^", gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\1", root)), "", path)
 }
 
+par_source_roots <- function(root, work_dir) {
+  roots <- c(
+    env("STEPWISE_PAR_SOURCE_DIR", ""),
+    env("PAR_SOURCE_DIR", ""),
+    env("KFLOW_INPUT_DIR", ""),
+    env("INPUT_DIR", ""),
+    file.path(root, "inputs"),
+    file.path(work_dir, "inputs")
+  )
+  roots <- unique(normalizePath(roots[nzchar(roots) & dir.exists(roots)], winslash = "/", mustWork = FALSE))
+  roots
+}
+
+job_ref_tokens <- function(job_ref = "") {
+  job_ref <- trimws(as.character(job_ref %||% ""))
+  if (!nzchar(job_ref)) return(character())
+  number <- suppressWarnings(as.integer(gsub("^#", "", job_ref)))
+  tokens <- c(job_ref, gsub("^#", "", job_ref))
+  if (is.finite(number)) {
+    tokens <- c(tokens, sprintf("%06d", number), sprintf("job-%06d", number), paste0("job-", number))
+  }
+  unique(tokens[nzchar(tokens)])
+}
+
+find_previous_job_par <- function(step_id, job_ref = "", root, work_dir) {
+  roots <- par_source_roots(root, work_dir)
+  if (!length(roots)) return("")
+  candidates <- unlist(lapply(roots, function(path) {
+    list.files(path, pattern = "([.]par[0-9]*$|^final[.]par$)", recursive = TRUE, full.names = TRUE)
+  }), use.names = FALSE)
+  candidates <- unique(normalizePath(candidates[file.exists(candidates)], winslash = "/", mustWork = FALSE))
+  if (!length(candidates)) return("")
+
+  step_pattern <- paste0("(^|/)", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", step_id), "(/|$)")
+  candidates <- candidates[grepl(step_pattern, candidates)]
+  if (!length(candidates)) return("")
+
+  tokens <- job_ref_tokens(job_ref)
+  if (length(tokens)) {
+    token_pattern <- paste(gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", tokens), collapse = "|")
+    path_matches <- candidates[grepl(token_pattern, candidates, ignore.case = TRUE)]
+    if (length(path_matches)) {
+      candidates <- path_matches
+    }
+  }
+
+  info <- file.info(candidates)
+  score <- ifelse(basename(candidates) == "final.par", 1000L, 0L)
+  numbers <- suppressWarnings(as.integer(tools::file_path_sans_ext(basename(candidates))))
+  score <- score + ifelse(is.na(numbers), 0L, pmin(numbers, 999L))
+  candidates[order(score, info$mtime, candidates)][[length(candidates)]]
+}
+
+stage_previous_job_par <- function(model_dir, step_id, job_ref, root, work_dir) {
+  source_par <- find_previous_job_par(step_id, job_ref = job_ref, root = root, work_dir = work_dir)
+  if (!nzchar(source_par) || !file.exists(source_par)) {
+    stop(
+      "RUN_MODE=job_par needs a previous Kflow output par for ", step_id,
+      if (nzchar(job_ref)) paste0(" from job ", job_ref) else "",
+      ". Attach that job as an input job, or set STEPWISE_PAR_SOURCE_DIR to a folder containing outputs/models/",
+      step_id, "/final.par.",
+      call. = FALSE
+    )
+  }
+  dest <- file.path(model_dir, "previous-job.par")
+  ok <- file.copy(source_par, dest, overwrite = TRUE, copy.date = TRUE)
+  if (!isTRUE(ok)) stop("Could not stage previous-job.par from ", source_par, call. = FALSE)
+  list(input_par = basename(dest), source_par = source_par)
+}
+
 build_payload <- function(model_dir, step_id) {
   attempts <- character()
   payload_file <- file.path(model_dir, "model_payload.rds")
@@ -334,7 +408,7 @@ work_dir <- file.path(root, "work")
 input_root <- file.path(work_dir, "inputs")
 program <- env("PROGRAM_PATH", "/home/mfcl/mfclo64")
 mfcl_live_log <- truthy(env("MFCL_LIVE_LOG", "true"), default = TRUE)
-save_final_par <- truthy(env("STEPWISE_SAVE_FINAL_PAR", "true"), default = TRUE)
+save_final_par <- truthy(env("STEPWISE_SAVE_FINAL_PAR", "false"), default = FALSE)
 step_select <- strsplit(env("STEP_SELECT", ""), ",", fixed = TRUE)[[1]]
 step_select <- trimws(step_select[nzchar(trimws(step_select))])
 default_input_dir <- env("DEFAULT_INPUT_DIR", "")
@@ -400,6 +474,40 @@ copy_shared_region_map_assets <- function(region_counts) {
   invisible(TRUE)
 }
 
+region_map_asset_name_for_count <- function(region_count) {
+  switch(as.character(suppressWarnings(as.integer(region_count))),
+    "5" = "bet-2026-five-region.geojson",
+    "9" = "bet-2023-nine-region.geojson",
+    ""
+  )
+}
+
+region_map_writer_for_count <- function(region_count) {
+  region_count <- suppressWarnings(as.integer(region_count))
+  if (identical(region_count, 5L) && exists("write_bet_region_map_assets", mode = "function")) {
+    return(write_bet_region_map_assets)
+  }
+  if (identical(region_count, 9L) && exists("write_bet_nine_region_map_assets", mode = "function")) {
+    return(write_bet_nine_region_map_assets)
+  }
+  NULL
+}
+
+copy_model_region_map_assets <- function(step_out, region_count) {
+  asset_name <- region_map_asset_name_for_count(region_count)
+  if (!nzchar(asset_name)) {
+    return("")
+  }
+  region_map_dir <- file.path(step_out, "region-map")
+  dir.create(region_map_dir, recursive = TRUE, showWarnings = FALSE)
+  ok <- copy_shared_region_map_asset(region_map_dir, asset_name, region_map_writer_for_count(region_count))
+  target <- file.path(region_map_dir, asset_name)
+  if (isTRUE(ok) && file.exists(target)) {
+    return(target)
+  }
+  ""
+}
+
 model_rows <- list()
 saved_par_rows <- list()
 for (i in seq_len(nrow(step_table))) {
@@ -408,7 +516,7 @@ for (i in seq_len(nrow(step_table))) {
   if (!dir.exists(step_dir)) stop("Step folder not found: steps/", step_id, call. = FALSE)
   cfg <- read_config(file.path(step_dir, "config.env"))
   cfg <- modifyList(cfg, row_to_config(step_table, i))
-  cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "FEVALS"))
+  cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "FEVALS", "PAR_SOURCE_JOB"))
   step_id <- basename(step_dir)
   if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
     message("Skipping disabled step ", step_id)
@@ -422,6 +530,8 @@ for (i in seq_len(nrow(step_table))) {
   output_par <- cfg$OUTPUT_PAR %||% ""
   requested_run_mode <- run_mode
   requested_input_par <- input_par
+  par_source_job <- cfg$PAR_SOURCE_JOB %||% env("STEPWISE_PAR_SOURCE_JOB", "")
+  par_source_par <- ""
   par_fallback <- FALSE
   par_fallback_reason <- ""
   run_script_name <- cfg$RUN_SCRIPT %||% "doitall.sh"
@@ -447,6 +557,18 @@ for (i in seq_len(nrow(step_table))) {
   message("Running ", step_id, " (", label, ")")
   message("  source: ", relative_display_path(model_source, root))
   message("  mode:   ", run_mode)
+  if (is_job_par_mode(run_mode)) {
+    staged <- stage_previous_job_par(model_dir, step_id, par_source_job, root = root, work_dir = work_dir)
+    input_par <- staged$input_par
+    par_source_par <- staged$source_par
+    run_mode <- "single_par"
+    if (!nzchar(output_par)) output_par <- "rerun.par"
+    message(
+      "  previous job par: ",
+      relative_display_path(par_source_par, root),
+      if (nzchar(par_source_job)) paste0(" (requested job ", par_source_job, ")") else ""
+    )
+  }
   if (!is_doitall_mode(run_mode)) {
     needs_latest_par <- is_latest_par_mode(run_mode) &&
       (!nzchar(input_par) || identical(tolower(input_par), "latest") || run_mode %in% c("last", "latest", "last_par", "latest_par"))
@@ -542,21 +664,14 @@ for (i in seq_len(nrow(step_table))) {
     src <- file.path(model_dir, file)
     if (file.exists(src)) file.copy(src, file.path(step_out, basename(file)), overwrite = TRUE)
   }
+  file.copy(final_par, file.path(step_out, "final.par"), overwrite = TRUE, copy.date = TRUE)
   region_count <- if (exists("detect_frq_region_count", mode = "function")) {
     detect_frq_region_count(file.path(model_dir, frq))
   } else {
     NA_integer_
   }
-  region_map_asset_name <- switch(as.character(region_count),
-    "5" = "bet-2026-five-region.geojson",
-    "9" = "bet-2023-nine-region.geojson",
-    ""
-  )
-  region_map_assets <- nzchar(region_map_asset_name) &&
-    (
-      file.exists(file.path(root, "assets", "maps", region_map_asset_name)) ||
-        exists("write_bet_region_map_assets", mode = "function")
-    )
+  region_map_asset_path <- copy_model_region_map_assets(step_out, region_count)
+  region_map_assets <- nzchar(region_map_asset_path) && file.exists(region_map_asset_path)
   summary <- data.frame(
     step_id = step_id,
     model_label = label,
@@ -565,8 +680,11 @@ for (i in seq_len(nrow(step_table))) {
     requested_run_mode = requested_run_mode,
     input_par = input_par,
     requested_input_par = requested_input_par,
+    par_source_job = par_source_job,
+    par_source_par = if (nzchar(par_source_par)) relative_display_path(par_source_par, root) else "",
     frq = frq,
     output_par = final_output_par,
+    final_par = "final.par",
     saved_par = if (nzchar(saved_final_par)) relative_display_path(saved_final_par, root) else "",
     par_fallback = par_fallback,
     par_fallback_reason = par_fallback_reason,
@@ -577,6 +695,7 @@ for (i in seq_len(nrow(step_table))) {
     raw_mfcl_inputs_saved = FALSE,
     region_count = region_count,
     region_map_assets = region_map_assets,
+    region_map_asset = if (region_map_assets) relative_display_path(region_map_asset_path, root) else "",
     payload_status = payload_status,
     stringsAsFactors = FALSE
   )

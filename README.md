@@ -75,9 +75,12 @@ are different on a machine.
 | `mfcl_fevals` | `blank` | Blank uses the row-level `fevals` value; a number overrides selected rows. |
 | `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v1.8` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
-| `stepwise_save_final_par` | `true` | Save the final `.par` back into `steps/<step_id>/model/` after a successful run. |
-| `stepwise_commit_final_pars` | `true` | Create a narrow KflowBot commit containing only saved final `.par` files. |
-| `stepwise_push_final_pars` | `true` | Push the saved final `.par` commit to the current branch. |
+| `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
+| `stepwise_commit_final_pars` | `false` | Optional: create a narrow KflowBot commit containing saved final `.par` files. Off by default to avoid concurrent job push conflicts. |
+| `stepwise_push_final_pars` | `false` | Optional: push the saved final `.par` commit to the current branch. Off by default. |
+| `par_source_job` | `blank` | Optional previous Kflow job number/reference used with `RUN_MODE=job_par`. |
+| `stepwise_par_source_dir` | `blank` | Optional local folder to search for previous output `.par` files when testing `RUN_MODE=job_par` outside Kflow. |
+| `kflow_input_jobs` | `blank` | Optional Kflow input job number(s) to attach. For `.par` reruns, set this to the same previous same-step job as `PAR_SOURCE_JOB`. |
 
 
 ## Model Rows
@@ -129,10 +132,12 @@ are different on a machine.
 | `STEP_SELECT` | `all` | Run every enabled row. |
 | `MFCL_FEVALS` | `10` | Override row-level `fevals`. |
 | `MFCL_LIVE_LOG` | `true` | Stream MFCL output into the Kflow log. |
-| `RUN_MODE` | `latest_par` | Continue from the latest saved `.par` in the selected model folder. If none exists, the runner logs the missing `.par` and falls back to `doitall`. |
-| `INPUT_PAR` | `123.par` | Continue from one specific `.par`; if it is missing, the runner logs that and falls back to `doitall`. |
-| `STEPWISE_COMMIT_FINAL_PARS` | `true` | Commit saved final `.par` files back to this repo after a successful Kflow run. |
-| `STEPWISE_PUSH_FINAL_PARS` | `true` | Push the KflowBot `.par` commit to GitHub. |
+| `RUN_MODE` | `job_par` | Rerun from a previous Kflow job output `.par`. Use this with `PAR_SOURCE_JOB` and `KFLOW_INPUT_JOBS`. |
+| `PAR_SOURCE_JOB` | `354` | Previous same-step job number to search for `outputs/models/<step_id>/final.par`. |
+| `KFLOW_INPUT_JOBS` | `354` | Previous job number to attach as an input archive for the rerun. Usually the same value as `PAR_SOURCE_JOB`. |
+| `INPUT_PAR` | `123.par` | Continue from one specific `.par` already in the selected model folder; if it is missing, the runner logs that and falls back to `doitall`. |
+| `STEPWISE_COMMIT_FINAL_PARS` | `false` | Optional legacy path to commit final `.par` files back to this repo. Keep off for parallel Kflow runs. |
+| `STEPWISE_PUSH_FINAL_PARS` | `false` | Optional legacy path to push the `.par` commit to GitHub. Keep off for parallel Kflow runs. |
 | `TRIGGER_NEXT` | `false` | Stop after stepwise; do not launch results/report. |
 | `FLOW_GROUP` | `bet-2026-base` | Shared label for the chain. |
 
@@ -146,21 +151,25 @@ outputs/selected-steps.csv
 outputs/saved-pars.csv
 outputs/models/<step_id>/model_payload.rds
 outputs/models/<step_id>/model_payload_manifest.json
-outputs/models/<step_id>/<final-par-file>
+outputs/models/<step_id>/final.par
+outputs/models/<step_id>/region-map/<region-map>.geojson
 outputs/region-map/bet-2023-nine-region.geojson
 outputs/region-map/bet-2026-five-region.geojson
 ```
 
-Final `.par` files are also copied back to `steps/<step_id>/model/` after a
-successful run. Kflow can commit and push those `.par` files so a later run can
-start from `RUN_MODE=latest_par` or a specific `INPUT_PAR`.
+Final `.par` files are archived in the Kflow output as
+`outputs/models/<step_id>/final.par`. For a later rerun, set `RUN_MODE=job_par`,
+set `PAR_SOURCE_JOB` to the previous same-step job number, and attach that same
+job with `KFLOW_INPUT_JOBS`.
 
 Bulky raw inputs and intermediate files such as `.frq`, `.tag`, and
 `temporary_tag_report` are not kept in the Kflow artifact.
 
-Map assets are stored once per spatial structure, not once per model. Source
-assets live under `assets/maps/`, and the runner copies only the structures
-needed by the selected run into `outputs/region-map/`:
+Map assets are stored once per spatial structure at the output root, and copied
+into each model output so MFCL Shiny can find the right map whether it is opened
+from a single stepwise job or from downstream results. Source assets live under
+`assets/maps/`, and the runner copies only the structures needed by the selected
+run:
 
 - `bet-2023-nine-region.geojson` for the legacy 01/02 diagnostic/FixM models.
 - `bet-2026-five-region.geojson` for the 03+ 5-region models. This file uses
