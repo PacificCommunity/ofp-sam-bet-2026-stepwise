@@ -270,15 +270,20 @@ PHASE2
 # ---------
 
 $program_path bet.frq 02.par 03.par -file - <<PHASE3
-# OPR settings. John's suggestion: switch to OPR in PHASE 3.
+# OPR settings. John Hampton's OPR.pptx BET AIC rank-1 model: 69-01-50-50.
   1 149 0   # turn off recruitment-deviation penalty for OPR
   1 398 0   # terminal recruitment arithmetic mean under OPR setup
   2 177 0   # turn off old total-pop scaling for OPR
   2 32 0    # turn off overall population scaling parameter for OPR
-  1 155 70  # orthogonal polynomial recruitment - year effect
-  1 216 4   # orthogonal polynomial recruitment - region effect
-  1 217 3   # orthogonal polynomial recruitment - season effect
-  1 218 0   # orthogonal polynomial recruitment - no region:season interaction
+  1 155 69  # orthogonal polynomial recruitment - year effect
+  1 221 69  # orthogonal polynomial recruitment - second year-effect control
+  1 217 1   # orthogonal polynomial recruitment - season effect
+  1 216 50  # orthogonal polynomial recruitment - region effect
+  1 218 50  # orthogonal polynomial recruitment - region-season interaction effect
+  1 202 2   # constraint on terminal year effect for last year
+  1 210 0   # terminal constraint for region effect
+  1 212 0   # terminal constraint for season effect
+  1 214 0   # terminal constraint for region-season interaction effect
   2 70 0    # turn off mean+deviate regional recruitment time series
   2 71 0    # turn off regional recruitment distribution deviations
   2 178 0   # turn off regional recruitment sum-product constraint

@@ -5,17 +5,24 @@ Initial manual strategic data-weighting step with stronger global size-compositi
 ## What Changed
 
 - Uses the same effort-creep `.frq`, mix-period `.ini`, tag, and CAAL as 11-EffortCreep.
-- Keeps size-based selectivity and OPR controls from 10-OPR.
+- Keeps size-based selectivity and the `69-01-50-50` OPR controls from 10-OPR.
 - Changes global LF and WF sample-size divisors from 20 to 40 in `doitall.sh`.
 
 ## Inputs
 
 - `bet.frq`: `bet.2026.wt.as.len.plus.len.frq`, full 2024, with index effort creep applied
-- `bet.ini`: `bet.2026.mix-0.2.ini`, FixM M row applied; raised 36 zero tag mixing periods to 1 because MFCL >=2.2.7.5 disallows 0
+- `bet.ini`: `bet.2026.mix-0.2.ini`, FixM M row applied; raised 41 zero tag mixing periods to 1 because MFCL >=2.2.7.5 disallows 0
 - `bet.tag`: `bet.2026.low.recaps.removed.tag`
 - `bet.age_length`: `bet.2026.age_length` (updated CAAL)
 - `bet.reg_scaling`: `bet.2026.reg_scaling` global CPUE regional-scaling matrix, 292 quarterly rows x 5 regions
 - `input_manifest.csv`: machine-readable source/input notes
+
+## Source Revisions
+
+- `ofp-sam-2026-BET-YFT-frq-build`: `7d636e8` - update frq files to reflect updated tag files
+- `ofp-sam-2026-BET-YFT-build-ini`: `b39cbfd` - updated ini files to reflect updated tag files
+- `ofp-sam-2026-BET-YFT-tag-prep`: `f6a9e4a` - Assign unassigned fisheries
+- `ofp-sam-2026-BET-YFT-age-length-build`: `a26b694` - plus group at age 40
 
 ## Control Notes
 

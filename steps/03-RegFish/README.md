@@ -4,22 +4,31 @@ First 5-region / 33-fishery BET input step, ending in 2021.
 
 ## What Changed
 
-- Uses `bet.2023.new.structure.*` source inputs from the 2026 input build repos.
+- Uses the latest `bet.2023.new.structure.*` source inputs from the 2026 input build repos.
 - Represents 28 extraction fisheries plus 5 index fisheries.
+- Uses `bet.2023.new.structure.frq` exactly as the 2021-terminal new-region/new-fishery frequency source, including the old CPUE/global index approach.
 - Uses the old CAAL data re-assigned to the new fisheries.
-- Uses the old/restructured tag setup with 90 release groups and 91 tag-event rows including pooled tags.
+- Uses the old/restructured tag setup with 96 release groups and 97 tag-event rows including pooled tags.
 - Regenerates `tag_rep_map.R` from the five MFCL reporting-rate matrices in `bet.ini` plus release metadata in `bet.tag`.
-- Normalizes 84 old records that had an absent-LF sentinel followed by stray LF bins: 67 with WF data and 17 with no composition data.
+- Normalizes 0 old records that had an absent-LF sentinel followed by stray LF bins.
 - Applies Arni's 19/06/2026 CPUE index sigma suggestions for index fisheries 29-33.
 - Applies FixM M row while retaining the 5-region `.ini` structure.
 - Inserts default MFCL 1007 tag flags for the pre-mix step: 2 mixing periods and reporting rates excluded during mixing.
 
 ## Inputs
 
-- `bet.frq`: 5-region, 33-fishery structure, terminal year 2021
-- `bet.ini`: 5-region ini with FixM M row and explicit default tag flags
-- `bet.tag`: 90 release-group tag input with low recap groups removed
-- `bet.age_length`: old CAAL / age_length re-assigned to new fisheries
+- `bet.frq`: `bet.2023.new.structure.frq`; 5-region, 33-fishery structure, terminal year 2021, old CPUE/global index approach retained
+- `bet.ini`: `bet.2023.new.structure.ini`; FixM M row applied and explicit default tag flags inserted if needed
+- `bet.tag`: `bet.2023.new.structure-low.recaps.removed.tag`; 96 release-group tag input with low recap groups removed
+- `bet.age_length`: `bet.2023.new-structure.age_length`; old CAAL / age_length re-assigned to new fisheries
+- `input_manifest.csv`: machine-readable source/input notes with source commits
+
+## Source Revisions
+
+- `ofp-sam-2026-BET-YFT-frq-build`: `7d636e8` - update frq files to reflect updated tag files
+- `ofp-sam-2026-BET-YFT-build-ini`: `b39cbfd` - updated ini files to reflect updated tag files
+- `ofp-sam-2026-BET-YFT-tag-prep`: `f6a9e4a` - Assign unassigned fisheries
+- `ofp-sam-2026-BET-YFT-age-length-build`: `a26b694` - plus group at age 40
 
 ## Control Notes
 
@@ -33,8 +42,8 @@ First 5-region / 33-fishery BET input step, ending in 2021.
 
 - After fitting, review the 5-region selectivity/tag grouping inherited from the workbook mapping.
 - The `.frq` region-location line must contain all 33 fisheries: 28 extraction fisheries followed by index fishery regions 1-5.
-- The 84 normalized absent-LF records should be reviewed against the upstream frq-build script so the source generator can eventually emit MFCL-ready records.
-- The upstream non-mix `.ini` files are labelled 1007 but omit `# tag flags`; generated 03-07 inputs now insert explicit default tag flags for MFCL >=2.2.7.5.
+- The 0 normalized absent-LF records should be reviewed against the upstream frq-build script so the source generator can eventually emit MFCL-ready records.
+- The upstream non-mix `.ini` files are labelled 1007 but can have non-standard or short tag-flag blocks; generated inputs now normalize and pad explicit tag flags for MFCL >=2.2.7.5.
 - Local MFCL `-makepar` smoke still reports 30 `caught before it was released` tag recapture warnings; review upstream tag prep before final production runs.
 
 ## Status
