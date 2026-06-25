@@ -48,6 +48,45 @@ drop_runtime_tokens() {
   unset GIT_PAT GITHUB_PAT GH_TOKEN KFLOW_GITHUB_TOKEN KFLOW_PERSONAL_TOKEN
 }
 
+truthy_value() {
+  case "${1:-}" in
+    1|true|TRUE|yes|YES|y|Y|on|ON|always|ALWAYS) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+truthy_env() {
+  local name="$1"
+  local default="${2:-false}"
+  local value="${!name:-$default}"
+  truthy_value "$value"
+}
+
+publish_required() {
+  truthy_env STEPWISE_PUBLISH_REQUIRED false
+}
+
+publish_fail() {
+  local message="$1"
+  if publish_required; then
+    echo "[stepwise-par-publish] ${message}" >&2
+    return 1
+  fi
+  echo "[stepwise-par-publish] ${message}; continuing because publish is not required." >&2
+  return 0
+}
+
+first_runtime_token() {
+  local name
+  for name in GITHUB_PAT GIT_PAT GH_TOKEN KFLOW_GITHUB_TOKEN KFLOW_PERSONAL_TOKEN; do
+    if [[ -n "${!name:-}" ]]; then
+      printf "%s" "${!name}"
+      return 0
+    fi
+  done
+  return 1
+}
+
 install_missing_runtime_packages() {
   runtime_packages_disabled && return 0
   runtime_updates_disabled && return 0
@@ -138,7 +177,185 @@ prepare_runtime_packages() {
     echo "[kflow-runtime-update] Runtime updater not found; using bundled packages." >&2
   fi
   install_missing_runtime_packages
-  drop_runtime_tokens
+}
+
+kflow_job_ref() {
+  local job_id="${KFLOW_JOB_ID:-}"
+  local job_number="${KFLOW_JOB_NUMBER:-}"
+  if [[ -n "$job_number" ]]; then
+    if [[ -n "$job_id" ]]; then
+      printf "Job %s (%s)" "$job_number" "$job_id"
+    else
+      printf "Job %s" "$job_number"
+    fi
+  elif [[ -n "$job_id" ]]; then
+    printf "%s" "$job_id"
+  else
+    printf "manual/local"
+  fi
+}
+
+saved_par_paths() {
+  local manifest="${OUT_DIR}/saved-pars.csv"
+  if [[ ! -f "$manifest" ]]; then
+    return 0
+  fi
+  Rscript - "$manifest" <<'RS'
+args <- commandArgs(trailingOnly = TRUE)
+manifest <- args[[1]]
+x <- tryCatch(read.csv(manifest, stringsAsFactors = FALSE), error = function(e) data.frame())
+if (!NROW(x) || !"saved_par" %in% names(x)) quit(save = "no", status = 0)
+paths <- unique(x$saved_par[nzchar(x$saved_par)])
+paths <- paths[grepl("^steps/[^/]+/model/[^/]+[.]par[0-9]*$", paths)]
+cat(paths, sep = "\n")
+RS
+}
+
+saved_par_summary() {
+  local manifest="${OUT_DIR}/saved-pars.csv"
+  if [[ ! -f "$manifest" ]]; then
+    printf -- "- no saved par manifest found"
+    return 0
+  fi
+  Rscript - "$manifest" <<'RS'
+args <- commandArgs(trailingOnly = TRUE)
+manifest <- args[[1]]
+x <- tryCatch(read.csv(manifest, stringsAsFactors = FALSE), error = function(e) data.frame())
+if (!NROW(x)) {
+  cat("- no final .par files were recorded\n")
+  quit(save = "no", status = 0)
+}
+limit <- 60L
+for (i in seq_len(min(NROW(x), limit))) {
+  fallback <- if ("par_fallback" %in% names(x) && isTRUE(tolower(as.character(x$par_fallback[[i]])) %in% c("true", "1"))) " (fell back to doitall)" else ""
+  cat(sprintf("- %s: %s -> %s%s\n", x$step_id[[i]], x$run_mode[[i]], x$saved_par[[i]], fallback))
+}
+if (NROW(x) > limit) {
+  cat(sprintf("- ... %d more saved .par file(s)\n", NROW(x) - limit))
+}
+RS
+}
+
+changed_par_summary() {
+  local -a stage_paths=("$@")
+  git diff --cached --name-status -- "${stage_paths[@]}" |
+    awk -F '\t' '
+      BEGIN { limit = 80 }
+      {
+        total++
+        if (total > limit) next
+        status = $1
+        label = status
+        if (status == "A") label = "added"
+        else if (status == "M") label = "modified"
+        else if (status == "D") label = "removed"
+        else if (status ~ /^R/) label = "renamed"
+        else if (status ~ /^C/) label = "copied"
+        if (NF >= 3) print "- " label ": " $2 " -> " $3
+        else print "- " label ": " $2
+      }
+      END {
+        if (total > limit) print "- ... " (total - limit) " more changed path(s)"
+        if (total == 0) print "- no path-level changes detected"
+      }
+    '
+}
+
+publish_final_pars() {
+  truthy_env STEPWISE_COMMIT_FINAL_PARS true || return 0
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    publish_fail "Cannot commit final .par files because this is not a git checkout."
+    return $?
+  fi
+
+  local branch="${GITHUB_BRANCH:-}"
+  if [[ -z "$branch" ]]; then
+    branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  fi
+  if [[ -z "$branch" || "$branch" == "HEAD" ]]; then
+    publish_fail "Cannot publish final .par files because the target branch is unknown."
+    return $?
+  fi
+
+  local -a stage_paths=()
+  local path
+  while IFS= read -r path; do
+    [[ -n "$path" && -f "$path" ]] && stage_paths+=("$path")
+  done < <(saved_par_paths)
+
+  if [[ "${#stage_paths[@]}" -eq 0 ]]; then
+    publish_fail "No final .par files were found to commit."
+    return $?
+  fi
+
+  git config user.name "${KFLOW_GIT_AUTHOR_NAME:-KflowBot}"
+  git config user.email "${KFLOW_GIT_AUTHOR_EMAIL:-kflow-bot@localhost}"
+  if [[ -n "${GITHUB_REPOSITORY:-}" ]]; then
+    git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git" >/dev/null 2>&1 || true
+  fi
+
+  git add -- "${stage_paths[@]}"
+  if git diff --cached --quiet; then
+    echo "[stepwise-par-publish] Final .par files are already committed."
+    return 0
+  fi
+
+  local changed_paths saved_summary job_ref job_subject subject body
+  changed_paths="$(changed_par_summary "${stage_paths[@]}")"
+  saved_summary="$(saved_par_summary)"
+  job_ref="$(kflow_job_ref)"
+  job_subject="${job_ref%% (*}"
+  subject="Save final stepwise par files from Kflow ${job_subject}"
+  body=$(
+    cat <<EOF
+Kflow:
+- task: ${GITHUB_REPOSITORY:-ofp-sam-bet-2026-stepwise}
+- job: ${job_ref}
+- flow group: ${FLOW_GROUP:-unknown}
+- step select: ${STEP_SELECT:-unknown}
+- model label: ${MODEL_LABEL:-unknown}
+- requested run mode: ${RUN_MODE:-unknown}
+- branch: ${branch}
+
+Saved final .par files for future reruns:
+${saved_summary}
+
+Changed paths:
+${changed_paths}
+EOF
+  )
+  git commit -m "$subject" -m "$body"
+
+  truthy_env STEPWISE_PUSH_FINAL_PARS true || {
+    echo "[stepwise-par-publish] Final .par files committed locally; push disabled."
+    return 0
+  }
+
+  local token=""
+  token="$(first_runtime_token || true)"
+  if [[ -z "$token" ]]; then
+    publish_fail "Cannot push final .par commit because no GitHub token is available."
+    return $?
+  fi
+
+  local askpass
+  askpass="$(mktemp)"
+  cat > "$askpass" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  *Username*) printf "%s\n" "x-access-token" ;;
+  *Password*) printf "%s\n" "${STEPWISE_GIT_TOKEN:-}" ;;
+  *) printf "\n" ;;
+esac
+EOF
+  chmod 700 "$askpass"
+  if STEPWISE_GIT_TOKEN="$token" GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git push origin "HEAD:${branch}"; then
+    rm -f "$askpass"
+    echo "[stepwise-par-publish] Pushed final .par files to ${GITHUB_REPOSITORY:-origin}:${branch}."
+    return 0
+  fi
+  rm -f "$askpass"
+  publish_fail "Final .par commit was created, but git push failed."
 }
 
 mkdir -p "${OUT_DIR}" "${WORK_DIR}"
@@ -151,3 +368,5 @@ echo "MFCL program: ${PROGRAM_PATH}"
 
 prepare_runtime_packages
 Rscript R/run_stepwise.R
+publish_final_pars
+drop_runtime_tokens

@@ -73,8 +73,11 @@ are different on a machine.
 | `flow_group` | `bet-2026-stepwise-v2` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `mfcl_fevals` | `blank` | Blank uses the row-level `fevals` value; a number overrides selected rows. |
-| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v1.7` | Docker image used by Kflow and local Docker runs. |
+| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v1.8` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
+| `stepwise_save_final_par` | `true` | Save the final `.par` back into `steps/<step_id>/model/` after a successful run. |
+| `stepwise_commit_final_pars` | `true` | Create a narrow KflowBot commit containing only saved final `.par` files. |
+| `stepwise_push_final_pars` | `true` | Push the saved final `.par` commit to the current branch. |
 
 
 ## Model Rows
@@ -126,6 +129,10 @@ are different on a machine.
 | `STEP_SELECT` | `all` | Run every enabled row. |
 | `MFCL_FEVALS` | `10` | Override row-level `fevals`. |
 | `MFCL_LIVE_LOG` | `true` | Stream MFCL output into the Kflow log. |
+| `RUN_MODE` | `latest_par` | Continue from the latest saved `.par` in the selected model folder. If none exists, the runner logs the missing `.par` and falls back to `doitall`. |
+| `INPUT_PAR` | `123.par` | Continue from one specific `.par`; if it is missing, the runner logs that and falls back to `doitall`. |
+| `STEPWISE_COMMIT_FINAL_PARS` | `true` | Commit saved final `.par` files back to this repo after a successful Kflow run. |
+| `STEPWISE_PUSH_FINAL_PARS` | `true` | Push the KflowBot `.par` commit to GitHub. |
 | `TRIGGER_NEXT` | `false` | Stop after stepwise; do not launch results/report. |
 | `FLOW_GROUP` | `bet-2026-base` | Shared label for the chain. |
 
@@ -136,20 +143,29 @@ Saved artifacts are intentionally compact:
 ```text
 outputs/model-index.csv
 outputs/selected-steps.csv
+outputs/saved-pars.csv
 outputs/models/<step_id>/model_payload.rds
 outputs/models/<step_id>/model_payload_manifest.json
 outputs/models/<step_id>/<final-par-file>
+outputs/region-map/bet-2023-nine-region.geojson
 outputs/region-map/bet-2026-five-region.geojson
 ```
+
+Final `.par` files are also copied back to `steps/<step_id>/model/` after a
+successful run. Kflow can commit and push those `.par` files so a later run can
+start from `RUN_MODE=latest_par` or a specific `INPUT_PAR`.
 
 Bulky raw inputs and intermediate files such as `.frq`, `.tag`, and
 `temporary_tag_report` are not kept in the Kflow artifact.
 
-For 5-region model rows, the runner also writes lightweight map assets inside
-the model output folder as `bet.region_map.geojson`. This is the single
-app/report map shape file and can be read directly by `sf`. The coordinates
-apply the 2026 BET label convention where old Region 4 is labelled Region 5 and
-old Region 5 is labelled Region 4.
+Map assets are stored once per spatial structure, not once per model. Source
+assets live under `assets/maps/`, and the runner copies only the structures
+needed by the selected run into `outputs/region-map/`:
+
+- `bet-2023-nine-region.geojson` for the legacy 01/02 diagnostic/FixM models.
+- `bet-2026-five-region.geojson` for the 03+ 5-region models. This file uses
+  the 2026 BET label convention where old Region 4 is labelled Region 5 and old
+  Region 5 is labelled Region 4.
 
 Kflow also exposes an `MFCL Shiny` local app on stepwise jobs. Open it from a
 completed model job to inspect the selected model payload directly, without

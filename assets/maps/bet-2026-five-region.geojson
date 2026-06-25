@@ -1,0 +1,108 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 1,
+        "region_label": "Region 1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120, 20],
+            [120, 50],
+            [210, 50],
+            [210, 10],
+            [185, 10],
+            [140, 10],
+            [140, 20],
+            [120, 20],
+            [120, 20]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 2,
+        "region_label": "Region 2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [110, -10],
+            [110, 20],
+            [140, 20],
+            [140, -10],
+            [110, -10],
+            [110, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 3,
+        "region_label": "Region 3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [140, -10],
+            [140, 10],
+            [185, 10],
+            [185, -10],
+            [140, -10],
+            [140, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 4,
+        "region_label": "Region 4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [185, -10],
+            [185, 10],
+            [210, 10],
+            [210, -10],
+            [185, -10],
+            [185, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 5,
+        "region_label": "Region 5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [140, -40],
+            [140, -10],
+            [210, -10],
+            [210, -40],
+            [140, -40],
+            [140, -40]
+          ]
+        ]
+      }
+    }
+  ]
+}

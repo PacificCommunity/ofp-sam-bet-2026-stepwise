@@ -88,21 +88,34 @@ readme_section <- function(lines, heading, body) {
 }
 
 kflow <- yaml_value("kflow.yaml")
-docker_image <- if (is.null(kflow$docker_image)) "ghcr.io/pacificcommunity/tuna-flow:v1.7" else kflow$docker_image
+docker_image <- if (is.null(kflow$docker_image)) "ghcr.io/pacificcommunity/tuna-flow:v1.8" else kflow$docker_image
 program_path <- tryCatch(kflow$env$PROGRAM_PATH, error = function(e) NULL)
 if (is.null(program_path) || !nzchar(program_path)) {
   program_path <- "/home/mfcl/mfclo64"
 }
 
 defaults <- data.frame(
-  setting = c("default_step_select", "flow_group", "trigger_next", "mfcl_fevals", "docker_image", "program_path"),
+  setting = c(
+    "default_step_select",
+    "flow_group",
+    "trigger_next",
+    "mfcl_fevals",
+    "docker_image",
+    "program_path",
+    "stepwise_save_final_par",
+    "stepwise_commit_final_pars",
+    "stepwise_push_final_pars"
+  ),
   value = c(
     stepwise_value("default_step_select", "01-base-11par"),
     stepwise_value("flow_group", "bet-2026-e2e"),
     stepwise_value("trigger_next", "true"),
     stepwise_value("mfcl_fevals", ""),
     docker_image,
-    program_path
+    program_path,
+    tryCatch(kflow$env$STEPWISE_SAVE_FINAL_PAR, error = function(e) "true"),
+    tryCatch(kflow$env$STEPWISE_COMMIT_FINAL_PARS, error = function(e) "true"),
+    tryCatch(kflow$env$STEPWISE_PUSH_FINAL_PARS, error = function(e) "true")
   ),
   meaning = c(
     "Model selection used when `STEP_SELECT` is not supplied.",
@@ -110,7 +123,10 @@ defaults <- data.frame(
     "Whether command-line Kflow submissions keep the downstream results/report chain.",
     "Blank uses the row-level `fevals` value; a number overrides selected rows.",
     "Docker image used by Kflow and local Docker runs.",
-    "MFCL executable path inside the Docker image."
+    "MFCL executable path inside the Docker image.",
+    "Save the final `.par` back into `steps/<step_id>/model/` after a successful run.",
+    "Create a narrow KflowBot commit containing only saved final `.par` files.",
+    "Push the saved final `.par` commit to the current branch."
   ),
   stringsAsFactors = FALSE
 )

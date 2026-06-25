@@ -27,6 +27,31 @@ bet_region_map_default_vertices <- function() {
   )
 }
 
+bet_nine_region_map_default_vertices <- function() {
+  # Display-only approximation of the 2023 BET 9-region diagnostic map.
+  make_region <- function(region, label, lon, lat) {
+    data.frame(
+      region = as.integer(region),
+      region_label = label,
+      lon = lon,
+      lat = lat,
+      vertex = seq_along(lon),
+      stringsAsFactors = FALSE
+    )
+  }
+  do.call(rbind, list(
+    make_region(1L, "Region 1", c(120, 120, 170, 170, 120), c(10, 50, 50, 10, 10)),
+    make_region(2L, "Region 2", c(170, 170, 210, 210, 170), c(10, 50, 50, 10, 10)),
+    make_region(3L, "Region 3", c(140, 140, 170, 170, 150, 150, 140), c(0, 10, 10, -10, -10, 0, 0)),
+    make_region(4L, "Region 4", c(170, 170, 210, 210, 170), c(-10, 10, 10, -10, -10)),
+    make_region(5L, "Region 5", c(150, 170, 170, 140, 140, 150, 150), c(-10, -10, -40, -40, -20, -20, -10)),
+    make_region(6L, "Region 6", c(170, 170, 210, 210, 170), c(-40, -10, -10, -40, -40)),
+    make_region(7L, "Region 7", c(110, 110, 140, 140, 110), c(-10, 20, 20, -10, -10)),
+    make_region(8L, "Region 8", c(140, 140, 150, 150, 140), c(-10, 0, 0, -10, -10)),
+    make_region(9L, "Region 9", c(140, 140, 150, 150, 140), c(-20, -10, -10, -20, -20))
+  ))
+}
+
 bet_region_map_normalize_vertices <- function(vertices) {
   vertices <- as.data.frame(vertices, stringsAsFactors = FALSE)
   names(vertices) <- tolower(trimws(names(vertices)))
@@ -61,7 +86,7 @@ bet_region_map_to_geojson <- function(vertices = bet_region_map_default_vertices
   vertices <- bet_region_map_normalize_vertices(vertices)
   features <- lapply(split(vertices, vertices$region), function(x) {
     closed <- bet_region_map_close_polygons(x)
-    coords <- lapply(seq_len(nrow(closed)), function(i) list(unname(c(closed$lon[[i]], closed$lat[[i]]))))
+    coords <- lapply(seq_len(nrow(closed)), function(i) unname(c(closed$lon[[i]], closed$lat[[i]])))
     list(
       type = "Feature",
       properties = list(region = as.integer(x$region[[1L]]), region_label = x$region_label[[1L]]),
@@ -89,7 +114,7 @@ bet_region_map_to_sf <- function(vertices = bet_region_map_default_vertices()) {
   })
   sf::st_sf(
     region = attrs$region,
-    region_lab = attrs$region_label,
+    region_label = attrs$region_label,
     geometry = sf::st_sfc(geometries, crs = 4326)
   )
 }
@@ -119,13 +144,26 @@ bet_region_map_coordinate_labels <- function(vertices) {
 }
 
 bet_region_map_region_label_positions <- function(vertices) {
+  vertices <- bet_region_map_normalize_vertices(vertices)
+  regions <- sort(unique(vertices$region))
+  if (identical(regions, 1:9)) {
+    return(data.frame(
+      region = 1:9,
+      lon = c(152, 188, 156, 188, 158, 188, 126, 147, 147),
+      lat = c(30, 32, 1, 1, -30, -30, 6, -2, -18),
+      label = as.character(1:9)
+    ))
+  }
+  if (identical(regions, 1:5)) {
+    return(data.frame(
+      region = 1:5,
+      lon = c(166, 124, 162, 197, 176),
+      lat = c(27, 5, 0, 0, -25),
+      label = as.character(1:5)
+    ))
+  }
   rows <- lapply(split(vertices, vertices$region), function(x) {
     region <- as.integer(x$region[[1L]])
-    if (identical(region, 1L)) return(data.frame(region = region, lon = 166, lat = 27, label = "1"))
-    if (identical(region, 2L)) return(data.frame(region = region, lon = 124, lat = 5, label = "2"))
-    if (identical(region, 3L)) return(data.frame(region = region, lon = 162, lat = 0, label = "3"))
-    if (identical(region, 4L)) return(data.frame(region = region, lon = 197, lat = 0, label = "4"))
-    if (identical(region, 5L)) return(data.frame(region = region, lon = 176, lat = -25, label = "5"))
     data.frame(region = region, lon = mean(x$lon), lat = mean(x$lat), label = as.character(region))
   })
   do.call(rbind, rows)
@@ -251,6 +289,18 @@ write_bet_region_map_assets <- function(output_dir,
     writeLines(as.character(bet_region_map_to_geojson(vertices)), files[["geojson"]])
   }
   invisible(files)
+}
+
+write_bet_nine_region_map_assets <- function(output_dir,
+                                             stem = "bet-2023-nine-region",
+                                             vertices = bet_nine_region_map_default_vertices(),
+                                             make_plot = TRUE) {
+  write_bet_region_map_assets(
+    output_dir = output_dir,
+    stem = stem,
+    vertices = vertices,
+    make_plot = make_plot
+  )
 }
 
 detect_frq_region_count <- function(frq_file) {

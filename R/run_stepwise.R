@@ -5,6 +5,19 @@ env <- function(name, default = "") {
   if (is.na(value) || !nzchar(value)) default else value
 }
 
+env_or_null <- function(name) {
+  value <- Sys.getenv(name, unset = NA_character_)
+  if (is.na(value) || !nzchar(value)) NULL else value
+}
+
+apply_env_overrides <- function(cfg, keys) {
+  for (key in keys) {
+    value <- env_or_null(key)
+    if (!is.null(value)) cfg[[key]] <- value
+  }
+  cfg
+}
+
 read_config <- function(path) {
   out <- list()
   if (!file.exists(path)) return(out)
@@ -96,6 +109,14 @@ best_par <- function(model_dir) {
     return(pars[order(ifelse(is.na(numbers), -Inf, numbers), pars)][[length(pars)]])
   }
   latest_par(model_dir)
+}
+
+is_doitall_mode <- function(run_mode) {
+  run_mode %in% c("doitall", "script")
+}
+
+is_latest_par_mode <- function(run_mode) {
+  run_mode %in% c("last", "latest", "last_par", "latest_par", "par", "single", "single_par")
 }
 
 truthy <- function(x, default = TRUE) {
@@ -313,6 +334,7 @@ work_dir <- file.path(root, "work")
 input_root <- file.path(work_dir, "inputs")
 program <- env("PROGRAM_PATH", "/home/mfcl/mfclo64")
 mfcl_live_log <- truthy(env("MFCL_LIVE_LOG", "true"), default = TRUE)
+save_final_par <- truthy(env("STEPWISE_SAVE_FINAL_PAR", "true"), default = TRUE)
 step_select <- strsplit(env("STEP_SELECT", ""), ",", fixed = TRUE)[[1]]
 step_select <- trimws(step_select[nzchar(trimws(step_select))])
 default_input_dir <- env("DEFAULT_INPUT_DIR", "")
@@ -337,17 +359,56 @@ write.csv(
   file.path(out_dir, "selected-steps.csv"),
   row.names = FALSE
 )
-if (exists("write_bet_region_map_assets", mode = "function")) {
-  write_bet_region_map_assets(file.path(out_dir, "region-map"), stem = "bet-2026-five-region")
+
+copy_shared_region_map_asset <- function(region_map_dir, source_name, fallback_writer = NULL) {
+  shared_geojson <- file.path(root, "assets", "maps", source_name)
+  target_geojson <- file.path(region_map_dir, source_name)
+  if (file.exists(shared_geojson)) {
+    ok <- file.copy(shared_geojson, target_geojson, overwrite = TRUE, copy.date = TRUE)
+    if (!ok) stop("Failed to copy shared region map asset: ", source_name, call. = FALSE)
+    return(invisible(TRUE))
+  }
+  if (is.function(fallback_writer)) {
+    fallback_writer(region_map_dir, stem = tools::file_path_sans_ext(source_name))
+    return(invisible(TRUE))
+  }
+  invisible(FALSE)
+}
+
+copy_shared_region_map_assets <- function(region_counts) {
+  region_counts <- suppressWarnings(as.integer(region_counts))
+  needed_counts <- intersect(sort(unique(region_counts[is.finite(region_counts)])), c(5L, 9L))
+  if (!length(needed_counts)) {
+    return(invisible(FALSE))
+  }
+  region_map_dir <- file.path(out_dir, "region-map")
+  dir.create(region_map_dir, recursive = TRUE, showWarnings = FALSE)
+  if (5L %in% needed_counts) {
+    copy_shared_region_map_asset(
+      region_map_dir,
+      "bet-2026-five-region.geojson",
+      if (exists("write_bet_region_map_assets", mode = "function")) write_bet_region_map_assets else NULL
+    )
+  }
+  if (9L %in% needed_counts) {
+    copy_shared_region_map_asset(
+      region_map_dir,
+      "bet-2023-nine-region.geojson",
+      if (exists("write_bet_nine_region_map_assets", mode = "function")) write_bet_nine_region_map_assets else NULL
+    )
+  }
+  invisible(TRUE)
 }
 
 model_rows <- list()
+saved_par_rows <- list()
 for (i in seq_len(nrow(step_table))) {
   step_id <- step_table$step_id[[i]]
   step_dir <- file.path(root, "steps", step_id)
   if (!dir.exists(step_dir)) stop("Step folder not found: steps/", step_id, call. = FALSE)
   cfg <- read_config(file.path(step_dir, "config.env"))
   cfg <- modifyList(cfg, row_to_config(step_table, i))
+  cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "FEVALS"))
   step_id <- basename(step_dir)
   if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
     message("Skipping disabled step ", step_id)
@@ -359,8 +420,12 @@ for (i in seq_len(nrow(step_table))) {
   run_mode <- tolower(cfg$RUN_MODE %||% "last_par")
   input_par <- cfg$INPUT_PAR %||% "latest"
   output_par <- cfg$OUTPUT_PAR %||% ""
+  requested_run_mode <- run_mode
+  requested_input_par <- input_par
+  par_fallback <- FALSE
+  par_fallback_reason <- ""
   run_script_name <- cfg$RUN_SCRIPT %||% "doitall.sh"
-  fevals <- suppressWarnings(as.integer(env("MFCL_FEVALS", env("SMOKE_FEVALS", cfg$FEVALS %||% cfg$SMOKE_FEVALS %||% "1"))))
+  fevals <- suppressWarnings(as.integer(env("MFCL_FEVALS", env("SMOKE_FEVALS", env("FEVALS", cfg$FEVALS %||% cfg$SMOKE_FEVALS %||% "1")))))
   if (!is.finite(fevals) || fevals < 1L) fevals <- 1L
 
   model_dir <- file.path(work_dir, "models", step_id)
@@ -382,21 +447,39 @@ for (i in seq_len(nrow(step_table))) {
   message("Running ", step_id, " (", label, ")")
   message("  source: ", relative_display_path(model_source, root))
   message("  mode:   ", run_mode)
+  if (!is_doitall_mode(run_mode)) {
+    needs_latest_par <- is_latest_par_mode(run_mode) &&
+      (!nzchar(input_par) || identical(tolower(input_par), "latest") || run_mode %in% c("last", "latest", "last_par", "latest_par"))
+    if (needs_latest_par) {
+      input_par <- best_par(model_dir)
+    }
+    if (!nzchar(input_par)) {
+      par_fallback <- TRUE
+      par_fallback_reason <- "no .par file was found"
+    } else if (!file.exists(file.path(model_dir, input_par))) {
+      par_fallback <- TRUE
+      par_fallback_reason <- paste0("requested .par file was not found: ", input_par)
+    }
+    if (isTRUE(par_fallback)) {
+      message(
+        "[stepwise-par] ", step_id,
+        " requested RUN_MODE=", requested_run_mode,
+        if (nzchar(requested_input_par)) paste0(" INPUT_PAR=", requested_input_par) else "",
+        ", but ", par_fallback_reason,
+        "; falling back to RUN_MODE=doitall."
+      )
+      run_mode <- "doitall"
+      input_par <- ""
+      output_par <- ""
+    }
+  }
   old <- setwd(model_dir)
   status <- tryCatch({
-    if (run_mode %in% c("doitall", "script")) {
+    if (is_doitall_mode(run_mode)) {
       message("  script: ", run_script_name)
       message("  fevals: ", fevals, " (available to script as MFCL_FEVALS; not applied by the runner)")
       run_script(file.path(model_dir, run_script_name), program = program, log_file = log_file, live_log = mfcl_live_log, fevals = fevals)
     } else {
-      if (run_mode %in% c("last", "latest", "last_par", "latest_par")) {
-        input_par <- best_par(model_dir)
-      } else if (!nzchar(input_par) || identical(tolower(input_par), "latest")) {
-        input_par <- best_par(model_dir)
-      }
-      if (!nzchar(input_par) || !file.exists(file.path(model_dir, input_par))) {
-        stop("Input par not found for ", step_id, ": ", input_par, call. = FALSE)
-      }
       if (!nzchar(output_par)) output_par <- next_par_name(input_par)
       message("  input:  ", frq, " + ", input_par)
       message("  output: ", output_par)
@@ -407,12 +490,35 @@ for (i in seq_len(nrow(step_table))) {
   }, finally = setwd(old))
   if (!identical(status, 0L)) stop("MFCL failed for ", step_id, " with status ", status, call. = FALSE)
 
-  final_output_par <- if (run_mode %in% c("doitall", "script")) best_par(model_dir) else output_par
+  final_output_par <- if (is_doitall_mode(run_mode)) best_par(model_dir) else output_par
   final_par <- file.path(model_dir, final_output_par)
   if (!nzchar(final_output_par) || !file.exists(final_par)) {
     stop("MFCL did not create a final par file for ", step_id, call. = FALSE)
   }
   message("  final par: ", final_output_par)
+  saved_final_par <- ""
+  if (isTRUE(save_final_par)) {
+    saved_final_par <- file.path(step_dir, "model", basename(final_output_par))
+    dir.create(dirname(saved_final_par), recursive = TRUE, showWarnings = FALSE)
+    ok <- file.copy(final_par, saved_final_par, overwrite = TRUE, copy.date = TRUE)
+    if (!isTRUE(ok)) {
+      stop("Could not save final par for reuse: ", relative_display_path(saved_final_par, root), call. = FALSE)
+    }
+    message("  saved par: ", relative_display_path(saved_final_par, root))
+    saved_par_rows[[length(saved_par_rows) + 1L]] <- data.frame(
+      step_id = step_id,
+      model_label = label,
+      requested_run_mode = requested_run_mode,
+      run_mode = run_mode,
+      requested_input_par = requested_input_par,
+      input_par = input_par,
+      output_par = final_output_par,
+      saved_par = relative_display_path(saved_final_par, root),
+      par_fallback = par_fallback,
+      par_fallback_reason = par_fallback_reason,
+      stringsAsFactors = FALSE
+    )
+  }
 
   message("  building model_payload.rds")
   payload_status <- build_payload(model_dir, step_id)
@@ -441,19 +547,29 @@ for (i in seq_len(nrow(step_table))) {
   } else {
     NA_integer_
   }
-  region_map_assets <- FALSE
-  if (identical(region_count, 5L) && exists("write_bet_region_map_assets", mode = "function")) {
-    write_bet_region_map_assets(step_out, stem = "bet.region_map")
-    region_map_assets <- TRUE
-  }
+  region_map_asset_name <- switch(as.character(region_count),
+    "5" = "bet-2026-five-region.geojson",
+    "9" = "bet-2023-nine-region.geojson",
+    ""
+  )
+  region_map_assets <- nzchar(region_map_asset_name) &&
+    (
+      file.exists(file.path(root, "assets", "maps", region_map_asset_name)) ||
+        exists("write_bet_region_map_assets", mode = "function")
+    )
   summary <- data.frame(
     step_id = step_id,
     model_label = label,
     model_source = relative_display_path(model_source, root),
     run_mode = run_mode,
+    requested_run_mode = requested_run_mode,
     input_par = input_par,
+    requested_input_par = requested_input_par,
     frq = frq,
     output_par = final_output_par,
+    saved_par = if (nzchar(saved_final_par)) relative_display_path(saved_final_par, root) else "",
+    par_fallback = par_fallback,
+    par_fallback_reason = par_fallback_reason,
     fevals = fevals,
     objective = footer[["objective"]],
     max_gradient = footer[["max_gradient"]],
@@ -468,4 +584,22 @@ for (i in seq_len(nrow(step_table))) {
 }
 
 model_index <- bind_rows_fill(model_rows)
+copy_shared_region_map_assets(model_index$region_count)
 write.csv(model_index, file.path(out_dir, "model-index.csv"), row.names = FALSE)
+saved_par_index <- bind_rows_fill(saved_par_rows)
+if (!nrow(saved_par_index)) {
+  saved_par_index <- data.frame(
+    step_id = character(),
+    model_label = character(),
+    requested_run_mode = character(),
+    run_mode = character(),
+    requested_input_par = character(),
+    input_par = character(),
+    output_par = character(),
+    saved_par = character(),
+    par_fallback = logical(),
+    par_fallback_reason = character(),
+    stringsAsFactors = FALSE
+  )
+}
+write.csv(saved_par_index, file.path(out_dir, "saved-pars.csv"), row.names = FALSE)

@@ -1,0 +1,189 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 1,
+        "region_label": "Region 1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [120, 10],
+            [120, 50],
+            [170, 50],
+            [170, 10],
+            [120, 10],
+            [120, 10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 2,
+        "region_label": "Region 2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [170, 10],
+            [170, 50],
+            [210, 50],
+            [210, 10],
+            [170, 10],
+            [170, 10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 3,
+        "region_label": "Region 3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [140, 0],
+            [140, 10],
+            [170, 10],
+            [170, -10],
+            [150, -10],
+            [150, 0],
+            [140, 0],
+            [140, 0]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 4,
+        "region_label": "Region 4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [170, -10],
+            [170, 10],
+            [210, 10],
+            [210, -10],
+            [170, -10],
+            [170, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 5,
+        "region_label": "Region 5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [150, -10],
+            [170, -10],
+            [170, -40],
+            [140, -40],
+            [140, -20],
+            [150, -20],
+            [150, -10],
+            [150, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 6,
+        "region_label": "Region 6"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [170, -40],
+            [170, -10],
+            [210, -10],
+            [210, -40],
+            [170, -40],
+            [170, -40]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 7,
+        "region_label": "Region 7"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [110, -10],
+            [110, 20],
+            [140, 20],
+            [140, -10],
+            [110, -10],
+            [110, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 8,
+        "region_label": "Region 8"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [140, -10],
+            [140, 0],
+            [150, 0],
+            [150, -10],
+            [140, -10],
+            [140, -10]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "region": 9,
+        "region_label": "Region 9"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [140, -20],
+            [140, -10],
+            [150, -10],
+            [150, -20],
+            [140, -20],
+            [140, -20]
+          ]
+        ]
+      }
+    }
+  ]
+}
