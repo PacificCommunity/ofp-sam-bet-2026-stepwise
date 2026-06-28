@@ -70,14 +70,14 @@ env:
   # production reruns without editing the model folders.
   BET_PHASE10_11_CONVERGENCE: "-3"
 
-  # mfclshiny is pinned so results and local Shiny views use the same code.
+  # Private helper packages are updated at runtime so the public image stays stable.
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
-  KFLOW_RUNTIME_UPDATE: never
-  TUNA_FLOW_RUNTIME_UPDATE: never
-  KFLOW_REPO_RUNTIME_UPDATE: direct
-  KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@fec9ab16b1f7627428d88f65d9cd5c0b55d104b1
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@fec9ab16b1f7627428d88f65d9cd5c0b55d104b1
-  MFCLSHINY_GITHUB_REF: "fec9ab16b1f7627428d88f65d9cd5c0b55d104b1"
+  KFLOW_RUNTIME_UPDATE: auto
+  TUNA_FLOW_RUNTIME_UPDATE: auto
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@main
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@main
+  MFCLSHINY_GITHUB_REF: main
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   KFLOW_REPORT_COMMIT_GENERATED: "true"
@@ -105,7 +105,7 @@ local_apps:
       VECLIB_MAXIMUM_THREADS: "1"
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
-      MFCLSHINY_GITHUB_REF: "fec9ab16b1f7627428d88f65d9cd5c0b55d104b1"
+      MFCLSHINY_GITHUB_REF: main
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_REPORT_DPI: "96"
       MFCLSHINY_OPTIMIZE_FIGURES: "true"
@@ -135,7 +135,7 @@ local_apps:
       base_libs <- setdiff(.libPaths(), normalizePath(lib, winslash = "/", mustWork = FALSE))
       .libPaths(unique(c(lib, base_libs)))
 
-      mfclshiny_ref <- Sys.getenv("MFCLSHINY_GITHUB_REF", "fec9ab16b1f7627428d88f65d9cd5c0b55d104b1")
+      mfclshiny_ref <- Sys.getenv("MFCLSHINY_GITHUB_REF", "main")
       desc_field <- function(desc, name) {
         value <- tryCatch(desc[[name]], error = function(e) "")
         if (is.null(value) || !length(value) || is.na(value[[1L]])) "" else as.character(value[[1L]])
@@ -153,7 +153,7 @@ local_apps:
       ref_matches <- if (isTRUE(ref_is_sha)) {
         nzchar(installed_sha) && startsWith(tolower(installed_sha), tolower(mfclshiny_ref))
       } else {
-        identical(installed_ref, mfclshiny_ref)
+        FALSE
       }
       if (is.null(installed_desc) || !isTRUE(ref_matches)) {
         token <- Sys.getenv("GITHUB_PAT", Sys.getenv("GITHUB_TOKEN", ""))
@@ -373,12 +373,12 @@ triggers:
         KFLOW_REPORT_PUSH_GENERATED: "{{ job.config.KFLOW_REPORT_PUSH_GENERATED }}"
         KFLOW_REPORT_PUBLISH_REQUIRED: "{{ job.config.KFLOW_REPORT_PUBLISH_REQUIRED }}"
         KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
-        KFLOW_RUNTIME_UPDATE: never
-        TUNA_FLOW_RUNTIME_UPDATE: never
-        KFLOW_REPO_RUNTIME_UPDATE: direct
-        KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@fec9ab16b1f7627428d88f65d9cd5c0b55d104b1
-        KFLOW_REPO_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@fec9ab16b1f7627428d88f65d9cd5c0b55d104b1
-        MFCLSHINY_GITHUB_REF: "fec9ab16b1f7627428d88f65d9cd5c0b55d104b1"
+        KFLOW_RUNTIME_UPDATE: auto
+        TUNA_FLOW_RUNTIME_UPDATE: auto
+        KFLOW_REPO_RUNTIME_UPDATE: auto
+        KFLOW_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@main
+        KFLOW_REPO_RUNTIME_PACKAGES: mfclshiny=PacificCommunity/mfclshiny@main
+        MFCLSHINY_GITHUB_REF: main
         MFCLSHINY_REPORT_DPI: "180"
         MFCLSHINY_OPTIMIZE_FIGURES: "false"
         PLOT_OPTIMIZE_FIGURES: "true"
