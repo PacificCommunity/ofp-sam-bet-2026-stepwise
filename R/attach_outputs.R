@@ -331,6 +331,93 @@ read_hessian_nonpositive_parameters <- function(model_dir, top_n = 40L) {
   if (!length(rows)) data.frame(stringsAsFactors = FALSE) else do.call(rbind, rows)
 }
 
+first_existing_column <- function(tbl, candidates) {
+  hits <- intersect(candidates, names(tbl))
+  if (!length(hits)) return(NULL)
+  tbl[[hits[[1L]]]]
+}
+
+read_hessian_parameter_uncertainty <- function(model_dir, hinfo = NULL) {
+  parameter_table <- tryCatch(hinfo$diagnostics$parameter_table, error = function(e) NULL)
+  if (!is.data.frame(parameter_table) || !nrow(parameter_table)) {
+    se_values <- tryCatch(hinfo$standard_errors$values, error = function(e) NULL)
+    se_values <- suppressWarnings(as.numeric(se_values))
+    if (!length(se_values)) return(data.frame(stringsAsFactors = FALSE))
+    parameter_table <- NULL
+  } else {
+    se_values <- numeric()
+  }
+
+  if (!is.null(parameter_table)) {
+    n <- nrow(parameter_table)
+    idx <- suppressWarnings(as.integer(first_existing_column(
+      parameter_table,
+      c("Parameter.Index", "idx", "index", "parameter_index")
+    )))
+    label <- as.character(first_existing_column(
+      parameter_table,
+      c("Parameter.Label", "par", "parameter", "parameter_label")
+    ))
+    variance <- suppressWarnings(as.numeric(first_existing_column(
+      parameter_table,
+      c("Variance", "variance", "var_nonpos_diag", "hess_inv_diag")
+    )))
+    se <- suppressWarnings(as.numeric(first_existing_column(
+      parameter_table,
+      c("SE", "se", "se_nonpos", "std_error")
+    )))
+    pos_variance <- suppressWarnings(as.numeric(first_existing_column(
+      parameter_table,
+      c("Positivised.Variance", "positivised_variance", "var_pos_diag", "var_pos_from_cov_diag")
+    )))
+    pos_se <- suppressWarnings(as.numeric(first_existing_column(
+      parameter_table,
+      c("Positivised.SE", "positivised_se", "se_pos")
+    )))
+  } else {
+    n <- length(se_values)
+    idx <- seq_len(n)
+    label <- rep(NA_character_, n)
+    se <- se_values
+    variance <- se_values^2
+    pos_variance <- rep(NA_real_, n)
+    pos_se <- rep(NA_real_, n)
+  }
+
+  if (!length(idx)) idx <- seq_len(n)
+  if (!length(label)) label <- rep(NA_character_, n)
+  if (!length(variance)) variance <- rep(NA_real_, n)
+  if (!length(se)) se <- rep(NA_real_, n)
+  if (!length(pos_variance)) pos_variance <- rep(NA_real_, n)
+  if (!length(pos_se)) pos_se <- rep(NA_real_, n)
+
+  labels <- read_hessian_parameter_labels(model_dir)
+  if (!is.null(labels) && nrow(labels)) {
+    lookup <- stats::setNames(as.character(labels$Parameter.Label), as.character(labels$Parameter.Index))
+    fill <- is.na(label) | !nzchar(trimws(label))
+    label[fill] <- unname(lookup[as.character(idx[fill])])
+  }
+  missing_label <- is.na(label) | !nzchar(trimws(label))
+  label[missing_label] <- paste0("Parameter ", idx[missing_label])
+
+  h_status <- scalar_chr(pluck(hinfo, "eigen", "hessian_status"), NA_character_)
+  out <- data.frame(
+    Parameter.Index = idx,
+    Parameter.Label = label,
+    Variance = variance,
+    SE = se,
+    Positivised.Variance = pos_variance,
+    Positivised.SE = pos_se,
+    Hessian.Status = h_status,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  keep <- is.finite(out$Variance) | is.finite(out$SE) |
+    is.finite(out$Positivised.Variance) | is.finite(out$Positivised.SE)
+  out <- out[keep, , drop = FALSE]
+  if (!nrow(out)) data.frame(stringsAsFactors = FALSE) else out
+}
+
 hessian_status_from_neigen <- function(n_negative, n_total) {
   if (!is.finite(n_negative) || !is.finite(n_total) || n_total <= 0) {
     return(list(status = "Unknown", reliability = "UNKNOWN", is_pdh = NA))
@@ -386,7 +473,8 @@ hessian_summary_from_dir <- function(model_dir) {
     n_total_eigenvalues = n_total,
     hessian_status = scalar_chr(pluck(hinfo, "eigen", "hessian_status"), status$status),
     reliability = scalar_chr(pluck(hinfo, "eigen", "reliability"), status$reliability),
-    nonpositive_parameters = read_hessian_nonpositive_parameters(model_dir)
+    nonpositive_parameters = read_hessian_nonpositive_parameters(model_dir),
+    parameter_uncertainty = read_hessian_parameter_uncertainty(model_dir, hinfo)
   )
 }
 
