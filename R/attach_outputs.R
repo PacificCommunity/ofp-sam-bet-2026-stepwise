@@ -83,6 +83,15 @@ portable_output_path <- function(path, output_dir) {
   path
 }
 
+relative_output_path <- function(path, root) {
+  if (is.na(path) || !nzchar(path)) return(path)
+  path_norm <- normalize_loose(path)
+  root_norm <- normalize_loose(root)
+  prefix <- paste0(root_norm, "/")
+  if (identical(path_norm, root_norm)) return(".")
+  if (startsWith(path_norm, prefix)) substring(path_norm, nchar(prefix) + 1L) else path_norm
+}
+
 rebase_model_index_paths <- function(model_index, output_dir) {
   cols <- intersect(c("region_map_asset"), names(model_index))
   for (col in cols) {
@@ -496,6 +505,116 @@ update_model_payload_hessian <- function(model_dir) {
   TRUE
 }
 
+check_artifact_role <- function(path) {
+  name <- basename(path)
+  if (identical(name, "model_payload.rds")) return("model_payload")
+  if (identical(name, "profile_payload.rds")) return("profile_payload")
+  if (identical(name, "jitter_result.rds")) return("jitter_result")
+  if (identical(name, "hessian_info.rds")) return("hessian_info")
+  if (grepl("_runs[.]rds$", name)) return("check_runs")
+  if (grepl("(index|manifest)[.](csv|rds|json)$", name, ignore.case = TRUE)) return("index")
+  "artifact"
+}
+
+collect_attached_check_artifacts <- function(model_dir, check_types = diagnostic_dir_names()) {
+  rows <- list()
+  for (check_type in check_types) {
+    root <- file.path(model_dir, check_type)
+    if (!dir.exists(root)) next
+    files <- list.files(root, recursive = TRUE, full.names = TRUE, all.files = FALSE, no.. = TRUE)
+    if (!length(files)) next
+    info <- file.info(files)
+    files <- files[!is.na(info$isdir) & !info$isdir]
+    keep <- grepl(
+      "^(model_payload|profile_payload|jitter_result|selftest_runs|aspm_runs|hessian_info|retro_info)[.]rds$",
+      basename(files)
+    ) | grepl("(index|manifest)[.](csv|rds|json)$", basename(files), ignore.case = TRUE)
+    files <- files[keep]
+    if (!length(files)) next
+    rows[[length(rows) + 1L]] <- data.frame(
+      check_type = check_type,
+      artifact_role = vapply(files, check_artifact_role, character(1)),
+      artifact_file = normalize_loose(files),
+      artifact_relative_file = vapply(files, relative_output_path, character(1), root = model_dir),
+      artifact_folder = normalize_loose(dirname(files)),
+      artifact_relative_folder = vapply(dirname(files), relative_output_path, character(1), root = model_dir),
+      bytes = suppressWarnings(as.numeric(file.info(files)$size)),
+      stringsAsFactors = FALSE
+    )
+  }
+  bind_rows_fill(rows)
+}
+
+attached_check_counts <- function(model_dir, check_types, artifacts) {
+  rows <- lapply(check_types, function(check_type) {
+    root <- file.path(model_dir, check_type)
+    output_dirs <- if (dir.exists(root)) list.dirs(root, recursive = TRUE, full.names = TRUE) else character()
+    output_dirs <- output_dirs[output_dirs != root]
+    a <- if (is.data.frame(artifacts) && nrow(artifacts)) {
+      artifacts[artifacts$check_type == check_type, , drop = FALSE]
+    } else {
+      data.frame()
+    }
+    data.frame(
+      check_type = check_type,
+      n_output_dirs = length(output_dirs),
+      n_artifacts = nrow(a),
+      n_payload_artifacts = sum(a$artifact_role %in% c("model_payload", "profile_payload", "jitter_result"), na.rm = TRUE),
+      stringsAsFactors = FALSE
+    )
+  })
+  bind_rows_fill(rows)
+}
+
+attached_checks_summary_from_dir <- function(model_dir,
+                                             copied = diagnostic_dir_names(),
+                                             attached_row = NULL,
+                                             attached_at = "") {
+  check_types <- unique(normalize_check_type(copied))
+  check_types <- check_types[nzchar(check_types) & dir.exists(file.path(model_dir, check_types))]
+  index_file <- file.path(model_dir, "attached-checks-index.csv")
+  attached_index <- if (file.exists(index_file)) read_csv_safe(index_file) else data.frame()
+  if (is.data.frame(attached_row) && nrow(attached_row)) {
+    attached_index <- bind_rows_fill(list(attached_index, attached_row))
+  }
+  artifacts <- collect_attached_check_artifacts(model_dir, check_types)
+  if (!length(check_types) && !nrow(attached_index) && !nrow(artifacts)) return(NULL)
+  list(
+    schema = "ofp-sam.attached_checks.v1",
+    updated_at = attached_at %||% format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    check_types = check_types,
+    index = attached_index,
+    counts = attached_check_counts(model_dir, check_types, artifacts),
+    artifacts = artifacts
+  )
+}
+
+update_model_payload_attached_checks <- function(model_dir,
+                                                 copied = diagnostic_dir_names(),
+                                                 attached_row = NULL,
+                                                 attached_at = "") {
+  payload_file <- file.path(model_dir, "model_payload.rds")
+  if (!file.exists(payload_file)) return(FALSE)
+  summary <- attached_checks_summary_from_dir(
+    model_dir,
+    copied = copied,
+    attached_row = attached_row,
+    attached_at = attached_at
+  )
+  if (is.null(summary)) return(FALSE)
+  payload <- tryCatch(readRDS(payload_file), error = function(e) NULL)
+  if (is.null(payload) || !is.list(payload)) return(FALSE)
+  if (!is.null(payload$data) && is.list(payload$data)) {
+    if (is.null(payload$data$info) || !is.list(payload$data$info)) payload$data$info <- list()
+    payload$data$info$attached_checks <- summary
+  } else {
+    if (is.null(payload$info) || !is.list(payload$info)) payload$info <- list()
+    payload$info$attached_checks <- summary
+  }
+  saveRDS(payload, payload_file, compress = "xz")
+  TRUE
+}
+
 read_csv_safe <- function(path) {
   tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
 }
@@ -780,11 +899,12 @@ main <- function() {
     }
     parameter_labels_available <- if ("hessian" %in% copied) parameter_labels_match_hessian(target_dir) else FALSE
     payload_hessian_updated <- if ("hessian" %in% copied) update_model_payload_hessian(target_dir) else FALSE
-    attached_rows[[length(attached_rows) + 1L]] <- data.frame(
+    attached_row <- data.frame(
       model_key = row_value(target_model_rows, "model_key", row_value(target_model_rows, "step_id", row_key)),
       step_id = row_value(target_model_rows, "step_id", row_key),
       check_type = paste(copied, collapse = " "),
       payload_hessian_updated = payload_hessian_updated,
+      payload_checks_updated = FALSE,
       parameter_labels_available = parameter_labels_available,
       parameter_labels_generated = parameter_labels_generated,
       source_input_root = normalize_loose(row$input_root %||% ""),
@@ -793,6 +913,22 @@ main <- function() {
       attached_at = attached_at,
       stringsAsFactors = FALSE
     )
+    payload_checks_updated <- update_model_payload_attached_checks(
+      target_dir,
+      copied = copied,
+      attached_row = attached_row,
+      attached_at = attached_at
+    )
+    attached_row$payload_checks_updated <- payload_checks_updated
+    if (isTRUE(payload_checks_updated)) {
+      attached_row$payload_checks_updated <- update_model_payload_attached_checks(
+        target_dir,
+        copied = copied,
+        attached_row = attached_row,
+        attached_at = attached_at
+      )
+    }
+    attached_rows[[length(attached_rows) + 1L]] <- attached_row
   }
 
   attached <- bind_rows_fill(attached_rows)
