@@ -514,6 +514,42 @@ file_eol <- function(path) {
   if (any(bytes[-length(bytes)] == 13L & bytes[-1L] == 10L)) "\r\n" else "\n"
 }
 
+set_total_population_scalar <- function(path, value) {
+  eol <- file_eol(path)
+  lines <- readLines(path, warn = FALSE)
+  marker <- grep(
+    "^#[[:space:]]*Total population scaling factor [(]LN[(]R0[)][)]$",
+    trimws(lines)
+  )
+  if (!length(marker)) {
+    mort_marker <- grep("^# natural mortality [(]per year[)]$", trimws(lines))
+    if (length(mort_marker) != 1L) {
+      stop("Expected one # natural mortality (per year) marker in ", path, call. = FALSE)
+    }
+    formatted <- as.character(as.integer(value))
+    lines <- c(
+      lines[seq_len(mort_marker - 1L)],
+      "# Total population scaling factor (LN(R0))",
+      formatted,
+      lines[mort_marker:length(lines)]
+    )
+    writeLines(lines, path, sep = eol, useBytes = TRUE)
+    return(paste0("inserted total population scaling factor LN(R0)=", formatted))
+  }
+  if (length(marker) != 1L) {
+    stop("Expected one # Total population scaling factor (LN(R0)) marker in ", path, call. = FALSE)
+  }
+  value_i <- first_data_line_after(lines, marker)
+  formatted <- as.character(as.integer(value))
+  old <- trimws(lines[[value_i]])
+  if (identical(old, formatted)) {
+    return(invisible(""))
+  }
+  lines[[value_i]] <- formatted
+  writeLines(lines, path, sep = eol, useBytes = TRUE)
+  paste0("set total population scaling factor LN(R0) from ", old, " to ", formatted)
+}
+
 set_age_length_effective_sample_size <- function(path, value = 0.75) {
   eol <- file_eol(path)
   lines <- readLines(path, warn = FALSE)

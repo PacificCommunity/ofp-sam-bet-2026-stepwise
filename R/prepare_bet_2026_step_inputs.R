@@ -44,6 +44,7 @@ reg_scaling_source <- file.path(frq_root, "bet.2026.reg_scaling")
 reg_scaling_active_start_period <- 53L
 reg_scaling_active_end_period <- 72L
 reg_scaling_active_years <- "1965-1969"
+five_region_total_population_scalar <- 19L
 
 fixm_age_par_value <- "-2.54930339768360e+00"
 fixm_age_par_source <- "01-Diag2023 mgc=-5 final.par from Kflow job 000604"
@@ -392,6 +393,10 @@ copy_one(file.path(template_cache, "fishery_map.R"), file.path(newstructure_mode
 n_normalized_04 <- normalize_frq_absent_lf_records(file.path(newstructure_model_dir, "bet.frq"))
 ensure_frq_fishery_region_locations(file.path(newstructure_model_dir, "bet.frq"))
 apply_fixm_m(file.path(newstructure_model_dir, "bet.ini"))
+total_population_note_04 <- set_total_population_scalar(
+  file.path(newstructure_model_dir, "bet.ini"),
+  five_region_total_population_scalar
+)
 frq_counts_04 <- frq_header_counts(
   readLines(file.path(newstructure_model_dir, "bet.frq"), warn = FALSE),
   file.path(newstructure_model_dir, "bet.frq")
@@ -420,7 +425,12 @@ write_manifest(newstructure_dir, list(
     role = "ini",
     file = "bet.ini",
     source = regfish_ini_source,
-    note = paste(c(fixm_age_par_note, ini_tag_note_04)[nzchar(c(fixm_age_par_note, ini_tag_note_04))], collapse = "; ")
+    note = paste(
+      c(fixm_age_par_note, total_population_note_04, ini_tag_note_04)[
+        nzchar(c(fixm_age_par_note, total_population_note_04, ini_tag_note_04))
+      ],
+      collapse = "; "
+    )
   ),
   list(
     role = "tag",
@@ -451,11 +461,17 @@ write_readme(
     "Keeps data through 2021 and uses the global CPUE setup for this structural transition.",
     "Uses old CAAL re-assigned to the new fisheries.",
     paste0("Uses the restructured tag setup with ", frq_counts_04$n_tag_groups, " release groups."),
-    paste("Applies", fixm_age_par_note, "while retaining the 5-region `.ini` structure.")
+    paste("Applies", fixm_age_par_note, "while retaining the 5-region `.ini` structure."),
+    paste0("Sets total population scaling factor LN(R0) to ", five_region_total_population_scalar, ".")
   ),
   c(
     "bet.frq" = "`bet.2023.new-structure.global-cpue.frq`; 5-region, 33-fishery structure, terminal year 2021, global CPUE",
-    "bet.ini" = paste("`bet.2023.new.structure.ini`;", fixm_age_par_note, "and explicit default tag flags inserted if needed"),
+    "bet.ini" = paste(
+      "`bet.2023.new.structure.ini`;",
+      fixm_age_par_note,
+      total_population_note_04,
+      "and explicit default tag flags inserted if needed"
+    ),
     "bet.tag" = "`bet.2023.new.structure-low.recaps.removed.tag`; low-recapture-removed tag input",
     "bet.age_length" = paste("`bet.2023.new-structure.age_length`; old CAAL / age_length re-assigned to new fisheries", age_note_04, sep = "; "),
     "input_manifest.csv" = "machine-readable source/input notes with source commits"

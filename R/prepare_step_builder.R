@@ -80,6 +80,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     reference_tag = if (exists("regfish_tag_source")) regfish_tag_source else ""
   )
   apply_fixm_m(ini_out)
+  total_population_note <- set_total_population_scalar(
+    ini_out,
+    get0("five_region_total_population_scalar", ifnotfound = 19L)
+  )
   ini_tag_note <- ensure_ini_tag_flags(
     ini_out,
     frq_counts$n_tag_groups,
@@ -94,9 +98,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   if (nzchar(fixm_source)) {
     fixm_note <- paste(fixm_note, "from", fixm_source)
   }
-  ini_notes <- c(fixm_note, tag_rep_repair_note, ini_tag_note, ini_shed_note)
+  ini_notes <- c(fixm_note, total_population_note, tag_rep_repair_note, ini_tag_note, ini_shed_note)
   ini_note <- paste(ini_notes[nzchar(ini_notes)], collapse = "; ")
-  visible_ini_notes <- c(tag_rep_repair_note, ini_tag_note, ini_shed_note)
+  visible_ini_notes <- c(total_population_note, tag_rep_repair_note, ini_tag_note, ini_shed_note)
   visible_ini_notes <- visible_ini_notes[nzchar(visible_ini_notes)]
   if (length(visible_ini_notes) && "bet.ini" %in% names(input_notes)) {
     input_notes[["bet.ini"]] <- paste(
