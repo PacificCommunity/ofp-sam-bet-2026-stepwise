@@ -564,6 +564,7 @@ make_step(
   tag_source = new_tag,
   age_source = old_age,
   mix_from_ini = TRUE,
+  retain_reporting_rates_during_mixing = FALSE,
   title = "07 DataTo2024",
   summary = "Data to 2024, global CPUE, isolating the effect of adding three years of data.",
   bullets = c(
@@ -595,6 +596,7 @@ make_step(
   age_source = old_age,
   reg_scaling_source = reg_scaling_source,
   mix_from_ini = TRUE,
+  retain_reporting_rates_during_mixing = FALSE,
   title = "08 RegionalCPUE",
   summary = "Regional CPUE step using the 2024 regional CPUE frequency file and regional-scaling prior.",
   bullets = c(
@@ -627,6 +629,7 @@ make_step(
   age_source = new_age,
   reg_scaling_source = reg_scaling_source,
   mix_from_ini = TRUE,
+  retain_reporting_rates_during_mixing = FALSE,
   title = "09 NewOtoliths",
   summary = "New Japanese otoliths and 2026 CAAL input on the regional CPUE model.",
   bullets = c(
