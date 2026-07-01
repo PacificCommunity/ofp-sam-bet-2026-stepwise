@@ -33,9 +33,9 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `04-NewStructure` | `TRUE` | 04-NewStructure | 04a | 5-region structure |  0 | New structure | New structure | `04-newstructure` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `05-ConvertToLength` | `TRUE` | 05-ConvertToLength | 05a | convert weight compositions to length |  0 | Convert to length | Convert to length | `05-converttolength` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `06-LengthPlusLength` | `TRUE` | 06-LengthPlusLength | 06a | add additional length compositions |  0 | Length plus length | Length plus length | `06-lengthpluslength` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `07-DataTo2024` | `TRUE` | 07-DataTo2024 | 07a | 2024 data; 07a activates tag_flags(it,2)=1 |  1 | Data to 2024 | Data to 2024 | `07-datato2024` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `08-RegionalCPUE` | `TRUE` | 08-RegionalCPUE | 08a | regional CPUE and regional-scaling prior |  1 | Regional CPUE | Regional CPUE | `08-regionalcpue` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `09-NewOtoliths` | `TRUE` | 09-NewOtoliths | 09a | new otolith/CAAL input |  1 | New otoliths | New otoliths | `09-newotoliths` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `07-DataTo2024` | `TRUE` | 07-DataTo2024 | 07a | 2024 data; latest tag diagnostic with tag_flags(it,2)=0 |  0 | Data to 2024 | Data to 2024 | `07-datato2024` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `08-RegionalCPUE` | `TRUE` | 08-RegionalCPUE | 08a | regional CPUE diagnostic with tag_flags(it,2)=0 |  0 | Regional CPUE | Regional CPUE | `08-regionalcpue` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `09-NewOtoliths` | `TRUE` | 09-NewOtoliths | 09a | new otolith/CAAL diagnostic with tag_flags(it,2)=0 |  0 | New otoliths | New otoliths | `09-newotoliths` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `10-TagMixingKS` | `TRUE` | 10-TagMixing | 10a | release-specific tag mixing periods |  1 | Tag mixing KS | Tag mixing KS | `10-tagmixingks` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `11-TimeVaryingCV` | `TRUE` | 11-TimeVaryingCV | 11a | time-varying CPUE CV |  1 | Time-varying CV | Time-varying CV | `11-timevaryingcv` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `12-OrthogonalPoly` | `TRUE` | 12-OrthogonalPoly | 12a | orthogonal-polynomial recruitment |  1 | Orthogonal polynomial | Orthogonal polynomial | `12-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
