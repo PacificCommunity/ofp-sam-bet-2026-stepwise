@@ -13,7 +13,7 @@ KS coefficient 0.2 release-group-specific tag mixing periods.
 
 - `.frq`: `bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq`, full 2024 with regional CPUE
 - `.ini`: `bet.2026.mix-0.2.ini`, FixM M row applied from 01-Diag2023 mgc=-5 final.par from Kflow job 000604; raised 41 zero tag mixing periods to 1 because MFCL >=2.2.7.5 disallows 0
-- `.tag`: `bet.2026.low.recaps.removed.tag`
+- `.tag`: `bet.2026.low.recaps.removed.tag`; latest tag-prep build, including canneries-based reassignment of recaptures with missing gear to purse-seine fisheries before low-recap filtering
 - `.age_length`: `bet.2026.age_length` (updated CAAL); set age_length effective sample size to 0.75 for 181 records
 - `.reg_scaling`: `bet.2026.reg_scaling` global CPUE regional-scaling matrix, 292 quarterly rows x 5 regions
 - `input_manifest.csv`: machine-readable source/input notes
@@ -22,7 +22,7 @@ KS coefficient 0.2 release-group-specific tag mixing periods.
 
 - `ofp-sam-2026-BET-YFT-frq-build`: `d884ce5` - remove len comps from LL from 2023.new.structure
 - `ofp-sam-2026-BET-YFT-build-ini`: `b39cbfd` - updated ini files to reflect updated tag files
-- `ofp-sam-2026-BET-YFT-tag-prep`: `f6a9e4a` - Assign unassigned fisheries
+- `ofp-sam-2026-BET-YFT-tag-prep`: `5a4f5fb` - assign unassigned gear to PS from canneries
 - `ofp-sam-2026-BET-YFT-age-length-build`: `a26b694` - plus group at age 40
 - `ofp-sam-bet-2023-diagnostic`: `81fc412` - Format tables after plotting
 
@@ -44,6 +44,7 @@ KS coefficient 0.2 release-group-specific tag mixing periods.
 
 ## Run Note
 
+- The 2026 tag file itself is kept from the latest tag-prep `bet.2026.low.recaps.removed.tag`, including canneries-based purse-seine reassignment for recaptures with missing gear.
 - The mix-period ini family carries release-group-specific tag controls, so generated `doitall.sh` removes the inherited `-9999 1 2` override and lets the ini tag flags drive mixing periods while excluding reporting rates from predicted tag catches during mixing.
 - Generation validates that tag flags, tag shed rate, and the five tag reporting-rate matrices match the selected release-group count.
 - Zero mixing-period values in the source mix-period ini are raised to 1 because the current MFCL reader disallows 0.

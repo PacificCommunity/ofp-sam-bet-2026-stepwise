@@ -24,7 +24,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 
 - `ofp-sam-2026-BET-YFT-frq-build`: `d884ce5` - remove len comps from LL from 2023.new.structure
 - `ofp-sam-2026-BET-YFT-build-ini`: `b39cbfd` - updated ini files to reflect updated tag files
-- `ofp-sam-2026-BET-YFT-tag-prep`: `f6a9e4a` - Assign unassigned fisheries
+- `ofp-sam-2026-BET-YFT-tag-prep`: `5a4f5fb` - assign unassigned gear to PS from canneries
 - `ofp-sam-2026-BET-YFT-age-length-build`: `a26b694` - plus group at age 40
 - `ofp-sam-bet-2023-diagnostic`: `81fc412` - Format tables after plotting
 

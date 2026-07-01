@@ -495,14 +495,22 @@ stepwise_5_region_template_step_id <- "04-NewStructure"
 newstructure_ini <- file.path(newstructure_model_dir, "bet.ini")
 newstructure_tag <- file.path(newstructure_model_dir, "bet.tag")
 
+latest_2026_tag_note <- paste(
+  "`bet.2026.low.recaps.removed.tag`; latest tag-prep build, including",
+  "canneries-based reassignment of recaptures with missing gear to purse-seine",
+  "fisheries before low-recap filtering"
+)
+
 full_2024_alignment_run_notes <- c(
   "Generated inputs repair only the `.ini` alignment where needed: tag reporting-rate matrices, explicit tag flags, and tag shed rates are matched to the selected release-group count.",
-  "The 2026 tag file itself is kept from `bet.2026.low.recaps.removed.tag`; no tag release or recapture rows are deleted to suppress warnings.",
+  "The 2026 tag file itself is kept from the latest tag-prep `bet.2026.low.recaps.removed.tag`; this build assigns canneries-reported recaptures with missing gear to purse-seine fisheries before low-recap filtering.",
+  "Stepwise generation does not delete tag release or recapture rows to suppress warnings; it only repairs `.ini` alignment around the selected tag release-group count.",
   "Step 07 is kept as the DataTo2024 major step; substep 07a activates `tag_flags(it,2)=1` so reporting rates are excluded from predicted tag catches during mixing.",
   "Paired Kflow checks isolated this switch: steps 07-DataTo2024, 08-RegionalCPUE, and 09-NewOtoliths failed when `tag_flags(it,2)=0` retained reporting rates during mixing, and completed when `tag_flags(it,2)=1` excluded them.",
   "These steps use the current tuna-flow MFCL executable and the 04-NewStructure 5-region controls unless a later step explicitly changes controls."
 )
 mix_period_alignment_run_notes <- c(
+  "The 2026 tag file itself is kept from the latest tag-prep `bet.2026.low.recaps.removed.tag`, including canneries-based purse-seine reassignment for recaptures with missing gear.",
   "The mix-period ini family carries release-group-specific tag controls, so generated `doitall.sh` removes the inherited `-9999 1 2` override and lets the ini tag flags drive mixing periods while excluding reporting rates from predicted tag catches during mixing.",
   "Generation validates that tag flags, tag shed rate, and the five tag reporting-rate matrices match the selected release-group count.",
   "Zero mixing-period values in the source mix-period ini are raised to 1 because the current MFCL reader disallows 0."
@@ -577,7 +585,7 @@ make_step(
   input_notes = c(
     "bet.frq" = "`bet.2026.new-structure.global-cpue.wt-as-len-plus-len.frq`, full 2024 with global CPUE",
     "bet.ini" = paste("`bet.2026.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2023.new-structure.age_length` (old CAAL)"
   ),
   control_notes = c(
@@ -610,7 +618,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
     "bet.ini" = paste("`bet.2026.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2023.new-structure.age_length` (old CAAL)"
   ),
   control_notes = c(
@@ -643,7 +651,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
     "bet.ini" = paste("`bet.2026.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL/new otoliths)"
   ),
   control_notes = c(
@@ -675,7 +683,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
     "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
@@ -706,7 +714,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
     "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
@@ -738,7 +746,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
     "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
@@ -774,7 +782,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
     "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
@@ -810,7 +818,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE, with index effort creep applied"),
     "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
@@ -850,7 +858,7 @@ make_step(
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE, with index effort creep applied"),
     "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = "`bet.2026.low.recaps.removed.tag`",
+    "bet.tag" = latest_2026_tag_note,
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
