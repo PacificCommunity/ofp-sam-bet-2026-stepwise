@@ -27,10 +27,10 @@ Data to 2024, global CPUE, isolating the effect of adding three years of data.
 
 ## Control Notes
 
-- 04-NewStructure 5-region `doitall.sh` controls retained.
+- 04b-TagReportingMixing 5-region `doitall.sh` controls retained.
 - The inherited all-release-group `-9999 1 2` mixing-period override is removed; `tag_flags(it,1)=2` in `bet.ini` supplies the same two-quarter mixing period.
-- Substep 07a sets `tag_flags(it,2)=1` for the 2026 tag setup so reporting rates are excluded from predicted tag catches during mixing.
-- This is activated because 07-DataTo2024 failed with `tag_flags(it,2)=0` and completed with `tag_flags(it,2)=1`, isolating the reporting-rate treatment during mixing as the runnable 2026 setting for this step.
+- This step inherits 04b's `tag_flags(it,2)=1` treatment so reporting rates are excluded from predicted tag catches during mixing.
+- The inherited setting is retained because 07-DataTo2024 failed with `tag_flags(it,2)=0` and completed with `tag_flags(it,2)=1`, isolating the reporting-rate treatment during mixing as the runnable 2026 setting for this path.
 - Generated `.frq` files include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files carry explicit tag flags immediately after `# number of age classes`.
 - Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.
 - `age_flags(128)` is kept at 100 so the current MFCL reader interprets the initial equilibrium natural-mortality multiplier as 1.0.
@@ -42,9 +42,9 @@ Data to 2024, global CPUE, isolating the effect of adding three years of data.
 - Generated inputs repair only the `.ini` alignment where needed: tag reporting-rate matrices, explicit tag flags, and tag shed rates are matched to the selected release-group count.
 - The 2026 tag file itself is kept from the latest tag-prep `bet.2026.low.recaps.removed.tag`; this build assigns canneries-reported recaptures with missing gear to purse-seine fisheries before low-recap filtering.
 - Stepwise generation does not delete tag release or recapture rows to suppress warnings; it only repairs `.ini` alignment around the selected tag release-group count.
-- Step 07 is kept as the DataTo2024 major step; substep 07a activates `tag_flags(it,2)=1` so reporting rates are excluded from predicted tag catches during mixing.
-- Paired Kflow checks isolated this switch: steps 07-DataTo2024, 08-RegionalCPUE, and 09-NewOtoliths failed when `tag_flags(it,2)=0` retained reporting rates during mixing, and completed when `tag_flags(it,2)=1` excluded them.
-- These steps use the current tuna-flow MFCL executable and the 04-NewStructure 5-region controls unless a later step explicitly changes controls.
+- These steps inherit 04b's `tag_flags(it,2)=1` treatment, excluding reporting rates from predicted tag catches during mixing.
+- Paired Kflow checks isolated this switch in the 2026 full-data path: steps 07-DataTo2024, 08-RegionalCPUE, and 09-NewOtoliths failed when `tag_flags(it,2)=0` retained reporting rates during mixing, and completed when `tag_flags(it,2)=1` excluded them.
+- These steps use the current tuna-flow MFCL executable and the 04b-TagReportingMixing 5-region controls unless a later step explicitly changes controls.
 
 ## Outstanding Checks
 

@@ -30,7 +30,7 @@ New Japanese otoliths and 2026 CAAL input on the regional CPUE model.
 
 - 08-RegionalCPUE controls retained.
 - The inherited all-release-group `-9999 1 2` mixing-period override is removed; `tag_flags(it,1)=2` in `bet.ini` supplies the same two-quarter mixing period.
-- `tag_flags(it,2)` is set to 1 for the 2026 tag setup so reporting rates are excluded from predicted tag catches during mixing.
+- The step inherits 04b's `tag_flags(it,2)=1` treatment so reporting rates are excluded from predicted tag catches during mixing.
 - Generated `.frq` files include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files carry explicit tag flags immediately after `# number of age classes`.
 - Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.
 - `age_flags(128)` is kept at 100 so the current MFCL reader interprets the initial equilibrium natural-mortality multiplier as 1.0.
@@ -48,9 +48,9 @@ New Japanese otoliths and 2026 CAAL input on the regional CPUE model.
 - Generated inputs repair only the `.ini` alignment where needed: tag reporting-rate matrices, explicit tag flags, and tag shed rates are matched to the selected release-group count.
 - The 2026 tag file itself is kept from the latest tag-prep `bet.2026.low.recaps.removed.tag`; this build assigns canneries-reported recaptures with missing gear to purse-seine fisheries before low-recap filtering.
 - Stepwise generation does not delete tag release or recapture rows to suppress warnings; it only repairs `.ini` alignment around the selected tag release-group count.
-- Step 07 is kept as the DataTo2024 major step; substep 07a activates `tag_flags(it,2)=1` so reporting rates are excluded from predicted tag catches during mixing.
-- Paired Kflow checks isolated this switch: steps 07-DataTo2024, 08-RegionalCPUE, and 09-NewOtoliths failed when `tag_flags(it,2)=0` retained reporting rates during mixing, and completed when `tag_flags(it,2)=1` excluded them.
-- These steps use the current tuna-flow MFCL executable and the 04-NewStructure 5-region controls unless a later step explicitly changes controls.
+- These steps inherit 04b's `tag_flags(it,2)=1` treatment, excluding reporting rates from predicted tag catches during mixing.
+- Paired Kflow checks isolated this switch in the 2026 full-data path: steps 07-DataTo2024, 08-RegionalCPUE, and 09-NewOtoliths failed when `tag_flags(it,2)=0` retained reporting rates during mixing, and completed when `tag_flags(it,2)=1` excluded them.
+- These steps use the current tuna-flow MFCL executable and the 04b-TagReportingMixing 5-region controls unless a later step explicitly changes controls.
 
 ## Outstanding Checks
 

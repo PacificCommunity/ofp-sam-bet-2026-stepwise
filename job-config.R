@@ -21,6 +21,7 @@ stepwise_models <- data.frame(
     "02-NewExe",
     "03-FixM",
     "04-NewStructure",
+    "04b-TagReportingMixing",
     "05-ConvertToLength",
     "06-LengthPlusLength",
     "07-DataTo2024",
@@ -33,7 +34,7 @@ stepwise_models <- data.frame(
     "14-EffortCreep",
     "15-DataWeighting"
   ),
-  enabled = rep(TRUE, 15),
+  enabled = rep(TRUE, 16),
 
   # Scientific grouping for reporting/provenance. `substep` is where changes
   # like tag_flags(it,2) are made explicit without hiding them inside a data step.
@@ -41,6 +42,7 @@ stepwise_models <- data.frame(
     "01-Diagnostic",
     "02-Executable",
     "03-FixM",
+    "04-NewStructure",
     "04-NewStructure",
     "05-ConvertToLength",
     "06-LengthPlusLength",
@@ -59,6 +61,7 @@ stepwise_models <- data.frame(
     "02a",
     "03a",
     "04a",
+    "04b",
     "05a",
     "06a",
     "07a",
@@ -75,10 +78,11 @@ stepwise_models <- data.frame(
     "historical diagnostic",
     "current MFCL executable",
     "fixed natural mortality from mgc=-5 diagnostic",
-    "5-region structure",
+    "5-region structure with tag_flags(it,2)=0",
+    "exclude reporting rates during tag mixing",
     "convert weight compositions to length",
     "add additional length compositions",
-    "2024 data; 07a activates tag_flags(it,2)=1",
+    "2024 data inheriting 04b tag_flags(it,2)=1",
     "regional CPUE and regional-scaling prior",
     "new otolith/CAAL input",
     "release-specific tag mixing periods",
@@ -93,8 +97,9 @@ stepwise_models <- data.frame(
     NA,
     NA,
     0L,
-    0L,
-    0L,
+    1L,
+    1L,
+    1L,
     1L,
     1L,
     1L,
@@ -112,6 +117,7 @@ stepwise_models <- data.frame(
     "NewExe",
     "FixM",
     "New structure",
+    "Tag reporting mixing",
     "Convert to length",
     "Length plus length",
     "Data to 2024",
@@ -131,6 +137,7 @@ stepwise_models <- data.frame(
     "NewExe",
     "FixM",
     "New structure",
+    "Tag reporting mixing",
     "Convert to length",
     "Length plus length",
     "Data to 2024",
@@ -150,6 +157,7 @@ stepwise_models <- data.frame(
     "02-newexe",
     "03-fixm",
     "04-newstructure",
+    "04b-tagreportingmixing",
     "05-converttolength",
     "06-lengthpluslength",
     "07-datato2024",
@@ -164,13 +172,13 @@ stepwise_models <- data.frame(
   ),
 
   # Run settings for each model row.
-  run_mode = rep("doitall", 15),
+  run_mode = rep("doitall", 16),
   mfcl_program_path = c(
     "/home/mfcl/mfclo64_2023_diagnostic_2.2.2.0",
-    rep("", 14)
+    rep("", 15)
   ),
-  input_par = rep("", 15),
-  frq = rep("bet.frq", 15),
-  output_par = rep("", 15),
+  input_par = rep("", 16),
+  frq = rep("bet.frq", 16),
+  output_par = rep("", 16),
   stringsAsFactors = FALSE
 )

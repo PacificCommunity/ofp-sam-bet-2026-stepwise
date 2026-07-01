@@ -1,4 +1,4 @@
-# 04 NewStructure
+# 04a NewStructure
 
 First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 
@@ -9,6 +9,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 - Keeps data through 2021 and uses the global CPUE setup for this structural transition.
 - Uses old CAAL re-assigned to the new fisheries.
 - Uses the restructured tag setup with 96 release groups.
+- Keeps `tag_flags(it,2)=0` as the 04a bridge so the 5-region structural change is isolated before changing the reporting-rate treatment during mixing.
 - Applies FixM M row applied from 01-Diag2023 mgc=-5 final.par from Kflow job 000604 while retaining the 5-region `.ini` structure.
 - Sets total population scaling factor LN(R0) to 17.
 
@@ -30,7 +31,8 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 
 ## Control Notes
 
-- This step becomes the 5-region control template for steps 05-15.
+- This 04a step isolates the 5-region structural change with `tag_flags(it,2)=0`.
+- The following 04b substep changes only the reporting-rate treatment during tag mixing and becomes the 5-region control template for steps 05-15.
 - Generated `.frq` files include region locations for every fishery, including index fisheries.
 - MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed.
 - `doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.

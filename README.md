@@ -15,7 +15,8 @@ and notes.
 | `01-Diag2023` | original 2023 diagnostic rerun with historical MFCL |
 | `02-NewExe` | current executable compatibility baseline |
 | `03-FixM` | FixM update at the 2023 MLE value |
-| `04-NewStructure` | 5-region / 33-fishery structure with global CPUE |
+| `04-NewStructure` | 04a: 5-region / 33-fishery structure with global CPUE, `tag_flags(it,2)=0` |
+| `04b-TagReportingMixing` | 04b: exclude reporting rates during tag mixing, `tag_flags(it,2)=1` |
 | `05-ConvertToLength` | convert existing weight compositions to length |
 | `06-LengthPlusLength` | add additional length compositions |
 | `07-DataTo2024` | add data to 2024 with global CPUE |
