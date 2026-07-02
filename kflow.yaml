@@ -73,6 +73,11 @@ env:
   # production reruns without editing the model folders.
   BET_PHASE10_11_CONVERGENCE: "-3"
 
+  # Diagnostic tag setting. When set to 2-11, steps 07-15 start with
+  # tag_flags(it,2)=1 in PHASE1, then switch back to tag_flags(it,2)=0 from
+  # the selected phase. Blank keeps the model folder's native tag flags.
+  BET_TAG_IT2_SWITCH_PHASE: ""
+
   # Private helper packages are updated at runtime so the public image stays stable.
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
   KFLOW_RUNTIME_UPDATE: never
@@ -426,6 +431,7 @@ job_config:
     - PROGRAM_PATH
     - MFCL_LIVE_LOG
     - BET_PHASE10_11_CONVERGENCE
+    - BET_TAG_IT2_SWITCH_PHASE
     - PLOT_TITLE
     - PLOT_MAX_FISHERIES
     - FLOW_SPECIES

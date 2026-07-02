@@ -17,6 +17,31 @@ case "$phase10_11_convergence" in
     ;;
 esac
 echo "PHASE 10/11 convergence criterion: $phase10_11_convergence"
+tag_it2_switch_phase=${BET_TAG_IT2_SWITCH_PHASE:-}
+if [ -n "$tag_it2_switch_phase" ]; then
+  case "$tag_it2_switch_phase" in
+    [2-9]|10|11) ;;
+    *)
+      echo "BET_TAG_IT2_SWITCH_PHASE must be 2-11, e.g. 6 to set tag_flags(it,2)=0 from PHASE6." >&2
+      exit 1
+      ;;
+  esac
+  echo "Tag it2 phase switch: tag_flags(it,2)=1 from PHASE1, then tag_flags(it,2)=0 from PHASE $tag_it2_switch_phase."
+fi
+
+tag_it2_commands() {
+  phase=$1
+  if [ -z "$tag_it2_switch_phase" ]; then
+    return 0
+  fi
+  if [ "$phase" = "1" ]; then
+    printf '%s\n' '  -9999 2 1  # diagnostic: exclude reporting rates during tag mixing for early phases'
+  fi
+  if [ "$phase" = "$tag_it2_switch_phase" ]; then
+    printf '%s\n' '  -9999 2 0  # diagnostic: apply reporting rates during tag mixing from this phase'
+  fi
+}
+
 
 
 # -----------------------------------
@@ -129,6 +154,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # Tag dynamics settings
   1 33 99    # maximum tag reporting rate for all fisheries is 0.99
   2 96 30    # pool tags after 30 quarters at liberty
+$(tag_it2_commands 1)
 # Mixing periods are read from bet.ini tag flags for this step.
   2 198 1    # activate release group reporting rates
   -999 43 0  # estimate tag variance if = 1
@@ -259,6 +285,7 @@ PHASE1
 # ---------
 
 $program_path bet.frq 01.par 02.par -file - <<PHASE2
+$(tag_it2_commands 2)
   1 1 100  # set max. number of function evaluations per phase to 100
   1 50 0   # set convergence criterion to 1
   2 113 0  # scaling init pop - turned off
@@ -270,6 +297,7 @@ PHASE2
 # ---------
 
 $program_path bet.frq 02.par 03.par -file - <<PHASE3
+$(tag_it2_commands 3)
 # OPR settings. BET OPR screening rank-1 model: 69-01-50-50.
   1 149 0   # turn off recruitment-deviation penalty for OPR
   1 398 0   # turn off arithmetic-mean terminal fixed-recruitment option for OPR
@@ -302,6 +330,7 @@ PHASE3
 # ---------
 
 $program_path bet.frq 03.par 04.par -file - <<PHASE4
+$(tag_it2_commands 4)
   2 68 1   # estimate movement coefficients
   2 69 1
   2 27 -1  # penalty wt 0.1 computed against prior
@@ -312,6 +341,7 @@ PHASE4
 # ---------
 
 $program_path bet.frq 04.par 05.par -file - <<PHASE5
+$(tag_it2_commands 5)
   -100000 1 0 # estimate
   -100000 2 0 # time-invariant
   -100000 3 0 # distribution
@@ -344,6 +374,7 @@ PHASE5
 # ---------
 
 $program_path bet.frq 05.par 06.par -file - <<PHASE6
+$(tag_it2_commands 6)
   1 240 1  # fit to age-length data
   1 14 1   # estimate von Bertalanffy K
   1 12 1   # estimate mean length of age 1
@@ -356,6 +387,7 @@ PHASE6
 # ---------
 
 $program_path bet.frq 06.par 07.par -file - <<PHASE7
+$(tag_it2_commands 7)
   1 15 1   # estimate overall SD of length-at-age
   1 16 1   # estimate length dependent SD
   1 173 0  # activate independent mean lengths for first 0 age classes
@@ -369,6 +401,7 @@ PHASE7
 # ---------
 
 $program_path bet.frq 07.par 08.par -file - <<PHASE8
+$(tag_it2_commands 8)
   2 145 1    # use SRR parameters - low penalty for deviation
   2 146 1    # estimate SRR parameters
   2 182 1    # make SRR annual rather than quarterly
@@ -396,6 +429,7 @@ PHASE8
 # ---------
 
 $program_path bet.frq 08.par 09.par -file - <<PHASE9
+$(tag_it2_commands 9)
   2 145 -1   # use SRR parameters - low penalty for deviation
   1 1 500    # function evaluations
   1 50 -2    # convergence criteria
@@ -407,6 +441,7 @@ PHASE9
 # ----------
 
 $program_path bet.frq 09.par 10.par -file - <<PHASE10
+$(tag_it2_commands 10)
   1 1 10000  # function evaluations
   1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
   1 121 0    # estimate scaling parameter for Lorenzen (age_pars(5,1)); off
@@ -417,6 +452,7 @@ PHASE10
 # ----------
 
 $program_path bet.frq 10.par 11.par -file - <<PHASE11
+$(tag_it2_commands 11)
   1 1 5000
   1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
   1 246 1   # indepvar.rpt
