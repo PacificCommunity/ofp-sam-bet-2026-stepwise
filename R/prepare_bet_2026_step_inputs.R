@@ -467,10 +467,10 @@ frq_regional_2024 <- first_existing(
   "2026 regional CPUE frq"
 )
 
-## 04a-NewStructure is the first 5-region template. Cache the inherited template
+## 04-NewStructure is the first 5-region template. Cache the inherited template
 ## before overwriting the folder so the script is rerunnable after old folders
 ## have been removed.
-newstructure_dir <- file.path(root, "steps", "04a-NewStructure")
+newstructure_dir <- file.path(root, "steps", "04-NewStructure")
 newstructure_model_dir <- file.path(newstructure_dir, "model")
 template_candidates <- c(
   newstructure_model_dir
@@ -558,7 +558,7 @@ write_manifest(newstructure_dir, list(
 ))
 write_readme(
   newstructure_dir,
-  "04a NewStructure",
+  "04 NewStructure",
   "First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.",
   c(
     "Uses the new 5-region and new-fishery frequency source from the frq-build repo.",
@@ -566,7 +566,6 @@ write_readme(
     "Keeps data through 2021 and uses the global CPUE setup for this structural transition.",
     "Uses old CAAL re-assigned to the new fisheries.",
     paste0("Uses the restructured tag setup with ", frq_counts_04$n_tag_groups, " release groups."),
-    "Keeps `tag_flags(it,2)=0` as the 04a bridge so the 5-region structural change is isolated before changing the reporting-rate treatment during mixing.",
     paste("Applies", fixm_age_par_display, "while retaining the 5-region `.ini` structure."),
     paste0("Sets total population scaling factor LN(R0) to ", five_region_total_population_scalar, ".")
   ),
@@ -583,8 +582,7 @@ write_readme(
     "input_manifest.csv" = "machine-readable source/input notes with source commits"
   ),
   c(
-    "This 04a step isolates the 5-region structural change with `tag_flags(it,2)=0`.",
-    "The following 04b substep changes only the reporting-rate treatment during tag mixing and becomes the 5-region control template for steps 05-15.",
+    "This step is the 5-region control template for steps 05-15.",
     "Generated `.frq` files include region locations for every fishery, including index fisheries.",
     "MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
@@ -598,47 +596,9 @@ write_readme(
   source_revisions = input_repo_revision_table()
 )
 
-stepwise_5_region_template_step_id <- "04a-NewStructure"
-
-make_step(
-  step_id = "04b-TagReportingMixing",
-  frq_source = file.path(newstructure_model_dir, "bet.frq"),
-  ini_source = file.path(newstructure_model_dir, "bet.ini"),
-  tag_source = file.path(newstructure_model_dir, "bet.tag"),
-  age_source = file.path(newstructure_model_dir, "bet.age_length"),
-  frq_tag_groups = frq_counts_04$n_tag_groups,
-  retain_reporting_rates_during_mixing = FALSE,
-  title = "04b TagReportingMixing",
-  summary = "04a new-structure input with `tag_flags(it,2)=1` so reporting rates are excluded during tag mixing periods.",
-  bullets = c(
-    "Uses the same `.frq`, `.tag`, CAAL, FixM, LN(R0), and 5-region controls as 04a-NewStructure.",
-    "Changes only the second tag-flag column: `tag_flags(it,2)=1`.",
-    "This excludes tag reporting rates from predicted tag recaptures only during the specified tag mixing periods.",
-    "Later steps inherit this 04b tag-treatment setting."
-  ),
-  input_notes = c(
-    "bet.frq" = "`steps/04a-NewStructure/model/bet.frq`; 04a 5-region, 33-fishery structure, terminal year 2021, global CPUE",
-    "bet.ini" = paste("`steps/04a-NewStructure/model/bet.ini`, with `tag_flags(it,2)=1` applied;", fixm_age_par_note),
-    "bet.tag" = "`steps/04a-NewStructure/model/bet.tag`; same 04a low-recapture-removed tag input",
-    "bet.age_length" = "`steps/04a-NewStructure/model/bet.age_length`; same 04a old CAAL / age_length input"
-  ),
-  control_notes = c(
-    "04a-NewStructure 5-region `doitall.sh` controls retained.",
-    "`tag_flags(it,1)=2` still supplies the two-quarter tag mixing period.",
-    "`tag_flags(it,2)=1` excludes reporting rates from predicted tag recaptures during those mixing periods.",
-    "This follows the MFCL warning/recommended treatment and keeps the change separate from the 04a structural transition."
-  ),
-  run_notes = c(
-    "Compare directly with 04a-NewStructure to isolate the effect of excluding reporting rates during tag mixing periods.",
-    "This substep is the inherited tag-treatment baseline for steps 05-06 and 10-15; steps 07-09 are a separate `it2=0` rerun with the updated 2026 reporting-rate matrix."
-  ),
-  outstanding = c("After fitting, compare the tag likelihood and early time-at-liberty residuals against 04a-NewStructure.")
-)
-
-stepwise_5_region_template_step_id <- "04b-TagReportingMixing"
-newstructure_b_model_dir <- file.path(root, "steps", "04b-TagReportingMixing", "model")
-newstructure_ini <- file.path(newstructure_b_model_dir, "bet.ini")
-newstructure_tag <- file.path(newstructure_b_model_dir, "bet.tag")
+stepwise_5_region_template_step_id <- "04-NewStructure"
+newstructure_ini <- file.path(newstructure_model_dir, "bet.ini")
+newstructure_tag <- file.path(newstructure_model_dir, "bet.tag")
 
 latest_2026_tag_note <- paste(
   "`bet.2026.low.recaps.removed.tag`; latest tag-prep build, including",
@@ -649,12 +609,12 @@ latest_2026_tag_note <- paste(
 full_2024_alignment_run_notes <- c(
   "Generated inputs only repair `.ini` alignment: reporting-rate matrices, tag flags, and shed rates are matched to the selected release-group count.",
   "The latest `bet.2026.low.recaps.removed.tag` is kept; the tag build assigns missing-gear canneries recaptures to purse-seine before low-recap filtering.",
-  "Steps 07-09 are rerun with `tag_flags(it,2)=0` after copying the updated 2026 reporting-rate matrix from `bet.2026.mix-0.2.ini`."
+  "The 2026 reporting-rate matrix is copied from the mix-period ini source before Kflow runs."
 )
 mix_period_alignment_run_notes <- c(
   "The latest `bet.2026.low.recaps.removed.tag` is kept, including the canneries missing-gear reassignment.",
   "Release-specific mixing periods come from the mix-period `.ini`; generated `doitall.sh` removes the inherited `-9999 1 2` override.",
-  "Generation validates tag flags, shed rates, and reporting-rate matrices; source zero mixing periods are raised to 1 for the current MFCL reader."
+  "Generation validates tag-control dimensions, shed rates, and reporting-rate matrices; source zero mixing periods are raised to 1 for the current MFCL reader."
 )
 
 make_step(
@@ -664,25 +624,24 @@ make_step(
   tag_source = newstructure_tag,
   age_source = old_age,
   frq_tag_groups = frq_counts_04$n_tag_groups,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   title = "05 ConvertToLength",
   summary = "Data to 2021, global CPUE, converting existing weight compositions to length.",
   bullets = c(
     "Uses `bet.2023.new-structure.global-cpue.wt-as-len.frq` from the frq-build repo.",
-    "Keeps the 04b-TagReportingMixing `.ini`, tag, and old CAAL inputs so this step isolates the weight-to-length conversion.",
-    paste("Applies", fixm_age_par_display, "through the inherited 04b-TagReportingMixing ini.")
+    "Keeps the 04-NewStructure `.ini`, tag, and old CAAL inputs so this step isolates the weight-to-length conversion.",
+    paste("Applies", fixm_age_par_display, "through the inherited 04-NewStructure ini.")
   ),
   input_notes = c(
     "bet.frq" = "`bet.2023.new-structure.global-cpue.wt-as-len.frq`; terminal year 2021, global CPUE",
-    "bet.ini" = paste("`steps/04b-TagReportingMixing/model/bet.ini`,", fixm_age_par_note),
-    "bet.tag" = "`steps/04b-TagReportingMixing/model/bet.tag`",
+    "bet.ini" = paste("`steps/04-NewStructure/model/bet.ini`,", fixm_age_par_note),
+    "bet.tag" = "`steps/04-NewStructure/model/bet.tag`",
     "bet.age_length" = "`bet.2023.new-structure.age_length` (old CAAL)"
   ),
   control_notes = c(
-    "04b-TagReportingMixing 5-region `doitall.sh` controls retained.",
-    "The step inherits 04b's `tag_flags(it,2)=1` treatment so reporting rates are excluded from predicted tag catches during mixing."
+    "04-NewStructure 5-region `doitall.sh` controls retained."
   ),
-  run_notes = c("Compare directly with 04b-TagReportingMixing to isolate the effect of converting existing weight compositions to length."),
+  run_notes = c("Compare directly with 04-NewStructure to isolate the effect of converting existing weight compositions to length."),
   outstanding = c("Review fit impacts before deciding whether any size-composition weighting needs adjustment at this stage.")
 )
 
@@ -693,23 +652,22 @@ make_step(
   tag_source = newstructure_tag,
   age_source = old_age,
   frq_tag_groups = frq_counts_04$n_tag_groups,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   title = "06 LengthPlusLength",
   summary = "Data to 2021, global CPUE, adding length compositions that were not used in the past.",
   bullets = c(
     "Uses `bet.2023.new-structure.global-cpue.wt-as-len-plus-len.frq` from the frq-build repo.",
-    "Keeps the 04b-TagReportingMixing `.ini`, tag, and old CAAL inputs so this step isolates the additional length-composition data.",
-    paste("Applies", fixm_age_par_display, "through the inherited 04b-TagReportingMixing ini.")
+    "Keeps the 04-NewStructure `.ini`, tag, and old CAAL inputs so this step isolates the additional length-composition data.",
+    paste("Applies", fixm_age_par_display, "through the inherited 04-NewStructure ini.")
   ),
   input_notes = c(
     "bet.frq" = "`bet.2023.new-structure.global-cpue.wt-as-len-plus-len.frq`; terminal year 2021, global CPUE",
-    "bet.ini" = paste("`steps/04b-TagReportingMixing/model/bet.ini`,", fixm_age_par_note),
-    "bet.tag" = "`steps/04b-TagReportingMixing/model/bet.tag`",
+    "bet.ini" = paste("`steps/04-NewStructure/model/bet.ini`,", fixm_age_par_note),
+    "bet.tag" = "`steps/04-NewStructure/model/bet.tag`",
     "bet.age_length" = "`bet.2023.new-structure.age_length` (old CAAL)"
   ),
   control_notes = c(
-    "04b-TagReportingMixing 5-region `doitall.sh` controls retained.",
-    "The step inherits 04b's `tag_flags(it,2)=1` treatment so reporting rates are excluded from predicted tag catches during mixing."
+    "04-NewStructure 5-region `doitall.sh` controls retained."
   ),
   run_notes = c("Compare directly with 05-ConvertToLength to isolate the extra length-composition records."),
   outstanding = c("Review fit impacts before deciding whether length-composition weighting needs adjustment.")
@@ -730,8 +688,7 @@ make_step(
     "Uses `bet.2026.new-structure.global-cpue.wt-as-len-plus-len.frq` without year chopping.",
     "Moves from the 2021 transition steps to the full 2024 frequency/catch/size series.",
     "Keeps old CAAL so the new otolith update is isolated in 09-NewOtoliths.",
-    paste0("Uses the 2026 low-recapture-removed tag file and 2026 reporting-rate matrix, with ", fixm_age_par_display, "."),
-    "This diagnostic rerun keeps reporting rates active during tag mixing to test the updated 2026 reporting-rate matrix."
+    paste0("Uses the 2026 low-recapture-removed tag file and 2026 reporting-rate matrix, with ", fixm_age_par_display, ".")
   ),
   input_notes = c(
     "bet.frq" = "`bet.2026.new-structure.global-cpue.wt-as-len-plus-len.frq`, full 2024 with global CPUE",
@@ -740,10 +697,9 @@ make_step(
     "bet.age_length" = "`bet.2023.new-structure.age_length` (old CAAL)"
   ),
   control_notes = c(
-    "04b-TagReportingMixing 5-region `doitall.sh` controls retained.",
+    "04-NewStructure 5-region `doitall.sh` controls retained.",
     "The inherited all-release-group `-9999 1 2` mixing-period override is removed; `tag_flags(it,1)=2` in `bet.ini` supplies the same two-quarter mixing period.",
-    "This diagnostic rerun sets `tag_flags(it,2)=0` so reporting rates are retained in predicted tag catches during mixing.",
-    "The 2026 reporting-rate matrix is copied from `bet.2026.mix-0.2.ini` before setting tag flags, avoiding the stale zero-RR cells that caused the earlier `it2=0` failure."
+    "The 2026 reporting-rate matrix is copied from `bet.2026.mix-0.2.ini` before final alignment checks."
   ),
   run_notes = full_2024_alignment_run_notes,
   outstanding = c("Full 2024 input behavior still needs a real MFCL fit and residual/CPUE-sigma review.")
@@ -765,8 +721,7 @@ make_step(
     "Uses the full 2024 regional CPUE `.frq` from the frq-build repo.",
     "Adds `bet.reg_scaling` and switches to the regional-scaling prior in PHASE 5.",
     "Keeps old CAAL so the new otolith update is isolated in 09-NewOtoliths.",
-    paste0("Uses the 2026 low-recapture-removed tag file and 2026 reporting-rate matrix, with ", fixm_age_par_display, "."),
-    "Keeps reporting rates active during tag mixing to match the 07 diagnostic rerun."
+    paste0("Uses the 2026 low-recapture-removed tag file and 2026 reporting-rate matrix, with ", fixm_age_par_display, ".")
   ),
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
@@ -775,11 +730,10 @@ make_step(
     "bet.age_length" = "`bet.2023.new-structure.age_length` (old CAAL)"
   ),
   control_notes = c(
-    "04b-TagReportingMixing 5-region `doitall.sh` controls retained until PHASE 5.",
+    "04-NewStructure 5-region `doitall.sh` controls retained until PHASE 5.",
     "PHASE 5 switches index CPUE/selectivity grouping for the regional-scaling prior.",
     "The inherited all-release-group `-9999 1 2` mixing-period override is removed; `tag_flags(it,1)=2` in `bet.ini` supplies the same two-quarter mixing period.",
-    "This diagnostic rerun sets `tag_flags(it,2)=0` so reporting rates are retained in predicted tag catches during mixing.",
-    "The 2026 reporting-rate matrix is copied from `bet.2026.mix-0.2.ini` before setting tag flags."
+    "The 2026 reporting-rate matrix is copied from `bet.2026.mix-0.2.ini` before final alignment checks."
   ),
   run_notes = full_2024_alignment_run_notes,
   outstanding = c("Evaluate and test different regional CPUE prior values after this runnable baseline fit.")
@@ -812,8 +766,7 @@ make_step(
   control_notes = c(
     "08-RegionalCPUE controls retained.",
     "The inherited all-release-group `-9999 1 2` mixing-period override is removed; `tag_flags(it,1)=2` in `bet.ini` supplies the same two-quarter mixing period.",
-    "This diagnostic rerun sets `tag_flags(it,2)=0` so reporting rates are retained in predicted tag catches during mixing.",
-    "The 2026 reporting-rate matrix is copied from `bet.2026.mix-0.2.ini` before setting tag flags."
+    "The 2026 reporting-rate matrix is copied from `bet.2026.mix-0.2.ini` before final alignment checks."
   ),
   run_notes = full_2024_alignment_run_notes,
   outstanding = c("After fitting, compare CAAL likelihood and age residuals against 08-RegionalCPUE.")
@@ -827,14 +780,14 @@ make_step(
   age_source = new_age,
   reg_scaling_source = reg_scaling_source,
   mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   title = "10 TagMixingKS",
   summary = "KS coefficient 0.2 release-group-specific tag mixing periods.",
   bullets = c(
     "Uses `bet.2026.mix-0.2.ini` from the ini-build repo.",
     "Keeps the full 2024 regional CPUE `.frq`, 2026 tag file, and updated 2026 CAAL.",
     paste("Applies", fixm_age_par_display, "to the mix-period ini."),
-    "Removes the inherited `-9999 1 2` line from `doitall.sh` so release-group-specific mixing-period values in the ini are not overwritten; `tag_flags(it,2)` is set to 1 to exclude reporting rates from predicted tag catches during mixing."
+    "Removes the inherited `-9999 1 2` line from `doitall.sh` so release-group-specific mixing-period values in the ini are not overwritten."
   ),
   input_notes = c(
     "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
@@ -858,7 +811,7 @@ make_step(
   age_source = new_age,
   reg_scaling_source = reg_scaling_source,
   mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   doitall_edits = list(time_varying_cv = TRUE),
   title = "11 TimeVaryingCV",
   summary = "Enable time-varying CPUE CV for the regional index fisheries.",
@@ -889,7 +842,7 @@ make_step(
   age_source = new_age,
   reg_scaling_source = reg_scaling_source,
   mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   doitall_edits = list(time_varying_cv = TRUE, opr = TRUE),
   title = "12 OrthogonalPoly",
   summary = "Orthogonal polynomial recruitment step, ensuring `2 177 0` is used.",
@@ -926,7 +879,7 @@ make_step(
   age_source = new_age,
   reg_scaling_source = reg_scaling_source,
   mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   doitall_edits = list(time_varying_cv = TRUE, opr = TRUE, size_based_selectivity = TRUE),
   title = "13 LengthBasedSel",
   summary = "Length-based selectivity test after the OPR step.",
@@ -961,7 +914,7 @@ make_step(
   reg_scaling_source = reg_scaling_source,
   frq_transform = "effort_creep",
   mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   doitall_edits = list(time_varying_cv = TRUE, opr = TRUE, size_based_selectivity = TRUE),
   title = "14 EffortCreep",
   summary = "Apply the lower effort-creep level in the diagnostic model path.",
@@ -997,7 +950,7 @@ make_step(
   reg_scaling_source = reg_scaling_source,
   frq_transform = "effort_creep",
   mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = FALSE,
+  retain_reporting_rates_during_mixing = TRUE,
   doitall_edits = list(
     time_varying_cv = TRUE,
     opr = TRUE,

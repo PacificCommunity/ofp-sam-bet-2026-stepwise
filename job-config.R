@@ -22,8 +22,7 @@ stepwise_models <- data.frame(
     "02b-Ini1007",
     "02c-LnR0",
     "03-FixM",
-    "04a-NewStructure",
-    "04b-TagReportingMixing",
+    "04-NewStructure",
     "05-ConvertToLength",
     "06-LengthPlusLength",
     "07-DataTo2024",
@@ -36,17 +35,15 @@ stepwise_models <- data.frame(
     "14-EffortCreep",
     "15-DataWeighting"
   ),
-  enabled = rep(TRUE, 18),
+  enabled = rep(TRUE, 17),
 
-  # Scientific grouping for reporting/provenance. `substep` is where changes
-  # like tag_flags(it,2) are made explicit without hiding them inside a data step.
+  # Scientific grouping for reporting/provenance.
   major_step = c(
     "01-Diagnostic",
     "02-Executable",
     "02-Executable",
     "02-Executable",
     "03-FixM",
-    "04-NewStructure",
     "04-NewStructure",
     "05-ConvertToLength",
     "06-LengthPlusLength",
@@ -66,8 +63,7 @@ stepwise_models <- data.frame(
     "02b",
     "02c",
     "03a",
-    "04a",
-    "04b",
+    "04",
     "05a",
     "06a",
     "07a",
@@ -86,13 +82,12 @@ stepwise_models <- data.frame(
     "promote diagnostic ini to 1007",
     "set diagnostic LN(R0) to 17",
     "fixed natural mortality from mgc=-5 diagnostic after 02c",
-    "5-region structure with tag_flags(it,2)=0",
-    "exclude reporting rates during tag mixing",
+    "5-region structure with global CPUE",
     "convert weight compositions to length",
     "add additional length compositions",
-    "2024 data with 2026 RR matrix and tag_flags(it,2)=0",
-    "regional CPUE and regional-scaling prior with tag_flags(it,2)=0",
-    "new otolith/CAAL input with tag_flags(it,2)=0",
+    "2024 data with global CPUE",
+    "regional CPUE and regional-scaling prior",
+    "new otolith/CAAL input",
     "release-specific tag mixing periods",
     "time-varying CPUE CV",
     "orthogonal-polynomial recruitment",
@@ -100,27 +95,6 @@ stepwise_models <- data.frame(
     "effort creep",
     "data weighting"
   ),
-  tag_flags_it2 = c(
-    NA,
-    NA,
-    0L,
-    0L,
-    0L,
-    0L,
-    1L,
-    1L,
-    1L,
-    0L,
-    0L,
-    0L,
-    1L,
-    1L,
-    1L,
-    1L,
-    1L,
-    1L
-  ),
-
   # Short model label used in logs, plots, and reports.
   model_label = c(
     "Diag2023",
@@ -129,7 +103,6 @@ stepwise_models <- data.frame(
     "LN(R0) 17",
     "FixM",
     "New structure",
-    "Tag reporting mixing",
     "Convert to length",
     "Length plus length",
     "Data to 2024",
@@ -150,8 +123,7 @@ stepwise_models <- data.frame(
     "02b Ini 1007",
     "02c LN(R0) 17",
     "03 FixM",
-    "04a New structure",
-    "04b Tag reporting mixing",
+    "04 New structure",
     "05 Convert to length",
     "06 Length plus length",
     "07 Data to 2024",
@@ -172,8 +144,7 @@ stepwise_models <- data.frame(
     "02b-ini1007",
     "02c-lnr0",
     "03-fixm",
-    "04a-newstructure",
-    "04b-tagreportingmixing",
+    "04-newstructure",
     "05-converttolength",
     "06-lengthpluslength",
     "07-datato2024",
@@ -188,13 +159,13 @@ stepwise_models <- data.frame(
   ),
 
   # Run settings for each model row.
-  run_mode = rep("doitall", 18),
+  run_mode = rep("doitall", 17),
   mfcl_program_path = c(
     "/home/mfcl/mfclo64_2023_diagnostic_2.2.2.0",
-    rep("", 17)
+    rep("", 16)
   ),
-  input_par = rep("", 18),
-  frq = rep("bet.frq", 18),
-  output_par = rep("", 18),
+  input_par = rep("", 17),
+  frq = rep("bet.frq", 17),
+  output_par = rep("", 17),
   stringsAsFactors = FALSE
 )

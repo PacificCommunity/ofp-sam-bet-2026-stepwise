@@ -14,16 +14,16 @@ Data to 2021, global CPUE, adding length compositions that were not used in the 
 | # | Change |
 | --- | --- |
 | 1 | Uses `bet.2023.new-structure.global-cpue.wt-as-len-plus-len.frq` from the frq-build repo. |
-| 2 | Keeps the 04b-TagReportingMixing `.ini`, tag, and old CAAL inputs so this step isolates the additional length-composition data. |
-| 3 | Applies FixM M row from 01-Diag2023 mgc=-5 final.par from Kflow job 000604 through the inherited 04b-TagReportingMixing ini. |
+| 2 | Keeps the 04-NewStructure `.ini`, tag, and old CAAL inputs so this step isolates the additional length-composition data. |
+| 3 | Applies FixM M row from 01-Diag2023 mgc=-5 final.par from Kflow job 000604 through the inherited 04-NewStructure ini. |
 
 ## Inputs
 
 | File | Source / note |
 | --- | --- |
 | `.frq` | `bet.2023.new-structure.global-cpue.wt-as-len-plus-len.frq`; terminal year 2021, global CPUE |
-| `.ini` | `steps/04b-TagReportingMixing/model/bet.ini`, FixM M row applied from 01-Diag2023 mgc=-5 final.par from Kflow job 000604 |
-| `.tag` | `steps/04b-TagReportingMixing/model/bet.tag` |
+| `.ini` | `steps/04-NewStructure/model/bet.ini`, FixM M row applied from 01-Diag2023 mgc=-5 final.par from Kflow job 000604 |
+| `.tag` | `steps/04-NewStructure/model/bet.tag` |
 | `.age_length` | `bet.2023.new-structure.age_length` (old CAAL); set age_length effective sample size to 0.75 for 112 records |
 | `input_manifest.csv` | machine-readable source/input notes |
 
@@ -42,9 +42,8 @@ Data to 2021, global CPUE, adding length compositions that were not used in the 
 
 | # | Control |
 | --- | --- |
-| 1 | 04b-TagReportingMixing 5-region `doitall.sh` controls retained. |
-| 2 | The step inherits 04b's `tag_flags(it,2)=1` treatment so reporting rates are excluded from predicted tag catches during mixing. |
-| 3 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 1 | 04-NewStructure 5-region `doitall.sh` controls retained. |
+| 2 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
 
 ## Run Notes
 

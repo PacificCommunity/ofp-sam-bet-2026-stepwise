@@ -21,7 +21,7 @@
 | File | Source / note |
 | --- | --- |
 | `.frq` | `steps/02a-NewExe/model/bet.frq` |
-| `.ini` | `steps/02a-NewExe/model/bet.ini`; set ini version to 1007; inserted MFCL 1007 tag flags for 118 release groups with 2 mixing periods and reporting rates retained during mixing; inserted zero tag shed-rate vector for 118 release groups; inserted MFCL 1007 total-population scalar default 25; inserted MFCL 1007 Richards growth parameter default 0 |
+| `.ini` | `steps/02a-NewExe/model/bet.ini`; set ini version to 1007; inserted MFCL 1007 tag-control rows for 118 release groups with 2 mixing periods; inserted zero tag shed-rate vector for 118 release groups; inserted MFCL 1007 total-population scalar default 25; inserted MFCL 1007 Richards growth parameter default 0 |
 | `.tag` | `steps/02a-NewExe/model/bet.tag` |
 | `.age_length` | `steps/02a-NewExe/model/bet.age_length` |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
