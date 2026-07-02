@@ -44,7 +44,7 @@ Length-based selectivity test after the OPR step.
 | # | Control |
 | --- | --- |
 | 1 | 12-OrthogonalPoly controls are retained. |
-| 2 | `-999 26 3` is applied for length-based selectivity. |
+| 2 | This test branch can delay `-999 26 3` with `BET_LENGTH_SEL_PHASE`; unset or `1` matches the original PHASE 1 activation. |
 | 3 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
 | 4 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
 | 5 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
