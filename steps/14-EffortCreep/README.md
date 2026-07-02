@@ -44,7 +44,7 @@ Apply the lower effort-creep level in the diagnostic model path.
 
 | # | Control |
 | --- | --- |
-| 1 | 13-LengthBasedSel controls are retained. |
+| 1 | 13-LengthBasedSel controls are retained; this test branch can delay `-999 26 3` with `BET_LENGTH_SEL_PHASE`. |
 | 2 | No extra MFCL flag is used for effort creep; the change is in the index-fishery effort values in `bet.frq`. |
 | 3 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
 | 4 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |

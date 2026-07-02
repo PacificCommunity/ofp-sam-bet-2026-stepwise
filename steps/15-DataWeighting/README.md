@@ -43,7 +43,7 @@ Initial selective data-weighting step after the effort-creep model.
 
 | # | Control |
 | --- | --- |
-| 1 | 14-EffortCreep controls are retained. |
+| 1 | 14-EffortCreep controls are retained; this test branch can delay `-999 26 3` with `BET_LENGTH_SEL_PHASE`. |
 | 2 | `-999 49 40` and `-999 50 40` replace the global LF/WF divisor-20 settings. |
 | 3 | Fishery-specific divisor-40 settings inherited from the 5-region controls are retained. |
 | 4 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
