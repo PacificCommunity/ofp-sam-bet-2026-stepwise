@@ -83,3 +83,16 @@ test of the updated reporting-rate matrix with `tag_flags(it,2)=0`.
 | 07-DataTo2024 | 1044 | 24533 | running |
 | 08-RegionalCPUE | 1046 | 24535 | running |
 | 09-NewOtoliths | 1047 | 24536 | running |
+
+## Release Group 43 Diagnostic
+
+After the updated reporting-rate matrix was copied into 07-09, job 1061 still
+failed in PHASE4 at release group 43, region 3, period 260. The failed period
+has concentrated first-quarter recaptures, especially in fisheries 25 and 27,
+with non-zero active reporting rates. This points to a mixing-period
+reporting-rate instability rather than the earlier zero-RR matrix problem.
+
+The next diagnostic branch keeps `tag_flags(it,2)=0` for every other release
+group, but sets release group 43 to `tag_flags(it,2)=1` in steps 07-09. If this
+passes, release group 43 is the first selective candidate for excluding
+reporting-rate correction during the two-quarter mixing period.
