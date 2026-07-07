@@ -33,6 +33,22 @@ traced without guessing.
 | `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
 | `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
 
+### Step-12 Length-Based Selectivity Sensitivity Branch
+
+Branch `experiment/lengthbased-step12-sensitivity-swap12-13` is based on
+`experiment/swap-step12-lengthbased-step13-ortho`, where `12-LengthBasedSel`
+adds length-based selectivity before `13-OrthogonalPoly` applies OPR. The
+current `12-LengthBasedSel` row remains the 5-node reference.
+
+| Step | Length selectivity setting | Fit schedule |
+| --- | --- | --- |
+| `12b-LengthSelNodes4` | cubic spline with 4 nodes | standard PHASE 10/11 evaluations |
+| `12c-LengthSelNodes6` | cubic spline with 6 nodes | standard PHASE 10/11 evaluations |
+| `12d-LengthSelNodes7` | cubic spline with 7 nodes | standard PHASE 10/11 evaluations |
+| `12e-LengthSelNodes5LongFit` | cubic spline with 5 nodes | doubled PHASE 10/11 evaluations |
+| `12f-LengthSelNodes6LongFit` | cubic spline with 6 nodes | doubled PHASE 10/11 evaluations |
+| `12g-LengthSelNodes7LongFit` | cubic spline with 7 nodes | doubled PHASE 10/11 evaluations |
+
 ## Substep Logic
 
 | Block | Substeps | Reason |

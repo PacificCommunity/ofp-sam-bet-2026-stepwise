@@ -171,3 +171,59 @@ stepwise_models <- data.frame(
   output_par = rep("", 17),
   stringsAsFactors = FALSE
 )
+
+lengthbased_step12_sensitivity_models <- data.frame(
+  step_id = c(
+    "12b-LengthSelNodes4",
+    "12c-LengthSelNodes6",
+    "12d-LengthSelNodes7",
+    "12e-LengthSelNodes5LongFit",
+    "12f-LengthSelNodes6LongFit",
+    "12g-LengthSelNodes7LongFit"
+  ),
+  enabled = rep(TRUE, 6),
+  major_step = rep("12-LengthBasedSelSensitivity", 6),
+  substep = c("12b", "12c", "12d", "12e", "12f", "12g"),
+  change_axis = c(
+    "length-based selectivity cubic-spline nodes 4",
+    "length-based selectivity cubic-spline nodes 6",
+    "length-based selectivity cubic-spline nodes 7",
+    "length-based selectivity nodes 5 with long fit",
+    "length-based selectivity nodes 6 with long fit",
+    "length-based selectivity nodes 7 with long fit"
+  ),
+  model_label = c(
+    "Length-based sel nodes 4",
+    "Length-based sel nodes 6",
+    "Length-based sel nodes 7",
+    "Length-based sel nodes 5 long fit",
+    "Length-based sel nodes 6 long fit",
+    "Length-based sel nodes 7 long fit"
+  ),
+  job_title = c(
+    "12b Length-based sel nodes 4",
+    "12c Length-based sel nodes 6",
+    "12d Length-based sel nodes 7",
+    "12e Length-based sel nodes 5 long fit",
+    "12f Length-based sel nodes 6 long fit",
+    "12g Length-based sel nodes 7 long fit"
+  ),
+  job_key = c(
+    "12b-lengthsel-nodes4",
+    "12c-lengthsel-nodes6",
+    "12d-lengthsel-nodes7",
+    "12e-lengthsel-nodes5-longfit",
+    "12f-lengthsel-nodes6-longfit",
+    "12g-lengthsel-nodes7-longfit"
+  ),
+  run_mode = rep("doitall", 6),
+  region_count = rep(5L, 6),
+  kflow_memory = rep("8GB", 6),
+  mfcl_program_path = rep("", 6),
+  input_par = rep("", 6),
+  frq = rep("bet.frq", 6),
+  output_par = rep("", 6),
+  stringsAsFactors = FALSE
+)
+
+stepwise_models <- rbind(stepwise_models, lengthbased_step12_sensitivity_models)

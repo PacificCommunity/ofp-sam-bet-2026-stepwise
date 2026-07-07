@@ -45,6 +45,12 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-OrthogonalPoly` | `TRUE` | 13-OrthogonalPoly | 13a | orthogonal-polynomial recruitment | Orthogonal polynomial | 13 Orthogonal polynomial | `13-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12b-LengthSelNodes4` | `TRUE` | 12-LengthBasedSelSensitivity | 12b | length-based selectivity cubic-spline nodes 4 | Length-based sel nodes 4 | 12b Length-based sel nodes 4 | `12b-lengthsel-nodes4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12c-LengthSelNodes6` | `TRUE` | 12-LengthBasedSelSensitivity | 12c | length-based selectivity cubic-spline nodes 6 | Length-based sel nodes 6 | 12c Length-based sel nodes 6 | `12c-lengthsel-nodes6` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12d-LengthSelNodes7` | `TRUE` | 12-LengthBasedSelSensitivity | 12d | length-based selectivity cubic-spline nodes 7 | Length-based sel nodes 7 | 12d Length-based sel nodes 7 | `12d-lengthsel-nodes7` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12e-LengthSelNodes5LongFit` | `TRUE` | 12-LengthBasedSelSensitivity | 12e | length-based selectivity nodes 5 with long fit | Length-based sel nodes 5 long fit | 12e Length-based sel nodes 5 long fit | `12e-lengthsel-nodes5-longfit` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12f-LengthSelNodes6LongFit` | `TRUE` | 12-LengthBasedSelSensitivity | 12f | length-based selectivity nodes 6 with long fit | Length-based sel nodes 6 long fit | 12f Length-based sel nodes 6 long fit | `12f-lengthsel-nodes6-longfit` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12g-LengthSelNodes7LongFit` | `TRUE` | 12-LengthBasedSelSensitivity | 12g | length-based selectivity nodes 7 with long fit | Length-based sel nodes 7 long fit | 12g Length-based sel nodes 7 long fit | `12g-lengthsel-nodes7-longfit` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -70,6 +76,12 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-OrthogonalPoly` | `steps/13-OrthogonalPoly/model` | `exists` |
 | `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
 | `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
+| `12b-LengthSelNodes4` | `steps/12b-LengthSelNodes4/model` | `exists` |
+| `12c-LengthSelNodes6` | `steps/12c-LengthSelNodes6/model` | `exists` |
+| `12d-LengthSelNodes7` | `steps/12d-LengthSelNodes7/model` | `exists` |
+| `12e-LengthSelNodes5LongFit` | `steps/12e-LengthSelNodes5LongFit/model` | `exists` |
+| `12f-LengthSelNodes6LongFit` | `steps/12f-LengthSelNodes6LongFit/model` | `exists` |
+| `12g-LengthSelNodes7LongFit` | `steps/12g-LengthSelNodes7LongFit/model` | `exists` |
 
 
 ## Useful Kflow Config
