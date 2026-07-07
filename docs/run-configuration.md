@@ -41,8 +41,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `09-NewOtoliths` | `TRUE` | 09-NewOtoliths | 09a | new otolith/CAAL input | New otoliths | 09 New otoliths | `09-newotoliths` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `10-TagMixingKS` | `TRUE` | 10-TagMixing | 10a | release-specific tag mixing periods | Tag mixing KS | 10 Tag mixing KS | `10-tagmixingks` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `11-TimeVaryingCV` | `TRUE` | 11-TimeVaryingCV | 11a | time-varying CPUE CV | Time-varying CV | 11 Time-varying CV | `11-timevaryingcv` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `12-OrthogonalPoly` | `TRUE` | 12-OrthogonalPoly | 12a | orthogonal-polynomial recruitment | Orthogonal polynomial | 12 Orthogonal polynomial | `12-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `13-LengthBasedSel` | `TRUE` | 13-LengthBasedSel | 13a | length-based selectivity | Length-based selectivity | 13 Length-based selectivity | `13-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12-LengthBasedSel` | `TRUE` | 12-LengthBasedSel | 12a | length-based selectivity | Length-based selectivity | 12 Length-based selectivity | `12-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13-OrthogonalPoly` | `TRUE` | 13-OrthogonalPoly | 13a | orthogonal-polynomial recruitment | Orthogonal polynomial | 13 Orthogonal polynomial | `13-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 
@@ -66,8 +66,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `09-NewOtoliths` | `steps/09-NewOtoliths/model` | `exists` |
 | `10-TagMixingKS` | `steps/10-TagMixingKS/model` | `exists` |
 | `11-TimeVaryingCV` | `steps/11-TimeVaryingCV/model` | `exists` |
-| `12-OrthogonalPoly` | `steps/12-OrthogonalPoly/model` | `exists` |
-| `13-LengthBasedSel` | `steps/13-LengthBasedSel/model` | `exists` |
+| `12-LengthBasedSel` | `steps/12-LengthBasedSel/model` | `exists` |
+| `13-OrthogonalPoly` | `steps/13-OrthogonalPoly/model` | `exists` |
 | `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
 | `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
 

@@ -1,21 +1,21 @@
-# 12 OrthogonalPoly
+# 13 OrthogonalPoly
 
-Orthogonal polynomial recruitment step, ensuring `2 177 0` is used.
+Orthogonal polynomial recruitment step after length-based selectivity, ensuring `2 177 0` is used.
 
 ## Snapshot
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/12-OrthogonalPoly/model` |
+| Step folder | `steps/13-OrthogonalPoly/model` |
 | Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Uses the same inputs as 11-TimeVaryingCV. |
-| 2 | Applies the BET OPR screening rank-1 model: `69-01-50-50`. |
-| 3 | Keeps time-varying CPUE CV enabled for index fisheries 29-33. |
+| 1 | Uses the same inputs as 12-LengthBasedSel. |
+| 2 | Retains time-varying CPUE CV and length-based selectivity. |
+| 3 | Applies the BET OPR screening rank-1 model: `69-01-50-50`. |
 | 4 | OPR controls are applied in PHASE 3 of `doitall.sh`, including `2 177 0`. |
 
 ## Inputs
@@ -53,7 +53,7 @@ Orthogonal polynomial recruitment step, ensuring `2 177 0` is used.
 
 | # | Control |
 | --- | --- |
-| 1 | Time-varying CPUE CV flags are retained. |
+| 1 | 12-LengthBasedSel controls are retained. |
 | 2 | `1 149 0`, `1 398 0`, `1 400 0`, `2 177 0`, `2 32 0`, and `2 113 0` are applied at PHASE 3 for the OPR transfer. |
 | 3 | `1 155 69`, `1 217 1`, `1 216 50`, and `1 218 50` set the OPR year, season, region, and region-season effects. |
 | 4 | `2 30 1` is deliberately retained at the OPR phase because current MFCL requires `age_flag(30)=1` to activate the OPR polynomial coefficients. |

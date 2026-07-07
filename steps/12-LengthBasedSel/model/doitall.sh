@@ -170,7 +170,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -33 32 21  # Index R5
 # Selectivity settings
   -999 3 37  # all selectivities equal for age class 37 and older
-  -999 26 2  # set length-dependent selectivity option
+  -999 26 3  # use length-based selectivity
   -999 57 3  # uses cubic spline selectivity
   -999 61 5  # with 5 nodes for cubic spline
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.
@@ -270,31 +270,10 @@ PHASE2
 # ---------
 
 $program_path bet.frq 02.par 03.par -file - <<PHASE3
-# OPR settings. BET OPR screening rank-1 model: 69-01-50-50.
-  1 149 0   # turn off recruitment-deviation penalty for OPR
-  1 398 0   # turn off arithmetic-mean terminal fixed-recruitment option for OPR
-  1 400 0   # clear fixed terminal recruitment-deviate block for OPR
-  2 177 0   # turn off old total-pop scaling for OPR
-  2 32 0    # turn off overall population scaling parameter for OPR
-  2 113 0   # keep scaling init pop off during OPR transfer
-  1 155 69  # orthogonal polynomial recruitment - year effect
-  1 217 1   # orthogonal polynomial recruitment - season effect
-  1 216 50  # orthogonal polynomial recruitment - region effect
-  1 218 50  # orthogonal polynomial recruitment - region-season interaction effect
-  1 202 2   # OPR end window: last 2 real years use lower-degree/constant-end basis
-  1 210 0   # OPR region end window: 0 inherits parest_flag(202)
-  1 212 0   # OPR season end window: 0 inherits parest_flag(202)
-  1 214 0   # OPR region-season end window: 0 inherits parest_flag(202)
-  2 30 1    # keep age_flag(30) on so current MFCL activates OPR coefficients
-  2 70 0    # turn off mean+deviate regional recruitment time series
-  2 71 0    # turn off regional recruitment distribution deviations
-  2 178 0   # turn off regional recruitment sum-product constraint
-  -100000 1 0  # turn off time-invariant recruitment distribution, region 1
-  -100000 2 0  # turn off time-invariant recruitment distribution, region 2
-  -100000 3 0  # turn off time-invariant recruitment distribution, region 3
-  -100000 4 0  # turn off time-invariant recruitment distribution, region 4
-  -100000 5 0  # turn off time-invariant recruitment distribution, region 5
-  1 1 500  # function evaluations from the OPR screening doitall example
+  2 70 1   # activate time series of reg recruitment parameters
+  2 71 1   # estimate temporal changes in recruitment distribution
+  2 178 1  # constrain regional recruitments
+  1 1 200
 PHASE3
 
 # ---------
@@ -312,11 +291,11 @@ PHASE4
 # ---------
 
 $program_path bet.frq 04.par 05.par -file - <<PHASE5
-  -100000 1 0 # estimate
-  -100000 2 0 # time-invariant
-  -100000 3 0 # distribution
-  -100000 4 0 # of
-  -100000 5 0 # recruitment
+  -100000 1 1  # estimate
+  -100000 2 1  # time-invariant
+  -100000 3 1  # distribution
+  -100000 4 1  # of
+  -100000 5 1  # recruitment
 # Regional-scaling MVN prior.
 # PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass.
 # Ungroup index CPUE likelihood and remove grouped-sigma override.

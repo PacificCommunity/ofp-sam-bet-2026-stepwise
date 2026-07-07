@@ -28,8 +28,8 @@ traced without guessing.
 | `09-NewOtoliths` | Age data | Adds the updated 2026 CAAL / otolith input. | 08. |
 | `10-TagMixingKS` | Tag mixing | Uses release-specific mixing periods from the KS 0.2 build. | 09. |
 | `11-TimeVaryingCV` | CPUE CV | Adds time-varying CPUE CV. | 10. |
-| `12-OrthogonalPoly` | Recruitment | Applies the orthogonal-polynomial recruitment setting. | 11. |
-| `13-LengthBasedSel` | Selectivity | Adds length-based selectivity. | 12. |
+| `12-LengthBasedSel` | Selectivity | Adds length-based selectivity before the OPR step. | 11. |
+| `13-OrthogonalPoly` | Recruitment | Applies the orthogonal-polynomial recruitment setting after length-based selectivity. | 12. |
 | `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
 | `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
 

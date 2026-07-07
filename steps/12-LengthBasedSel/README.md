@@ -1,21 +1,22 @@
-# 13 LengthBasedSel
+# 12 LengthBasedSel
 
-Length-based selectivity test after the OPR step.
+Length-based selectivity test before the OPR step.
 
 ## Snapshot
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/13-LengthBasedSel/model` |
+| Step folder | `steps/12-LengthBasedSel/model` |
 | Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Uses the same inputs as 12-OrthogonalPoly. |
-| 2 | Retains time-varying CPUE CV and OPR controls. |
+| 1 | Uses the same inputs as 11-TimeVaryingCV. |
+| 2 | Retains time-varying CPUE CV enabled for index fisheries 29-33. |
 | 3 | Sets fish flag 26 from 2 to 3 in `doitall.sh` for the length-based selectivity test. |
+| 4 | No OPR controls are applied until 13-OrthogonalPoly. |
 
 ## Inputs
 
@@ -52,12 +53,13 @@ Length-based selectivity test after the OPR step.
 
 | # | Control |
 | --- | --- |
-| 1 | 12-OrthogonalPoly controls are retained. |
+| 1 | Time-varying CPUE CV flags are retained. |
 | 2 | `-999 26 3` is applied for length-based selectivity. |
-| 3 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
-| 4 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
-| 5 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
-| 6 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 3 | OPR recruitment flags are deliberately not applied in this step. |
+| 4 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
+| 5 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
+| 6 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
+| 7 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
 
 ## Run Notes
 
@@ -67,7 +69,7 @@ Length-based selectivity test after the OPR step.
 | 2 | Release-specific mixing periods come from the mix-period `.ini`; generated `doitall.sh` removes the inherited `-9999 1 2` override. |
 | 3 | Generation validates tag-control dimensions, shed rates, and reporting-rate matrices; source zero mixing periods are raised to 1 for the current MFCL reader. |
 | 4 | Positive tag recapture RR, active, target, and penalty cells are validated after copying the latest RR groupings; the fishery 19 repair only remains as a fallback for older sources that still need it. |
-| 5 | The step-specific change after OPR is limited to fish flag 26: `doitall.sh` sets `-999 26 3`. |
+| 5 | The step-specific change after time-varying CPUE CV is limited to fish flag 26: `doitall.sh` sets `-999 26 3`. |
 
 ## Checks
 

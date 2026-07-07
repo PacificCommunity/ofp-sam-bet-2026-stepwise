@@ -30,8 +30,8 @@ stepwise_models <- data.frame(
     "09-NewOtoliths",
     "10-TagMixingKS",
     "11-TimeVaryingCV",
-    "12-OrthogonalPoly",
-    "13-LengthBasedSel",
+    "12-LengthBasedSel",
+    "13-OrthogonalPoly",
     "14-EffortCreep",
     "15-DataWeighting"
   ),
@@ -52,8 +52,8 @@ stepwise_models <- data.frame(
     "09-NewOtoliths",
     "10-TagMixing",
     "11-TimeVaryingCV",
-    "12-OrthogonalPoly",
-    "13-LengthBasedSel",
+    "12-LengthBasedSel",
+    "13-OrthogonalPoly",
     "14-EffortCreep",
     "15-DataWeighting"
   ),
@@ -90,8 +90,8 @@ stepwise_models <- data.frame(
     "new otolith/CAAL input",
     "release-specific tag mixing periods",
     "time-varying CPUE CV",
-    "orthogonal-polynomial recruitment",
     "length-based selectivity",
+    "orthogonal-polynomial recruitment",
     "effort creep",
     "data weighting"
   ),
@@ -110,8 +110,8 @@ stepwise_models <- data.frame(
     "New otoliths",
     "Tag mixing KS",
     "Time-varying CV",
-    "Orthogonal polynomial",
     "Length-based selectivity",
+    "Orthogonal polynomial",
     "Effort creep",
     "Data weighting"
   ),
@@ -131,8 +131,8 @@ stepwise_models <- data.frame(
     "09 New otoliths",
     "10 Tag mixing KS",
     "11 Time-varying CV",
-    "12 Orthogonal polynomial",
-    "13 Length-based selectivity",
+    "12 Length-based selectivity",
+    "13 Orthogonal polynomial",
     "14 Effort creep",
     "15 Data weighting"
   ),
@@ -152,8 +152,8 @@ stepwise_models <- data.frame(
     "09-newotoliths",
     "10-tagmixingks",
     "11-timevaryingcv",
-    "12-orthogonalpoly",
-    "13-lengthbasedsel",
+    "12-lengthbasedsel",
+    "13-orthogonalpoly",
     "14-effortcreep",
     "15-dataweighting"
   ),
