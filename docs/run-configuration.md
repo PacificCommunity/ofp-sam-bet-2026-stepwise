@@ -45,6 +45,18 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-LengthBasedSel` | `TRUE` | 13-LengthBasedSel | 13a | length-based selectivity | Length-based selectivity | 13 Length-based selectivity | `13-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12b-OPREnd3` | `TRUE` | 12-OrthogonalPolySensitivity | 12b | OPR 69-01-50-50 terminal window 3 | OPR 69-01-50-50 end3 | 12b OPR 69-01-50-50 end3 | `12b-opr-end3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12c-OPREnd4` | `TRUE` | 12-OrthogonalPolySensitivity | 12c | OPR 69-01-50-50 terminal window 4 | OPR 69-01-50-50 end4 | 12c OPR 69-01-50-50 end4 | `12c-opr-end4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12d-OPREnd5` | `TRUE` | 12-OrthogonalPolySensitivity | 12d | OPR 69-01-50-50 terminal window 5 | OPR 69-01-50-50 end5 | 12d OPR 69-01-50-50 end5 | `12d-opr-end5` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12e-OPRSeason5` | `TRUE` | 12-OrthogonalPolySensitivity | 12e | OPR 69-05-50-50 | OPR 69-05-50-50 | 12e OPR 69-05-50-50 | `12e-opr-season5` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12f-OPRSeason5End3` | `TRUE` | 12-OrthogonalPolySensitivity | 12f | OPR 69-05-50-50 terminal window 3 | OPR 69-05-50-50 end3 | 12f OPR 69-05-50-50 end3 | `12f-opr-season5-end3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12g-OPRSeason5End4` | `TRUE` | 12-OrthogonalPolySensitivity | 12g | OPR 69-05-50-50 terminal window 4 | OPR 69-05-50-50 end4 | 12g OPR 69-05-50-50 end4 | `12g-opr-season5-end4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12h-OPRRegion60` | `TRUE` | 12-OrthogonalPolySensitivity | 12h | OPR 69-01-60-60 | OPR 69-01-60-60 | 12h OPR 69-01-60-60 | `12h-opr-region60` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12i-OPRRegion60End3` | `TRUE` | 12-OrthogonalPolySensitivity | 12i | OPR 69-01-60-60 terminal window 3 | OPR 69-01-60-60 end3 | 12i OPR 69-01-60-60 end3 | `12i-opr-region60-end3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12j-OPRRegion60End4` | `TRUE` | 12-OrthogonalPolySensitivity | 12j | OPR 69-01-60-60 terminal window 4 | OPR 69-01-60-60 end4 | 12j OPR 69-01-60-60 end4 | `12j-opr-region60-end4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12k-OPRSeason5Region60` | `TRUE` | 12-OrthogonalPolySensitivity | 12k | OPR 69-05-60-60 | OPR 69-05-60-60 | 12k OPR 69-05-60-60 | `12k-opr-season5-region60` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12l-OPRSeason5Region60End3` | `TRUE` | 12-OrthogonalPolySensitivity | 12l | OPR 69-05-60-60 terminal window 3 | OPR 69-05-60-60 end3 | 12l OPR 69-05-60-60 end3 | `12l-opr-season5-region60-end3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12m-OPRSeason5Region60End4` | `TRUE` | 12-OrthogonalPolySensitivity | 12m | OPR 69-05-60-60 terminal window 4 | OPR 69-05-60-60 end4 | 12m OPR 69-05-60-60 end4 | `12m-opr-season5-region60-end4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -70,6 +82,18 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-LengthBasedSel` | `steps/13-LengthBasedSel/model` | `exists` |
 | `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
 | `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
+| `12b-OPREnd3` | `steps/12b-OPREnd3/model` | `exists` |
+| `12c-OPREnd4` | `steps/12c-OPREnd4/model` | `exists` |
+| `12d-OPREnd5` | `steps/12d-OPREnd5/model` | `exists` |
+| `12e-OPRSeason5` | `steps/12e-OPRSeason5/model` | `exists` |
+| `12f-OPRSeason5End3` | `steps/12f-OPRSeason5End3/model` | `exists` |
+| `12g-OPRSeason5End4` | `steps/12g-OPRSeason5End4/model` | `exists` |
+| `12h-OPRRegion60` | `steps/12h-OPRRegion60/model` | `exists` |
+| `12i-OPRRegion60End3` | `steps/12i-OPRRegion60End3/model` | `exists` |
+| `12j-OPRRegion60End4` | `steps/12j-OPRRegion60End4/model` | `exists` |
+| `12k-OPRSeason5Region60` | `steps/12k-OPRSeason5Region60/model` | `exists` |
+| `12l-OPRSeason5Region60End3` | `steps/12l-OPRSeason5Region60End3/model` | `exists` |
+| `12m-OPRSeason5Region60End4` | `steps/12m-OPRSeason5Region60End4/model` | `exists` |
 
 
 ## Useful Kflow Config

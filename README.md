@@ -33,6 +33,28 @@ traced without guessing.
 | `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
 | `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
 
+### Step-12 OPR Sensitivity Branch
+
+Branch `experiment/opr-step12-sensitivity-before-length` is based on `main`,
+where `12-OrthogonalPoly` is the OPR step and `13-LengthBasedSel` adds
+length-based selectivity afterward. `11-TimeVaryingCV` is the no-OPR reference,
+and `12-OrthogonalPoly` is the current OPR reference.
+
+| Step | OPR setting | Terminal window |
+| --- | --- | ---: |
+| `12b-OPREnd3` | `69-01-50-50` | 3 |
+| `12c-OPREnd4` | `69-01-50-50` | 4 |
+| `12d-OPREnd5` | `69-01-50-50` | 5 |
+| `12e-OPRSeason5` | `69-05-50-50` | 2 |
+| `12f-OPRSeason5End3` | `69-05-50-50` | 3 |
+| `12g-OPRSeason5End4` | `69-05-50-50` | 4 |
+| `12h-OPRRegion60` | `69-01-60-60` | 2 |
+| `12i-OPRRegion60End3` | `69-01-60-60` | 3 |
+| `12j-OPRRegion60End4` | `69-01-60-60` | 4 |
+| `12k-OPRSeason5Region60` | `69-05-60-60` | 2 |
+| `12l-OPRSeason5Region60End3` | `69-05-60-60` | 3 |
+| `12m-OPRSeason5Region60End4` | `69-05-60-60` | 4 |
+
 ## Substep Logic
 
 | Block | Substeps | Reason |

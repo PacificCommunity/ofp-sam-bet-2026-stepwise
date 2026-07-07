@@ -36,3 +36,29 @@ stepwise OPR choice.
 has the old `221` year-effect override in a commented-out block, and the manual
 appendix marks it as obsolete. The active year-degree control is
 `parest_flag(155)`.
+
+## Step-12 OPR Sensitivity Branch
+
+The `experiment/opr-step12-sensitivity-before-length` branch is based on
+`main`, where `12-OrthogonalPoly` is the OPR step and `13-LengthBasedSel` adds
+length-based selectivity afterward. `11-TimeVaryingCV` is the no-OPR reference,
+`12-OrthogonalPoly` is the current OPR reference, and the branch adds these
+step-12 OPR sensitivity folders:
+
+| step | setting | terminal window |
+| --- | --- | ---: |
+| `12b-OPREnd3` | `69-01-50-50` | 3 |
+| `12c-OPREnd4` | `69-01-50-50` | 4 |
+| `12d-OPREnd5` | `69-01-50-50` | 5 |
+| `12e-OPRSeason5` | `69-05-50-50` | 2 |
+| `12f-OPRSeason5End3` | `69-05-50-50` | 3 |
+| `12g-OPRSeason5End4` | `69-05-50-50` | 4 |
+| `12h-OPRRegion60` | `69-01-60-60` | 2 |
+| `12i-OPRRegion60End3` | `69-01-60-60` | 3 |
+| `12j-OPRRegion60End4` | `69-01-60-60` | 4 |
+| `12k-OPRSeason5Region60` | `69-05-60-60` | 2 |
+| `12l-OPRSeason5Region60End3` | `69-05-60-60` | 3 |
+| `12m-OPRSeason5Region60End4` | `69-05-60-60` | 4 |
+
+All variants keep the main-branch age-based selectivity option `-999 26 2`.
+They do not include the length-based selectivity change from step 13.

@@ -171,3 +171,89 @@ stepwise_models <- data.frame(
   output_par = rep("", 17),
   stringsAsFactors = FALSE
 )
+
+opr_step12_sensitivity_models <- data.frame(
+  step_id = c(
+    "12b-OPREnd3",
+    "12c-OPREnd4",
+    "12d-OPREnd5",
+    "12e-OPRSeason5",
+    "12f-OPRSeason5End3",
+    "12g-OPRSeason5End4",
+    "12h-OPRRegion60",
+    "12i-OPRRegion60End3",
+    "12j-OPRRegion60End4",
+    "12k-OPRSeason5Region60",
+    "12l-OPRSeason5Region60End3",
+    "12m-OPRSeason5Region60End4"
+  ),
+  enabled = rep(TRUE, 12),
+  major_step = rep("12-OrthogonalPolySensitivity", 12),
+  substep = c("12b", "12c", "12d", "12e", "12f", "12g", "12h", "12i", "12j", "12k", "12l", "12m"),
+  change_axis = c(
+    "OPR 69-01-50-50 terminal window 3",
+    "OPR 69-01-50-50 terminal window 4",
+    "OPR 69-01-50-50 terminal window 5",
+    "OPR 69-05-50-50",
+    "OPR 69-05-50-50 terminal window 3",
+    "OPR 69-05-50-50 terminal window 4",
+    "OPR 69-01-60-60",
+    "OPR 69-01-60-60 terminal window 3",
+    "OPR 69-01-60-60 terminal window 4",
+    "OPR 69-05-60-60",
+    "OPR 69-05-60-60 terminal window 3",
+    "OPR 69-05-60-60 terminal window 4"
+  ),
+  model_label = c(
+    "OPR 69-01-50-50 end3",
+    "OPR 69-01-50-50 end4",
+    "OPR 69-01-50-50 end5",
+    "OPR 69-05-50-50",
+    "OPR 69-05-50-50 end3",
+    "OPR 69-05-50-50 end4",
+    "OPR 69-01-60-60",
+    "OPR 69-01-60-60 end3",
+    "OPR 69-01-60-60 end4",
+    "OPR 69-05-60-60",
+    "OPR 69-05-60-60 end3",
+    "OPR 69-05-60-60 end4"
+  ),
+  job_title = c(
+    "12b OPR 69-01-50-50 end3",
+    "12c OPR 69-01-50-50 end4",
+    "12d OPR 69-01-50-50 end5",
+    "12e OPR 69-05-50-50",
+    "12f OPR 69-05-50-50 end3",
+    "12g OPR 69-05-50-50 end4",
+    "12h OPR 69-01-60-60",
+    "12i OPR 69-01-60-60 end3",
+    "12j OPR 69-01-60-60 end4",
+    "12k OPR 69-05-60-60",
+    "12l OPR 69-05-60-60 end3",
+    "12m OPR 69-05-60-60 end4"
+  ),
+  job_key = c(
+    "12b-opr-end3",
+    "12c-opr-end4",
+    "12d-opr-end5",
+    "12e-opr-season5",
+    "12f-opr-season5-end3",
+    "12g-opr-season5-end4",
+    "12h-opr-region60",
+    "12i-opr-region60-end3",
+    "12j-opr-region60-end4",
+    "12k-opr-season5-region60",
+    "12l-opr-season5-region60-end3",
+    "12m-opr-season5-region60-end4"
+  ),
+  run_mode = rep("doitall", 12),
+  region_count = rep(5L, 12),
+  kflow_memory = rep("8GB", 12),
+  mfcl_program_path = rep("", 12),
+  input_par = rep("", 12),
+  frq = rep("bet.frq", 12),
+  output_par = rep("", 12),
+  stringsAsFactors = FALSE
+)
+
+stepwise_models <- rbind(stepwise_models, opr_step12_sensitivity_models)
