@@ -7,6 +7,39 @@
 BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
 model folder with a compact README and input manifest.
 
+## Branch Focus
+
+This branch adds a length-based selectivity sensitivity grid. All rows below
+reuse `steps/13-LengthBasedSel/model`, run only when explicitly selected, and
+keep the normal `main` stepwise sequence unchanged.
+
+| Model | Main change | Quick read |
+| --- | --- | --- |
+| `13b-LBS-N3` | 3 length-spline nodes | Stronger smoothing than Step 13 baseline. |
+| `13c-LBS-N4` | 4 length-spline nodes | Middle smoothing case. |
+| `13d-LBS-N6` | 6 length-spline nodes | More flexible than baseline. |
+| `13e-LBS-IDXmono-N5` | Index fisheries monotone, 5 nodes | Isolate index-tail effect. |
+| `13f-LBS-IDXmono-N4` | Index fisheries monotone, 4 nodes | Index-tail effect plus moderate smoothing. |
+| `13g-LBS-IDXmono-N3` | Index fisheries monotone, 3 nodes | Index-tail effect plus strong smoothing. |
+| `13h-LBS-LLmono-N4` | Longline fisheries monotone, 4 nodes | Test adult longline tail influence. |
+| `13i-LBS-LLIDXmono-N4` | Longline and index monotone, 4 nodes | Strong adult/index tail diagnostic. |
+| `13j-LBS-LLIDXmono-N3` | Longline and index monotone, 3 nodes | Strongest smoothing plus monotone tails. |
+| `13k-LBS-LLIDXmono-N5` | Longline and index monotone, 5 nodes | Monotone-tail effect without node change. |
+| `13l-LBS-LLIDXsoft-N4` | Softer monotone penalty, 4 nodes | Same as `13i`, weaker penalty. |
+| `13m-LBS-LLIDXvsoft-N4` | Very soft monotone penalty, 4 nodes | Test whether penalty strength drives fit. |
+| `13n-LBS-NoDome-N4` | Remove inherited dome/terminal-zero constraints | Test whether those constraints lift depletion. |
+| `13o-LBS-RelaxLowDome-N4` | Relax lowest terminal-zero cutoffs | Loosen the most restrictive cutoffs only. |
+| `13p-LBS-RelaxDOMPL-N4` | Relax DOM/PL terminal-zero cutoffs | Target DOM/PL constraints. |
+| `13q-LBS-RelaxPS-N4` | Relax PS/JP terminal-zero cutoffs | Target PS/JP constraints. |
+| `13r-LBS-DomeMid-N4` | Common mid terminal-zero cutoff | One middle cutoff across constrained gears. |
+| `13s-LBS-NoLowDome-IDX-N4` | Remove low dome constraints plus index monotone | Relax low cutoffs and stabilize index tails. |
+| `13t-LBS-YoungZero-PSPLDOM-N4` | Young-zero PS/PL/DOM selectivity | Test small-fish selectivity influence. |
+| `13u-LBS-IDXyoungzero-N4` | Index monotone plus young-zero index selectivity | Stabilize index tails and young ages. |
+| `13v-LBS-HL75-3-N4` | Relax HL young-zero setting | Weaker HL young-zero constraint. |
+| `13w-LBS-LL75-1-N4` | Relax LL young-zero setting | Weaker LL young-zero constraint. |
+| `13x-LBS-Bound359-1000-N4` | Weak spline lower-bound penalty | Light stabilization of low spline coefficients. |
+| `13y-LBS-Bound359-10000-N4` | Strong spline lower-bound penalty | Stronger stabilization of low spline coefficients. |
+
 ## Step Map
 
 Each row is one runnable Kflow model. Lettered rows are deliberate substeps:
