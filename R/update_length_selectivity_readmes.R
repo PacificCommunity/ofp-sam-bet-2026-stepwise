@@ -31,6 +31,7 @@ markdown_table <- function(df, code_cols = character()) {
 
 scenario_axis <- function(spec) {
   id <- tolower(spec$step_id)
+  if (identical(id, "12a-lbs-base")) return("Baseline")
   has_tail <- grepl("llidx|idxmono|idxsoft|idxvsoft|llmono|llcoremono|llrecentmono|llosmono", id)
   if (grepl("bound359", id) && has_tail) return("Spline bound + tail")
   if (grepl("bound359", id)) return("Spline bound")
@@ -45,12 +46,38 @@ scenario_axis <- function(spec) {
   "Other"
 }
 
-switch_count <- function(spec) {
+switch_summary <- function(spec) {
   edits <- spec$edits
   if (!length(edits)) return("0")
-  by_flag <- split(vapply(edits, function(x) x[["scope"]], integer(1)), vapply(edits, function(x) x[["flag"]], integer(1)))
-  paste(vapply(names(by_flag), function(flag) {
-    sprintf("flag %s: %d", flag, length(by_flag[[flag]]))
+  edit_df <- do.call(rbind, lapply(edits, function(x) {
+    data.frame(
+      scope = as.integer(x[["scope"]]),
+      flag = as.integer(x[["flag"]]),
+      value = as.integer(x[["value"]])
+    )
+  }))
+  edit_df$target <- ifelse(
+    edit_df$scope == -999L,
+    "-999",
+    ifelse(edit_df$scope == 1L, "1", "fish")
+  )
+  groups <- split(edit_df, list(edit_df$target, edit_df$flag, edit_df$value), drop = TRUE)
+  paste(vapply(groups, function(group) {
+    target <- unique(group$target)
+    flag <- unique(group$flag)
+    value <- unique(group$value)
+    n <- nrow(group)
+    if (identical(target, "-999")) {
+      return(sprintf("-999 %d=%d", flag, value))
+    }
+    if (identical(target, "1")) {
+      return(sprintf("1 %d=%d", flag, value))
+    }
+    if (n == 1L) {
+      sprintf("fish flag %d=%d", flag, value)
+    } else {
+      sprintf("fish flag %d=%d (%d fisheries)", flag, value, n)
+    }
   }, character(1)), collapse = "; ")
 }
 
@@ -108,7 +135,7 @@ root_body <- paste(c(
   markdown_table(detail, code_cols = "Model")
 ), collapse = "\n")
 
-step_detail <- transform(detail, Switches = vapply(specs, switch_count, character(1)))
+step_detail <- transform(detail, Switches = vapply(specs, switch_summary, character(1)))
 step_detail <- step_detail[, c("Model", "Axis", "Change", "Switches", "Reason")]
 step_body <- paste(c(
   sprintf("These %d disabled-by-default rows all start from `steps/12-LengthBasedSel/model`. They are run only when selected explicitly with `STEP_SELECT`, so the normal `all` run stays unchanged. Each sensitivity appends its switches after the base Step 12 selectivity block; MFCL's sequential option parsing therefore uses the appended values as the final settings.", scenario_count),

@@ -37,6 +37,15 @@ length_selectivity_sensitivity_specs <- function() {
 
   list(
     list(
+      step_id = "12a-LBS-Base",
+      substep = "12a",
+      label = "LBS base N5",
+      key = "12a-lbs-base",
+      change = "Step 12 length-based selectivity baseline with 5 cubic-spline nodes",
+      notes = "Alias for 12-LengthBasedSel in the sensitivity task so the grid reads 12a, 12b, ... without hiding the baseline.",
+      edits = flags(global(61, 5))
+    ),
+    list(
       step_id = "12b-LBS-N3",
       substep = "12b",
       label = "LBS N3",

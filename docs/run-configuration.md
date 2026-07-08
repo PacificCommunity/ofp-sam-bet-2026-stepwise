@@ -45,6 +45,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-OrthogonalPoly` | `TRUE` | 13-OrthogonalPoly | 13a | orthogonal-polynomial recruitment after length-based selectivity | Orthogonal polynomial | 13 Orthogonal polynomial | `13-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `12a-LBS-Base` | `FALSE` | 12-LengthBasedSel-Sensitivity | 12a | Step 12 length-based selectivity baseline with 5 cubic-spline nodes | LBS base N5 | 12a LBS base N5 | `12a-lbs-base` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `12b-LBS-N3` | `FALSE` | 12-LengthBasedSel-Sensitivity | 12b | length-based selectivity with 3 cubic-spline nodes | LBS N3 | 12b LBS N3 | `12b-lbs-n3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `12c-LBS-N4` | `FALSE` | 12-LengthBasedSel-Sensitivity | 12c | length-based selectivity with 4 cubic-spline nodes | LBS N4 | 12c LBS N4 | `12c-lbs-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `12d-LBS-N6` | `FALSE` | 12-LengthBasedSel-Sensitivity | 12d | length-based selectivity with 6 cubic-spline nodes | LBS N6 | 12d LBS N6 | `12d-lbs-n6` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
@@ -164,6 +165,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-OrthogonalPoly` | `steps/13-OrthogonalPoly/model` | `exists` |
 | `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
 | `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
+| `12a-LBS-Base` | `steps/12-LengthBasedSel/model` | `exists` |
 | `12b-LBS-N3` | `steps/12-LengthBasedSel/model` | `exists` |
 | `12c-LBS-N4` | `steps/12-LengthBasedSel/model` | `exists` |
 | `12d-LBS-N6` | `steps/12-LengthBasedSel/model` | `exists` |

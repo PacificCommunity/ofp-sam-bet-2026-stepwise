@@ -9,7 +9,7 @@ model folder with a compact README and input manifest.
 
 ## Branch Focus
 
-This branch replaces the earlier short length-based selectivity trial with a 94-row axis grid focused on plausible MFCL controls and selected interactions among those controls. All rows reuse `steps/12-LengthBasedSel/model`, are disabled by default, and run only when explicitly selected with `STEP_SELECT`.
+This branch replaces the earlier short length-based selectivity trial with a 95-row axis grid focused on plausible MFCL controls and selected interactions among those controls. All rows reuse `steps/12-LengthBasedSel/model`, are disabled by default, and run only when explicitly selected with `STEP_SELECT`.
 
 The sensitivity is deliberately before OPR: the branch step order is `11-TimeVaryingCV` -> `12-LengthBasedSel` -> `13-OrthogonalPoly`, and the sensitivity rows test alternatives to step 12 before recruitment is changed by OPR.
 
@@ -22,6 +22,7 @@ Design: first vary one axis at a time, then add targeted crosses for node count 
 | Axis | Rows |
 | --- | --- |
 | Adult + index tail | 17 |
+| Baseline | 1 |
 | Dome/cutoff | 18 |
 | Dome/cutoff + tail | 2 |
 | Index tail | 11 |
@@ -36,6 +37,7 @@ Design: first vary one axis at a time, then add targeted crosses for node count 
 
 | Model | Axis | Change | Reason |
 | --- | --- | --- | --- |
+| `12a-LBS-Base` | Baseline | Step 12 length-based selectivity baseline with 5 cubic-spline nodes | Alias for 12-LengthBasedSel in the sensitivity task so the grid reads 12a, 12b, ... without hiding the baseline. |
 | `12b-LBS-N3` | Node count | length-based selectivity with 3 cubic-spline nodes | Reduces length-based spline flexibility from the Step 12 baseline of 5 nodes. |
 | `12c-LBS-N4` | Node count | length-based selectivity with 4 cubic-spline nodes | Moderate node reduction between the 3-node and 5-node cases. |
 | `12d-LBS-N6` | Node count | length-based selectivity with 6 cubic-spline nodes | Increases flexibility to test whether the baseline depletion shift is a low-node artifact. |
@@ -164,7 +166,7 @@ traced without guessing.
 | --- | --- | --- |
 | `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
 | `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
-| `12` length-based sensitivity | `12b`-`12cq` | Disabled-by-default sensitivity rows that reuse Step 12 before OPR and test length-spline nodes, monotone tails, dome/terminal-zero cutoffs, young-zero selectivity, and spline lower-bound penalties. See `steps/12-LengthBasedSel/README.md`. |
+| `12` length-based sensitivity | `12a`-`12cq` | Disabled-by-default sensitivity rows that reuse Step 12 before OPR and test length-spline nodes, monotone tails, dome/terminal-zero cutoffs, young-zero selectivity, and spline lower-bound penalties. See `steps/12-LengthBasedSel/README.md`. |
 
 ## Names Used Here
 
