@@ -61,49 +61,133 @@ Length-based selectivity test after the OPR step.
 
 ## Length-Based Sensitivity Grid
 
-These disabled-by-default rows all start from `steps/13-LengthBasedSel/model`.
-They are run only when selected explicitly with `STEP_SELECT`, so the normal
-stepwise `all` run stays unchanged. Each sensitivity appends its switches after
-the base Step 13 selectivity block; MFCL's sequential option parsing therefore
-uses the appended values as the final settings.
+These 94 disabled-by-default rows all start from `steps/13-LengthBasedSel/model`. They are run only when selected explicitly with `STEP_SELECT`, so the normal `all` run stays unchanged. Each sensitivity appends its switches after the base Step 13 selectivity block; MFCL's sequential option parsing therefore uses the appended values as the final settings.
 
 Useful switch shorthand:
 
 | Switch | Meaning in this grid |
 | --- | --- |
-| `-999 61 N` | Set the number of cubic-spline nodes for length-specific selectivity. Step 13 baseline is 5 nodes. |
-| `-fishery 16 1` | Add the non-decreasing soft penalty for that fishery's selectivity tail. |
-| `-fishery 16 2` with `-fishery 3 cutoff` | Dome or terminal-zero style constraint inherited by selected gears; the sensitivity changes or removes these cutoffs. |
-| `-fishery 56 value` | Change the non-decreasing penalty strength. Source default is effectively `1000000` when unset. |
-| `-fishery 75 value` | Force young-age selectivity to zero for the first `value` ages/quarters used by that MFCL option. |
-| `1 359 value` | Penalize very low spline coefficients, a lower-bound stabilizer rather than a monotonicity setting. |
+| `-999 61 N` | Number of cubic-spline nodes for length-specific selectivity. Step 13 baseline is 5 nodes. |
+| `-fishery 16 1` | Non-decreasing soft penalty for that fishery's selectivity tail. Valid with length-specific spline selectivity in ongoing-dev. |
+| `-fishery 16 2` with `-fishery 3 cutoff` | Dome/terminal-zero style constraint for selected gears. Sensitivities change or remove these cutoffs. |
+| `-fishery 56 value` | Non-decreasing penalty strength. Source default is effectively `1000000` when unset. |
+| `-fishery 75 value` | Young-age selectivity zero setting used by that MFCL option. |
+| `1 359 value` | Spline lower-bound stabilizer, penalizing very low spline coefficients rather than forcing monotonicity. |
 
-| Model | What it changes | Why run it |
-| --- | --- | --- |
-| `13b-LBS-N3` | `-999 61 3` | Strongly smooths length-based selectivity to test whether the high depletion comes from too much spline flexibility. |
-| `13c-LBS-N4` | `-999 61 4` | Middle case between the 3-node sensitivity and the 5-node Step 13 baseline. |
-| `13d-LBS-N6` | `-999 61 6` | Adds flexibility to test whether the baseline result is a low-node artifact. |
-| `13e-LBS-IDXmono-N5` | 5 nodes plus `16 = 1` for index fisheries 29-33 | Keeps baseline node count but stabilizes survey/index large-fish selectivity tails. |
-| `13f-LBS-IDXmono-N4` | 4 nodes plus `16 = 1` for index fisheries 29-33 | Combines moderate smoothing with monotone index selectivity. |
-| `13g-LBS-IDXmono-N3` | 3 nodes plus `16 = 1` for index fisheries 29-33 | Strong smoothing with monotone index selectivity. |
-| `13h-LBS-LLmono-N4` | 4 nodes plus `16 = 1` for longline fisheries 1-11 | Tests whether longline large-fish tails are driving the depletion shift. |
-| `13i-LBS-LLIDXmono-N4` | 4 nodes plus `16 = 1` for longline 1-11 and index 29-33 | Strong tail-stability diagnostic across the main adult/index gears. |
-| `13j-LBS-LLIDXmono-N3` | 3 nodes plus `16 = 1` for longline 1-11 and index 29-33 | Strongest smoothing plus monotone adult/index tail diagnostic. |
-| `13k-LBS-LLIDXmono-N5` | 5 nodes plus `16 = 1` for longline 1-11 and index 29-33 | Separates monotone-tail effects from node-count effects. |
-| `13l-LBS-LLIDXsoft-N4` | 4 nodes, longline/index `16 = 1`, and `56 = 100000` | Same monotone structure as `13i`, but with a softer penalty. |
-| `13m-LBS-LLIDXvsoft-N4` | 4 nodes, longline/index `16 = 1`, and `56 = 10000` | Very soft monotone penalty to see whether hard tail pressure is distorting fit. |
-| `13n-LBS-NoDome-N4` | 4 nodes, remove inherited `16 = 2` dome/terminal-zero constraints for fisheries 12, 13, and 16-28 | Tests whether imposed dome or terminal-zero behavior is lifting depletion. |
-| `13o-LBS-RelaxLowDome-N4` | 4 nodes, relax the most restrictive `16 = 2` cutoff ages to 20 quarters | Loosens only the lowest terminal-zero cutoffs. |
-| `13p-LBS-RelaxDOMPL-N4` | 4 nodes, relax DOM/PL cutoff ages to 20 quarters | Targets domestic/Philippines low-age terminal-zero constraints. |
-| `13q-LBS-RelaxPS-N4` | 4 nodes, relax PS/JP cutoff ages to 30 quarters | Targets purse-seine and Japan pole-and-line cutoff constraints. |
-| `13r-LBS-DomeMid-N4` | 4 nodes, set all inherited `16 = 2` cutoff ages to 25 quarters | Applies one common middle cutoff for the constrained gears. |
-| `13s-LBS-NoLowDome-IDX-N4` | 4 nodes, remove low dome constraints and add index `16 = 1` | Combines relaxed low cutoffs with monotone index tails. |
-| `13t-LBS-YoungZero-PSPLDOM-N4` | 4 nodes plus `75 = 1` for PS/PL/DOM gears 12, 13, and 16-28 | Tests whether small-fish selectivity is pulling the fit and depletion upward. |
-| `13u-LBS-IDXyoungzero-N4` | 4 nodes, index `16 = 1`, and index `75 = 2` | Stabilizes index tails and removes very young index selectivity. |
-| `13v-LBS-HL75-3-N4` | 4 nodes plus `75 = 3` for HL fisheries 14-15 | Relaxes the HL young-zero setting from the inherited stronger value. |
-| `13w-LBS-LL75-1-N4` | 4 nodes plus `75 = 1` for longline fisheries 2, 4, 5, 7-10 | Relaxes longline young-zero settings. |
-| `13x-LBS-Bound359-1000-N4` | 4 nodes plus `1 359 1000` | Adds a weak lower-bound stabilizer on spline coefficients. |
-| `13y-LBS-Bound359-10000-N4` | 4 nodes plus `1 359 10000` | Adds a stronger lower-bound stabilizer on spline coefficients. |
+### Scenario Families
+
+| Axis | Rows |
+| --- | --- |
+| Adult + index tail | 17 |
+| Dome/cutoff | 18 |
+| Dome/cutoff + tail | 2 |
+| Index tail | 11 |
+| Longline tail | 9 |
+| Node count | 4 |
+| Spline bound | 8 |
+| Spline bound + tail | 4 |
+| Young-zero | 12 |
+| Young-zero + tail | 9 |
+
+### Scenario Table
+
+| Model | Axis | Change | Switches | Reason |
+| --- | --- | --- | --- | --- |
+| `13b-LBS-N3` | Node count | length-based selectivity with 3 cubic-spline nodes | flag 61: 1 | Reduces length-based spline flexibility from the Step 13 baseline of 5 nodes. |
+| `13c-LBS-N4` | Node count | length-based selectivity with 4 cubic-spline nodes | flag 61: 1 | Moderate node reduction between the 3-node and 5-node cases. |
+| `13d-LBS-N6` | Node count | length-based selectivity with 6 cubic-spline nodes | flag 61: 1 | Increases flexibility to test whether the baseline depletion shift is a low-node artifact. |
+| `13e-LBS-IDXmono-N5` | Index tail | baseline 5-node length-based selectivity with non-decreasing index selectivity | flag 16: 5; flag 61: 1 | Applies the monotone penalty to the five index fisheries only. |
+| `13f-LBS-IDXmono-N4` | Index tail | 4-node length-based selectivity with non-decreasing index selectivity | flag 16: 5; flag 61: 1 | Combines moderate smoothing with monotone survey/index selectivity. |
+| `13g-LBS-IDXmono-N3` | Index tail | 3-node length-based selectivity with non-decreasing index selectivity | flag 16: 5; flag 61: 1 | Strongly smooths the length spline while keeping index selectivity monotone. |
+| `13h-LBS-LLmono-N4` | Longline tail | 4-node length-based selectivity with non-decreasing longline selectivity | flag 16: 11; flag 61: 1 | Strong diagnostic: longline gears can be asymptotic, but dome-shaped targeting is also plausible. |
+| `13i-LBS-LLIDXmono-N4` | Adult + index tail | 4-node length-based selectivity with non-decreasing longline and index selectivity | flag 16: 16; flag 61: 1 | Strong diagnostic for whether large-fish selectivity tails are driving the depletion shift. |
+| `13j-LBS-LLIDXmono-N3` | Adult + index tail | 3-node length-based selectivity with non-decreasing longline and index selectivity | flag 16: 16; flag 61: 1 | Strongest smoothing plus monotone large-fish signal diagnostic. |
+| `13k-LBS-LLIDXmono-N5` | Adult + index tail | baseline 5-node length-based selectivity with non-decreasing longline and index selectivity | flag 16: 16; flag 61: 1 | Separates monotone-tail effects from node-count effects. |
+| `13l-LBS-LLIDXsoft-N4` | Adult + index tail | 4-node non-decreasing longline/index selectivity with a softer monotone penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Uses fish flag 56 = 100000 for the monotone fisheries instead of the source default 1000000. |
+| `13m-LBS-LLIDXvsoft-N4` | Adult + index tail | 4-node non-decreasing longline/index selectivity with a very soft monotone penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Uses fish flag 56 = 10000 for the monotone fisheries. |
+| `13n-LBS-NoDome-N4` | Dome/cutoff | 4-node length-based selectivity with Step 13 dome/terminal-zero constraints removed | flag 3: 15; flag 16: 15; flag 61: 1 | Sets fish flag 16 back to 0 for the fisheries that inherited 16 = 2 constraints. |
+| `13o-LBS-RelaxLowDome-N4` | Dome/cutoff | 4-node length-based selectivity with low terminal-zero cutoffs relaxed | flag 3: 7; flag 61: 1 | Raises the most restrictive 16 = 2 cutoff ages to 20 quarters. |
+| `13p-LBS-RelaxDOMPL-N4` | Dome/cutoff | 4-node length-based selectivity with DOM/PL terminal-zero cutoffs relaxed | flag 3: 5; flag 61: 1 | Targets the DOM/PL low-age terminal-zero constraints only. |
+| `13q-LBS-RelaxPS-N4` | Dome/cutoff | 4-node length-based selectivity with PS and JP terminal-zero cutoffs relaxed | flag 3: 10; flag 61: 1 | Raises the PS/JP 16 = 2 cutoffs to 30 quarters. |
+| `13r-LBS-DomeMid-N4` | Dome/cutoff | 4-node length-based selectivity with a common mid terminal-zero cutoff | flag 3: 15; flag 61: 1 | Sets all inherited 16 = 2 cutoff ages to 25 quarters. |
+| `13s-LBS-NoLowDome-IDX-N4` | Dome/cutoff | 4-node length-based selectivity with low dome constraints removed and index monotone | flag 3: 7; flag 16: 12; flag 61: 1 | Removes the most restrictive terminal-zero constraints and stabilizes index tails. |
+| `13t-LBS-YoungZero-PSPLDOM-N4` | Young-zero | 4-node length-based selectivity with age-1 zero selectivity for PS/PL/DOM gears | flag 61: 1; flag 75: 15 | Tests whether small-fish fit is pulling selectivity and depletion upward. |
+| `13u-LBS-IDXyoungzero-N4` | Young-zero | 4-node length-based selectivity with monotone index selectivity and young-index zero selectivity | flag 16: 5; flag 61: 1; flag 75: 5 | Index fisheries get 16 = 1 and 75 = 2. |
+| `13v-LBS-HL75-3-N4` | Young-zero | 4-node length-based selectivity with HL young-zero age count relaxed | flag 61: 1; flag 75: 2 | Changes HL fisheries 14-15 from 75 = 5 to 75 = 3. |
+| `13w-LBS-LL75-1-N4` | Young-zero | 4-node length-based selectivity with LL young-zero age count relaxed | flag 61: 1; flag 75: 7 | Changes longline fisheries that had 75 = 2 to 75 = 1. |
+| `13x-LBS-Bound359-1000-N4` | Spline bound | 4-node length-based selectivity with spline lower-bound penalty 359 = 1000 | flag 61: 1; flag 359: 1 | Adds a weak penalty against spline coefficients getting stuck below -15. |
+| `13y-LBS-Bound359-10000-N4` | Spline bound | 4-node length-based selectivity with spline lower-bound penalty 359 = 10000 | flag 61: 1; flag 359: 1 | Adds a stronger penalty against spline coefficients getting stuck below -15. |
+| `13z-LBS-N7` | Node count | length-based selectivity with 7 cubic-spline nodes | flag 61: 1 | Adds flexibility beyond N6 without moving to an unconstrained high-node tail. |
+| `13aa-LBS-Bound359-1000-N5` | Spline bound | 5-node length-based selectivity with weak spline lower-bound penalty | flag 61: 1; flag 359: 1 | Keeps the Step 13 node count and adds the weaker lower-bound stabilizer. |
+| `13ab-LBS-Bound359-10000-N5` | Spline bound | 5-node length-based selectivity with stronger spline lower-bound penalty | flag 61: 1; flag 359: 1 | Keeps baseline node count while testing whether low spline coefficients are destabilizing the fit. |
+| `13ac-LBS-Bound359-1000-N6` | Spline bound | 6-node length-based selectivity with weak spline lower-bound penalty | flag 61: 1; flag 359: 1 | Pairs the more flexible N6 spline with light lower-bound stabilization. |
+| `13ad-LBS-Bound359-10000-N6` | Spline bound | 6-node length-based selectivity with stronger spline lower-bound penalty | flag 61: 1; flag 359: 1 | Tests whether N6 needs stronger protection against very low spline coefficients. |
+| `13ae-LBS-IDXmono-N6` | Index tail | 6-node length-based selectivity with non-decreasing index selectivity | flag 16: 5; flag 61: 1 | Checks whether index-tail stabilization still helps when the spline is more flexible. |
+| `13af-LBS-IDXmono-N7` | Index tail | 7-node length-based selectivity with non-decreasing index selectivity | flag 16: 5; flag 61: 1 | High-flexibility index-tail diagnostic without changing other gears. |
+| `13ag-LBS-IDXsoft-N5` | Index tail | 5-node index non-decreasing selectivity with softer penalty | flag 16: 5; flag 56: 5; flag 61: 1 | Keeps Step 13 node count and applies fish flag 56 = 100000 to the index group. |
+| `13ah-LBS-IDXvsoft-N5` | Index tail | 5-node index non-decreasing selectivity with very soft penalty | flag 16: 5; flag 56: 5; flag 61: 1 | Uses fish flag 56 = 10000 for the index group to test penalty-strength sensitivity. |
+| `13ai-LBS-IDX75-1-N4` | Young-zero | 4-node index non-decreasing selectivity with one young age set to zero | flag 16: 5; flag 61: 1; flag 75: 5 | Tests a light young-age exclusion for all index fisheries in their shared selectivity group. |
+| `13aj-LBS-IDX75-3-N4` | Young-zero | 4-node index non-decreasing selectivity with three young ages set to zero | flag 16: 5; flag 61: 1; flag 75: 5 | A stronger index young-age exclusion, applied consistently across the shared index group. |
+| `13ak-LBS-LLmono-N5` | Longline tail | 5-node length-based selectivity with non-decreasing longline selectivity | flag 16: 11; flag 61: 1 | Keeps baseline node count while testing adult longline asymptotic tails. |
+| `13al-LBS-LLmono-N6` | Longline tail | 6-node length-based selectivity with non-decreasing longline selectivity | flag 16: 11; flag 61: 1 | Tests whether LL monotone tails remain stable with more flexible length splines. |
+| `13am-LBS-LLcoreMono-N4` | Longline tail | 4-node non-decreasing selectivity for core adult longline fisheries | flag 16: 8; flag 61: 1 | Targets adult longline groups that already carry the inherited young-zero pattern. |
+| `13an-LBS-LLcoreMono-N5` | Longline tail | 5-node non-decreasing selectivity for core adult longline fisheries | flag 16: 8; flag 61: 1 | Same core LL diagnostic at the Step 13 node count. |
+| `13ao-LBS-LLrecentMono-N4` | Longline tail | 4-node non-decreasing selectivity for later longline fishery groups | flag 16: 5; flag 61: 1 | Focuses on the later/regional longline groups 7-11 rather than all longline gears. |
+| `13ap-LBS-LLOSmono-N4` | Longline tail | 4-node non-decreasing selectivity for oceanic longline groups | flag 16: 2; flag 61: 1 | Targets the LL.OS-derived fisheries 5 and 9, including the already monotone old6-derived group. |
+| `13aq-LBS-LL75-0-N4` | Young-zero | 4-node length-based selectivity with inherited longline young-zero settings removed | flag 61: 1; flag 75: 7 | Allows selected longline groups to estimate young-age selectivity rather than forcing the first two ages to zero. |
+| `13ar-LBS-LL75-3-N4` | Young-zero | 4-node length-based selectivity with stronger longline young-zero settings | flag 61: 1; flag 75: 7 | Tests whether excluding one additional young age stabilizes adult longline selectivity. |
+| `13as-LBS-HL75-4-N4` | Young-zero | 4-node length-based selectivity with moderately relaxed HL young-zero age count | flag 61: 1; flag 75: 2 | Intermediate HL setting between the inherited 75 = 5 and the 75 = 3 sensitivity. |
+| `13at-LBS-HL75-2-N4` | Young-zero | 4-node length-based selectivity with strongly relaxed HL young-zero age count | flag 61: 1; flag 75: 2 | Tests whether the handline young-age exclusion is too restrictive. |
+| `13au-LBS-LLIDXmono-N6` | Adult + index tail | 6-node non-decreasing longline and index selectivity | flag 16: 16; flag 61: 1 | Adult/index monotone-tail diagnostic with more flexible selectivity-at-length. |
+| `13av-LBS-LLIDXmono-N7` | Adult + index tail | 7-node non-decreasing longline and index selectivity | flag 16: 16; flag 61: 1 | Highest-node adult/index monotone diagnostic retained in this grid. |
+| `13aw-LBS-LLIDXsoft-N5` | Adult + index tail | 5-node non-decreasing longline/index selectivity with softer penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Baseline node count with fish flag 56 = 100000 on adult and index groups. |
+| `13ax-LBS-LLIDXvsoft-N5` | Adult + index tail | 5-node non-decreasing longline/index selectivity with very soft penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Baseline node count with fish flag 56 = 10000 on adult and index groups. |
+| `13ay-LBS-LLIDXmidsoft-N4` | Adult + index tail | 4-node non-decreasing longline/index selectivity with intermediate penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Uses fish flag 56 = 500000, between the default and the soft case. |
+| `13az-LBS-LLIDXmidvsoft-N4` | Adult + index tail | 4-node non-decreasing longline/index selectivity with mid very-soft penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Uses fish flag 56 = 50000, between the soft and very soft cases. |
+| `13ba-LBS-LLcoreIDXmono-N4` | Adult + index tail | 4-node non-decreasing core longline and index selectivity | flag 16: 13; flag 61: 1 | Combines the index group with only core adult longline gears. |
+| `13bb-LBS-LLOSIDXmono-N4` | Adult + index tail | 4-node non-decreasing oceanic longline and index selectivity | flag 16: 7; flag 61: 1 | Combines index monotonicity with the LL.OS-derived adult groups. |
+| `13bc-LBS-PSdome20-N4` | Dome/cutoff | 4-node length-based selectivity with main purse-seine dome cutoffs set to 20 | flag 3: 6; flag 61: 1 | Applies a common lower cutoff to the main associated/unassociated PS groups while respecting shared selectivity groups. |
+| `13bd-LBS-PSdome35-N4` | Dome/cutoff | 4-node length-based selectivity with main purse-seine dome cutoffs set to 35 | flag 3: 6; flag 61: 1 | A high-cutoff PS case that relaxes terminal-zero pressure without removing the dome form. |
+| `13be-LBS-DOMPLdome15-N4` | Dome/cutoff | 4-node length-based selectivity with DOM/PL cutoffs set to 15 | flag 3: 5; flag 61: 1 | Moderately relaxes the very low domestic and pole-line terminal-zero cutoffs. |
+| `13bf-LBS-DOMPLdome25-N4` | Dome/cutoff | 4-node length-based selectivity with DOM/PL cutoffs set to 25 | flag 3: 5; flag 61: 1 | Strongly relaxes DOM/PL terminal-zero cutoffs while keeping the dome mechanism. |
+| `13bg-LBS-NoPSDome-N4` | Dome/cutoff | 4-node length-based selectivity with PS/JP dome constraints removed | flag 3: 10; flag 16: 10; flag 61: 1 | Removes dome/terminal-zero constraints for PS/JP gears only, preserving DOM/PL constraints. |
+| `13bh-LBS-NoDOMPLDome-N4` | Dome/cutoff | 4-node length-based selectivity with DOM/PL dome constraints removed | flag 3: 5; flag 16: 5; flag 61: 1 | Removes dome/terminal-zero constraints for domestic and pole-line small-fish gears only. |
+| `13bi-LBS-Surface75-2-N4` | Young-zero | 4-node length-based selectivity with two young ages set to zero for surface/small-fish gears | flag 61: 1; flag 75: 15 | A stronger young-age exclusion for PS/PL/DOM gears, applied consistently over shared selectivity groups. |
+| `13bj-LBS-LLIDXsoft-N6` | Adult + index tail | 6-node non-decreasing longline/index selectivity with softer penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Crosses the flexible N6 spline with the adult/index monotone penalty-strength axis. |
+| `13bk-LBS-LLIDXvsoft-N6` | Adult + index tail | 6-node non-decreasing longline/index selectivity with very soft penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Tests whether a more flexible spline needs only light monotone-tail guidance. |
+| `13bl-LBS-LLIDXsoft-N3` | Adult + index tail | 3-node non-decreasing longline/index selectivity with softer penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Crosses the strongest smoothing case with a less rigid monotone-tail penalty. |
+| `13bm-LBS-LLIDXvsoft-N3` | Adult + index tail | 3-node non-decreasing longline/index selectivity with very soft penalty | flag 16: 16; flag 56: 16; flag 61: 1 | Separates low node count from a hard monotone-tail constraint. |
+| `13bn-LBS-IDXsoft-N4` | Index tail | 4-node index non-decreasing selectivity with softer penalty | flag 16: 5; flag 56: 5; flag 61: 1 | Adds the missing N4 member of the index-only penalty-strength axis. |
+| `13bo-LBS-IDXvsoft-N4` | Index tail | 4-node index non-decreasing selectivity with very soft penalty | flag 16: 5; flag 56: 5; flag 61: 1 | Tests whether the index tail needs a hard monotone penalty at the N4 node count. |
+| `13bp-LBS-IDXsoft-N6` | Index tail | 6-node index non-decreasing selectivity with softer penalty | flag 16: 5; flag 56: 5; flag 61: 1 | Crosses flexible length selectivity with a softer index monotone-tail penalty. |
+| `13bq-LBS-IDXvsoft-N6` | Index tail | 6-node index non-decreasing selectivity with very soft penalty | flag 16: 5; flag 56: 5; flag 61: 1 | Flexible index-tail case with only light monotone guidance. |
+| `13br-LBS-LLmono-N3` | Longline tail | 3-node length-based selectivity with non-decreasing longline selectivity | flag 16: 11; flag 61: 1 | Adds the low-node member of the longline-only monotone-tail axis. |
+| `13bs-LBS-LLmono-N7` | Longline tail | 7-node length-based selectivity with non-decreasing longline selectivity | flag 16: 11; flag 61: 1 | High-flexibility longline-only monotone-tail diagnostic. |
+| `13bt-LBS-Bound359-1000-LLIDX-N4` | Spline bound + tail | 4-node adult/index monotone selectivity with weak spline lower-bound penalty | flag 16: 16; flag 61: 1; flag 359: 1 | Crosses the lower-bound stabilizer with the main adult/index tail diagnostic. |
+| `13bu-LBS-Bound359-10000-LLIDX-N4` | Spline bound + tail | 4-node adult/index monotone selectivity with stronger spline lower-bound penalty | flag 16: 16; flag 61: 1; flag 359: 1 | Tests whether lower-tail spline stabilization and monotone adult/index tails act together. |
+| `13bv-LBS-Bound359-1000-LLIDX-N5` | Spline bound + tail | 5-node adult/index monotone selectivity with weak spline lower-bound penalty | flag 16: 16; flag 61: 1; flag 359: 1 | Baseline node count crossed with both adult/index monotone tails and weak lower-bound stabilization. |
+| `13bw-LBS-Bound359-10000-LLIDX-N5` | Spline bound + tail | 5-node adult/index monotone selectivity with stronger spline lower-bound penalty | flag 16: 16; flag 61: 1; flag 359: 1 | Baseline node count with the stronger lower-bound stabilizer and adult/index monotone tails. |
+| `13bx-LBS-Bound359-1000-IDX-N4` | Spline bound | 4-node index monotone selectivity with weak spline lower-bound penalty | flag 16: 5; flag 61: 1; flag 359: 1 | Separates index-tail stabilization from adult longline monotonicity under the lower-bound penalty. |
+| `13by-LBS-Bound359-10000-IDX-N4` | Spline bound | 4-node index monotone selectivity with stronger spline lower-bound penalty | flag 16: 5; flag 61: 1; flag 359: 1 | Index-only tail case crossed with the stronger spline lower-bound stabilizer. |
+| `13bz-LBS-NoPSDome-IDX-N4` | Dome/cutoff | 4-node selectivity with PS/JP dome constraints removed and index monotone | flag 3: 10; flag 16: 15; flag 61: 1 | Checks whether surface-fishery dome assumptions and index tails jointly explain the depletion shift. |
+| `13ca-LBS-NoDOMPLDome-IDX-N4` | Dome/cutoff | 4-node selectivity with DOM/PL dome constraints removed and index monotone | flag 3: 5; flag 16: 10; flag 61: 1 | Targets domestic and pole-line dome assumptions while stabilizing the index tail. |
+| `13cb-LBS-PSdome20-IDX-N4` | Dome/cutoff | 4-node selectivity with main PS dome cutoffs set to 20 and index monotone | flag 3: 6; flag 16: 5; flag 61: 1 | Lower PS terminal-zero cutoff crossed with the index-tail diagnostic. |
+| `13cc-LBS-PSdome35-IDX-N4` | Dome/cutoff | 4-node selectivity with main PS dome cutoffs set to 35 and index monotone | flag 3: 6; flag 16: 5; flag 61: 1 | Higher PS terminal-zero cutoff crossed with index-tail stabilization. |
+| `13cd-LBS-DOMPLdome15-IDX-N4` | Dome/cutoff | 4-node selectivity with DOM/PL cutoffs set to 15 and index monotone | flag 3: 5; flag 16: 5; flag 61: 1 | Moderate DOM/PL cutoff relaxation crossed with index-tail stabilization. |
+| `13ce-LBS-DOMPLdome25-IDX-N4` | Dome/cutoff | 4-node selectivity with DOM/PL cutoffs set to 25 and index monotone | flag 3: 5; flag 16: 5; flag 61: 1 | Strong DOM/PL cutoff relaxation crossed with index-tail stabilization. |
+| `13cf-LBS-NoDome-LLIDX-N4` | Dome/cutoff + tail | 4-node selectivity with all inherited dome constraints removed and adult/index monotone | flag 3: 15; flag 16: 31; flag 61: 1 | Strong interaction case for dome assumptions plus adult/index tail behavior. |
+| `13cg-LBS-RelaxLowDome-LLIDX-N4` | Dome/cutoff + tail | 4-node selectivity with low terminal-zero cutoffs relaxed and adult/index monotone | flag 3: 7; flag 16: 16; flag 61: 1 | Less extreme dome/tail interaction than removing all dome constraints. |
+| `13ch-LBS-Surface75-2-IDX-N4` | Young-zero | 4-node selectivity with surface young-zero 2 and index monotone | flag 16: 5; flag 61: 1; flag 75: 15 | Crosses small-fish young-zero settings with index-tail stabilization. |
+| `13ci-LBS-Surface75-2-LLIDX-N4` | Young-zero + tail | 4-node selectivity with surface young-zero 2 and adult/index monotone | flag 16: 16; flag 61: 1; flag 75: 15 | Full young-zero plus adult/index tail interaction case. |
+| `13cj-LBS-LL75-0-LLIDX-N4` | Young-zero + tail | 4-node selectivity with longline young-zero removed and adult/index monotone | flag 16: 16; flag 61: 1; flag 75: 7 | Tests whether LL young-age zeros and adult/index monotone tails are compensating for each other. |
+| `13ck-LBS-LL75-1-LLIDX-N4` | Young-zero + tail | 4-node selectivity with LL young-zero age count relaxed and adult/index monotone | flag 16: 16; flag 61: 1; flag 75: 7 | Middle interaction case between removing and strengthening LL young-age zeros. |
+| `13cl-LBS-LL75-3-LLIDX-N4` | Young-zero + tail | 4-node selectivity with stronger LL young-zero settings and adult/index monotone | flag 16: 16; flag 61: 1; flag 75: 7 | Strengthens young-age exclusion while keeping adult/index tails monotone. |
+| `13cm-LBS-HL75-2-LLIDX-N4` | Young-zero + tail | 4-node selectivity with strongly relaxed HL young-zero count and adult/index monotone | flag 16: 16; flag 61: 1; flag 75: 2 | Tests whether handline young-zero assumptions interact with the adult/index tail signal. |
+| `13cn-LBS-HL75-4-LLIDX-N4` | Young-zero + tail | 4-node selectivity with moderately relaxed HL young-zero count and adult/index monotone | flag 16: 16; flag 61: 1; flag 75: 2 | Intermediate handline young-zero interaction case. |
+| `13co-LBS-IDX75-1-LLIDX-N4` | Young-zero + tail | 4-node adult/index monotone selectivity with one young index age set to zero | flag 16: 16; flag 61: 1; flag 75: 5 | Light index young-age exclusion crossed with LL+index adult-tail monotonicity. |
+| `13cp-LBS-IDX75-2-LLIDX-N4` | Young-zero + tail | 4-node adult/index monotone selectivity with two young index ages set to zero | flag 16: 16; flag 61: 1; flag 75: 5 | Middle index young-age exclusion crossed with LL+index adult-tail monotonicity. |
+| `13cq-LBS-IDX75-3-LLIDX-N4` | Young-zero + tail | 4-node adult/index monotone selectivity with three young index ages set to zero | flag 16: 16; flag 61: 1; flag 75: 5 | Strong index young-age exclusion crossed with LL+index adult-tail monotonicity. |
+
 
 ## Run Notes
 
