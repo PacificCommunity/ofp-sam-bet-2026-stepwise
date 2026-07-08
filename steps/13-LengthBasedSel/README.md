@@ -59,6 +59,52 @@ Length-based selectivity test after the OPR step.
 | 5 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
 | 6 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
 
+## Length-Based Sensitivity Grid
+
+These disabled-by-default rows all start from `steps/13-LengthBasedSel/model`.
+They are run only when selected explicitly with `STEP_SELECT`, so the normal
+stepwise `all` run stays unchanged. Each sensitivity appends its switches after
+the base Step 13 selectivity block; MFCL's sequential option parsing therefore
+uses the appended values as the final settings.
+
+Useful switch shorthand:
+
+| Switch | Meaning in this grid |
+| --- | --- |
+| `-999 61 N` | Set the number of cubic-spline nodes for length-specific selectivity. Step 13 baseline is 5 nodes. |
+| `-fishery 16 1` | Add the non-decreasing soft penalty for that fishery's selectivity tail. |
+| `-fishery 16 2` with `-fishery 3 cutoff` | Dome or terminal-zero style constraint inherited by selected gears; the sensitivity changes or removes these cutoffs. |
+| `-fishery 56 value` | Change the non-decreasing penalty strength. Source default is effectively `1000000` when unset. |
+| `-fishery 75 value` | Force young-age selectivity to zero for the first `value` ages/quarters used by that MFCL option. |
+| `1 359 value` | Penalize very low spline coefficients, a lower-bound stabilizer rather than a monotonicity setting. |
+
+| Model | What it changes | Why run it |
+| --- | --- | --- |
+| `13b-LBS-N3` | `-999 61 3` | Strongly smooths length-based selectivity to test whether the high depletion comes from too much spline flexibility. |
+| `13c-LBS-N4` | `-999 61 4` | Middle case between the 3-node sensitivity and the 5-node Step 13 baseline. |
+| `13d-LBS-N6` | `-999 61 6` | Adds flexibility to test whether the baseline result is a low-node artifact. |
+| `13e-LBS-IDXmono-N5` | 5 nodes plus `16 = 1` for index fisheries 29-33 | Keeps baseline node count but stabilizes survey/index large-fish selectivity tails. |
+| `13f-LBS-IDXmono-N4` | 4 nodes plus `16 = 1` for index fisheries 29-33 | Combines moderate smoothing with monotone index selectivity. |
+| `13g-LBS-IDXmono-N3` | 3 nodes plus `16 = 1` for index fisheries 29-33 | Strong smoothing with monotone index selectivity. |
+| `13h-LBS-LLmono-N4` | 4 nodes plus `16 = 1` for longline fisheries 1-11 | Tests whether longline large-fish tails are driving the depletion shift. |
+| `13i-LBS-LLIDXmono-N4` | 4 nodes plus `16 = 1` for longline 1-11 and index 29-33 | Strong tail-stability diagnostic across the main adult/index gears. |
+| `13j-LBS-LLIDXmono-N3` | 3 nodes plus `16 = 1` for longline 1-11 and index 29-33 | Strongest smoothing plus monotone adult/index tail diagnostic. |
+| `13k-LBS-LLIDXmono-N5` | 5 nodes plus `16 = 1` for longline 1-11 and index 29-33 | Separates monotone-tail effects from node-count effects. |
+| `13l-LBS-LLIDXsoft-N4` | 4 nodes, longline/index `16 = 1`, and `56 = 100000` | Same monotone structure as `13i`, but with a softer penalty. |
+| `13m-LBS-LLIDXvsoft-N4` | 4 nodes, longline/index `16 = 1`, and `56 = 10000` | Very soft monotone penalty to see whether hard tail pressure is distorting fit. |
+| `13n-LBS-NoDome-N4` | 4 nodes, remove inherited `16 = 2` dome/terminal-zero constraints for fisheries 12, 13, and 16-28 | Tests whether imposed dome or terminal-zero behavior is lifting depletion. |
+| `13o-LBS-RelaxLowDome-N4` | 4 nodes, relax the most restrictive `16 = 2` cutoff ages to 20 quarters | Loosens only the lowest terminal-zero cutoffs. |
+| `13p-LBS-RelaxDOMPL-N4` | 4 nodes, relax DOM/PL cutoff ages to 20 quarters | Targets domestic/Philippines low-age terminal-zero constraints. |
+| `13q-LBS-RelaxPS-N4` | 4 nodes, relax PS/JP cutoff ages to 30 quarters | Targets purse-seine and Japan pole-and-line cutoff constraints. |
+| `13r-LBS-DomeMid-N4` | 4 nodes, set all inherited `16 = 2` cutoff ages to 25 quarters | Applies one common middle cutoff for the constrained gears. |
+| `13s-LBS-NoLowDome-IDX-N4` | 4 nodes, remove low dome constraints and add index `16 = 1` | Combines relaxed low cutoffs with monotone index tails. |
+| `13t-LBS-YoungZero-PSPLDOM-N4` | 4 nodes plus `75 = 1` for PS/PL/DOM gears 12, 13, and 16-28 | Tests whether small-fish selectivity is pulling the fit and depletion upward. |
+| `13u-LBS-IDXyoungzero-N4` | 4 nodes, index `16 = 1`, and index `75 = 2` | Stabilizes index tails and removes very young index selectivity. |
+| `13v-LBS-HL75-3-N4` | 4 nodes plus `75 = 3` for HL fisheries 14-15 | Relaxes the HL young-zero setting from the inherited stronger value. |
+| `13w-LBS-LL75-1-N4` | 4 nodes plus `75 = 1` for longline fisheries 2, 4, 5, 7-10 | Relaxes longline young-zero settings. |
+| `13x-LBS-Bound359-1000-N4` | 4 nodes plus `1 359 1000` | Adds a weak lower-bound stabilizer on spline coefficients. |
+| `13y-LBS-Bound359-10000-N4` | 4 nodes plus `1 359 10000` | Adds a stronger lower-bound stabilizer on spline coefficients. |
+
 ## Run Notes
 
 | # | Note |

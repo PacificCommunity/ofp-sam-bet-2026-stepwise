@@ -39,6 +39,7 @@ traced without guessing.
 | --- | --- | --- |
 | `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
 | `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
+| `13` length-based sensitivity | `13b`-`13y` | Disabled-by-default sensitivity rows that reuse Step 13 and test length-spline nodes, monotone tails, dome/terminal-zero cutoffs, young-zero selectivity, and spline lower-bound penalties. See `steps/13-LengthBasedSel/README.md`. |
 
 ## Names Used Here
 
