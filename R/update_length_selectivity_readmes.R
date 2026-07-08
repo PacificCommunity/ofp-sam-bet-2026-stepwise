@@ -56,6 +56,9 @@ switch_count <- function(spec) {
 
 replace_section <- function(lines, heading, body, next_heading_pattern = "^## ") {
   start <- which(lines == heading)
+  if (!length(start)) {
+    return(c(lines, "", heading, "", body))
+  }
   if (length(start) != 1L) {
     stop("Expected exactly one section heading: ", heading, call. = FALSE)
   }
@@ -88,7 +91,9 @@ names(axis_summary) <- c("Axis", "Rows")
 axis_summary <- axis_summary[order(axis_summary$Axis), , drop = FALSE]
 
 root_body <- paste(c(
-  sprintf("This branch replaces the earlier 24-row length-based selectivity trial with a %d-row axis grid focused on plausible MFCL controls and selected interactions among those controls. All rows reuse `steps/13-LengthBasedSel/model`, are disabled by default, and run only when explicitly selected with `STEP_SELECT`, so the normal `main` stepwise sequence is unchanged.", scenario_count),
+  sprintf("This branch replaces the earlier short length-based selectivity trial with a %d-row axis grid focused on plausible MFCL controls and selected interactions among those controls. All rows reuse `steps/12-LengthBasedSel/model`, are disabled by default, and run only when explicitly selected with `STEP_SELECT`.", scenario_count),
+  "",
+  "The sensitivity is deliberately before OPR: the branch step order is `11-TimeVaryingCV` -> `12-LengthBasedSel` -> `13-OrthogonalPoly`, and the sensitivity rows test alternatives to step 12 before recruitment is changed by OPR.",
   "",
   "The grid stays close to options supported by MFCL ongoing-dev: cubic-spline node count (`fish flag 61`), length-based selectivity (`fish flag 26 = 3`), non-decreasing tails (`fish flag 16 = 1`), dome/terminal-zero cutoffs (`fish flags 16 = 2` and `3`), young-zero selectivity (`fish flag 75`), monotone penalty weight (`fish flag 56`), and spline lower-bound penalty (`parest flag 359`).",
   "",
@@ -106,13 +111,13 @@ root_body <- paste(c(
 step_detail <- transform(detail, Switches = vapply(specs, switch_count, character(1)))
 step_detail <- step_detail[, c("Model", "Axis", "Change", "Switches", "Reason")]
 step_body <- paste(c(
-  sprintf("These %d disabled-by-default rows all start from `steps/13-LengthBasedSel/model`. They are run only when selected explicitly with `STEP_SELECT`, so the normal `all` run stays unchanged. Each sensitivity appends its switches after the base Step 13 selectivity block; MFCL's sequential option parsing therefore uses the appended values as the final settings.", scenario_count),
+  sprintf("These %d disabled-by-default rows all start from `steps/12-LengthBasedSel/model`. They are run only when selected explicitly with `STEP_SELECT`, so the normal `all` run stays unchanged. Each sensitivity appends its switches after the base Step 12 selectivity block; MFCL's sequential option parsing therefore uses the appended values as the final settings.", scenario_count),
   "",
   "Useful switch shorthand:",
   "",
   "| Switch | Meaning in this grid |",
   "| --- | --- |",
-  "| `-999 61 N` | Number of cubic-spline nodes for length-specific selectivity. Step 13 baseline is 5 nodes. |",
+  "| `-999 61 N` | Number of cubic-spline nodes for length-specific selectivity. Step 12 baseline is 5 nodes. |",
   "| `-fishery 16 1` | Non-decreasing soft penalty for that fishery's selectivity tail. Valid with length-specific spline selectivity in ongoing-dev. |",
   "| `-fishery 16 2` with `-fishery 3 cutoff` | Dome/terminal-zero style constraint for selected gears. Sensitivities change or remove these cutoffs. |",
   "| `-fishery 56 value` | Non-decreasing penalty strength. Source default is effectively `1000000` when unset. |",
@@ -131,10 +136,10 @@ step_body <- paste(c(
 root_path <- "README.md"
 root_lines <- readLines(root_path, warn = FALSE)
 root_lines <- replace_section(root_lines, "## Branch Focus", root_body)
-root_lines <- sub("`13b`-`13[[:alnum:]]+`", substep_range, root_lines)
+root_lines <- sub("`12b`-`12[[:alnum:]]+`", substep_range, root_lines)
 writeLines(root_lines, root_path, useBytes = TRUE)
 
-step_path <- file.path("steps", "13-LengthBasedSel", "README.md")
+step_path <- file.path("steps", "12-LengthBasedSel", "README.md")
 step_lines <- readLines(step_path, warn = FALSE)
 step_lines <- replace_section(step_lines, "## Length-Based Sensitivity Grid", step_body)
 writeLines(step_lines, step_path, useBytes = TRUE)

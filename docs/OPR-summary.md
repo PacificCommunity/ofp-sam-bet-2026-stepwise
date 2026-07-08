@@ -19,7 +19,8 @@ stepwise OPR choice.
 
 ## Applied In Stepwise
 
-`12-OrthogonalPoly` applies the BET rank-1 `69-01-50-50` setting in PHASE 3:
+`13-OrthogonalPoly` applies the BET rank-1 `69-01-50-50` setting in PHASE 3,
+after `12-LengthBasedSel` has added length-based selectivity:
 
 - `1 155 69`: year effect.
 - `1 217 1`: season effect.

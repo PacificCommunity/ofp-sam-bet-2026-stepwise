@@ -49,7 +49,7 @@ readme_contents <- function(spec) {
     "",
     sprintf("- Change: %s", spec$change),
     sprintf("- Notes: %s", spec$notes),
-    "- Source model: `steps/13-LengthBasedSel/model`",
+    "- Source model: `steps/12-LengthBasedSel/model`",
     "- Patch insertion point: immediately before the maturity weighted-spline line in PHASE 1.",
     "",
     "## Switches",
@@ -58,7 +58,7 @@ readme_contents <- function(spec) {
     "| --- |",
     rows,
     "",
-    "The appended switches are placed after the base Step 13 selectivity block, so MFCL's sequential option parsing applies these as the final values."
+    "The appended switches are placed after the base Step 12 selectivity block, so MFCL's sequential option parsing applies these as the final values."
   )
 }
 

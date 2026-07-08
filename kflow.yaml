@@ -7,7 +7,7 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/ofp-sam-bet-2026-lbs-sens
 name: ofp-sam-bet-2026-lbs-sens
-description: Run BET 2026 length-based selectivity sensitivity models.
+description: Run BET 2026 pre-OPR length-based selectivity sensitivity models.
 
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
@@ -33,16 +33,16 @@ exclude_slots: []
 env:
   # Default selected model folder. Override per job in the Kflow job config.
   # Examples: 01-Diag2023, 08-RegionalCPUE, 01-Diag2023,09-NewOtoliths, all
-  STEP_SELECT: 13c-LBS-N4
+  STEP_SELECT: 12c-LBS-N4
 
   # Default Kflow display labels for the default model. `make kflow` computes
   # these from job-config.R. When launching directly from the Kflow UI and
   # changing STEP_SELECT, update these fields too if the job list should show
   # the selected model label before the run starts.
-  JOB_TITLE: "13c LBS N4"
-  JOB_DESCRIPTION: "Run a BET length-based selectivity sensitivity and save compact plot-ready payloads."
+  JOB_TITLE: "12c LBS N4"
+  JOB_DESCRIPTION: "Run a BET length-based selectivity sensitivity before OPR and save compact plot-ready payloads."
   MODEL_LABEL: "LBS N4"
-  JOB_KEY: 13c-lbs-n4
+  JOB_KEY: 12c-lbs-n4
   FLOW_GROUP: bet-2026-lbs-sens
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna

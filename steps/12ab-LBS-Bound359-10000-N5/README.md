@@ -1,0 +1,17 @@
+# 12ab-LBS-Bound359-10000-N5
+
+Runtime sensitivity patch for `LBS bound359 10000 N5`.
+
+- Change: 5-node length-based selectivity with stronger spline lower-bound penalty
+- Notes: Keeps baseline node count while testing whether low spline coefficients are destabilizing the fit.
+- Source model: `steps/12-LengthBasedSel/model`
+- Patch insertion point: immediately before the maturity weighted-spline line in PHASE 1.
+
+## Switches
+
+| Appended MFCL switch |
+| --- |
+| `-999 61 5` |
+| `1 359 10000` |
+
+The appended switches are placed after the base Step 12 selectivity block, so MFCL's sequential option parsing applies these as the final values.
