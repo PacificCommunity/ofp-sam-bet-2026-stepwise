@@ -670,7 +670,8 @@ default_input_dir <- env("DEFAULT_INPUT_DIR", "")
 
 config_path <- env("CONFIG_R", "job-config.R")
 step_table <- read_step_table(file.path(root, config_path), file.path(root, "steps"))
-if (length(step_select) && !any(tolower(step_select) %in% c("all", "*"))) {
+explicit_step_select <- length(step_select) && !any(tolower(step_select) %in% c("all", "*"))
+if (explicit_step_select) {
   unknown <- setdiff(step_select, step_table$step_id)
   if (length(unknown)) stop("Unknown STEP_SELECT value(s): ", paste(unknown, collapse = ", "), call. = FALSE)
   step_table <- step_table[step_table$step_id %in% step_select, , drop = FALSE]
@@ -789,7 +790,7 @@ for (i in seq_len(nrow(step_table))) {
   cfg <- modifyList(cfg, row_to_config(step_table, i))
   cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB"))
   step_id <- basename(step_dir)
-  if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
+  if (!explicit_step_select && !truthy(cfg$ENABLED %||% "true", default = TRUE)) {
     message("Skipping disabled step ", step_id)
     next
   }
