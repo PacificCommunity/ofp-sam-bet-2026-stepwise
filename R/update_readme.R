@@ -161,6 +161,9 @@ source_folder <- function(step_id, source_dir = "") {
     if (grepl("^(/|[A-Za-z]:[\\\\/])", source_dir)) {
       return(source_dir)
     }
+    if (dir.exists(source_dir)) {
+      return(source_dir)
+    }
     return(file.path("steps", step_id, source_dir))
   }
   file.path("steps", step_id, "model")

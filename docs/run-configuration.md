@@ -8,8 +8,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
-| `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-stepwise-v2` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `default_step_select` | `13c-LBS-N4` | Model selection used when `STEP_SELECT` is not supplied. |
+| `flow_group` | `bet-2026-lbs-sens` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.1` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
@@ -45,6 +45,30 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-LengthBasedSel` | `TRUE` | 13-LengthBasedSel | 13a | length-based selectivity | Length-based selectivity | 13 Length-based selectivity | `13-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 | `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13b-LBS-N3` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13b | length-based selectivity with 3 cubic-spline nodes | LBS N3 | 13b LBS N3 | `13b-lbs-n3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13c-LBS-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13c | length-based selectivity with 4 cubic-spline nodes | LBS N4 | 13c LBS N4 | `13c-lbs-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13d-LBS-N6` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13d | length-based selectivity with 6 cubic-spline nodes | LBS N6 | 13d LBS N6 | `13d-lbs-n6` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13e-LBS-IDXmono-N5` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13e | baseline 5-node length-based selectivity with non-decreasing index selectivity | LBS IDXmono N5 | 13e LBS IDXmono N5 | `13e-lbs-idxmono-n5` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13f-LBS-IDXmono-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13f | 4-node length-based selectivity with non-decreasing index selectivity | LBS IDXmono N4 | 13f LBS IDXmono N4 | `13f-lbs-idxmono-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13g-LBS-IDXmono-N3` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13g | 3-node length-based selectivity with non-decreasing index selectivity | LBS IDXmono N3 | 13g LBS IDXmono N3 | `13g-lbs-idxmono-n3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13h-LBS-LLmono-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13h | 4-node length-based selectivity with non-decreasing longline selectivity | LBS LLmono N4 | 13h LBS LLmono N4 | `13h-lbs-llmono-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13i-LBS-LLIDXmono-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13i | 4-node length-based selectivity with non-decreasing longline and index selectivity | LBS LL+IDXmono N4 | 13i LBS LL+IDXmono N4 | `13i-lbs-llidxmono-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13j-LBS-LLIDXmono-N3` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13j | 3-node length-based selectivity with non-decreasing longline and index selectivity | LBS LL+IDXmono N3 | 13j LBS LL+IDXmono N3 | `13j-lbs-llidxmono-n3` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13k-LBS-LLIDXmono-N5` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13k | baseline 5-node length-based selectivity with non-decreasing longline and index selectivity | LBS LL+IDXmono N5 | 13k LBS LL+IDXmono N5 | `13k-lbs-llidxmono-n5` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13l-LBS-LLIDXsoft-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13l | 4-node non-decreasing longline/index selectivity with a softer monotone penalty | LBS LL+IDX soft mono N4 | 13l LBS LL+IDX soft mono N4 | `13l-lbs-llidxsoft-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13m-LBS-LLIDXvsoft-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13m | 4-node non-decreasing longline/index selectivity with a very soft monotone penalty | LBS LL+IDX very soft mono N4 | 13m LBS LL+IDX very soft mono N4 | `13m-lbs-llidxvsoft-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13n-LBS-NoDome-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13n | 4-node length-based selectivity with Step 13 dome/terminal-zero constraints removed | LBS no dome N4 | 13n LBS no dome N4 | `13n-lbs-nodome-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13o-LBS-RelaxLowDome-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13o | 4-node length-based selectivity with low terminal-zero cutoffs relaxed | LBS relax low dome N4 | 13o LBS relax low dome N4 | `13o-lbs-relax-low-dome-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13p-LBS-RelaxDOMPL-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13p | 4-node length-based selectivity with DOM/PL terminal-zero cutoffs relaxed | LBS relax DOM/PL N4 | 13p LBS relax DOM/PL N4 | `13p-lbs-relax-dompl-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13q-LBS-RelaxPS-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13q | 4-node length-based selectivity with PS and JP terminal-zero cutoffs relaxed | LBS relax PS N4 | 13q LBS relax PS N4 | `13q-lbs-relax-ps-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13r-LBS-DomeMid-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13r | 4-node length-based selectivity with a common mid terminal-zero cutoff | LBS dome mid N4 | 13r LBS dome mid N4 | `13r-lbs-dome-mid-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13s-LBS-NoLowDome-IDX-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13s | 4-node length-based selectivity with low dome constraints removed and index monotone | LBS no low dome + IDX N4 | 13s LBS no low dome + IDX N4 | `13s-lbs-no-low-dome-idx-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13t-LBS-YoungZero-PSPLDOM-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13t | 4-node length-based selectivity with age-1 zero selectivity for PS/PL/DOM gears | LBS young-zero PS/PL/DOM N4 | 13t LBS young-zero PS/PL/DOM N4 | `13t-lbs-youngzero-pspldom-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13u-LBS-IDXyoungzero-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13u | 4-node length-based selectivity with monotone index selectivity and young-index zero selectivity | LBS IDX young-zero N4 | 13u LBS IDX young-zero N4 | `13u-lbs-idx-youngzero-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13v-LBS-HL75-3-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13v | 4-node length-based selectivity with HL young-zero age count relaxed | LBS HL75 3 N4 | 13v LBS HL75 3 N4 | `13v-lbs-hl75-3-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13w-LBS-LL75-1-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13w | 4-node length-based selectivity with LL young-zero age count relaxed | LBS LL75 1 N4 | 13w LBS LL75 1 N4 | `13w-lbs-ll75-1-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13x-LBS-Bound359-1000-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13x | 4-node length-based selectivity with spline lower-bound penalty 359 = 1000 | LBS bound359 1000 N4 | 13x LBS bound359 1000 N4 | `13x-lbs-bound359-1000-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `13y-LBS-Bound359-10000-N4` | `FALSE` | 13-LengthBasedSel-Sensitivity | 13y | 4-node length-based selectivity with spline lower-bound penalty 359 = 10000 | LBS bound359 10000 N4 | 13y LBS bound359 10000 N4 | `13y-lbs-bound359-10000-n4` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -70,6 +94,30 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `13-LengthBasedSel` | `steps/13-LengthBasedSel/model` | `exists` |
 | `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
 | `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
+| `13b-LBS-N3` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13c-LBS-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13d-LBS-N6` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13e-LBS-IDXmono-N5` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13f-LBS-IDXmono-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13g-LBS-IDXmono-N3` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13h-LBS-LLmono-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13i-LBS-LLIDXmono-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13j-LBS-LLIDXmono-N3` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13k-LBS-LLIDXmono-N5` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13l-LBS-LLIDXsoft-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13m-LBS-LLIDXvsoft-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13n-LBS-NoDome-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13o-LBS-RelaxLowDome-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13p-LBS-RelaxDOMPL-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13q-LBS-RelaxPS-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13r-LBS-DomeMid-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13s-LBS-NoLowDome-IDX-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13t-LBS-YoungZero-PSPLDOM-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13u-LBS-IDXyoungzero-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13v-LBS-HL75-3-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13w-LBS-LL75-1-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13x-LBS-Bound359-1000-N4` | `steps/13-LengthBasedSel/model` | `exists` |
+| `13y-LBS-Bound359-10000-N4` | `steps/13-LengthBasedSel/model` | `exists` |
 
 
 ## Useful Kflow Config

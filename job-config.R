@@ -3,11 +3,11 @@
 
 stepwise_run <- list(
   # Default model when STEP_SELECT is not provided.
-  default_step_select = "all",
+  default_step_select = "13c-LBS-N4",
 
   # Short Kflow group label for one stepwise -> results -> report chain.
   # Override per launch when running several chains at once.
-  flow_group = "bet-2026-stepwise-v2",
+  flow_group = "bet-2026-lbs-sens",
 
   # TRUE runs downstream plot/report after stepwise succeeds.
   trigger_next = TRUE
@@ -170,4 +170,12 @@ stepwise_models <- data.frame(
   frq = rep("bet.frq", 17),
   output_par = rep("", 17),
   stringsAsFactors = FALSE
+)
+
+stepwise_models$source_dir <- ""
+
+source("R/length_selectivity_sensitivity_rows.R")
+stepwise_models <- rbind(
+  stepwise_models,
+  length_selectivity_sensitivity_rows()
 )
