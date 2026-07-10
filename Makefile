@@ -58,7 +58,7 @@ KFLOW_JOB_MEMORY ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(C
 STEPWISE_BASE_INPUT_JOB ?= $(call yml,y$$env$$STEPWISE_BASE_INPUT_JOB,)
 STEPWISE_CHECK_INPUT_JOBS ?= $(call yml,y$$env$$STEPWISE_CHECK_INPUT_JOBS,)
 ATTACH_CHECK_TYPES ?= $(call yml,y$$env$$ATTACH_CHECK_TYPES,)
-TERMINAL_SENSITIVITY_KFLOW_TASK ?= ofp-sam-bet-2026-stepwise-terminal-recruitment
+TERMINAL_SENSITIVITY_KFLOW_TASK ?= ofp-sam-bet-2026-stepwise-terminal-recruitment-717273
 TERMINAL_SENSITIVITY_RESULTS_KFLOW_TASK ?= ofp-sam-bet-2026-results
 TERMINAL_SENSITIVITY_LAUNCH_ARGS ?=
 

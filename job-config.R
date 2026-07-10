@@ -17,8 +17,9 @@ stepwise_run <- list(
   trigger_next = TRUE,
 
   # Explicit selector and queue policy used by
-  # scripts/launch_terminal_recruitment_sensitivity.py. The 95-model launch
-  # includes step 11/12 controls and therefore keeps one Hessian job per fit.
+  # scripts/launch_terminal_recruitment_sensitivity.py. The focused launch has
+  # 102 generated 71/72/73 OPR variants plus Step 11/12 controls (104 fits), so
+  # it keeps one unpartitioned Hessian calculation per fit.
   terminal_sensitivity_step_select = paste(terminal_sensitivity_run_step_ids(), collapse = ","),
   terminal_sensitivity_model_count = length(terminal_sensitivity_run_step_ids()),
   terminal_sensitivity_hessian_nsplit = terminal_sensitivity_hessian_nsplit()

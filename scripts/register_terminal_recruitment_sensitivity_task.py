@@ -31,7 +31,9 @@ from register_kflow_task import (  # noqa: E402
 )
 
 
-DEFAULT_TASK = "ofp-sam-bet-2026-stepwise-terminal-recruitment"
+DEFAULT_TASK = "ofp-sam-bet-2026-stepwise-terminal-recruitment-717273"
+DEFAULT_BRANCH = "experiment/step12-terminal-recruitment-71-73"
+EXPECTED_MODEL_COUNT = 104
 
 
 def sensitivity_count(repo_root: Path) -> int:
@@ -55,7 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", default=".", help="Repository root used for git metadata.")
     parser.add_argument("--task-name", default=DEFAULT_TASK, help="Separate Kflow task code to register.")
     parser.add_argument("--repo-full-name", default="", help="Override GitHub owner/repo.")
-    parser.add_argument("--branch", default="", help="Sensitivity branch; defaults to the checked-out branch.")
+    parser.add_argument("--branch", default=DEFAULT_BRANCH, help="Sensitivity source branch.")
     parser.add_argument("--kflow-url", default=os.environ.get("KFLOW_URL", "http://127.0.0.1:8089"))
     parser.add_argument("--dry-run", action="store_true", help="Print the registration payload without changing Kflow.")
     return parser.parse_args()
@@ -64,24 +66,28 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     repo_root = (ROOT / args.repo_root).resolve()
-    branch = args.branch or run_git(repo_root, "branch", "--show-current") or "main"
+    branch = args.branch or run_git(repo_root, "branch", "--show-current") or DEFAULT_BRANCH
     count = sensitivity_count(repo_root)
+    if count != EXPECTED_MODEL_COUNT:
+        raise SystemExit(
+            f"Expected {EXPECTED_MODEL_COUNT} focused 71/72/73 models, but job-config resolved {count}."
+        )
 
     config = read_yaml(repo_root / "kflow.yaml")
     env: dict[str, Any] = dict(config.get("env") or {})
-    # Do not make the UI's default one serial 95-model run. The dedicated
+    # Do not make the UI's default one serial 104-model run. The dedicated
     # launcher sends one explicit STEP_SELECT per independent Kflow job.
     env.update(
         {
             "STEP_SELECT": "12-OrthogonalPoly",
-            "JOB_TITLE": "Terminal recruitment sensitivity control",
+            "JOB_TITLE": "OPR 71/72/73 terminal recruitment control",
             "JOB_DESCRIPTION": (
                 f"One-model control run for the {count}-model terminal-recruitment grid; "
                 "use scripts/launch_terminal_recruitment_sensitivity.py for the parallel flow."
             ),
-            "MODEL_LABEL": "Terminal recruitment sensitivity control",
-            "JOB_KEY": "terminal-recruitment-control",
-            "FLOW_GROUP": "bet-2026-terminal-recruitment",
+            "MODEL_LABEL": "OPR 71/72/73 terminal recruitment control",
+            "JOB_KEY": "terminal-recruitment-717273-control",
+            "FLOW_GROUP": "bet-2026-terminal-recruitment-717273",
             "TRIGGER_NEXT": "false",
             "BET_PHASE10_11_CONVERGENCE": "-5",
         }
@@ -90,7 +96,7 @@ def main() -> int:
         {
             "name": args.task_name,
             "description": (
-                f"Isolated {count}-model BET 2026 terminal-recruitment sensitivity runner. "
+                f"Isolated {count}-model BET 2026 OPR 71/72/73 terminal-recruitment runner. "
                 "The normal stepwise task remains on main."
             ),
             "branch": branch,
@@ -104,8 +110,15 @@ def main() -> int:
     )
     metadata = dict(config.get("metadata") or {})
     metadata["terminal_recruitment_sensitivity"] = {
+        "grid": "terminal-recruitment-717273",
         "model_count": count,
-        "launch_mode": "one Kflow fit job per model with dependent Hessian",
+        "fit_job_count": count,
+        "hessian_job_count": count,
+        "hessian_merge_job_count": count,
+        "results_job_count": 1,
+        "total_job_count": 3 * count + 1,
+        "hessian_parts_per_model": 1,
+        "launch_mode": "one fit, one Hessian, and one Hessian merge per model, then one results job",
         "normal_stepwise_task_preserved": True,
     }
     config["metadata"] = metadata

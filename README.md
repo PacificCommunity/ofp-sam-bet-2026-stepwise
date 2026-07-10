@@ -35,14 +35,15 @@ traced without guessing.
 
 ## Terminal Recruitment Sensitivity
 
-The isolated `experiment/step12-terminal-recruitment-sensitivity` branch adds
-an explicit 95-model terminal-recruitment grid based on Steps 11 and 12. The
-normal main `all` selection remains unchanged. The grid has its own Suva Kflow
-task and submits one dependent Hessian per fit, without Hessian partitioning.
-The existing BET results task receives the completed Hessian-merge bundles as
-one fan-in MFCL Shiny review, including non-PD and incomplete diagnostics.
-See [the terminal-recruitment sensitivity guide](docs/terminal-recruitment-sensitivity.md)
-for the source-valid endpoint limits, model families, and launch/review rule.
+The isolated `experiment/step12-terminal-recruitment-71-73` branch provides a
+focused near-saturated OPR sensitivity around 71, 72, and 73 annual
+coefficients. It contains 102 generated OPR variants plus the Step 11 standard
+recruitment and Step 12 OPR69 controls (104 fits total); the normal main `all`
+selection remains unchanged. Suva runs one Hessian and one merge per fit, then
+fans the 104 canonical model bundles into one BET results/MFCL Shiny job (313
+jobs total). See [the terminal-recruitment sensitivity guide](docs/terminal-recruitment-sensitivity.md)
+for the source-derived endpoint limits, model families, Kflow identity, and
+review rule.
 
 ## Substep Logic
 

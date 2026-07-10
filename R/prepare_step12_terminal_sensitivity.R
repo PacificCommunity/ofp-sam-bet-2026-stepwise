@@ -1,6 +1,14 @@
 #!/usr/bin/env Rscript
-## Build the terminal-recruitment sensitivity folders from the current main
-## step 11 (ordinary recruitment deviations) and step 12 (OPR) templates.
+## Build 102 focused 71/72/73 OPR terminal-recruitment sensitivity folders
+## from the current main Step 12 template. Step 11 (ordinary recruitment
+## deviations) and Step 12 are retained separately as controls, giving 104
+## selected Kflow fits. Since this exceeds 50 models, each fit receives one
+## unpartitioned Hessian calculation.
+##
+## The coefficient limits used here were checked against ofp-sam-mfcl
+## ongoing-dev b3984d5e4009 and ofp-sam-mfcl-manual e3b82b75de71. For the
+## 73-year 1952--2024 series, the valid saturated boundaries are 73/end0,
+## 72/end2, and 71/end3; 74 coefficients are not valid even with end0.
 ##
 ## Usage:
 ##   Rscript R/prepare_step12_terminal_sensitivity.R
@@ -113,9 +121,14 @@ opr_capacity_text <- function(year_end_window) {
   effective_window <- max(1L, as.integer(year_end_window))
   capacity <- 74L - effective_window
   sprintf(
-    "With 73 real years and the default one-point initial endpoint, the annual coefficient ceiling for end window %d is %d%s.",
-    as.integer(year_end_window), capacity,
-    if (as.integer(year_end_window) == 0L) " (MFCL normalizes zero to a one-point, unpooled endpoint)" else ""
+    paste0(
+      "With 73 real years and the effective one-point beginning endpoint, MFCL's annual coefficient ceiling is ",
+      "`74 - max(1, end window)`: end window %d therefore permits at most %d coefficients%s. ",
+      "A count of 74 is invalid even with end0."
+    ),
+    as.integer(year_end_window),
+    capacity,
+    if (as.integer(year_end_window) == 0L) " because MFCL normalises end0 to a one-point endpoint" else ""
   )
 }
 
@@ -161,6 +174,22 @@ write_sensitivity_readme <- function(target_step_dir, spec) {
   is_standard <- identical(spec$parameterization, "standard")
   parent <- spec$parent_step
   hessian_parts <- terminal_sensitivity_hessian_nsplit()
+  collection_spec <- terminal_sensitivity_model_spec()
+  annual_counts <- table(factor(collection_spec$year_effect, levels = c(71L, 72L, 73L)))
+  collection_text <- sprintf(
+    paste0(
+      "The focused collection contains %d generated OPR variants ",
+      "(71/72/73 annual coefficients: %d/%d/%d) plus the Step 11 and Step 12 controls, for %d fits total."
+    ),
+    nrow(collection_spec),
+    annual_counts[[1L]], annual_counts[[2L]], annual_counts[[3L]],
+    length(terminal_sensitivity_run_step_ids())
+  )
+  hessian_text <- if (hessian_parts == 1L) {
+    "one unpartitioned Hessian calculation (`nsplit=1`)"
+  } else {
+    sprintf("a %d-part Hessian calculation", hessian_parts)
+  }
   terminal_definition <- if (is_standard) {
     standard_terminal_text(spec$standard_terminal_periods, spec$standard_arithmetic_mean)
   } else {
@@ -174,9 +203,11 @@ write_sensitivity_readme <- function(target_step_dir, spec) {
     )
   } else {
     c(
-      "MFCL `ongoing-dev` `get_orth_poly_info.cpp` and `get_orth_weights.cpp` define 155/217/216/218 as coefficient counts; the polynomial degree is count minus one.",
+      "The interpretation was checked against MFCL `ongoing-dev` commit `b3984d5e4009` and manual commit `e3b82b75de71`.",
+      "The manual's OPR table labels 155/216/217/218 as `Degree+1`; `get_orth_weights.cpp` passes each value minus one to `orthpoly_constant_begin_end()`. Thus 155/217/216/218 are coefficient counts for year/season/region/season-by-region, respectively.",
       "`202/203` control the annual terminal window and its retained low-order terms; 210/211, 212/213, and 214/215 are the corresponding regional, seasonal, and season-by-region controls.",
-      "`neworth.cpp` rejects a coefficient count above the endpoint-constrained capacity, so 73 annual coefficients are used only with a one-point annual endpoint."
+      "For a non-annual endpoint flag, `0` inherits the annual setting. `-1` overrides that inheritance; the source then normalises the resulting zero window to the minimal one-point effective endpoint, so `Free` means no multi-year terminal tie rather than literally zero endpoint points.",
+      "`neworth.cpp` normalises zero beginning/end windows to one point and rejects a degree above `n - begin - end + 1`. Since the executable passes coefficient count minus one, 73/end0, 72/end2, and 71/end3 are the current-data saturated boundaries, while 74 is invalid."
     )
   }
   lines <- c(
@@ -225,9 +256,11 @@ write_sensitivity_readme <- function(target_step_dir, spec) {
     "",
     "## Kflow and Hessian",
     "",
+    collection_text,
+    "",
     paste0(
-      "Run this folder as one independent Kflow model job. The terminal-sensitivity launcher submits a ",
-      hessian_parts, "-part Hessian job with this fit as its input dependency, then submits the Hessian merge job. ",
+      "Run this folder as one independent Kflow model job. Because the collection exceeds 50 fits, the terminal-sensitivity launcher submits ",
+      hessian_text, " with this fit as its input dependency, then submits the Hessian merge job. ",
       "The existing BET results task receives this merge bundle for one-session MFCL Shiny review, preserving its PDH/non-PDH result or explicit incomplete/failure reason. ",
       "`TRIGGER_NEXT=false` is intentional: this grid should not spawn one report chain per sensitivity model."
     ),
