@@ -1,6 +1,10 @@
 # Edit this file to choose the default run and add model rows.
 # More detailed instructions are in README.md.
 
+# Kept separate because this is a deliberately disabled, explicit-select-only
+# terminal-recruitment grid. `STEP_SELECT=all` remains the normal main flow.
+source("R/step12_terminal_sensitivity_config.R")
+
 stepwise_run <- list(
   # Default model when STEP_SELECT is not provided.
   default_step_select = "all",
@@ -10,7 +14,14 @@ stepwise_run <- list(
   flow_group = "bet-2026-stepwise-v2",
 
   # TRUE runs downstream plot/report after stepwise succeeds.
-  trigger_next = TRUE
+  trigger_next = TRUE,
+
+  # Explicit selector and queue policy used by
+  # scripts/launch_terminal_recruitment_sensitivity.py. The 95-model launch
+  # includes step 11/12 controls and therefore keeps one Hessian job per fit.
+  terminal_sensitivity_step_select = paste(terminal_sensitivity_run_step_ids(), collapse = ","),
+  terminal_sensitivity_model_count = length(terminal_sensitivity_run_step_ids()),
+  terminal_sensitivity_hessian_nsplit = terminal_sensitivity_hessian_nsplit()
 )
 
 # One row is one independent model folder under steps/<step_id>/model/.
@@ -36,6 +47,7 @@ stepwise_models <- data.frame(
     "15-DataWeighting"
   ),
   enabled = rep(TRUE, 17),
+  documentation_visible = rep(TRUE, 17),
 
   # Scientific grouping for reporting/provenance.
   major_step = c(
@@ -171,3 +183,7 @@ stepwise_models <- data.frame(
   output_par = rep("", 17),
   stringsAsFactors = FALSE
 )
+
+# These rows are runnable only when named explicitly. They are intentionally
+# excluded from the everyday `all` selector and compact run-configuration table.
+stepwise_models <- rbind(stepwise_models, terminal_sensitivity_job_rows())

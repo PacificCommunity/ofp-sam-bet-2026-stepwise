@@ -151,7 +151,12 @@ model_columns <- c(
   "model_label", "job_title", "job_key",
   "run_mode", "mfcl_program_path", "input_par", "frq", "output_par"
 )
-model_rows <- stepwise_models[, intersect(model_columns, names(stepwise_models)), drop = FALSE]
+documented_models <- stepwise_models
+if ("documentation_visible" %in% names(documented_models)) {
+  documented <- tolower(as.character(documented_models$documentation_visible)) %in% c("true", "t", "1", "yes", "y")
+  documented_models <- documented_models[documented, , drop = FALSE]
+}
+model_rows <- documented_models[, intersect(model_columns, names(documented_models)), drop = FALSE]
 
 source_folder <- function(step_id, source_dir = "") {
   if (nzchar(source_dir) && !is.na(source_dir)) {
@@ -166,10 +171,10 @@ source_folder <- function(step_id, source_dir = "") {
   file.path("steps", step_id, "model")
 }
 
-source_dirs <- if ("source_dir" %in% names(stepwise_models)) stepwise_models$source_dir else rep("", nrow(stepwise_models))
-folder_paths <- mapply(source_folder, stepwise_models$step_id, source_dirs, USE.NAMES = FALSE)
+source_dirs <- if ("source_dir" %in% names(documented_models)) documented_models$source_dir else rep("", nrow(documented_models))
+folder_paths <- mapply(source_folder, documented_models$step_id, source_dirs, USE.NAMES = FALSE)
 folder_checks <- data.frame(
-  step_id = stepwise_models$step_id,
+  step_id = documented_models$step_id,
   expected_source_folder = folder_paths,
   status = ifelse(dir.exists(folder_paths), "exists", "missing"),
   stringsAsFactors = FALSE

@@ -440,6 +440,16 @@ hessian_status_from_neigen <- function(n_negative, n_total) {
   list(status = "Non-PDH", reliability = "LOW", is_pdh = FALSE)
 }
 
+hessian_execution_failed <- function(status, reliability) {
+  status <- tolower(trimws(as.character(status %||% "")))
+  reliability <- toupper(trimws(as.character(reliability %||% "")))
+  status %in% c(
+    "failed", "model_run_failed", "missing", "no_units", "incomplete",
+    "incomplete_parts", "part_failed", "stitch_failed", "eigen_failed",
+    "eigen_not_reported", "not_received"
+  ) || reliability %in% c("FAILED", "FAILED_PARTS", "STITCH_FAILED", "INCOMPLETE")
+}
+
 hessian_summary_from_dir <- function(model_dir) {
   hessian_dir <- file.path(model_dir, "hessian")
   hinfo_file <- file.path(hessian_dir, "hessian_info.rds")
@@ -453,6 +463,34 @@ hessian_summary_from_dir <- function(model_dir) {
     n_total <- neig$n_total_eigenvalues
   }
   status <- hessian_status_from_neigen(n_negative, n_total)
+  merge_status <- scalar_chr(pluck(hinfo, "meta", "merge_status"), NA_character_)
+  n_failed <- scalar_int(pluck(hinfo, "meta", "n_failed"), NA_integer_)
+  hessian_status <- scalar_chr(pluck(hinfo, "eigen", "hessian_status"), NA_character_)
+  if (is.na(hessian_status) &&
+      (hessian_execution_failed(merge_status, "") || (is.finite(n_failed) && n_failed > 0L))) {
+    hessian_status <- if (!is.na(merge_status) && hessian_execution_failed(merge_status, "")) {
+      merge_status
+    } else {
+      "incomplete_parts"
+    }
+  }
+  if (is.na(hessian_status)) hessian_status <- status$status
+  reliability <- scalar_chr(pluck(hinfo, "eigen", "reliability"), NA_character_)
+  if (is.na(reliability)) {
+    reliability <- if (hessian_execution_failed(hessian_status, "")) "FAILED" else status$reliability
+  }
+  failure_reason <- scalar_chr(pluck(hinfo, "meta", "failure_reason"), NA_character_)
+  if (is.na(failure_reason)) failure_reason <- scalar_chr(pluck(hinfo, "error"), NA_character_)
+  if (is.na(failure_reason)) failure_reason <- scalar_chr(pluck(hinfo, "stitch", "command", "error"), NA_character_)
+  if (is.na(failure_reason)) failure_reason <- scalar_chr(pluck(hinfo, "eigen", "command", "error"), NA_character_)
+  execution_failed <- hessian_execution_failed(hessian_status, reliability)
+  if (is.na(failure_reason) && execution_failed) {
+    failure_reason <- if (is.finite(n_failed) && n_failed > 0L) {
+      paste0("Hessian merge reported ", hessian_status, " (failed units: ", n_failed, ")")
+    } else {
+      paste0("Hessian merge reported ", hessian_status)
+    }
+  }
 
   is_pdh <- scalar_lgl(pluck(hinfo, "diagnostics", "summary", "pdh", "is_pdh"), NA)
   if (is.na(is_pdh)) is_pdh <- scalar_lgl(pluck(hinfo, "diagnostics", "summary", "is_pdh"), status$is_pdh)
@@ -462,6 +500,7 @@ hessian_summary_from_dir <- function(model_dir) {
   if (is.na(hessian_ok) && !is.na(is_pdh)) {
     hessian_ok <- if (!is.na(is_spd)) isTRUE(is_pdh) && isTRUE(is_spd) else isTRUE(is_pdh)
   }
+  if (execution_failed) hessian_ok <- FALSE
 
   hessian_file <- file.path(hessian_dir, paste0(scalar_chr(pluck(hinfo, "meta", "root_name"), "bet"), ".hes"))
   if (!file.exists(hessian_file)) hessian_file <- NA_character_
@@ -470,8 +509,9 @@ hessian_summary_from_dir <- function(model_dir) {
   list(
     requested = TRUE,
     attempted = TRUE,
-    run_ok = TRUE,
-    error = NA_character_,
+    run_ok = !execution_failed,
+    error = failure_reason,
+    failure_reason = failure_reason,
     info_file = if (file.exists(hinfo_file)) normalize_loose(hinfo_file) else NA_character_,
     hessian_file = if (!is.na(hessian_file)) normalize_loose(hessian_file) else NA_character_,
     hessian_range = NULL,
@@ -479,9 +519,21 @@ hessian_summary_from_dir <- function(model_dir) {
     is_spd = is_spd,
     hessian_ok = hessian_ok,
     n_negative_eigenvalues = n_negative,
+    n_nonpositive_eigenvalues = scalar_int(pluck(hinfo, "eigen", "n_nonpositive_eigenvalues"), n_negative),
+    n_strictly_negative_eigenvalues = scalar_int(pluck(hinfo, "eigen", "n_strictly_negative_eigenvalues"), NA_integer_),
+    n_zero_eigenvalues = scalar_int(pluck(hinfo, "eigen", "n_zero_eigenvalues"), NA_integer_),
+    n_positive_eigenvalues = scalar_int(pluck(hinfo, "eigen", "n_positive_eigenvalues"), NA_integer_),
     n_total_eigenvalues = n_total,
-    hessian_status = scalar_chr(pluck(hinfo, "eigen", "hessian_status"), status$status),
-    reliability = scalar_chr(pluck(hinfo, "eigen", "reliability"), status$reliability),
+    eigenvalue_counts_source = scalar_chr(pluck(hinfo, "eigen", "eigenvalue_counts_source"), "native_neigenvalues"),
+    hessian_status = hessian_status,
+    reliability = reliability,
+    merge_status = merge_status,
+    n_parts_expected = scalar_int(pluck(hinfo, "meta", "expected_nsplit"), NA_integer_),
+    n_parts_found = scalar_int(pluck(hinfo, "meta", "n_parts"), NA_integer_),
+    n_hessian_units = scalar_int(pluck(hinfo, "meta", "n_units"), NA_integer_),
+    n_hessian_units_succeeded = scalar_int(pluck(hinfo, "meta", "n_success"), NA_integer_),
+    n_hessian_units_failed = n_failed,
+    missing_parts = scalar_chr(pluck(hinfo, "meta", "missing_parts"), ""),
     nonpositive_parameters = read_hessian_nonpositive_parameters(model_dir),
     parameter_uncertainty = read_hessian_parameter_uncertainty(model_dir, hinfo)
   )

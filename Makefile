@@ -33,6 +33,7 @@ CHANGE_AXIS ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG
 TAG_FLAGS_IT2 ?=
 RUN_MODE ?= $(call yml,y$$env$$RUN_MODE,$(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_run_mode(Sys.getenv("STEP_SELECT")))'))
 STEPWISE_BUILD_PAYLOAD ?= $(call yml,y$$env$$STEPWISE_BUILD_PAYLOAD,true)
+STEPWISE_ALLOW_DISABLED_SELECTED ?= $(call yml,y$$env$$STEPWISE_ALLOW_DISABLED_SELECTED,false)
 INPUT_PAR ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_row_value(Sys.getenv("STEP_SELECT"), "input_par"))')
 FRQ ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_row_value(Sys.getenv("STEP_SELECT"), "frq"))')
 OUTPUT_PAR ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_row_value(Sys.getenv("STEP_SELECT"), "output_par"))')
@@ -57,8 +58,11 @@ KFLOW_JOB_MEMORY ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(C
 STEPWISE_BASE_INPUT_JOB ?= $(call yml,y$$env$$STEPWISE_BASE_INPUT_JOB,)
 STEPWISE_CHECK_INPUT_JOBS ?= $(call yml,y$$env$$STEPWISE_CHECK_INPUT_JOBS,)
 ATTACH_CHECK_TYPES ?= $(call yml,y$$env$$ATTACH_CHECK_TYPES,)
+TERMINAL_SENSITIVITY_KFLOW_TASK ?= ofp-sam-bet-2026-stepwise-terminal-recruitment
+TERMINAL_SENSITIVITY_RESULTS_KFLOW_TASK ?= ofp-sam-bet-2026-results
+TERMINAL_SENSITIVITY_LAUNCH_ARGS ?=
 
-.PHONY: help setup hooks readme list clean fix-permissions local docker kflow kflow-register kflow-register-chain
+.PHONY: help setup hooks readme list clean fix-permissions local docker kflow kflow-register kflow-register-chain kflow-register-terminal-sensitivity kflow-register-terminal-sensitivity-results kflow-launch-terminal-sensitivity
 
 help:
 	@printf '%s\n' \
@@ -134,6 +138,7 @@ local: readme
 	BET_PHASE10_11_CONVERGENCE='$(BET_PHASE10_11_CONVERGENCE)' \
 	OUTPUT_DIR='$(OUTPUT_DIR)' \
 	PROGRAM_PATH='$(PROGRAM_PATH)' \
+	STEPWISE_ALLOW_DISABLED_SELECTED='$(STEPWISE_ALLOW_DISABLED_SELECTED)' \
 	KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES='$(KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES)' \
 	KFLOW_RUNTIME_UPDATE='$(KFLOW_RUNTIME_UPDATE)' \
 	TUNA_FLOW_RUNTIME_UPDATE='$(TUNA_FLOW_RUNTIME_UPDATE)' \
@@ -182,6 +187,7 @@ docker: readme
 	  -e BET_PHASE10_11_CONVERGENCE='$(BET_PHASE10_11_CONVERGENCE)' \
 	  -e OUTPUT_DIR='$(OUTPUT_DIR)' \
 	  -e PROGRAM_PATH='$(PROGRAM_PATH)' \
+	  -e STEPWISE_ALLOW_DISABLED_SELECTED='$(STEPWISE_ALLOW_DISABLED_SELECTED)' \
 	  -e KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES='$(KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES)' \
 	  -e KFLOW_RUNTIME_UPDATE='$(KFLOW_RUNTIME_UPDATE)' \
 	  -e TUNA_FLOW_RUNTIME_UPDATE='$(TUNA_FLOW_RUNTIME_UPDATE)' \
@@ -214,6 +220,18 @@ kflow: readme
 kflow-register:
 	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before running make kflow-register.' >&2; exit 2; }
 	python3 scripts/register_kflow_task.py --repo-root . --config kflow.yaml --kflow-url '$(KFLOW_URL)'
+
+kflow-register-terminal-sensitivity:
+	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before registering the terminal-sensitivity task.' >&2; exit 2; }
+	python3 scripts/register_terminal_recruitment_sensitivity_task.py --repo-root . --task-name '$(TERMINAL_SENSITIVITY_KFLOW_TASK)' --kflow-url '$(KFLOW_URL)'
+
+kflow-register-terminal-sensitivity-results:
+	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before registering the terminal-sensitivity results task.' >&2; exit 2; }
+	python3 scripts/register_kflow_task.py --repo-root ../ofp-sam-bet-2026-results --config ../ofp-sam-bet-2026-results/kflow.yaml --task-name '$(TERMINAL_SENSITIVITY_RESULTS_KFLOW_TASK)' --kflow-url '$(KFLOW_URL)'
+
+kflow-launch-terminal-sensitivity:
+	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before launching the terminal-sensitivity grid.' >&2; exit 2; }
+	python3 scripts/launch_terminal_recruitment_sensitivity.py --stepwise-task '$(TERMINAL_SENSITIVITY_KFLOW_TASK)' --results-task '$(TERMINAL_SENSITIVITY_RESULTS_KFLOW_TASK)' --kflow-url '$(KFLOW_URL)' $(TERMINAL_SENSITIVITY_LAUNCH_ARGS)
 
 kflow-register-chain:
 	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before running make kflow-register-chain.' >&2; exit 2; }

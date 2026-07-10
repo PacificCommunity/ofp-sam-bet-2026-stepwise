@@ -238,6 +238,264 @@ apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
   lines
 }
 
+opr_terminal_window_comment <- function(effect, value, global_default = FALSE) {
+  value <- as.integer(value)
+  if (is.na(value) || value < -1L || (isTRUE(global_default) && value < 0L)) {
+    stop(
+      if (isTRUE(global_default)) {
+        "The global OPR terminal window must be a non-negative integer"
+      } else {
+        "OPR component terminal-window values must be -1 or a non-negative integer"
+      },
+      call. = FALSE
+    )
+  }
+  if (value == -1L) {
+    return(paste0(effect, ": no multi-year terminal tie (MFCL normalizes this to one endpoint)"))
+  }
+  if (value == 0L) {
+    if (isTRUE(global_default)) {
+      return(paste0(effect, ": no multi-year terminal tie (MFCL normalizes the zero window to one endpoint)"))
+    }
+    return(paste0(effect, ": inherit the default year-effect end window"))
+  }
+  if (value == 1L) {
+    return(paste0(effect, ": one terminal real year; no cross-year pooling"))
+  }
+  sprintf("%s: last %d real years share the high-order endpoint basis", effect, value)
+}
+
+opr_terminal_degree_comment <- function(effect, value, component_override = FALSE) {
+  value <- as.integer(value)
+  if (is.na(value) || value < -1L || (!isTRUE(component_override) && value < 0L)) {
+    stop(
+      if (isTRUE(component_override)) {
+        "OPR component terminal-degree values must be -1 or a non-negative integer"
+      } else {
+        "The global OPR terminal degree must be a non-negative integer"
+      },
+      call. = FALSE
+    )
+  }
+  if (value == -1L) {
+    return(paste0(effect, ": reset its endpoint threshold to 0 rather than inheriting the year-effect threshold"))
+  }
+  if (value %in% c(0L, 1L)) {
+    return(paste0(effect, ": all non-constant terms are flat in its end window"))
+  }
+  if (value == 2L) {
+    return(paste0(effect, ": linear term remains free; quadratic and higher terms are flat"))
+  }
+  if (value == 3L) {
+    return(paste0(effect, ": linear and quadratic terms remain free; cubic and higher terms are flat"))
+  }
+  sprintf("%s: polynomial orders below %d remain free; order %d and higher are flat", effect, value, value)
+}
+
+opr_effective_terminal_window <- function(value, default_window, component = FALSE) {
+  value <- as.integer(value)
+  default_window <- as.integer(default_window)
+  if (is.na(default_window) || default_window < 0L) {
+    stop("The global OPR terminal window must be a non-negative integer", call. = FALSE)
+  }
+  if (is.na(value) || value < -1L || (!isTRUE(component) && value < 0L)) {
+    stop("Invalid OPR terminal-window value", call. = FALSE)
+  }
+  raw_window <- if (isTRUE(component) && value == -1L) {
+    0L
+  } else if (isTRUE(component) && value == 0L) {
+    default_window
+  } else {
+    value
+  }
+  max(1L, raw_window)
+}
+
+validate_opr_terminal_sensitivity <- function(year_effect, season_effect,
+                                              region_effect, region_season_effect,
+                                              year_end_window, year_end_degree,
+                                              region_end_window, region_end_degree,
+                                              season_end_window, season_end_degree,
+                                              region_season_end_window,
+                                              region_season_end_degree,
+                                              n_real_years = 73L) {
+  counts <- as.integer(c(year_effect, season_effect, region_effect, region_season_effect))
+  if (anyNA(counts) || any(counts < 1L)) {
+    stop("OPR coefficient counts must be positive integers", call. = FALSE)
+  }
+  year_end_window <- as.integer(year_end_window)
+  year_end_degree <- as.integer(year_end_degree)
+  component_windows <- as.integer(c(region_end_window, season_end_window, region_season_end_window))
+  component_degrees <- as.integer(c(region_end_degree, season_end_degree, region_season_end_degree))
+  if (is.na(year_end_window) || year_end_window < 0L || is.na(year_end_degree) || year_end_degree < 0L) {
+    stop("Global OPR flags 202 and 203 must be non-negative integers", call. = FALSE)
+  }
+  if (anyNA(component_windows) || any(component_windows < -1L) ||
+      anyNA(component_degrees) || any(component_degrees < -1L)) {
+    stop("OPR component endpoint flags 210:215 must be -1 or non-negative integers", call. = FALSE)
+  }
+
+  windows <- c(
+    year = opr_effective_terminal_window(year_end_window, year_end_window),
+    region = opr_effective_terminal_window(region_end_window, year_end_window, component = TRUE),
+    season = opr_effective_terminal_window(season_end_window, year_end_window, component = TRUE),
+    region_season = opr_effective_terminal_window(region_season_end_window, year_end_window, component = TRUE)
+  )
+  capacity <- as.integer(n_real_years) + 1L - windows
+  names(counts) <- names(windows)
+  invalid <- names(counts)[counts > capacity]
+  if (length(invalid)) {
+    detail <- paste(sprintf("%s=%d exceeds capacity %d", invalid, counts[invalid], capacity[invalid]), collapse = "; ")
+    stop(
+      "Invalid OPR endpoint/coefficient combination for ", as.integer(n_real_years),
+      " real years: ", detail,
+      ". Increase the effective endpoint capacity or reduce the coefficient count.",
+      call. = FALSE
+    )
+  }
+  invisible(list(effective_window = windows, capacity = capacity))
+}
+
+opr_terminal_sensitivity_block <- function(year_effect = 69L, season_effect = 1L,
+                                            region_effect = 50L,
+                                            region_season_effect = 50L,
+                                            year_end_window = 2L,
+                                            year_end_degree = 0L,
+                                            region_end_window = 2L,
+                                            region_end_degree = 0L,
+                                            season_end_window = 2L,
+                                            season_end_degree = 0L,
+                                            region_season_end_window = 2L,
+                                            region_season_end_degree = 0L,
+                                            label = "") {
+  validated <- validate_opr_terminal_sensitivity(
+    year_effect, season_effect, region_effect, region_season_effect,
+    year_end_window, year_end_degree,
+    region_end_window, region_end_degree,
+    season_end_window, season_end_degree,
+    region_season_end_window, region_season_end_degree
+  )
+  counts <- as.integer(c(year_effect, season_effect, region_effect, region_season_effect))
+  if (!nzchar(label)) label <- "OPR terminal-recruitment sensitivity"
+  c(
+    paste0("# ", label, "."),
+    "# MFCL ongoing-dev semantics: 155/217/216/218 are coefficient counts, not raw polynomial degrees.",
+    "# The ordinary recruitment-deviation terminal controls below are disabled before OPR is activated.",
+    "  1 149 0   # turn off ordinary recruitment-deviation penalty for OPR",
+    "  1 398 0   # turn off ordinary arithmetic-mean terminal recruitment replacement for OPR",
+    "  1 400 0   # clear ordinary fixed-terminal recruitment-deviation periods for OPR",
+    "  2 177 0   # turn off old total-population scaling for OPR",
+    "  2 32 0    # turn off overall population scaling parameter for OPR",
+    "  2 113 0   # keep initial-population scaling off during OPR transfer",
+    sprintf("  1 155 %d  # annual OPR coefficient count (polynomial degree = count - 1)", counts[[1]]),
+    sprintf("  1 217 %d   # seasonal OPR coefficient count (polynomial degree = count - 1)", counts[[2]]),
+    sprintf("  1 216 %d  # regional OPR coefficient count (polynomial degree = count - 1)", counts[[3]]),
+    sprintf("  1 218 %d  # season-by-region OPR coefficient count (polynomial degree = count - 1)", counts[[4]]),
+    sprintf("  1 202 %d   # %s", as.integer(year_end_window), opr_terminal_window_comment("year effect", year_end_window, global_default = TRUE)),
+    sprintf("  1 203 %d   # %s", as.integer(year_end_degree), opr_terminal_degree_comment("year effect", year_end_degree)),
+    sprintf("  1 210 %d   # %s", as.integer(region_end_window), opr_terminal_window_comment("region effect", region_end_window)),
+    sprintf("  1 211 %d   # %s", as.integer(region_end_degree), opr_terminal_degree_comment("region effect", region_end_degree, component_override = TRUE)),
+    sprintf("  1 212 %d   # %s", as.integer(season_end_window), opr_terminal_window_comment("season effect", season_end_window)),
+    sprintf("  1 213 %d   # %s", as.integer(season_end_degree), opr_terminal_degree_comment("season effect", season_end_degree, component_override = TRUE)),
+    sprintf("  1 214 %d   # %s", as.integer(region_season_end_window), opr_terminal_window_comment("season-by-region effect", region_season_end_window)),
+    sprintf("  1 215 %d   # %s", as.integer(region_season_end_degree), opr_terminal_degree_comment("season-by-region effect", region_season_end_degree, component_override = TRUE)),
+    "  2 30 1    # current MFCL requires age_flag(30)=1 to activate OPR coefficients",
+    "  2 70 0    # turn off mean-plus-deviate regional recruitment time series",
+    "  2 71 0    # turn off regional recruitment-distribution deviations",
+    "  2 178 0   # turn off regional recruitment sum-product constraint",
+    "  -100000 1 0  # turn off time-invariant recruitment distribution, region 1",
+    "  -100000 2 0  # turn off time-invariant recruitment distribution, region 2",
+    "  -100000 3 0  # turn off time-invariant recruitment distribution, region 3",
+    "  -100000 4 0  # turn off time-invariant recruitment distribution, region 4",
+    "  -100000 5 0  # turn off time-invariant recruitment distribution, region 5"
+  )
+}
+
+apply_opr_terminal_sensitivity <- function(lines, ...) {
+  block_start <- grep("^# OPR settings\\.", lines)
+  if (length(block_start) != 1L) {
+    stop("Expected exactly one existing OPR settings block in doitall.sh", call. = FALSE)
+  }
+  phase3_start <- grep("<<PHASE3$", lines)
+  phase3_end <- grep("^PHASE3$", lines)
+  if (length(phase3_start) != 1L || length(phase3_end) != 1L ||
+      block_start <= phase3_start || block_start >= phase3_end) {
+    stop("Expected the OPR settings block inside one PHASE3 section", call. = FALSE)
+  }
+  required <- c(
+    "^[[:space:]]*1[[:space:]]+155[[:space:]]+",
+    "^[[:space:]]*1[[:space:]]+202[[:space:]]+",
+    "^[[:space:]]*2[[:space:]]+30[[:space:]]+1",
+    "^[[:space:]]*-100000[[:space:]]+5[[:space:]]+0"
+  )
+  phase3_lines <- lines[seq.int(phase3_start + 1L, phase3_end - 1L)]
+  if (!all(vapply(required, function(pattern) any(grepl(pattern, phase3_lines)), logical(1)))) {
+    stop("Existing PHASE3 OPR block does not contain the expected controls", call. = FALSE)
+  }
+  block_end <- grep("^[[:space:]]*-100000[[:space:]]+5[[:space:]]+0([[:space:]]|$)", lines)
+  block_end <- block_end[block_end > block_start & block_end < phase3_end]
+  if (length(block_end) != 1L) {
+    stop("Expected one terminal OPR region-5 control in PHASE3", call. = FALSE)
+  }
+  replacement <- opr_terminal_sensitivity_block(...)
+  c(
+    if (block_start > 1L) lines[seq_len(block_start - 1L)] else character(),
+    replacement,
+    if (block_end < length(lines)) lines[seq.int(block_end + 1L, length(lines))] else character()
+  )
+}
+
+write_opr_terminal_sensitivity_doitall <- function(from, to, ...) {
+  lines <- readLines(from, warn = FALSE)
+  lines <- apply_opr_terminal_sensitivity(lines, ...)
+  writeLines(lines, to, useBytes = TRUE)
+  Sys.chmod(to, mode = "0755")
+  invisible(to)
+}
+
+apply_standard_terminal_recruitment_sensitivity <- function(lines,
+                                                            terminal_periods = 0L,
+                                                            arithmetic_mean = FALSE) {
+  terminal_periods <- as.integer(terminal_periods)
+  if (is.na(terminal_periods) || terminal_periods < 0L) {
+    stop("terminal_periods must be a non-negative integer", call. = FALSE)
+  }
+  fixed_line <- grep("^[[:space:]]*1[[:space:]]+400[[:space:]]+", lines)
+  mean_line <- grep("^[[:space:]]*1[[:space:]]+398[[:space:]]+", lines)
+  if (length(fixed_line) != 1L || length(mean_line) != 1L || mean_line <= fixed_line) {
+    stop("Expected one ordered standard terminal-recruitment control pair", call. = FALSE)
+  }
+  if (terminal_periods == 0L) {
+    control_comment <- "all quarterly recruitment deviations, including terminal periods, remain estimated"
+    mean_comment <- "ignored when parest_flag(400)=0"
+  } else if (isTRUE(arithmetic_mean)) {
+    control_comment <- sprintf("last %d quarterly recruitment deviation(s) are fixed", terminal_periods)
+    mean_comment <- "replace those terminal recruitments with the arithmetic mean of earlier natural-scale recruits"
+  } else {
+    control_comment <- sprintf("last %d quarterly recruitment deviation(s) are fixed", terminal_periods)
+    mean_comment <- "retain fixed terminal deviations at zero; do not apply the arithmetic-mean replacement"
+  }
+  replacement <- c(
+    "# Standard mean-plus-deviate recruitment terminal sensitivity.",
+    "# parest_flag(400) counts recruitment time periods (quarters here), not calendar years.",
+    sprintf("  1 400 %d   # %s", terminal_periods, control_comment),
+    sprintf("  1 398 %d   # %s", if (isTRUE(arithmetic_mean) && terminal_periods > 0L) 1L else 0L, mean_comment)
+  )
+  c(
+    if (fixed_line > 1L) lines[seq_len(fixed_line - 1L)] else character(),
+    replacement,
+    if (mean_line < length(lines)) lines[seq.int(mean_line + 1L, length(lines))] else character()
+  )
+}
+
+write_standard_terminal_sensitivity_doitall <- function(from, to, ...) {
+  lines <- readLines(from, warn = FALSE)
+  lines <- apply_standard_terminal_recruitment_sensitivity(lines, ...)
+  writeLines(lines, to, useBytes = TRUE)
+  Sys.chmod(to, mode = "0755")
+  invisible(to)
+}
+
 apply_data_weighting <- function(lines) {
   lf <- grep("-999 49 20", lines, fixed = TRUE)
   wf <- grep("-999 50 20", lines, fixed = TRUE)

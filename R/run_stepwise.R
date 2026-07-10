@@ -666,6 +666,11 @@ save_final_par <- truthy(env("STEPWISE_SAVE_FINAL_PAR", "false"), default = FALS
 save_raw_mfcl_inputs <- truthy(env("STEPWISE_SAVE_RAW_MFCL_INPUTS", "false"), default = FALSE)
 step_select <- strsplit(env("STEP_SELECT", ""), ",", fixed = TRUE)[[1]]
 step_select <- trimws(step_select[nzchar(trimws(step_select))])
+# Disabled rows are excluded from the normal `all` flow. A dedicated launcher
+# may opt in only when it names concrete step IDs; this prevents an accidental
+# `STEP_SELECT=all` from launching an experimental sensitivity grid.
+explicit_step_selection <- length(step_select) && !any(tolower(step_select) %in% c("all", "*"))
+allow_disabled_selected <- truthy(env("STEPWISE_ALLOW_DISABLED_SELECTED", "false"), default = FALSE)
 default_input_dir <- env("DEFAULT_INPUT_DIR", "")
 
 config_path <- env("CONFIG_R", "job-config.R")
@@ -789,9 +794,13 @@ for (i in seq_len(nrow(step_table))) {
   cfg <- modifyList(cfg, row_to_config(step_table, i))
   cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB"))
   step_id <- basename(step_dir)
-  if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
+  if (!truthy(cfg$ENABLED %||% "true", default = TRUE) &&
+      !(allow_disabled_selected && explicit_step_selection)) {
     message("Skipping disabled step ", step_id)
     next
+  }
+  if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
+    message("Running explicitly selected disabled sensitivity step ", step_id)
   }
   label <- cfg$MODEL_LABEL %||% step_id
   source_dir <- cfg$SOURCE_DIR %||% ""

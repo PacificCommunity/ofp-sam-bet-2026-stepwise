@@ -1,0 +1,6 @@
+# Native MFCL input files retain their source CRLF byte layout. Treat them as
+# data rather than patchable source so Git does not report every CRLF as
+# trailing whitespace when a standalone sensitivity folder is added.
+steps/**/model/bet.age_length -text -whitespace
+steps/**/model/bet.frq -text -whitespace
+steps/**/model/bet.tag -text -whitespace

@@ -33,6 +33,17 @@ traced without guessing.
 | `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
 | `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
 
+## Terminal Recruitment Sensitivity
+
+The isolated `experiment/step12-terminal-recruitment-sensitivity` branch adds
+an explicit 95-model terminal-recruitment grid based on Steps 11 and 12. The
+normal main `all` selection remains unchanged. The grid has its own Suva Kflow
+task and submits one dependent Hessian per fit, without Hessian partitioning.
+The existing BET results task receives the completed Hessian-merge bundles as
+one fan-in MFCL Shiny review, including non-PD and incomplete diagnostics.
+See [the terminal-recruitment sensitivity guide](docs/terminal-recruitment-sensitivity.md)
+for the source-valid endpoint limits, model families, and launch/review rule.
+
 ## Substep Logic
 
 | Block | Substeps | Reason |
