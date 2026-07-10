@@ -40,10 +40,12 @@ focused near-saturated OPR sensitivity around 71, 72, and 73 annual
 coefficients. It contains 102 generated OPR variants plus the Step 11 standard
 recruitment and Step 12 OPR69 controls (104 fits total); the normal main `all`
 selection remains unchanged. Suva runs one Hessian and one merge per fit, then
-fans the 104 canonical model bundles into one BET results/MFCL Shiny job (313
-jobs total). See [the terminal-recruitment sensitivity guide](docs/terminal-recruitment-sensitivity.md)
-for the source-derived endpoint limits, model families, Kflow identity, and
-review rule.
+attaches the merged Hessian back to each original fit so its Kflow Diagnostics
+card is visible, then fans the 104 updated model bundles into one BET
+results/MFCL Shiny job (417 jobs total). See [the terminal-recruitment
+sensitivity guide](docs/terminal-recruitment-sensitivity.md) for the
+source-derived endpoint limits, model families, Kflow identity, and review
+rule.
 
 ## Substep Logic
 

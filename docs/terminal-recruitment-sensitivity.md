@@ -63,14 +63,19 @@ normal main-branch task.
 104 fits
   -> 104 Hessians (one per fit)
        -> 104 merges (one per model)
-            -> one BET results / MFCL Shiny job
+            -> 104 attached-output updates (one per original fit)
+                 -> one BET results / MFCL Shiny job
 ```
 
-The full flow is 313 jobs. Because the suite exceeds 50 models,
-`HESSIAN_NSPLIT=1`: Hessians are not partitioned. The results job receives only
-the 104 canonical fit-plus-Hessian merge bundles. Non-positive-definite and
-incomplete Hessians remain visible with their status, eigenvalue counts, and
-failure reason rather than being omitted or reported as successful.
+The full flow is 417 jobs. Because the suite exceeds 50 models,
+`HESSIAN_NSPLIT=1`: Hessians are not partitioned. The attached-output update is
+important: a Kflow dependency alone schedules the merge but does not make its
+diagnostic archive visible on the originating fit page. The update copies the
+merged Hessian back onto that fit, so its **Diagnostics → Hessian** card is
+shown once the merge completes. The results job then receives the 104 attached
+fit bundles. Non-positive-definite and incomplete Hessians remain visible with
+their status, eigenvalue counts, and failure reason rather than being omitted
+or reported as successful.
 
 After pushing the branch and setting `KFLOW_API_TOKEN`:
 
@@ -83,7 +88,8 @@ make kflow-launch-terminal-sensitivity
 The ignored `work/<flow-group>-launch.json` manifest supports recovery with
 `--resume`. Use `--dry-run` or `--limit 1` when checking launcher changes. The
 production suite uses `BET_PHASE10_11_CONVERGENCE=-5`, `TRIGGER_NEXT=false`,
-and the Suva submitter.
+and the Suva submitter. `--no-attach-hessians` is available only for a small
+legacy-compatible test; production launches keep the default attachment step.
 
 ## Review rule
 

@@ -2,15 +2,17 @@
 """Submit the terminal-recruitment grid and its dependent Hessian checks.
 
 One fit job is submitted for each selected model. Each Hessian job depends on
-its corresponding fit, and its merge job depends on the Hessian result. The
-104 merged model bundles then feed the established BET Kflow results task,
-which is the single MFCL Shiny/report-ready review point. Failed parent
-archives are deliberately passed to the merge and results jobs so an
-incomplete Hessian is recorded rather than disappearing.
+its corresponding fit, its merge depends on the Hessian result, and a final
+attach job depends on the fit plus the Hessian merge. The attach job updates
+the original fit bundle, so the Hessian card appears on that model's Kflow job
+page as soon as the merge finishes. The attached model bundles then feed the
+established BET Kflow results task. Failed parent archives are deliberately
+passed through so an incomplete Hessian is recorded rather than disappearing.
 
 This keeps the normal main-branch Kflow task untouched and never turns a
 104-model grid into multiple Hessian shards per model. The complete launch is
-104 fits + 104 Hessians + 104 merges + one results job (313 jobs total).
+104 fits + 104 Hessians + 104 merges + 104 attaches + one results job
+(417 jobs total).
 
 Examples:
   python3 scripts/launch_terminal_recruitment_sensitivity.py --dry-run
@@ -38,13 +40,14 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STEPWISE_TASK = "ofp-sam-bet-2026-stepwise-terminal-recruitment-717273"
 DEFAULT_RESULTS_TASK = "ofp-sam-bet-2026-results"
 DEFAULT_CHECK_PREFIX = "ofp-sam-bet-2026-check"
+DEFAULT_ATTACH_TASK = "ofp-sam-bet-2026-check-attach-checks"
 DEFAULT_MODEL_REPO = "PacificCommunity/ofp-sam-bet-2026-stepwise"
 DEFAULT_BRANCH = "experiment/step12-terminal-recruitment-71-73"
 GRID_CODE = "terminal-recruitment-717273"
 GRID_LABEL = "OPR 71/72/73 terminal recruitment"
 EXPECTED_FULL_MODEL_COUNT = 104
-EXPECTED_FULL_JOB_COUNT = 313
-DEFAULT_MFCLKIT_REF = "f5c55f747c44ec157298a99db4cfe682a9d18926"
+EXPECTED_FULL_JOB_COUNT = 417
+DEFAULT_MFCLKIT_REF = "e352d75c6d1072d60cc1439da478b4dde2cb4d5d"
 DEFAULT_MFCLSHINY_REF = "96f8ece9a1fed8e6f335f8e06d28fc5f541442e6"
 DEFAULT_SUVA_HOST = "suvofpsubmit.corp.spc.int"
 DEFAULT_SUVA_USER = "kyuhank"
@@ -247,6 +250,7 @@ def fit_payload(row: dict[str, str], args: argparse.Namespace, branch: str) -> d
 
 
 def check_runtime_env(row: dict[str, str], args: argparse.Namespace, branch: str, check_type: str, title: str, description: str) -> dict[str, str]:
+    grid_code = str(getattr(args, "sensitivity_grid_code", GRID_CODE) or GRID_CODE)
     return {
         "CHECK_TYPE": check_type,
         "MODEL_SELECTOR": row["step_id"],
@@ -256,7 +260,7 @@ def check_runtime_env(row: dict[str, str], args: argparse.Namespace, branch: str
         "FLOW_GROUP": args.flow_group,
         "KFLOW_JOB_TITLE": title,
         "KFLOW_JOB_DESCRIPTION": description,
-        "JOB_KEY": f"{GRID_CODE}-{check_type.replace('_', '-')}-{row['step_id'].lower()}",
+        "JOB_KEY": f"{grid_code}-{check_type.replace('_', '-')}-{row['step_id'].lower()}",
         "KFLOW_RUNTIME_UPDATE": "never",
         "TUNA_FLOW_RUNTIME_UPDATE": "never",
         "KFLOW_REPO_RUNTIME_UPDATE": "auto",
@@ -361,24 +365,98 @@ def hessian_merge_payload(row: dict[str, str], args: argparse.Namespace, branch:
     }
 
 
+def hessian_attach_payload(
+    row: dict[str, str],
+    args: argparse.Namespace,
+    branch: str,
+    fit_job: str,
+    hessian_merge_job: str,
+) -> dict[str, Any]:
+    """Attach one merged Hessian bundle back to its originating fit job.
+
+    Kflow only renders Diagnostics on a model job after a follow-up output is
+    explicitly attached.  A dependency edge alone is intentionally not enough:
+    it gives the scheduler an input relationship but does not replace the fit
+    job's visible output bundle.
+    """
+    grid_code = str(getattr(args, "sensitivity_grid_code", GRID_CODE) or GRID_CODE)
+    grid_label = str(getattr(args, "sensitivity_grid_label", GRID_LABEL) or GRID_LABEL)
+    title = f"{grid_label} Hessian attach: {row['step_id']}"
+    description = (
+        f"Attach the merged Hessian diagnostic to the original {grid_label} "
+        f"fit for {row['step_id']}."
+    )
+    env = check_runtime_env(row, args, branch, "attach-checks", title, description)
+    env.update(
+        {
+            "MODEL_BASE_INPUT_JOB": fit_job,
+            "BASE_MODEL_JOB": fit_job,
+            "MODEL_ORIGINAL_BASE_INPUT_JOB": fit_job,
+            "CHECK_INPUT_JOBS": hessian_merge_job,
+            "ATTACH_CHECK_TYPES": "hessian",
+        }
+    )
+    input_jobs = [fit_job, hessian_merge_job]
+    return {
+        **submitter_fields(args),
+        "checkout": {"mode": "full"},
+        "title": title,
+        "description": description,
+        "input_jobs": input_jobs,
+        "env": env,
+        "metadata": {
+            "flow_group": args.flow_group,
+            "terminal_recruitment_sensitivity": True,
+            "sensitivity_grid": grid_code,
+            "check_type": "attach-checks",
+            "model_selector": row["step_id"],
+            "base_job": fit_job,
+            "input_jobs": input_jobs,
+            "check_input_jobs": [hessian_merge_job],
+            "attach_check_types": ["hessian"],
+            # Make the updated output an attached-work revision of the fit so
+            # Kflow's job-page Diagnostics card can show its Hessian state.
+            "attached_work_parent_job": fit_job,
+            "attached_work_latest": True,
+            "attached_work_group": f"{args.flow_group}:{row['step_id']}:diagnostics",
+            "attached_work_headline": "Diagnostics",
+            "attached_work_label": f"{row['step_id']} Hessian",
+            "attached_work_summary": "Merged Hessian attached to the originating sensitivity fit.",
+            "attached_work_role": "updated output",
+            "auto_attach": True,
+            # A non-PD or incomplete Hessian remains a factual diagnostic
+            # result; attachment must publish that state rather than vanish.
+            "allow_failed_input_jobs": True,
+        },
+        "tags": {
+            "stage": "checks",
+            "flow": args.flow_group,
+            "experiment": grid_code,
+            "check_type": "attach-checks",
+            "merge_for": "hessian",
+            "model": row["step_id"],
+            "base_job": fit_job,
+        },
+    }
+
+
 def results_payload(
     models: list[dict[str, str]],
     args: argparse.Namespace,
-    merge_jobs: list[str],
+    model_jobs: list[str],
 ) -> dict[str, Any]:
-    # Each merge output is the canonical one-per-model bundle: it contains the
-    # fit payload plus its attached Hessian status. Do not also pass fit jobs:
-    # Kflow local-app staging materializes archives by model key, so duplicate
-    # fit/merge parents could overwrite one another.
-    if len(merge_jobs) != len(models) or any(not str(job).strip() for job in merge_jobs):
-        raise ValueError("Results require one non-empty Hessian-merge job reference per selected model.")
-    input_jobs = list(dict.fromkeys(str(job).strip() for job in merge_jobs))
+    # One attached bundle per model gives results a fitted model plus its
+    # Hessian sidecar, without duplicate fit/merge archives competing for the
+    # same model key during Kflow local-app staging.
+    if len(model_jobs) != len(models) or any(not str(job).strip() for job in model_jobs):
+        raise ValueError("Results require one non-empty attached model job reference per selected model.")
+    input_jobs = list(dict.fromkeys(str(job).strip() for job in model_jobs))
     if len(input_jobs) != len(models):
-        raise ValueError("Results require unique Hessian-merge job references for every selected model.")
+        raise ValueError("Results require unique attached model job references for every selected model.")
     title = f"BET OPR 71/72/73 terminal-recruitment results ({len(models)} models)"
     description = (
         "Build the standard BET results/MFCL Shiny bundle from per-model "
-        "Hessian merges, preserving PDH, Non-PDH, and incomplete statuses."
+        "Hessian-attached fits, preserving PDH, Non-PDH, and incomplete statuses."
     )
     env = {
         "TRIGGER_NEXT": "false",
@@ -469,9 +547,12 @@ def load_or_create_manifest(path: Path, args: argparse.Namespace, branch: str, m
             "fits": len(models),
             "hessians": len(models) * args.hessian_nsplit,
             "hessian_merges": len(models),
+            "hessian_attaches": len(models) if args.attach_hessians else 0,
             "results": 1,
-            "total": len(models) * (2 + args.hessian_nsplit) + 1,
+            "total": len(models) * (2 + args.hessian_nsplit + int(args.attach_hessians)) + 1,
         },
+        "attach_hessians": bool(args.attach_hessians),
+        "attach_task": args.attach_task if args.attach_hessians else "",
         "submitter": {
             "host": args.remote_host,
             "user": args.remote_user,
@@ -516,6 +597,138 @@ def submit_or_preview(base_url: str, token: str, task: str, payload: dict[str, A
     return submitted_job(api_json("POST", f"{base_url}/api/job/{task}", token, payload), task)
 
 
+def backfill_hessian_attachments(args: argparse.Namespace) -> int:
+    """Attach Hessian merges recorded by a pre-attachment launch manifest.
+
+    Earlier terminal-sensitivity manifests predate the explicit Kflow
+    attached-output stage.  Their fit, Hessian and merge jobs are still valid;
+    this routine adds only the missing child attachment jobs.  It deliberately
+    does *not* resubmit fits, Hessians, merges, or an existing results job.
+    """
+    if not args.manifest:
+        raise SystemExit("--backfill-hessian-attaches requires --manifest.")
+    manifest_path = Path(args.manifest).expanduser()
+    if not manifest_path.is_absolute():
+        manifest_path = ROOT / manifest_path
+    if not manifest_path.is_file():
+        raise SystemExit(f"Launch manifest was not found: {manifest_path}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    schema = str(manifest.get("schema") or "")
+    if not schema.startswith("bet-2026-terminal-recruitment"):
+        raise SystemExit("The supplied manifest is not a terminal-recruitment sensitivity launch manifest.")
+    branch = str(manifest.get("branch") or args.branch).strip()
+    flow_group = str(manifest.get("flow_group") or args.flow_group).strip()
+    if not branch or not flow_group:
+        raise SystemExit("The launch manifest must contain both branch and flow_group.")
+
+    # Keep the original manifest's run context, including its submitter when
+    # it was recorded.  The branch comes from the manifest rather than the
+    # checked-out branch, so old 69 and newer 71/72/73 grids can both be fixed.
+    args.branch = branch
+    args.flow_group = flow_group
+    args.hessian_nsplit = int(manifest.get("hessian_nsplit") or 1)
+    is_717273_grid = "717273" in flow_group or "717273" in str(manifest.get("stepwise_task") or "")
+    args.sensitivity_grid_code = GRID_CODE if is_717273_grid else "terminal-recruitment"
+    args.sensitivity_grid_label = GRID_LABEL if is_717273_grid else "Terminal recruitment"
+    submitter = manifest.get("submitter") if isinstance(manifest.get("submitter"), dict) else {}
+    args.remote_host = str(submitter.get("host") or args.remote_host)
+    args.remote_user = str(submitter.get("user") or args.remote_user)
+    args.remote_base_dir = str(submitter.get("base_dir") or args.remote_base_dir)
+
+    entries = manifest.get("models") if isinstance(manifest.get("models"), list) else []
+    if not entries:
+        raise SystemExit("The launch manifest contains no model records.")
+    invalid_entries: list[str] = []
+    fit_refs: list[str] = []
+    merge_refs: list[str] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            invalid_entries.append("<invalid entry>")
+            continue
+        step = str(entry.get("step_id") or "").strip()
+        fit_ref = job_number(entry, "fit")
+        merge_ref = job_number(entry, "hessian_merge")
+        if not step or not fit_ref or not merge_ref:
+            invalid_entries.append(step or "<unnamed model>")
+            continue
+        fit_refs.append(fit_ref)
+        merge_refs.append(merge_ref)
+    if invalid_entries:
+        raise SystemExit(
+            "Cannot backfill attachments: missing fit or Hessian-merge references for "
+            + ", ".join(invalid_entries)
+        )
+    duplicate_fits = sorted({ref for ref in fit_refs if fit_refs.count(ref) > 1})
+    duplicate_merges = sorted({ref for ref in merge_refs if merge_refs.count(ref) > 1})
+    if duplicate_fits or duplicate_merges:
+        details = []
+        if duplicate_fits:
+            details.append("duplicate fit refs " + ", ".join(duplicate_fits))
+        if duplicate_merges:
+            details.append("duplicate merge refs " + ", ".join(duplicate_merges))
+        raise SystemExit("Cannot backfill attachments: " + "; ".join(details))
+
+    base_url = args.kflow_url.rstrip("/")
+    token = os.environ.get("KFLOW_API_TOKEN", "")
+    if not args.dry_run:
+        if not token:
+            raise SystemExit("Set KFLOW_API_TOKEN before submitting Kflow jobs.")
+        if not args.skip_remote_branch_check:
+            verify_remote_branch(branch)
+        report_exists(base_url, token, args.attach_task)
+
+    submitted = 0
+    skipped = 0
+    errors: list[str] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        step = str(entry.get("step_id") or "").strip()
+        if job_number(entry, "hessian_attach"):
+            skipped += 1
+            continue
+        fit_ref = job_number(entry, "fit")
+        merge_ref = job_number(entry, "hessian_merge")
+        try:
+            row = {"step_id": step}
+            attachment = submit_or_preview(
+                base_url,
+                token,
+                args.attach_task,
+                hessian_attach_payload(row, args, branch, fit_ref, merge_ref),
+                args.dry_run,
+            )
+            if args.dry_run:
+                submitted += 1
+                continue
+            entry["hessian_attach"] = attachment
+            submitted += 1
+            write_manifest(manifest_path, manifest)
+            print(f"submitted Hessian attach {step}: job {attachment['job_number']}")
+        except Exception as exc:  # Independent attachments must not block others.
+            entry.setdefault("hessian_attach_errors", []).append(str(exc))
+            errors.append(f"{step}: {exc}")
+            if not args.dry_run:
+                write_manifest(manifest_path, manifest)
+            print(f"ERROR {step}: {exc}", file=sys.stderr)
+
+    if not args.dry_run:
+        manifest["hessian_attachment_backfill"] = {
+            "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "attach_task": args.attach_task,
+            "submitted": submitted,
+            "already_recorded": skipped,
+            "errors": len(errors),
+        }
+        write_manifest(manifest_path, manifest)
+    mode = "previewed" if args.dry_run else "submitted"
+    print(
+        f"Hessian attachment backfill: {mode}={submitted}, already-recorded={skipped}, "
+        f"errors={len(errors)}, manifest={manifest_path}"
+    )
+    return 1 if errors else 0
+
+
 def parse_args() -> argparse.Namespace:
     date_label = dt.date.today().strftime("%Y%m%d")
     parser = argparse.ArgumentParser(description=__doc__)
@@ -523,6 +736,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stepwise-task", default=DEFAULT_STEPWISE_TASK)
     parser.add_argument("--results-task", default=DEFAULT_RESULTS_TASK)
     parser.add_argument("--check-prefix", default=DEFAULT_CHECK_PREFIX)
+    parser.add_argument("--attach-task", default=DEFAULT_ATTACH_TASK)
+    parser.add_argument(
+        "--attach-hessians",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Attach each merged Hessian back to its fit job before results (default: true).",
+    )
     parser.add_argument("--model-source-repo", default=DEFAULT_MODEL_REPO)
     parser.add_argument("--branch", default=DEFAULT_BRANCH, help="Source branch for the focused 71/72/73 grid.")
     parser.add_argument("--models", default="", help="Optional comma-separated subset of step IDs.")
@@ -535,6 +755,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--remote-base-dir", default=DEFAULT_SUVA_BASE_DIR)
     parser.add_argument("--manifest", default="", help="JSON launch manifest; defaults under ignored work/.")
     parser.add_argument("--resume", action="store_true", help="Reuse submitted job references recorded in --manifest.")
+    parser.add_argument(
+        "--backfill-hessian-attaches",
+        action="store_true",
+        help="Submit only missing Hessian attachment jobs from an existing launch manifest.",
+    )
     parser.add_argument("--skip-remote-branch-check", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="Validate the grid and print API payloads without submitting.")
     return parser.parse_args()
@@ -542,6 +767,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if args.backfill_hessian_attaches:
+        return backfill_hessian_attachments(args)
     if args.limit < 0:
         raise SystemExit("--limit must be non-negative.")
     branch = args.branch or current_branch()
@@ -579,6 +806,7 @@ def main() -> int:
             args.stepwise_task,
             f"{args.check_prefix}-hessian",
             f"{args.check_prefix}-hessian-merge",
+            *([args.attach_task] if args.attach_hessians else []),
             args.results_task,
         ):
             report_exists(base_url, token, task)
@@ -631,21 +859,51 @@ def main() -> int:
                     print(f"submitted Hessian merge {step}: job {merge_ref}")
                 write_manifest(manifest_path, manifest)
 
+            # A scheduler dependency is not a visible attachment in Kflow.
+            # Submit a separate update-output job so the original fit job
+            # receives a Diagnostics/Hessian card when its merge completes.
+            if args.attach_hessians:
+                attach_ref = job_number(entry, "hessian_attach")
+                if not attach_ref:
+                    entry["hessian_attach"] = submit_or_preview(
+                        base_url,
+                        token,
+                        args.attach_task,
+                        hessian_attach_payload(row, args, branch, fit_ref, merge_ref),
+                        args.dry_run,
+                    )
+                    attach_ref = job_number(entry, "hessian_attach")
+                    if not args.dry_run:
+                        print(f"submitted Hessian attach {step}: job {attach_ref}")
+                    write_manifest(manifest_path, manifest)
+
         except Exception as exc:  # Keep the remaining independent models launchable.
             entry.setdefault("errors", []).append(str(exc))
             errors.append(f"{step}: {exc}")
             write_manifest(manifest_path, manifest)
             print(f"ERROR {step}: {exc}", file=sys.stderr)
 
-    # Submit exactly one established BET results job after all merge parents.
-    # Each merge is the authoritative fit+Hessian bundle, so this neither
-    # duplicates model folders nor adds Hessian partitions.
-    merge_refs = [job_number(manifest_entry(manifest, row["step_id"]), "hessian_merge") for row in models]
-    missing_merge_steps = [
-        row["step_id"] for row, merge_ref in zip(models, merge_refs) if not merge_ref
+    # Submit exactly one established BET results job after the completed
+    # per-model parents.  When attachments are enabled, each parent is a
+    # fit bundle carrying its merged Hessian sidecar; this lets the results
+    # task and the originating model page see the same diagnostic state.
+    result_parent_key = "hessian_attach" if args.attach_hessians else "hessian_merge"
+    result_parent_label = "Hessian attachment" if args.attach_hessians else "Hessian merge"
+    result_parent_refs = [
+        job_number(manifest_entry(manifest, row["step_id"]), result_parent_key)
+        for row in models
     ]
-    duplicate_merge_refs = sorted({ref for ref in merge_refs if ref and merge_refs.count(ref) > 1})
-    complete_fan_in = not missing_merge_steps and not duplicate_merge_refs and len(merge_refs) == len(models)
+    missing_parent_steps = [
+        row["step_id"] for row, parent_ref in zip(models, result_parent_refs) if not parent_ref
+    ]
+    duplicate_parent_refs = sorted(
+        {ref for ref in result_parent_refs if ref and result_parent_refs.count(ref) > 1}
+    )
+    complete_fan_in = (
+        not missing_parent_steps
+        and not duplicate_parent_refs
+        and len(result_parent_refs) == len(models)
+    )
     if complete_fan_in and not job_number(manifest, "results"):
         try:
             manifest.pop("results_pending", None)
@@ -653,7 +911,7 @@ def main() -> int:
                 base_url,
                 token,
                 args.results_task,
-                results_payload(models, args, merge_refs),
+                results_payload(models, args, result_parent_refs),
                 args.dry_run,
             )
             if not args.dry_run:
@@ -666,17 +924,18 @@ def main() -> int:
             print(f"ERROR results: {exc}", file=sys.stderr)
     elif not complete_fan_in:
         pending = {
-            "missing_merge_steps": missing_merge_steps,
-            "duplicate_merge_job_refs": duplicate_merge_refs,
-            "resolved_parent_count": sum(bool(ref) for ref in merge_refs),
+            "parent_type": result_parent_key,
+            "missing_parent_steps": missing_parent_steps,
+            "duplicate_parent_job_refs": duplicate_parent_refs,
+            "resolved_parent_count": sum(bool(ref) for ref in result_parent_refs),
             "expected_parent_count": len(models),
         }
         manifest["results_pending"] = pending
         details = []
-        if missing_merge_steps:
-            details.append("missing merge jobs for " + ", ".join(missing_merge_steps))
-        if duplicate_merge_refs:
-            details.append("duplicate merge refs " + ", ".join(duplicate_merge_refs))
+        if missing_parent_steps:
+            details.append("missing " + result_parent_label.lower() + " jobs for " + ", ".join(missing_parent_steps))
+        if duplicate_parent_refs:
+            details.append("duplicate " + result_parent_label.lower() + " refs " + ", ".join(duplicate_parent_refs))
         message = "results fan-in incomplete: " + "; ".join(details)
         errors.append(message)
         print(f"PENDING {message}; rerun with --resume after repairing those chains.", file=sys.stderr)
@@ -684,8 +943,19 @@ def main() -> int:
     manifest["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
     manifest["selected_model_count"] = len(models)
     manifest["hessian_nsplit"] = args.hessian_nsplit
-    manifest["expected_total_job_count"] = len(models) * (2 + args.hessian_nsplit) + 1
-    if len(models) == EXPECTED_FULL_MODEL_COUNT and args.hessian_nsplit == 1:
+    manifest["attach_hessians"] = bool(args.attach_hessians)
+    manifest["attach_task"] = args.attach_task if args.attach_hessians else ""
+    per_model_jobs = 2 + args.hessian_nsplit + int(args.attach_hessians)
+    manifest["expected_total_job_count"] = len(models) * per_model_jobs + 1
+    manifest["expected_job_counts"] = {
+        "fits": len(models),
+        "hessians": len(models) * args.hessian_nsplit,
+        "hessian_merges": len(models),
+        "hessian_attaches": len(models) if args.attach_hessians else 0,
+        "results": 1,
+        "total": manifest["expected_total_job_count"],
+    }
+    if len(models) == EXPECTED_FULL_MODEL_COUNT and args.hessian_nsplit == 1 and args.attach_hessians:
         manifest["expected_full_grid_job_count"] = EXPECTED_FULL_JOB_COUNT
     write_manifest(manifest_path, manifest)
     print(

@@ -115,10 +115,14 @@ def main() -> int:
         "fit_job_count": count,
         "hessian_job_count": count,
         "hessian_merge_job_count": count,
+        "hessian_attach_job_count": count,
         "results_job_count": 1,
-        "total_job_count": 3 * count + 1,
+        "total_job_count": 4 * count + 1,
         "hessian_parts_per_model": 1,
-        "launch_mode": "one fit, one Hessian, and one Hessian merge per model, then one results job",
+        "launch_mode": (
+            "one fit, one Hessian, one Hessian merge, and one Hessian attachment "
+            "per model, then one results job"
+        ),
         "normal_stepwise_task_preserved": True,
     }
     config["metadata"] = metadata
