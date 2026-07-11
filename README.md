@@ -42,17 +42,42 @@ traced without guessing.
 
 ## Step 11/12 terminal-recruitment experiment
 
-The branch-specific Step 11/12 experiment contains 114 generated
-sensitivities plus the two unchanged parent models. It separates the OPR
-terminal-recruitment penalty, length-frequency/selectivity controls, and
-recent tag-data assumptions, including a targeted 2021 reporting-rate prior
-response, then runs an independent Hessian for every fit before building one
-MFCL Shiny results bundle. The generated rows are disabled in the normal `all`
-workflow and are selected only by the isolated launcher.
+This branch contains 73 generated sensitivities plus the unchanged Step 11
+control, for 74 fits. The design is intentionally centred on annual OPR counts
+73, 72, and 71: 73 is the saturated annual OPR count for the 1952--2024 data
+span, while 72 and 71 remove one and two annual coefficients. OPR 69 is not in
+the candidate grid; one explicitly labelled 69 case is retained only to
+reproduce a supplied executable benchmark.
+
+All five reviewed LF changes are in the generated-model default: F20 and F28
+regain the large-fish tail, F12 and F26 suppress predicted but unobserved young
+ages, and F17 starts its upper-age constraint earlier. Because F20/F27 and
+F17/F18 share MFCL selectivity groups, the F20 and F17 flags are also propagated
+to F27 and F18 as required by the source/manual grouping rule. The original
+controls and an exact-five-only diagnostic remain as sensitivities.
+
+| Sensitivity family | Fits | Why it is included |
+| --- | ---: | --- |
+| Annual OPR count x terminal penalty | 15 | Compare 73/72/71 at one common four-quarter boundary and penalty weights 0--200. |
+| Endpoint window | 9 | Test 72/end2, 71/end2, and 71/end3, spanning the saturated boundaries and one lower-complexity bridge. |
+| Endpoint-free OPR | 3 | Show what 73/72/71 do without multi-year endpoint pooling or a terminal penalty. |
+| LF/selectivity structure | 9 | Compare the reviewed group-consistent default, original settings, exact-five-only diagnostic, and isolated LF mechanisms. |
+| Length-composition weight | 6 | Compare uniform LF divisors 40 and 80 at OPR 73/72/71 while leaving weight compositions unchanged. |
+| Tagging structure | 21 | Stage tag weight, observation model, 2021 reporting-rate/mixing assumptions, dominant-release deletion, and one full-2021 deletion without a Cartesian grid. |
+| OPR trend penalty | 2 | Separate the trend penalty response from the terminal-mean penalty. |
+| Standard recruitment deviations | 5 | Compare free, 4-quarter, and 8-quarter endpoints plus two tag-attribution cases before OPR; unchanged Step 11 supplies the 6-quarter control. |
+| Supplied flag-221 compatibility pair | 2 | Compare the received OPR71/end3 setup with `parest_flags(221)=71` against an otherwise identical flag-zero case. |
+| Supplied benchmark reproduction | 1 | Reproduce 69-01-50-50, end2, penalty weight 100; excluded from final candidates. |
+
+Every generated fit gets its own independent Hessian and delta-only attach,
+then one results/MFCL Shiny bundle is built from all 74 merged models. The
+generated rows are disabled in the normal `all` workflow and are selected only
+by the isolated launcher. Its default convergence is `1e-4`; shortlisted
+models can be rerun at `1e-5` without changing the generated inputs.
 
 See [`docs/opr-terminal-penalty-lf-tag-sensitivity.md`](docs/opr-terminal-penalty-lf-tag-sensitivity.md)
 for the model matrix, flag definitions, interpretation rules, public technical
-references, and local/Kflow commands. The machine-readable 114-model grid is
+references, and local/Kflow commands. The machine-readable 73-model grid is
 [`docs/opr-terminal-penalty-lf-sensitivity-grid.csv`](docs/opr-terminal-penalty-lf-sensitivity-grid.csv).
 
 ## Names Used Here
@@ -62,7 +87,7 @@ references, and local/Kflow commands. The machine-readable 114-model grid is
 | 2023 assessment replication input set | The archived 2023 BET replication model inputs stored in `ofp-sam-2026-BET/mfcl/inputs/2023_rep`. |
 | MFCL 1003 ini | Older ini layout with no explicit `# tag flags` block; tag mixing is still set in `doitall.sh`. |
 | MFCL 1007 ini | Newer ini layout with explicit `# tag flags`, tag shed rates, and reporting-rate matrix sections. |
-| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. Set `-3` for quick checks or `-5` for stricter production reruns; it applies to every selected step/substep. |
+| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. The isolated sensitivity launcher sets `-4`; use `-5` for shortlisted production reruns. It applies to every selected step/substep. |
 
 ## Source Inputs And Generated Edits
 

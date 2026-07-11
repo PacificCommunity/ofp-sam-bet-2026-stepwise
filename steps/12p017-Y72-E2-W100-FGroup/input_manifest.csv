@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Tests 72 annual OPR coefficients with a 2-calendar-year endpoint and penalty weight 100. This distinguishes genuine terminal smoothing from a spike merely moving to the first free quarter."

@@ -1,314 +1,320 @@
 # Step 11/12 terminal-recruitment sensitivity
 
-This experiment tests why recent recruitment can spike near the end of the
-BET model and whether that behaviour can be reduced without materially
-changing the historical fit or population scale. It separates four possible
-causes: the OPR terminal boundary, length-frequency/selectivity controls,
-recent tagging assumptions, and the ordinary recruitment-deviation
-parameterisation used before OPR.
+This experiment asks why recruitment increases sharply near the end of the
+BET model and whether that behaviour can be reduced without trading it for a
+poorer historical fit, a different population scale, or weak identifiability.
+It separates five mechanisms: annual OPR complexity, the terminal boundary
+and penalty, LF/selectivity structure, length-composition weight, and recent
+tag information. Ordinary recruitment deviations from Step 11 provide the
+non-OPR comparison.
 
-The experiment is diagnostic. A smaller terminal spike, a lower objective, or
-a positive-definite Hessian is not sufficient on its own to select an
-assessment model. In particular, a terminal constraint can move a spike to the
-first unconstrained quarter, and a tag deletion or different tag likelihood
-changes the statistical problem being fitted.
+This is a diagnostic experiment. A smaller spike, a lower objective, or a
+positive-definite Hessian does not by itself identify an assessment model. A
+terminal control can move pressure to the first unconstrained quarter, and a
+different tag likelihood or dataset changes the statistical problem being
+fitted.
 
 ## Reproducibility basis
 
 | Item | Value |
 | --- | --- |
-| Parent models | `11-TimeVaryingCV` and `12-OrthogonalPoly` from the `main` baseline used to create this experiment branch |
-| OPR form | `69-01-50-50` |
+| Parent inputs | `11-TimeVaryingCV` and `12-OrthogonalPoly` from `main` when this branch was created |
+| Candidate annual OPR counts | 73, 72, and 71; seasonal/region/interaction counts fixed at `01-50-50` |
+| Generated-model LF default | All reviewed F12/F17/F20/F26/F28 changes, with required propagation to grouped F18/F27 partners |
 | MFCL executable | MULTIFAN-CL `2.2.7.9`, assessment executable dated 2026-07-11 |
 | Source audit | `ofp-sam-mfcl` `ongoing-dev` commit [`b3984d5e40096eecfa506a3d768f76ef59a32688`](https://github.com/PacificCommunity/ofp-sam-mfcl/commit/b3984d5e40096eecfa506a3d768f76ef59a32688) |
-| Full generated grid | [`opr-terminal-penalty-lf-sensitivity-grid.csv`](opr-terminal-penalty-lf-sensitivity-grid.csv) |
+| Guide audit | `ofp-sam-mfcl-manual` `master` commit [`1266ff1107e67fa9321d5c704bb9a6103e07ae23`](https://github.com/PacificCommunity/ofp-sam-mfcl-manual/commit/1266ff1107e67fa9321d5c704bb9a6103e07ae23) |
+| Machine-readable design | [`opr-terminal-penalty-lf-sensitivity-grid.csv`](opr-terminal-penalty-lf-sensitivity-grid.csv) |
 
-Existing OPR, tag, reporting-rate, likelihood, and fishery controls were
-checked against the `ongoing-dev` source and the MULTIFAN-CL guide. The new
-terminal-recruitment control, `parest_flags(397)`, follows the `2.2.7.9`
-executable interface: that completed implementation is newer than the audited
-public source commit, so its behaviour is not inferred from the older source.
+Existing OPR, tag, reporting-rate, likelihood, fishery, and composition-weight
+controls were checked against the public development source and guide. The
+terminal-recruitment flag `parest_flags(397)` follows the supplied `2.2.7.9`
+executable specification because that completed implementation is newer than
+the audited public source commit.
 
-## Model grid
+## Curated model grid
 
-There are 114 generated sensitivities and two unchanged parents, for 116 fits
-in total.
+There are 73 generated sensitivities and one unchanged Step 11 control, for 74
+fits. Other unchanged stepwise models are omitted because they add no
+information to this experiment.
 
 | Family | Generated fits | Purpose |
 | --- | ---: | --- |
-| Terminal penalty by selectivity | 22 | Cross one- and two-year terminal windows with penalty weights 0, 25, 50, 100, and 200; compare current and group-consistent fishery controls, plus the exact five-fishery proposal at weight 100. |
-| Isolated selectivity effect | 6 | Separate the large-fish tail, unobserved young ages, and F17/F18 upper-age hypotheses at the central penalty weight. |
-| Tagging diagnostics | 74 | Test tag weight, observation model, overdispersion, reporting rates and their prior precision, mixing, tag loss, and targeted 2021 release deletions in four structural contexts, including two combined final-candidate screens. |
-| OPR trend penalty | 4 | Separate the OPR trend penalty from the terminal-mean penalty for one- and two-year windows. |
-| Standard recruitment controls | 8 | Repeat key terminal and tag tests with ordinary quarter-specific recruitment deviations from Step 11. |
-| Unchanged parents | 2 | Preserve the Step 11 and Step 12 baselines. |
+| Annual OPR count x penalty | 15 | Cross 73/72/71 at the same four-quarter endpoint with penalty weights 0, 25, 50, 100, and 200. |
+| Endpoint window | 9 | Compare 72/end2, 71/end2, and 71/end3 at weights 0, 100, and 200; the first and last are the saturated boundaries. |
+| Endpoint-free OPR | 3 | Compare 73/72/71 with no multi-year OPR endpoint and no terminal penalty. |
+| LF/selectivity structure | 9 | Compare the reviewed group-consistent default, original controls, exact-five-only diagnostic, and isolated LF mechanisms. |
+| Length-composition weight | 6 | Compare uniform LF divisors 40 and 80 at each of the central OPR 73/72/71 cases without changing WF weight. |
+| Tagging structure | 21 | Stage tag weight, observation model, 2021 reporting-rate/mixing assumptions, dominant-release deletion, and one full-2021 deletion. |
+| OPR trend penalty | 2 | Test trend weights separately from the terminal-mean penalty. |
+| Standard recruitment deviations | 5 | Compare a pure free endpoint, 4/8-quarter endpoints, and two tag-attribution cases before OPR; unchanged Step 11 supplies the inherited 6-quarter control. |
+| Supplied flag-221 compatibility pair | 2 | Compare the received OPR71/end3 flag-221 setting with a matched flag-zero control. |
+| Supplied benchmark reproduction | 1 | Reproduce one reported OPR69 result exactly; excluded from candidate selection. |
 
-The four tag contexts are deliberately not a full Cartesian product:
+This is not a full Cartesian product. The sequence is deliberate: establish
+the penalty response, check whether LF structure or LF weight explains it,
+attribute remaining pressure to tag assumptions, and then rerun only plausible
+structures at stricter convergence.
 
-- C1: one-year terminal window, no terminal penalty, current fishery controls;
-- C2: one-year terminal window, penalty weight 100, current controls;
-- C3: one-year terminal window, penalty weight 100, group-consistent controls;
-- C4: two-year terminal window, penalty weight 100, group-consistent controls.
+## Why 73, 72, and 71
 
-This staging identifies the source of a response with substantially fewer
-models than multiplying every tag option by every penalty and selectivity
-setting.
+The FRQ spans 1952--2024, which gives 73 real calendar years. In the OPR
+implementation `parest_flags(155)` is the annual coefficient count and the
+polynomial degree is one less than that count. With annual terminal pooling,
+the valid ceiling is:
+
+```text
+annual coefficient ceiling = 74 - max(1, parest_flags(202))
+```
+
+The corresponding saturated boundary pairs are therefore:
+
+| Annual count | `parest_flags(202)` | Fixed terminal period | Role |
+| ---: | ---: | ---: | --- |
+| 73 | 1 | 4 quarters | Fully saturated annual effect with one terminal calendar year. |
+| 72 | 2 | 8 quarters | Saturated annual effect with two terminal calendar years. |
+| 71 | 3 | 12 quarters | Saturated annual effect with three terminal calendar years. |
+
+The central 73/72/71 comparison holds `parest_flags(202)=1` for all three so
+only annual complexity changes. Separate 72/end2 and 71/end3 rows test the
+coupled endpoint boundary. A 73/end2 model and every annual-count 74 model are
+excluded because they exceed the source-derived ceiling. The seasonal,
+regional, and season-by-region counts remain `1`, `50`, and `50`; “73 is
+saturated” refers only to the annual OPR component, not to every recruitment
+cell being independent.
+
+### Flag-221 compatibility check
+
+One supplied OPR71/end3 case also sets `parest_flags(221)=71`:
+
+```text
+parest_flags(155) = 71
+parest_flags(221) = 71
+parest_flags(216) = 50
+parest_flags(217) = 1
+parest_flags(202) = 3
+```
+
+The Step 12 parent interaction count `parest_flags(218)=50` is retained. In
+the audited public `ongoing-dev` source, active OPR code takes the annual count
+from flag 155; the old flag-221 override block is commented out, and the guide
+appendix marks parest flag 221 obsolete. The grid therefore contains a matched
+pair with original Step 12 LF controls, no terminal penalty, and flag 221 set
+to 0 versus 71. Public-source behaviour predicts identical fits. A difference
+under `2.2.7.9` would identify executable-specific behaviour and should be
+confirmed before that setting is used biologically. Neither row is a final
+candidate.
 
 ## Terminal-recruitment controls
 
-The new penalty is active only when all three conditions hold:
-`parest_flags(397)>0`, `parest_flags(155)>0`, and
+The new terminal penalty is active only when all three supplied conditions
+hold: `parest_flags(397)>0`, `parest_flags(155)>0`, and
 `parest_flags(202)>0`.
 
-| Control | Interpretation in this experiment |
+| Control | Interpretation here |
 | --- | --- |
-| `parest_flags(397)` | Activates the terminal-recruitment penalty. The actual weight is `flag/10`, so weights 25, 50, 100, and 200 use flags 250, 500, 1000, and 2000. |
-| `parest_flags(202)` | Number of terminal calendar years. The number of terminal model periods is `parest_flags(202) * age_flags(57)`; `age_flags(57)=4`, so values 1 and 2 mean four and eight quarters. |
-| `parest_flags(155)` | Activates the OPR parameterisation in the Step 12 parent. |
-| `parest_flags(153)` | OPR trend penalty: `-1` is off, `0` retains the MFCL default weight 0.01, and a positive value uses `flag/10`; the added value `1` therefore means 0.1. |
-| `parest_flags(400)` | Number of fixed terminal quarterly deviations in the Step 11 standard-recruitment controls: 0, 4, or 8. |
-| `parest_flags(398)` | Enables the arithmetic-mean terminal treatment for the fixed Step 11 cases. |
+| `parest_flags(397)` | Terminal-recruitment penalty; actual weight is `flag/10`, so weights 25, 50, 100, and 200 use 250, 500, 1000, and 2000. |
+| `parest_flags(202)` | Terminal calendar years; multiply by `age_flags(57)=4` for quarters. |
+| `parest_flags(210/212/214)` | Component endpoints; `0` inherits the annual endpoint and `-1` explicitly disables multi-year pooling. |
+| `parest_flags(153)` | OPR trend penalty; `-1` is off, `0` uses the default 0.01, and a positive value is `flag/10`. |
+| `parest_flags(400)` | Fixed terminal quarterly deviations in standard-recruitment controls. |
+| `parest_flags(398)` | Arithmetic-mean treatment for fixed standard recruitment deviations. |
 
-Every generated OPR case receives the same final 1,000-evaluation phase from
-`11.par` to `12.par`. Weight-zero models receive this phase too, which makes
-them matched optimisation controls rather than shorter runs.
+Every generated OPR case starts from its newly fitted Step 12 `11.par` and
+receives the same 1,000-evaluation phase to `12.par`. Weight-zero rows receive
+the same phase and are therefore matched optimisation controls.
 
-The main diagnostic is not simply whether the last four or eight quarters are
-flat. Quarterly recruitment must also be inspected immediately before the
-terminal window. A spike that moves to that boundary indicates displacement
-of model pressure rather than removal of its cause.
+The single benchmark reproduction uses `69-01-50-50`, end2, terminal penalty
+flag 1000 (weight 100), and the same extra 1,000 evaluations. It reproduces the
+reported 8-quarter result and is labelled `supplied-benchmark`; it is not a
+candidate model and does not justify using 69 in the main grid.
 
-## Length-frequency and selectivity controls
+Quarterly recruitment must be inspected before as well as inside the terminal
+window. A spike that moves to the first free quarter is a boundary response,
+not evidence that the underlying data conflict has disappeared.
 
-The exact five-fishery treatment is retained as a diagnostic:
+## Reviewed LF/selectivity default
+
+All generated core, tag, trend, and standard-recruitment cases use these
+reviewed, group-consistent controls by default:
 
 ```text
 -20 16 0   -20 3 37
+-27 16 0   -27 3 37
 -28 16 0   -28 3 37
 -26 75 1
 -12 75 2
 -17 16 2   -17 3 6
+-18 16 2   -18 3 6
 ```
 
-Fish flag 16 controls the selectivity tail form, fish flag 3 supplies the
-associated upper-age cutoff where applicable, and fish flag 75 fixes the
-first age classes near zero. The changes test whether previously restricted
-large-fish predictions in F20/F28, predicted but unobserved young catches in
-F12/F26, and over-predicted large fish in F17 are contributing to the fit and
-terminal recruitment response.
+The model-fit rationale for each change is:
 
-The current model shares selectivity groups between F20/F27 and F17/F18. The
-exact proposal is therefore intentionally group-inconsistent. The primary
-structural comparison propagates the same controls to F27 and F18, while the
-six isolated models test the large-fish tail, young-age, and F17/F18 changes
-separately. Report both the target fisheries and their shared-group partners;
-an improvement in one fishery can otherwise conceal a deterioration in the
-other.
+| Fishery | Change | Reason tested |
+| --- | --- | --- |
+| F20, F28 | Restore default large-fish tail (`ff16=0`, `ff3=37`). | The inherited restriction prevents prediction of observed large fish. |
+| F26 | `ff75=1`. | The model predicts age-1 catch where none is observed. |
+| F12 | `ff75=2`. | The model predicts age-1/2 catch where none is observed. |
+| F17 | `ff16=2`, `ff3=6`. | The inherited setting over-predicts larger fish. |
+| F27, F18 | Match the paired F20 and F17 controls, respectively. | MFCL fish flag 24 groups F20/F27 and F17/F18, and the guide requires other selectivity-feature flags to be identical within each group. |
 
-## Why the 2021 tag releases are tested
+All five requested changes are therefore retained, and F20/F17 are propagated
+to their grouped partners rather than leaving an internally inconsistent flag
+set. Three `review_exact` rows deliberately apply only the five listed changes
+as a grouping diagnostic. Three original-control rows and three
+isolated-mechanism rows distinguish the direct fit gain from grouped and
+individual effects. Fits must be checked for all seven fisheries.
 
-The parent inputs contain two August 2021 releases with very different
-information content:
+## Length-composition weight
 
-| Release group | Release region | Effective releases | Recaptures | Parent mixing period |
+MFCL fish flag 49 is the divisor used to convert an LF sample size to its
+effective size. The parent uses divisor 20 for most fisheries and 40 for an
+inherited lower-weight subset. A larger divisor gives less LF influence.
+
+The design uses two global settings at each of the OPR 73/72/71 central
+penalty cases. They are appended after every inherited fishery-specific switch,
+because MFCL applies those switches in order and the last value wins:
+
+| Uniform divisor | Role | Effective-N implication |
+| ---: | --- | --- |
+| 40 | Moderate, already used by the later Step 15 weighting convention. | Leaves inherited divisor-40 fisheries unchanged and halves the 21 divisor-20 fisheries. |
+| 80 | Strong diagnostic. | Halves every LF effective sample size relative to uniform 40. |
+
+The current FRQ contains 2,612 LF samples and no WF samples; after the existing
+minimum-sample rule, 2,399 LF samples contribute. Fish flag 50, which controls
+weight-composition sample sizes, is unchanged. These models test
+whether LF information contributes to the recruitment spike; they are not a
+proposal to choose a weight after seeing which one flattens recruitment.
+
+## Recent-tag attribution
+
+The parent has two August 2021 releases with very different information:
+
+| Release group | Region | Effective releases | Recaptures | Parent mixing period |
 | --- | ---: | ---: | ---: | ---: |
 | 18 | 1 | 215.316 | 5 | 2 quarters |
 | 60 | 4 | 3,324.809 | 1,061 | 1 quarter |
 
-Release group 60 starts from 6,177 raw releases and a correction factor of
-about 0.5383; 1,056 of its 1,061 recaptures occur in fisheries 25-28. It can
-therefore carry far more recent abundance information than release group 18.
-The grid distinguishes them before interpreting a combined deletion.
+Release group 60 begins with 6,177 raw releases and a correction factor near
+0.5383; 1,056 of 1,061 recaptures occur in F25--F28. It can therefore carry
+much more recent abundance information than group 18. The curated tag rows are:
 
-Deletion is the last attribution test, not the default remedy. The preferred
-sequence is to check observed-versus-predicted returns, likelihood weight,
-the conditional observation model, reporting-rate structure, pre-mixing
-treatment, and plausible overdispersion before deciding whether a release is
-incompatible with the model assumptions.
+| Block | Fits | Question |
+| --- | ---: | --- |
+| Tag-likelihood weight | 3 | Does the response decline smoothly at likelihood scalars 0.3, 0.1, and 0.03? |
+| Observation model | 3 | Compare recaptures-conditioned likelihood, one pooled direct-tau dispersion parameter, and a robust binned-gamma diagnostic. |
+| Pre-mixing treatment | 2 | Compare all-release pre-mixing reporting treatment with and without the terminal penalty. |
+| 2021 reporting rate/mixing | 8 | Test a pooled campaign prior, a dominant-release prior, central/wider prior precision, all-release treatment, and group-60 mixing periods 2/4; repeat central cases at 72/71. |
+| Release deletion | 5 | Attribute group 60 at 73 with/without penalty and at 72/71 with penalty, plus remove both 2021 releases once as the full-deletion upper bound. |
 
-### Tag controls and caveats
+The central 2021 reporting-rate target remains 0.52015. Its penalty 485.2 is
+an approximate prior SD of 0.032 under the source implementation
+`penalty * (rate - target)^2`; the wider penalty 48.52 gives an approximate SD
+of 0.102. The target is not moved after inspecting recruitment. Campaign rows
+pool releases 18 and 60 across F25--F28 into one new reporting-rate group;
+dominant-release rows apply that grouping only to release 60. Sparse cells are
+not split into release-by-fishery parameters.
 
-| Sensitivity | MFCL control | Question and limitation |
-| --- | --- | --- |
-| Likelihood dose response | `parest_flags(177)=300,100,30,1` | Scales the tag likelihood to 0.3, 0.1, 0.03, and 0.001. A zero flag is full weight. Reporting-rate priors remain active, so 0.001 is not a literal no-tag model. |
-| Recaptures-conditioned likelihood | `parest_flags(249)=1` | Emphasises relative recapture patterns rather than absolute recapture magnitude. It changes the observation model and cannot be ranked against the base case by raw objective alone. |
-| Pooled tag overdispersion | `fish_flags(43)=1`, `fish_flags(44)=1`, `parest_flags(305)=1`, `parest_flags(306)=0` | Estimates one shared direct-tau dispersion parameter. Because flag 305 also switches the negative-binomial parameterisation from the legacy fish-parameter form, this is a compound observation-model diagnostic and not a stand-alone final-model candidate. |
-| Binned gamma | `parest_flags(111)=5`, `parest_flags(325)=110` | Uses the binned-gamma tag likelihood and bins observed counts below 1.1. |
-| Robust binned gamma | `parest_flags(111)=6`, `parest_flags(325)=110`, `parest_flags(326)=50` | Adds a 0.05 robust mixture. This is an outlier sensitivity, not a mechanism for tuning away an inconvenient cohort. |
-| 2021 reporting-rate group | rows 18/60, fisheries 25-28, new group 30 | Separates the dominant recent campaign cells from inherited reporting-rate group 17 using only one additional parameter. |
-| Combined reporting-rate candidate | central campaign prior plus `tag_flags(:,2)=1` in C2/C3 | Tests the reporting-rate structure together with the manual-recommended pre-mixing treatment. C3 also uses group-consistent LF controls and is the main final-candidate screen. |
-| Wider 2021 reporting-rate prior | penalty 485.2 to 48.52 | Retains target 0.52015 while widening the approximate prior SD from 0.032 to 0.10. This tests prior conflict without a release-by-fishery parameter expansion. |
-| Dominant-release prior response | row 60, fisheries 25-28, new group 30; penalties 485.2, 121.3, 48.52, 12.13, and 0 | Keeps the externally derived target at 0.52015 while relaxing prior SD from 0.032 to 0.064, 0.102, 0.203, and finally an unpenalised identifiability endpoint. The five cases are repeated in C2 and C3. |
-| Pre-mixing reporting treatment | `tag_flags(18/60,2)=1`, group 60 only, or `tag_flags(:,2)=1` | Excludes uncertain reporting-rate correction during the selected releases' pre-mixing periods. The parent has column 2 set to zero for all releases. |
-| Group-60 mixing period | `tag_flags(60,2)=1`; 1, 2, 3, or 4 quarters | Brackets the imputed mixing period while consistently applying the source/manual-recommended pre-mixing reporting-rate treatment. It changes which recaptures enter the regular tag likelihood; it does not remove late recaptures. |
-| Fixed tag loss | `parest_flags(360)=1`, shed rate 0.021/quarter | Transfers an external 0.084/year bigeye double-tagging estimate to a quarterly approximation. It is a diagnostic because the estimate is not Pacific-specific. |
-| Targeted deletion | group 18, group 60, or both | Rebuilds TAG, FRQ, all MFCL 1007 tag sections, and reporting maps together, then starts from a fresh `-makepar`. There are 97 release groups after one deletion and 96 after both. |
+Changing the group-60 mixing period changes which returns receive the regular
+tag treatment, so it is a biological/observation-process sensitivity rather
+than a harmless numerical switch. The group-60 cases consistently set the
+source/manual-supported pre-mixing reporting treatment. The deletion rows are
+last-resort attribution tests: they rebuild TAG, the FRQ tag count, every MFCL
+1007 tag section, and the reporting map, then start from a fresh `-makepar`.
+They are not automatic proposals to discard data.
 
-For group 60, increasing the mixing period moves approximately 183, 532,
-881, and 991 of the 1,061 recaptures into the pre-mixing treatment at one,
-two, three, and four quarters, leaving 878, 529, 180, and 70 in the regular
-fit. A longer mixing period can therefore reduce tag influence very strongly.
-It must be interpreted as a mixing-assumption sensitivity, not as a harmless
-technical setting. The 2021 values are regional imputations rather than
-release-specific estimates, which is why the bracket is included. The
-one-quarter `TagMixRR60` case and the Q2-Q4 `TagMixRR60Q*` cases all set
-`tag_flags(60,2)=1`; a mixing-period result is therefore not confounded with
-the inherited, nonrecommended column-2 treatment.
-
-The deletion cases synchronise the `.tag` release and recovery blocks, the
-FRQ tag count, the tag flags and tag-shed vector, all five reporting-rate
-matrices (while retaining the pooled row), and `tag_rep_map.R`. A fitted
-98-release PAR is never reused after changing the release count.
-
-### Reporting-rate prior interpretation
-
-The `ongoing-dev` implementation adds
-`penalty * (reporting_rate - target)^2` once for each reporting-rate group.
-The guide therefore gives `variance = 1 / (2 * penalty)`. The prior target is
-fixed at 0.52015 in every new case; it is not moved after looking at the
-recruitment result. The response grid is:
-
-| Penalty | Approximate prior SD | Role |
-| ---: | ---: | --- |
-| 485.2 | 0.032 | Externally informed central case. |
-| 121.3 | 0.064 | One-quarter of the central precision. |
-| 48.52 | 0.102 | One-tenth of the central precision. |
-| 12.13 | 0.203 | Very weak-prior diagnostic. |
-| 0 | unpenalised | Identifiability stress test only. |
-
-Release group 60 has 358, 671, 19, and 8 recaptures in F25-F28,
-respectively. One parameter is therefore pooled across those four fisheries;
-the sparse F27/F28 cells do not support a further release-by-fishery split.
-The campaign-level parameter shared by rows 18 and 60 with penalty 485.2 is the
-most plausible grouping because both releases belong to the same programme and
-month. The two `TagRR2021MixAll` cases combine that central prior with the
-manual-recommended `tag_flags(:,2)=1` pre-mixing treatment; C3 also carries the
-group-consistent LF controls and is the main reporting-rate final-candidate
-screen. Campaign-prior-only cases remain interaction diagnostics. The group-60
-central case tests whether the dominant release alone carries the conflict.
-Wider and zero-penalty cases measure prior sensitivity and are not promoted
-merely because they flatten recruitment.
-
-A reporting-rate model can be considered further only if the central prior
-case removes the spike without moving it to an adjacent quarter, its fitted
-rate remains interior and reasonably consistent with the external prior,
-group-60 observed/predicted returns improve by fishery, year, and time at
-liberty, other cohorts and likelihood components remain stable, and the model
-has clean gradients and a positive-definite Hessian. If only a weak or
-unpenalised prior removes the spike, the rate approaches its near-one upper
-bound, or a weak Hessian direction is dominated by reporting rate and recent recruitment,
-the result is evidence of confounding rather than a final-model solution.
+Raw objective values are not directly comparable after changing tag data,
+tag likelihood family, or likelihood weight. A reporting-rate structure is
+credible only if the fitted rate remains interior and compatible with its
+prior, observed/predicted returns improve by fishery/year/time-at-liberty,
+other cohorts remain stable, and weak Hessian directions are not dominated by
+recent recruitment and reporting rate.
 
 ## What to compare
 
-Use the following evidence together:
-
 1. Plot quarterly and annual recruitment, including at least eight quarters
-   before the terminal window. Report the terminal-to-historical arithmetic
-   mean ratio and the terminal penalty contribution.
-2. Check whether a penalty response is smooth across weights and whether a
-   spike reappears in the first unconstrained quarter. Record changes in the
-   historical recruitment series, spawning potential, depletion, fishing
-   mortality, and overall population scale.
-3. Compare length-frequency fits and residuals for F12, F17, F20, F26, and
-   F28, plus the shared-group fisheries F18 and F27. Inspect estimated
-   selectivity rather than objective change alone.
-4. Split tag observed/predicted returns by release group, recapture year and
-   quarter, fishery, region, age/size, and time at liberty. Report `O/E` and,
-   where compatible with the likelihood, standardised residuals such as
-   `(O-E)/sqrt(tau*E)` and squared residuals relative to `E`.
-5. Report total objective and components, the maximum gradient, convergence
-   code, estimated parameters at bounds, and the reporting-rate prior and tag
-   likelihood contributions separately.
-6. Report Hessian status for every model: available or failed,
-   positive-definite or not, number of non-positive eigenvalues, smallest
-   eigenvalues, and the parameter blocks with the largest loadings in weak
-   eigenvectors. Loadings identify directions to investigate; they do not by
-   themselves prove a biological cause.
+   before the constrained window. Report terminal/historical arithmetic means
+   and the terminal-penalty contribution.
+2. Check whether the response is smooth across penalty weights and whether the
+   spike moves to the first free quarter. Track historical recruitment,
+   spawning potential, depletion, fishing mortality, and population scale.
+3. Compare LF fits and selectivity for F12, F17, F18, F20, F26, F27, and F28;
+   compare the uniform-40/uniform-80 LF-weight response separately.
+4. Split observed/predicted tag returns by release, recapture year/quarter,
+   fishery, region, and time at liberty. Report the reporting-rate prior and tag
+   likelihood components separately.
+5. Report objective components, maximum gradient, convergence code, and
+   parameters at bounds. Compare raw objectives only for identical data,
+   likelihood family, and weight.
+6. Report Hessian availability, positive-definite status, non-positive
+   eigenvalue count, smallest eigenvalues, and dominant parameter blocks in
+   weak eigenvectors. Loadings identify directions to investigate; they do not
+   prove a biological cause.
 
-Raw objectives are comparable only for models fitted to the same data with
-the same likelihood family and weighting. Do not rank deletion,
-recaptures-conditioned, negative-binomial, and binned-gamma models in one
-objective-value table. A positive-definite Hessian is useful evidence about
-local identifiability, but it does not establish biological plausibility or a
-good data fit.
+Shortlisting requires stable biology and fit, no displaced spike, acceptable
+gradients, and a positive-definite Hessian at `1e-4`. A proposed assessment
+case must then retain those properties when rerun at `1e-5`.
 
 ## Kflow execution
 
-The isolated launcher uses Suva and keeps every model independent:
+The isolated launcher targets Suva and keeps each diagnostic independent:
 
 ```text
-116 independent fits
-        |
-        +--> 1 Hessian job per fit (nsplit=1 because the grid has >50 models)
-                 |
-                 +--> 1 Hessian merge per fit
-                          |  delta overlay attached directly to that fit
-                          |  no separate attachment job
-                          v
-                 1 results/MFCL Shiny fan-in from 116 merged models
+74 independent fits
+       |
+       +--> one Hessian per fit (nsplit=1 because model count is >50)
+                |
+                +--> one per-fit merge that attaches only the Hessian delta
+                         |
+                         +--> one results/MFCL Shiny fan-in from 74 models
 ```
 
-The full flow has 116 fit jobs, 116 Hessian jobs, 116 merge/attach jobs, and
-one results job (349 jobs total). Each base fit keeps one exact patched native
-restart set; its fitted PAR remains compressed inside `model_payload.rds`.
-This is required because tag-deletion and reporting-rate inputs cannot safely
-be reconstructed from the unmodified parent. A merge publishes only the
-Hessian delta and preserves the compact base-model payload, so FRQ/INI/TAG/PAR
-content is not repeated in diagnostic outputs. Results are allowed to retain
-failed-Hessian status, so a non-PDH or
-failed diagnostic remains visible rather than being presented as a normal
-Hessian result.
+The complete flow is 74 fit jobs, 74 Hessian jobs, 74 merge/attach jobs, and
+one results job: 223 jobs. Diagnostic branches depend only on their own fit,
+not on one another. Each merge preserves the compact base payload and adds
+only its diagnostic delta, so FRQ/INI/TAG/PAR content is not duplicated. A
+failed or non-positive-definite Hessian remains visible with its failure and
+non-positive eigenvalue counts.
 
-The isolated task and launcher default to a `1e-4` convergence criterion for
-MFCL phases 10/11 and the matched phase-12 refinement, keeping the broad
-screening grid practical. This remains configurable: pass
-`--phase-convergence -5` to
-the launcher, or set `BET_PHASE10_11_CONVERGENCE=-5` in Kflow/local execution,
-for shortlisted production reruns. A candidate should retain stable estimates,
-gradients, and Hessian diagnostics under the stricter setting before adoption.
+The launcher defaults to `1e-4` for phases 10/11 and the matched phase 12. Use
+`--phase-convergence -5`, or set `BET_PHASE10_11_CONVERGENCE=-5`, for a
+shortlisted rerun. Generated steps remain disabled in the ordinary `all`
+workflow; only this launcher sets `STEPWISE_ALLOW_DISABLED_SELECTED=true`.
 
-Generated sensitivities are disabled in the ordinary `all` workflow. Only the
-isolated launcher explicitly selects them and sets
-`STEPWISE_ALLOW_DISABLED_SELECTED=true`.
-
-Generate or refresh the thin model folders:
+Refresh deterministic thin folders:
 
 ```bash
 Rscript R/prepare_opr_terminal_penalty_lf_sensitivity.R --overwrite
 ```
 
-Run one model locally with a native MFCL executable:
+Choose a generated ID from the CSV and run it locally:
 
 ```bash
-STEP_SELECT=12p008-E1-W100-FGroup \
+STEP_SELECT=<generated-step-id> \
 STEPWISE_ALLOW_DISABLED_SELECTED=true \
+BET_PHASE10_11_CONVERGENCE=-4 \
 PROGRAM_PATH=/path/to/mfclo64 \
 Rscript R/run_stepwise.R
 ```
 
-Review task registration and the complete launch without submitting jobs:
+Preview registration and all jobs without submission:
 
 ```bash
 python3 scripts/register_opr_terminal_penalty_lf_task.py --dry-run
 python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py --dry-run
 ```
 
-After the experiment branch is pushed and the previews are checked, omit
-`--dry-run` to register the isolated task and launch the flow. The launcher
-writes a resumable manifest under the ignored `work/` directory. Use
-`--resume --manifest <manifest>` after an interrupted submission; do not start
-a second flow for the same manifest.
+After the branch is pushed and previews pass, omit `--dry-run` to update the
+isolated task or launch the flow. The launcher writes a resumable manifest in
+ignored `work/`; resume that manifest rather than starting a duplicate flow.
 
 ## Public technical references
 
 - [MULTIFAN-CL user guide repository](https://github.com/PacificCommunity/ofp-sam-mfcl-manual)
-- [Analyses of tagging data for tropical tunas, with implications for the structure of WCPO bigeye stock assessments](https://meetings.wcpfc.int/file/2787/download)
-- [Developments in the MULTIFAN-CL software 2018-19](https://meetings.wcpfc.int/file/7107/download)
-- [Parameter estimation performance of a recapture-conditioned integrated tagging catch-at-age analysis model](https://doi.org/10.1016/j.fishres.2019.105451)
-- [Developing a set of diagnostics and outputs for MULTIFAN-CL stock assessments](https://meetings.wcpfc.int/file/7797/download)
-- [Analysis of tag seeding data and reporting rates for purse seine fleets](https://meetings.wcpfc.int/file/10950/download)
-- [Tag-seeding reporting-rate analysis for the 2023 bigeye and yellowfin assessments](https://meetings.wcpfc.int/file/13013/download)
-- [Analysis of tagging data for the 2023 bigeye and yellowfin tuna assessments: corrections to tag releases for tagging conditions](https://meetings.wcpfc.int/file/13015/download)
-- [Estimation of tag mixing periods for the 2026 WCPO tuna stock assessments](https://meetings.wcpfc.int/file/21121/download)
-- [Tag-shedding rates for tropical tuna species in the Atlantic Ocean estimated from double-tagging data](https://doi.org/10.1016/j.fishres.2021.106211)
+- [Analyses of tagging data for tropical tunas, with implications for WCPO bigeye assessments](https://meetings.wcpfc.int/file/2787/download)
+- [Developments in MULTIFAN-CL 2018--19](https://meetings.wcpfc.int/file/7107/download)
+- [Recapture-conditioned integrated tagging model performance](https://doi.org/10.1016/j.fishres.2019.105451)
+- [MULTIFAN-CL assessment diagnostics](https://meetings.wcpfc.int/file/7797/download)
+- [Tag-seeding reporting rates for 2023 BET/YFT assessments](https://meetings.wcpfc.int/file/13013/download)
+- [Tag-release corrections for 2023 BET/YFT assessments](https://meetings.wcpfc.int/file/13015/download)
+- [Tag mixing periods for the 2026 WCPO assessments](https://meetings.wcpfc.int/file/21121/download)

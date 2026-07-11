@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Reproduces the supplied OPR69-01-50-50, two-calendar-year endpoint, terminal-penalty weight 100, and 1,000-evaluation protocol from a newly fitted branch-local 11.par. It is a numerical benchmark only; the curated candidate grid uses 73, 72, and 71 annual coefficients."

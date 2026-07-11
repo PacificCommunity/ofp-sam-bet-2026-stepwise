@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Combines the externally informed 2021 campaign reporting-rate parameter (target 0.52015, penalty 485.2) with tag_flags(:,2)=1. It is shortlisted only if likelihood components, population scale, gradients, and Hessian diagnostics remain stable at stricter convergence."

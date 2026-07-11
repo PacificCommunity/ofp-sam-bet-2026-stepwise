@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Estimates a separate reporting rate only for release group 60 at target 0.52015 and penalty 485.2 while applying tag_flags(:,2)=1 to every release. Comparison with the campaign grouping diagnoses reporting-rate/recruitment confounding."

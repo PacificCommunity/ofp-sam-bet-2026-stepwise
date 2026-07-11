@@ -161,7 +161,14 @@ source_folder <- function(step_id, source_dir = "") {
     if (grepl("^(/|[A-Za-z]:[\\\\/])", source_dir)) {
       return(source_dir)
     }
-    return(file.path("steps", step_id, source_dir))
+    ## Match run_stepwise.R resolution order. Thin generated steps may point
+    ## directly at another root-relative step folder (for example
+    ## steps/12-OrthogonalPoly/model) rather than nesting data in their own
+    ## directory.
+    candidates <- c(file.path("steps", step_id, source_dir), source_dir)
+    existing <- candidates[dir.exists(candidates)]
+    if (length(existing)) return(existing[[1L]])
+    return(candidates[[1L]])
   }
   file.path("steps", step_id, "model")
 }

@@ -1,4 +1,0 @@
-"role","file","source","note"
-"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
-"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
-"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Isolates one length-frequency/selectivity hypothesis at terminal penalty weight 100. earlier upper-age control for fisheries 17 and 18"

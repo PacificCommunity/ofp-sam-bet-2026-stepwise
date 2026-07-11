@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Reproduces the supplied OPR settings 155=71, 221=71, 216=50, 217=1, and 202=3 while retaining the parent interaction count 218=50. A difference from the paired flag-zero row would identify assessment-executable behaviour not present in public ongoing-dev."

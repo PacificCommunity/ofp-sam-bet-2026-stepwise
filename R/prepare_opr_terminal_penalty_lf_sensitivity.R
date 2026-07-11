@@ -3,7 +3,7 @@
 ##
 ## Each folder contains only controls and documentation. At run time the
 ## current parent model is copied, then a deterministic patch is applied. This
-## avoids committing roughly one hundred duplicate FRQ/INI/TAG datasets.
+## avoids committing duplicate FRQ/INI/TAG datasets.
 
 args <- commandArgs(trailingOnly = TRUE)
 overwrite <- "--overwrite" %in% args
@@ -31,8 +31,22 @@ model_controls <- function(row) {
       sprintf("- Arithmetic-mean terminal treatment: `%s`.", tolower(as.character(row$standard_arithmetic_mean)))
     ))
   }
+  endpoint_text <- if (row$terminal_years == 0L) {
+    "no multi-year annual endpoint"
+  } else {
+    sprintf("%d calendar year(s) = %d quarters", row$terminal_years, 4L * row$terminal_years)
+  }
   c(
-    sprintf("- OPR profile: `69-01-50-50`; terminal window: %d calendar year(s) = %d quarters.", row$terminal_years, 4L * row$terminal_years),
+    sprintf(
+      "- OPR profile: `%d-%02d-%02d-%02d`; terminal window: %s; component endpoint: `%d`.",
+      row$opr_year_coefficients,
+      row$opr_season_coefficients,
+      row$opr_region_coefficients,
+      row$opr_interaction_coefficients,
+      endpoint_text,
+      row$component_terminal_years
+    ),
+    sprintf("- Legacy annual OPR override: `parest_flag(221)=%d`.", row$opr_legacy_year_override),
     sprintf("- Terminal penalty: requested weight `%g`; `parest_flag(397)=%d`; final matched phase: 1,000 evaluations.", row$terminal_penalty_weight, row$terminal_penalty_flag),
     sprintf("- OPR trend flag: `parest_flag(153)=%d`.", row$trend_flag)
   )
@@ -93,6 +107,10 @@ for (i in seq_len(nrow(spec))) {
     "",
     model_controls(row),
     sprintf("- Selectivity profile: `%s`.", row$fish_profile),
+    sprintf(
+      "- Length-composition effective-sample-size divisor: `%s`; weight-composition divisors are unchanged.",
+      if (row$length_comp_divisor == 0L) "inherited mixed 20/40" else paste0("uniform ", row$length_comp_divisor)
+    ),
     tag_controls(row),
     "",
     "## Interpretation",
@@ -105,11 +123,18 @@ for (i in seq_len(nrow(spec))) {
     "",
     sprintf("The runner copies `steps/%s/model`, applies `patch.R`, creates a new `00.par` with MFCL, and stores the compact payload, input hashes/specification, and one exact patched restart-input set with the base fit. Diagnostic delta outputs do not duplicate that restart set; parent data are not committed in this thin folder.", row$parent_step)
   )
+  if (row$fish_profile == "group_consistent") {
+    readme <- c(
+      readme,
+      "",
+      "> This is the source-consistent reviewed default: it includes all five requested fishery changes and propagates the F20/F17 settings to F27/F18 because MFCL requires other selectivity flags to be identical within fish-flag-24 groups."
+    )
+  }
   if (row$fish_profile == "review_exact") {
     readme <- c(
       readme,
       "",
-      "> The exact F20 and F17 controls are retained as a diagnostic. Those fisheries share selectivity groups with F27 and F18 in the current model; the `group_consistent` cases are the structurally preferred comparison."
+      "> This applies only the exact five listed fishery edits. It intentionally leaves the grouped F27/F18 partners unchanged and is retained as a flag-grouping diagnostic, not as the source-consistent default."
     )
   }
   if (isTRUE(row$remove_2021_tags)) {
@@ -117,6 +142,27 @@ for (i in seq_len(nrow(spec))) {
       readme,
       "",
       sprintf("> The deletion case removes `%s` and starts from a fresh `-makepar`. TAG, FRQ, all seven MFCL 1007 tag controls, the pooled reporting row, and `tag_rep_map.R` are patched together.", row$tag_deletion)
+    )
+  }
+  if (isTRUE(row$benchmark_protocol)) {
+    readme <- c(
+      readme,
+      "",
+      "> This is the single supplied executable benchmark reproduction. It is retained for numerical comparison only and is excluded from the 71/72/73 candidate set."
+    )
+  }
+  if (row$family == "supplied-opr221-check") {
+    readme <- c(
+      readme,
+      "",
+      "> This is one half of a matched flag-221 compatibility check. Public ongoing-dev marks flag 221 obsolete; compare the two rows directly before interpreting either as a biological sensitivity."
+    )
+  }
+  if (isTRUE(row$final_candidate)) {
+    readme <- c(
+      readme,
+      "",
+      "> This is a shortlisted structural screen, not an accepted assessment model. It must retain stable estimates, gradients, and Hessian diagnostics when rerun at `1e-5`."
     )
   }
   write_file(file.path(step_dir, "README.md"), readme)

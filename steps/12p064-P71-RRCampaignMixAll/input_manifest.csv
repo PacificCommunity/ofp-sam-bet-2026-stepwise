@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Combines the central campaign reporting-rate prior and all-release pre-mixing correction at this annual OPR count. This is a shortlisted structural comparison across 73, 72, and 71 annual coefficients."

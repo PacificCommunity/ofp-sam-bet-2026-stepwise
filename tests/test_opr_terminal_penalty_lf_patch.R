@@ -230,10 +230,64 @@ validate_doitall <- function(model_dir, row) {
   assert_true(grepl(sprintf("  1 249 %d  # recaptures-conditioned", as.integer(row$tag_likelihood == "recaptures_conditioned")), text, fixed = TRUE), paste("Conditional-tag flag mismatch for", row$step_id))
   expected_likelihood <- switch(row$tag_likelihood, negative_binomial = 4L, recaptures_conditioned = 4L, binned_gamma = 5L, robust_binned_gamma = 6L)
   assert_true(grepl(sprintf("  1 111 %d  # tag observation likelihood", expected_likelihood), text, fixed = TRUE), paste("Tag likelihood flag mismatch for", row$step_id))
+  if (isTRUE(row$estimate_tag_dispersion)) {
+    expected_parameterisation <- if (row$tag_likelihood %in% c("negative_binomial", "recaptures_conditioned")) 1L else 0L
+    assert_true(
+      grepl(sprintf("  1 305 %d", expected_parameterisation), text, fixed = TRUE),
+      paste("Tag-dispersion parameterisation mismatch for", row$step_id)
+    )
+    assert_true(
+      grepl("  -999 43 1 -999 44 1", text, fixed = TRUE),
+      paste("Pooled tag-dispersion flags missing for", row$step_id)
+    )
+  }
+  if (row$length_comp_divisor > 0L) {
+    assert_true(
+      grepl(
+        sprintf("  -999 49 %d  # divide every LF effective sample size", row$length_comp_divisor),
+        text,
+        fixed = TRUE
+      ),
+      paste("Uniform LF divisor missing for", row$step_id)
+    )
+  }
+  generated_parts <- strsplit(
+    text,
+    "# Generated sensitivity overrides (last setting wins in PHASE 1)",
+    fixed = TRUE
+  )[[1L]]
+  assert_true(length(generated_parts) == 2L, paste("Generated override block missing for", row$step_id))
+  generated_overrides <- generated_parts[[2L]]
+  assert_true(
+    !grepl("-999 50", generated_overrides, fixed = TRUE),
+    paste("Generated LF sensitivity also changed weight-composition divisors for", row$step_id)
+  )
+  if (row$fish_profile == "group_consistent") {
+    assert_true(
+      grepl("-27 16 0  -27 3 37", generated_overrides, fixed = TRUE) &&
+        grepl("-18 16 2  -18 3 6", generated_overrides, fixed = TRUE),
+      paste("Shared-selectivity partner controls missing for", row$step_id)
+    )
+  }
+  if (row$fish_profile == "review_exact") {
+    assert_true(
+      grepl("-20 16 0  -20 3 37", generated_overrides, fixed = TRUE) &&
+        grepl("-17 16 2  -17 3 6", generated_overrides, fixed = TRUE) &&
+        !grepl("-27 16 0  -27 3 37", generated_overrides, fixed = TRUE) &&
+        !grepl("-18 16 2  -18 3 6", generated_overrides, fixed = TRUE),
+      paste("Exact-five-fishery grouping diagnostic mismatch for", row$step_id)
+    )
+  }
   if (row$parameterization == "opr") {
     assert_true(sum(trimws(lines) == "PHASE12") == 1L, paste("PHASE12 count mismatch for", row$step_id))
+    assert_true(grepl(sprintf("  1 155 %d  # annual OPR coefficient count", row$opr_year_coefficients), text, fixed = TRUE), paste("Annual OPR count mismatch for", row$step_id))
+    assert_true(grepl(sprintf("  1 221 %d  # legacy annual OPR override", row$opr_legacy_year_override), text, fixed = TRUE), paste("Legacy annual OPR override mismatch for", row$step_id))
+    assert_true(grepl(sprintf("  1 217 %d  # seasonal OPR coefficient count", row$opr_season_coefficients), text, fixed = TRUE), paste("Seasonal OPR count mismatch for", row$step_id))
+    assert_true(grepl(sprintf("  1 216 %d  # regional OPR coefficient count", row$opr_region_coefficients), text, fixed = TRUE), paste("Regional OPR count mismatch for", row$step_id))
+    assert_true(grepl(sprintf("  1 218 %d  # season-by-region OPR coefficient count", row$opr_interaction_coefficients), text, fixed = TRUE), paste("Interaction OPR count mismatch for", row$step_id))
     assert_true(grepl(sprintf("  1 397 %d  # terminal-recruitment penalty", row$terminal_penalty_flag), text, fixed = TRUE), paste("Terminal penalty mismatch for", row$step_id))
     assert_true(grepl(sprintf("  1 202 %d  # terminal window", row$terminal_years), text, fixed = TRUE), paste("Terminal window mismatch for", row$step_id))
+    assert_true(grepl(sprintf("  1 210 %d  # regional endpoint", row$component_terminal_years), text, fixed = TRUE), paste("Component terminal window mismatch for", row$step_id))
     assert_true(grepl(sprintf("  1 153 %d  # OPR trend penalty", row$trend_flag), text, fixed = TRUE), paste("Trend flag mismatch for", row$step_id))
   } else {
     assert_true(!any(trimws(lines) == "PHASE12"), paste("Unexpected PHASE12 for", row$step_id))
@@ -266,15 +320,20 @@ assert_identical(removed, sort(c(basename(marked), basename(legacy))), "Cleanup 
 assert_true(all(dir.exists(c(manual, wrong_marker, outside_namespace))), "Cleanup touched an unrecognised folder")
 
 spec <- opr_terminal_penalty_lf_model_spec()
-assert_true(nrow(spec) == 114L, "Expected 114 generated sensitivities")
-assert_true(length(opr_terminal_penalty_lf_run_step_ids()) == 116L, "Expected 116 total fit models")
+assert_true(nrow(spec) == 73L, "Expected 73 generated sensitivities")
+assert_true(length(opr_terminal_penalty_lf_run_step_ids()) == 74L, "Expected 74 total fit models")
 assert_true(opr_terminal_penalty_lf_hessian_nsplit() == 1L, "Expected unpartitioned Hessian jobs above 50 models")
 expected_families <- c(
-  `isolated-selectivity-effect` = 6L,
-  `standard-recruitment-control` = 8L,
-  `tagging-diagnostic` = 74L,
-  `terminal-penalty-by-selectivity` = 22L,
-  `trend-penalty` = 4L
+  `annual-count-penalty` = 15L,
+  `endpoint-free-control` = 3L,
+  `length-composition-weight` = 6L,
+  `length-selectivity` = 9L,
+  `longer-terminal-window` = 9L,
+  `standard-recruitment-control` = 5L,
+  `supplied-opr221-check` = 2L,
+  `supplied-benchmark` = 1L,
+  `tagging-diagnostic` = 21L,
+  `trend-penalty` = 2L
 )
 actual_families <- table(spec$family)
 actual_families <- setNames(as.integer(actual_families[names(expected_families)]), names(expected_families))
@@ -302,15 +361,27 @@ if (nzchar(mfcl_program)) {
   assert_identical(actual_sha, expected_sha, "MFCL smoke executable is not the recorded 2.2.7.9 binary")
   select_first <- function(condition) spec$step_id[which(condition)[[1L]]]
   makepar_ids <- unique(c(
-    select_first(spec$parameterization == "opr" & spec$fish_profile == "baseline" & spec$tag_deletion == "none"),
-    vapply(c("group18", "group60", "both"), function(value) select_first(spec$tag_deletion == value), character(1L)),
+    vapply(c(71L, 72L, 73L), function(value) select_first(spec$parameterization == "opr" & spec$opr_year_coefficients == value & !spec$benchmark_protocol), character(1L)),
+    vapply(c(0L, 1L, 2L, 3L), function(value) select_first(spec$parameterization == "opr" & spec$terminal_years == value & !spec$benchmark_protocol), character(1L)),
+    select_first(spec$benchmark_protocol),
+    vapply(
+      c(0L, 71L),
+      function(value) select_first(spec$family == "supplied-opr221-check" & spec$opr_legacy_year_override == value),
+      character(1L)
+    ),
+    select_first(spec$tag_deletion == "group60"),
+    select_first(spec$tag_deletion == "both"),
     vapply(c("campaign", "group60"), function(value) select_first(spec$rr_2021_scope == value), character(1L)),
     select_first(spec$rr_2021_scope == "campaign" & spec$tag_rr_mixing_mode == "all"),
-    select_first(spec$rr_2021_scope == "group60" & spec$rr_2021_penalty == 0),
-    vapply(c("2021", "group60", "all"), function(value) select_first(spec$tag_rr_mixing_mode == value), character(1L)),
-    vapply(c("recaptures_conditioned", "binned_gamma", "robust_binned_gamma"), function(value) select_first(spec$tag_likelihood == value), character(1L)),
-    select_first(spec$tag_loss_mode == "all"),
-    select_first(spec$parameterization == "standard" & spec$tag_deletion == "both")
+    vapply(c(40L, 80L), function(value) select_first(spec$length_comp_divisor == value), character(1L)),
+    vapply(c("group60", "all"), function(value) select_first(spec$tag_rr_mixing_mode == value), character(1L)),
+    vapply(c("recaptures_conditioned", "robust_binned_gamma"), function(value) select_first(spec$tag_likelihood == value), character(1L)),
+    select_first(spec$estimate_tag_dispersion & spec$tag_likelihood == "negative_binomial"),
+    select_first(
+      spec$parameterization == "standard" & spec$standard_terminal_quarters == 0L &
+        spec$tag_deletion == "none" & spec$tag_weight_flag == 0L
+    ),
+    select_first(spec$parameterization == "standard" & spec$tag_deletion == "group60")
   ))
 }
 

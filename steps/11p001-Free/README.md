@@ -1,12 +1,13 @@
 # 11p001-Free
 
-Uses ordinary quarter-specific recruitment deviations and estimates every terminal recruitment deviation. This is a structural control for the OPR terminal response.
+Uses ordinary quarter-specific recruitment deviations and estimates every terminal recruitment deviation with the parent tag likelihood and data. The reviewed controls are propagated across shared selectivity groups so this is a source-consistent structural control for the OPR response.
 
 ## Controls
 
 - Recruitment: ordinary quarterly deviations; final fixed block = 0 quarter(s).
 - Arithmetic-mean terminal treatment: `false`.
-- Selectivity profile: `baseline`.
+- Selectivity profile: `group_consistent`.
+- Length-composition effective-sample-size divisor: `inherited mixed 20/40`; weight-composition divisors are unchanged.
 - Tag likelihood scalar flag: `parest_flag(177)=0`.
 - Tag observation model: `negative_binomial`; estimate pooled dispersion: `false`.
 - Tag-release deletion: `none`; 2021 reporting-rate scope: `shared`.
@@ -22,3 +23,5 @@ Raw objectives are not directly comparable when the tag dataset or tag likelihoo
 ## Reproducibility
 
 The runner copies `steps/11-TimeVaryingCV/model`, applies `patch.R`, creates a new `00.par` with MFCL, and stores the compact payload, input hashes/specification, and one exact patched restart-input set with the base fit. Diagnostic delta outputs do not duplicate that restart set; parent data are not committed in this thin folder.
+
+> This is the source-consistent reviewed default: it includes all five requested fishery changes and propagates the F20/F17 settings to F27/F18 because MFCL requires other selectivity flags to be identical within fish-flag-24 groups.

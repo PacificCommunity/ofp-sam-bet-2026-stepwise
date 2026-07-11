@@ -1,4 +1,0 @@
-"role","file","source","note"
-"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
-"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
-"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Sets tag_flags(60,2)=1 and changes the dominant 2021 release group's imputed mixing period from 1 to 4 quarters. Together with the one-quarter TagMixRR60 case, this tests pre-mixing imputation uncertainty without suppressing late recaptures."

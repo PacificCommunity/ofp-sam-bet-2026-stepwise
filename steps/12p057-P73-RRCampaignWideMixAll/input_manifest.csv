@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Combines all-release pre-mixing correction with the same 0.52015 campaign target but relaxes the reporting-rate penalty to 48.52 (prior SD about 0.10). This is a prior-conflict diagnostic, not a preferred fit selected by recruitment shape."

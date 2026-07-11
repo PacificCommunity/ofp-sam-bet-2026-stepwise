@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Matched compatibility control for the supplied OPR71/end3 setup, with parest_flag(221)=0. Public ongoing-dev treats flag 221 as obsolete; compare only with the paired flag-71 row."

@@ -1,4 +1,0 @@
-"role","file","source","note"
-"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
-"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
-"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Uses parest_flag(305)=1 and fish_flags(43/44)=1 to estimate one shared direct-tau negative-binomial dispersion parameter with source-supported bounds. Because parest_flag(305) also changes the negative-binomial parameterisation from the legacy fish-parameter form, this is a compound observation-model diagnostic rather than a stand-alone final-model candidate."

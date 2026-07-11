@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Sets fish flag(49) to a uniform length-composition divisor of 80 for every fishery at OPR71/E1/W100. This strong case gives every LF record half the effective sample size of the uniform-40 case. Weight-composition flag(50) remains unchanged."

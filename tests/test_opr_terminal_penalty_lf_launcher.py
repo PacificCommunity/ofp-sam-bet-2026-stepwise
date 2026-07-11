@@ -83,14 +83,14 @@ class SplitPolicyTests(unittest.TestCase):
 
 
 class SelectionSafetyTests(unittest.TestCase):
-    def test_real_config_resolves_all_116_controls_and_thin_steps(self):
+    def test_real_config_resolves_all_74_controls_and_thin_steps(self):
         rows = launcher.configured_models("")
 
-        self.assertEqual(len(rows), 116)
+        self.assertEqual(len(rows), 74)
         self.assertEqual(rows[0]["step_id"], "11-TimeVaryingCV")
-        self.assertEqual(rows[1]["step_id"], "12-OrthogonalPoly")
-        self.assertEqual(rows[-1]["step_id"], "11p008-Fix8TagWt0100")
-        self.assertEqual(len({row["step_id"] for row in rows}), 116)
+        self.assertTrue(rows[1]["step_id"].startswith("12p"))
+        self.assertIn("Benchmark", rows[-1]["step_id"])
+        self.assertEqual(len({row["step_id"] for row in rows}), 74)
         self.assertEqual(launcher.resolve_hessian_nsplit(len(rows)), 1)
 
     def test_all_selector_is_not_a_valid_explicit_sensitivity_override(self):
@@ -393,7 +393,7 @@ class ManifestTests(unittest.TestCase):
 
 
 class MainFlowTests(unittest.TestCase):
-    def test_real_116_model_preview_builds_only_independent_fit_hessian_merge_chains(self):
+    def test_real_74_model_preview_builds_only_independent_fit_hessian_merge_chains(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "preview.json"
             args = launch_args(
@@ -416,7 +416,7 @@ class MainFlowTests(unittest.TestCase):
 
         self.assertEqual(status, 0)
         self.assertFalse(path.exists())
-        self.assertEqual(len(calls), 349)
+        self.assertEqual(len(calls), 223)
         fits = [item for item in calls if item[0] == launcher.DEFAULT_STEPWISE_TASK]
         hessians = [
             item
@@ -429,7 +429,7 @@ class MainFlowTests(unittest.TestCase):
             if item[0] == f"{launcher.DEFAULT_CHECK_PREFIX}-hessian-merge"
         ]
         results = [item for item in calls if item[0] == launcher.DEFAULT_RESULTS_TASK]
-        self.assertEqual((len(fits), len(hessians), len(merges), len(results)), (116, 116, 116, 1))
+        self.assertEqual((len(fits), len(hessians), len(merges), len(results)), (74, 74, 74, 1))
         self.assertFalse(any("attach" in task for task, _payload in calls))
 
         fit_refs = {
@@ -456,7 +456,7 @@ class MainFlowTests(unittest.TestCase):
             merge_refs.append(f"DRY-{index}")
 
         self.assertEqual(results[0][1]["input_jobs"], merge_refs)
-        self.assertEqual(results[0][1]["metadata"]["model_count"], 116)
+        self.assertEqual(results[0][1]["metadata"]["model_count"], 74)
 
     def test_dry_run_limit_one_emits_five_jobs_and_writes_no_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -591,7 +591,7 @@ class RegistrationTests(unittest.TestCase):
         api.assert_not_called()
         existing.assert_not_called()
 
-    def test_real_registration_counts_116_models_and_one_hessian_each(self):
+    def test_real_registration_counts_74_models_and_one_hessian_each(self):
         args = SimpleNamespace(
             repo_root=".",
             task_name=registration.DEFAULT_STEPWISE_TASK,
@@ -603,15 +603,15 @@ class RegistrationTests(unittest.TestCase):
 
         payload, count, nsplit, _branch = registration.registration_payload(args)
 
-        self.assertEqual(count, 116)
+        self.assertEqual(count, 74)
         self.assertEqual(nsplit, 1)
         meta = payload["metadata"]["opr_terminal_penalty_lf_sensitivity"]
-        self.assertEqual(meta["fit_job_count"], 116)
-        self.assertEqual(meta["hessian_job_count"], 116)
-        self.assertEqual(meta["hessian_merge_job_count"], 116)
+        self.assertEqual(meta["fit_job_count"], 74)
+        self.assertEqual(meta["hessian_job_count"], 74)
+        self.assertEqual(meta["hessian_merge_job_count"], 74)
         self.assertEqual(meta["hessian_attach_job_count"], 0)
         self.assertEqual(meta["results_job_count"], 1)
-        self.assertEqual(meta["total_job_count"], 349)
+        self.assertEqual(meta["total_job_count"], 223)
         self.assertEqual(payload["triggers"], {})
 
 

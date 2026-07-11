@@ -1,4 +1,0 @@
-"role","file","source","note"
-"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
-"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
-"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Adds one reporting-rate parameter for the dominant 2021 campaign/fishery cells while retaining their existing target and prior precision. This separates campaign-specific reporting from past releases without deleting observations."

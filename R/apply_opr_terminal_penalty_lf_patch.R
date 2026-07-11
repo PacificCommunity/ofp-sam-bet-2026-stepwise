@@ -58,7 +58,19 @@ patch_append_phase12 <- function(lines, spec) {
     "# Every generated OPR sensitivity receives this 1,000-evaluation phase.",
     "# Weight zero is the matched optimisation control.",
     "$program_path bet.frq 11.par 12.par -file - <<PHASE12",
+    sprintf("  1 155 %d  # annual OPR coefficient count", spec$opr_year_coefficients),
+    sprintf("  1 221 %d  # legacy annual OPR override; public ongoing-dev treats zero as canonical", spec$opr_legacy_year_override),
+    sprintf("  1 217 %d  # seasonal OPR coefficient count", spec$opr_season_coefficients),
+    sprintf("  1 216 %d  # regional OPR coefficient count", spec$opr_region_coefficients),
+    sprintf("  1 218 %d  # season-by-region OPR coefficient count", spec$opr_interaction_coefficients),
     sprintf("  1 202 %d  # terminal window in calendar years; age_flag(57)=4 quarters/year", spec$terminal_years),
+    "  1 203 0  # annual endpoint degree",
+    sprintf("  1 210 %d  # regional endpoint; 0 inherits annual, -1 disables multi-year pooling", spec$component_terminal_years),
+    "  1 211 0  # regional endpoint degree",
+    sprintf("  1 212 %d  # seasonal endpoint; 0 inherits annual, -1 disables multi-year pooling", spec$component_terminal_years),
+    "  1 213 0  # seasonal endpoint degree",
+    sprintf("  1 214 %d  # interaction endpoint; 0 inherits annual, -1 disables multi-year pooling", spec$component_terminal_years),
+    "  1 215 0  # interaction endpoint degree",
     sprintf("  1 397 %d  # terminal-recruitment penalty weight = flag/10 = %g", spec$terminal_penalty_flag, spec$terminal_penalty_weight),
     "  1 1 1000  # matched function-evaluation budget",
     "  1 50 $phase10_11_convergence",
@@ -109,6 +121,22 @@ patch_selectivity_block <- function(profile) {
   )
 }
 
+patch_length_comp_block <- function(divisor) {
+  divisor <- as.integer(divisor)
+  if (length(divisor) != 1L || is.na(divisor) || divisor < 0L) {
+    stop("length_comp_divisor must be one non-negative integer.", call. = FALSE)
+  }
+  if (divisor == 0L) return(character())
+
+  ## Appending one all-fishery setting after the inherited individual settings
+  ## is required: MFCL applies switch rows sequentially and the last value wins.
+  ## Flag 49 is the LF effective-sample-size divisor; flag 50 (WF) is untouched.
+  c(
+    "# Uniform LF-only weighting sensitivity; this final switch overrides inherited per-fishery values.",
+    sprintf("  -999 49 %d  # divide every LF effective sample size by %d; WF unchanged", divisor, divisor)
+  )
+}
+
 patch_tag_control_block <- function(spec) {
   likelihood_flag <- switch(
     spec$tag_likelihood,
@@ -126,12 +154,21 @@ patch_tag_control_block <- function(spec) {
     sprintf("  1 360 %d  # assumed long-term tag loss", as.integer(spec$tag_loss_mode != "none"))
   )
   if (isTRUE(spec$estimate_tag_dispersion)) {
-    block <- c(
-      block,
-      "  1 305 1   # estimate tag dispersion with explicit source-supported bounds",
-      "  1 306 0   # use default bounds",
-      "  -999 43 1 -999 44 1  # one pooled dispersion parameter"
-    )
+    if (spec$tag_likelihood %in% c("negative_binomial", "recaptures_conditioned")) {
+      block <- c(
+        block,
+        "  1 305 1   # direct-tau negative-binomial dispersion parameterisation",
+        "  1 306 0   # use default source-supported bounds",
+        "  -999 43 1 -999 44 1  # one pooled negative-binomial dispersion parameter"
+      )
+    } else {
+      block <- c(
+        block,
+        "  1 305 0   # direct-tau switch applies to negative binomial, not gamma likelihoods",
+        "  1 306 0   # use default source-supported gamma-dispersion bounds",
+        "  -999 43 1 -999 44 1  # one pooled gamma-dispersion parameter (fish_pars(30))"
+      )
+    }
   } else {
     block <- c(block, "  -999 43 0 -999 44 0  # retain fixed tag dispersion")
   }
@@ -377,6 +414,7 @@ apply_opr_terminal_penalty_lf_patch <- function(model_dir, step_id, root = getwd
     "# ------------------------------------------------------------",
     "# Generated sensitivity overrides (last setting wins in PHASE 1)",
     patch_selectivity_block(spec$fish_profile),
+    patch_length_comp_block(spec$length_comp_divisor),
     patch_tag_control_block(spec)
   )
   if (spec$parameterization == "standard") {
@@ -391,8 +429,20 @@ apply_opr_terminal_penalty_lf_patch <- function(model_dir, step_id, root = getwd
 
   if (spec$parameterization == "opr") {
     phase3 <- c(
-      "# Generated OPR terminal controls; terminal penalty starts only in PHASE 12.",
+      "# Generated OPR coefficient and terminal controls; terminal penalty starts only in PHASE 12.",
+      sprintf("  1 155 %d", spec$opr_year_coefficients),
+      sprintf("  1 221 %d", spec$opr_legacy_year_override),
+      sprintf("  1 217 %d", spec$opr_season_coefficients),
+      sprintf("  1 216 %d", spec$opr_region_coefficients),
+      sprintf("  1 218 %d", spec$opr_interaction_coefficients),
       sprintf("  1 202 %d", spec$terminal_years),
+      "  1 203 0",
+      sprintf("  1 210 %d", spec$component_terminal_years),
+      "  1 211 0",
+      sprintf("  1 212 %d", spec$component_terminal_years),
+      "  1 213 0",
+      sprintf("  1 214 %d", spec$component_terminal_years),
+      "  1 215 0",
       "  1 397 0",
       sprintf("  1 153 %d  # OPR trend penalty: -1 off, 0 default 0.01, positive flag/10", spec$trend_flag)
     )

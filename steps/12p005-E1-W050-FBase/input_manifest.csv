@@ -1,4 +1,0 @@
-"role","file","source","note"
-"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
-"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
-"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Tests an OPR69 terminal window of 1 calendar year(s) (4 quarters) with terminal-recruitment penalty weight 50. The selectivity treatment is current fishery controls. Every model receives the same final 1,000-evaluation phase, including weight-zero controls."

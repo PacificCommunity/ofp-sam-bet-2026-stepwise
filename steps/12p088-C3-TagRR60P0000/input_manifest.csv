@@ -1,4 +1,0 @@
-"role","file","source","note"
-"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
-"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
-"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Keeps the externally derived reporting-rate target at 0.52015 and estimates one parameter for release group 60 pooled across fisheries 25-28. The Gaussian prior penalty is 0. The zero-penalty endpoint is an identifiability stress test with high reporting-rate/recruitment confounding risk, not a final-model candidate."
