@@ -62,20 +62,22 @@ normal main-branch task.
 ```text
 104 fits
   -> 104 Hessians (one per fit)
-       -> 104 merges (one per model)
-            -> 104 attached-output updates (one per original fit)
-                 -> one BET results / MFCL Shiny job
+       -> 104 merges (one per model; direct overlay on its fit)
+            -> one BET results / MFCL Shiny job
 ```
 
-The full flow is 417 jobs. Because the suite exceeds 50 models,
-`HESSIAN_NSPLIT=1`: Hessians are not partitioned. The attached-output update is
-important: a Kflow dependency alone schedules the merge but does not make its
-diagnostic archive visible on the originating fit page. The update copies the
-merged Hessian back onto that fit, so its **Diagnostics → Hessian** card is
-shown once the merge completes. The results job then receives the 104 attached
-fit bundles. Non-positive-definite and incomplete Hessians remain visible with
-their status, eigenvalue counts, and failure reason rather than being omitted
-or reported as successful.
+The full flow is 313 jobs. Because the suite exceeds 50 models,
+`HESSIAN_NSPLIT=1`: Hessians are not partitioned. Every merge takes the
+originating fit and its Hessian unit as inputs, rebuilds the combined model
+payload, and publishes the diagnostic portion as a Kflow delta overlay. Its
+**Diagnostics → Hessian** card therefore appears on the original fit page as
+soon as the merge completes, without a separate attach-checks job. The results
+job receives the 104 merge outputs directly. Each diagnostic type owns a
+separate Kflow attachment slot and retries compare-and-swap only against the
+previous result in that same slot. A Hessian and jitter attachment can therefore
+finish at the same time without either replacing the other. Non-positive-definite and
+incomplete Hessians remain visible with their status, eigenvalue counts, and
+failure reason rather than being omitted or reported as successful.
 
 After pushing the branch and setting `KFLOW_API_TOKEN`:
 
@@ -88,8 +90,12 @@ make kflow-launch-terminal-sensitivity
 The ignored `work/<flow-group>-launch.json` manifest supports recovery with
 `--resume`. Use `--dry-run` or `--limit 1` when checking launcher changes. The
 production suite uses `BET_PHASE10_11_CONVERGENCE=-5`, `TRIGGER_NEXT=false`,
-and the Suva submitter. `--no-attach-hessians` is available only for a small
-legacy-compatible test; production launches keep the default attachment step.
+and the Suva submitter. `--no-attach-hessians` disables the fit-page overlay
+for a small test but still uses merge jobs as the results inputs. The
+`--backfill-hessian-attaches` and `--attach-task` options remain only for old
+launch manifests that used a separate attachment stage. A backfill publishes
+only the Hessian delta into the same Hessian-specific slot; it never creates a
+second full model baseline or replaces a concurrently attached diagnostic.
 
 ## Review rule
 

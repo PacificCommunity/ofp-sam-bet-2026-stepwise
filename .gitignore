@@ -6,6 +6,8 @@
 /.kflow-runtime-cache/
 .Rhistory
 .RData
+__pycache__/
+*.py[cod]
 *.Rproj
 .Rproj.user
 .positai
