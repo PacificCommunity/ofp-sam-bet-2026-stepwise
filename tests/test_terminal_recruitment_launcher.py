@@ -271,7 +271,7 @@ class LaunchManifestTests(unittest.TestCase):
         )
         self.assertEqual(
             launcher.DEFAULT_MFCLSHINY_REF,
-            "815d6bbb7768ff67881bc110e1aa2057e7b279ba",
+            "2f41b90763c663257a7f43c47110ced848d3745b",
         )
 
     def test_static_and_local_app_configs_pin_both_reviewed_packages(self):
