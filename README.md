@@ -1,148 +1,59 @@
-# BET 2026 Stepwise
+# BET 2026 Step 12 terminal-recruitment sensitivities
 
 <p align="right">
   <a href="kflow.yaml"><img src="kflow-ready.svg" alt="Kflow ready task"></a>
 </p>
 
-BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
-model folder with a compact README and input manifest.
+This branch isolates terminal-recruitment behaviour in the BET 2026 Step 12
+OPR model. It contains 73 generated sensitivities plus the unchanged Step 11
+control (74 fits); unchanged models from `main` are intentionally omitted.
 
-## Step Map
+The design tests whether the terminal recruitment spike is driven by OPR
+complexity, the terminal boundary or penalty, LF/selectivity assumptions,
+length-composition weight, or recent tagging information.
 
-Each row is one runnable Kflow model. Lettered rows are deliberate substeps:
-they split one scientific change into smaller checks so differences can be
-traced without guessing.
+## Sensitivity models
 
-| Model | Major step | What changes | Input baseline |
-| --- | --- | --- | --- |
-| `01-Diag2023` | Diagnostic anchor | Reruns the 2023 diagnostic with the historical MFCL executable. | Archived 2023 diagnostic model. |
-| `02a-NewExe` | Executable bridge | Runs the archived 2023 assessment replication inputs with the current MFCL executable. | 2023 assessment replication input set; MFCL 1003 ini. |
-| `02b-Ini1007` | Executable bridge | Converts the 02a ini layout from MFCL 1003 to MFCL 1007. | 02a. |
-| `02c-LengthWeight` | Executable bridge | Applies the BET 2026 bias-corrected length-weight parameters. | 02b. |
-| `03-FixM` | FixM bridge | Applies fixed natural mortality from the 01 diagnostic `mgc=-5` final run. | 02c. |
-| `04-NewStructure` | New structure | Switches to the 5-region / 33-fishery structure with global CPUE. | 2026 new-structure input, terminal year 2021. |
-| `05-ConvertToLength` | Size data | Converts existing weight compositions to length. | 04. |
-| `06-LengthPlusLength` | Size data | Adds the extra length compositions. | 04. |
-| `07-DataTo2024` | Data update | Extends the global-CPUE input to 2024. | 06. |
-| `08-RegionalCPUE` | CPUE update | Adds regional CPUE and the regional-scaling prior. | 07. |
-| `09-NewOtoliths` | Age data | Adds the updated 2026 CAAL / otolith input. | 08. |
-| `10-TagMixingKS` | Tag mixing | Uses release-specific mixing periods from the KS 0.2 build. | 09. |
-| `11-TimeVaryingCV` | CPUE CV | Adds time-varying CPUE CV. | 10. |
-| `12-OrthogonalPoly` | Recruitment | Applies the orthogonal-polynomial recruitment setting. | 11. |
-| `13-LengthBasedSel` | Selectivity | Adds length-based selectivity. | 12. |
-| `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
-| `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
-
-## Substep Logic
-
-| Block | Substeps | Reason |
-| --- | --- | --- |
-| `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
-| `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
-
-## Step 11/12 terminal-recruitment experiment
-
-This branch contains 73 generated sensitivities plus the unchanged Step 11
-control, for 74 fits. The design is intentionally centred on annual OPR counts
-73, 72, and 71: 73 is the saturated annual OPR count for the 1952--2024 data
-span, while 72 and 71 remove one and two annual coefficients. OPR 69 is not in
-the candidate grid; one explicitly labelled 69 case is retained only to
-reproduce a supplied executable benchmark.
-
-All five reviewed LF changes are in the generated-model default: F20 and F28
-regain the large-fish tail, F12 and F26 suppress predicted but unobserved young
-ages, and F17 starts its upper-age constraint earlier. Because F20/F27 and
-F17/F18 share MFCL selectivity groups, the F20 and F17 flags are also propagated
-to F27 and F18 as required by the source/manual grouping rule. The original
-controls and an exact-five-only diagnostic remain as sensitivities.
-
-| Sensitivity family | Fits | Why it is included |
+| Family | Fits | Main comparison |
 | --- | ---: | --- |
-| Annual OPR count x terminal penalty | 15 | Compare 73/72/71 at one common four-quarter boundary and penalty weights 0--200. |
-| Endpoint window | 9 | Test 72/end2, 71/end2, and 71/end3, spanning the saturated boundaries and one lower-complexity bridge. |
-| Endpoint-free OPR | 3 | Show what 73/72/71 do without multi-year endpoint pooling or a terminal penalty. |
-| LF/selectivity structure | 9 | Compare the reviewed group-consistent default, original settings, exact-five-only diagnostic, and isolated LF mechanisms. |
-| Length-composition weight | 6 | Compare uniform LF divisors 40 and 80 at OPR 73/72/71 while leaving weight compositions unchanged. |
-| Tagging structure | 21 | Stage tag weight, observation model, 2021 reporting-rate/mixing assumptions, dominant-release deletion, and one full-2021 deletion without a Cartesian grid. |
-| OPR trend penalty | 2 | Separate the trend penalty response from the terminal-mean penalty. |
-| Standard recruitment deviations | 5 | Compare free, 4-quarter, and 8-quarter endpoints plus two tag-attribution cases before OPR; unchanged Step 11 supplies the 6-quarter control. |
-| Supplied flag-221 compatibility pair | 2 | Compare the received OPR71/end3 setup with `parest_flags(221)=71` against an otherwise identical flag-zero case. |
-| Supplied benchmark reproduction | 1 | Reproduce 69-01-50-50, end2, penalty weight 100; excluded from final candidates. |
+| OPR count, endpoint, and terminal penalty | 27 | Annual counts 73/72/71; no endpoint or 1--3 terminal calendar years; penalty weights 0--200. |
+| LF/selectivity and LF weighting | 15 | Reviewed group-consistent controls versus original, exact-five, isolated mechanisms, and LF divisors 40/80. |
+| Tagging | 21 | Tag weight, observation model, mixing period, 2021 reporting-rate priors, and diagnostic release deletions. |
+| Standard recruitment deviations | 5 | Free, 4-quarter, and 8-quarter terminal deviations plus two tag-attribution cases. |
+| OPR trend penalty | 2 | Trend penalty off versus weight 0.1, separate from the terminal-mean penalty. |
+| Compatibility and benchmark | 3 | Matched `parest_flags(221)=0/71` pair and one labelled OPR69 executable benchmark. |
+| **Generated total** | **73** | The unchanged Step 11 model supplies the 74th fit and inherited 6-quarter standard-recruitment control. |
 
-Every generated fit gets its own independent Hessian and delta-only attach,
-then one results/MFCL Shiny bundle is built from all 74 merged models. The
-generated rows are disabled in the normal `all` workflow and are selected only
-by the isolated launcher. Its default convergence is `1e-4`; shortlisted
-models can be rerun at `1e-5` without changing the generated inputs.
+The primary OPR counts are 73, 72, and 71. Their saturated endpoint pairs are
+73/end1, 72/end2, and 71/end3. OPR69 is retained only as a numerical benchmark,
+and the flag-221 pair is only an executable-compatibility check; neither is a
+final candidate.
 
-See [`docs/opr-terminal-penalty-lf-tag-sensitivity.md`](docs/opr-terminal-penalty-lf-tag-sensitivity.md)
-for the model matrix, flag definitions, interpretation rules, public technical
-references, and local/Kflow commands. The machine-readable 73-model grid is
+Generated models use the reviewed group-consistent LF/selectivity changes by
+default. Original and exact-five-only controls remain in the grid so their
+effects can be separated.
+
+## Reading a model name
+
+`Y73-E1-W100-FGroup` means 73 annual OPR coefficients, one terminal calendar
+year, terminal-mean penalty weight 100, and group-consistent LF controls.
+
+## Run and outputs
+
+```bash
+python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py --help
+```
+
+The Kflow pipeline is:
+
+```text
+74 fits -> 74 independent Hessians -> 74 delta merges -> 1 results bundle
+```
+
+It runs on Suva with `tuna-flow:v2.2`. The default convergence is `1e-4`;
+shortlisted models can be rerun at `1e-5` without regenerating inputs.
+
+Detailed rationale and interpretation are in
+[`docs/opr-terminal-penalty-lf-tag-sensitivity.md`](docs/opr-terminal-penalty-lf-tag-sensitivity.md).
+The exact 73-model design is in
 [`docs/opr-terminal-penalty-lf-sensitivity-grid.csv`](docs/opr-terminal-penalty-lf-sensitivity-grid.csv).
-
-## Names Used Here
-
-| Name | Meaning |
-| --- | --- |
-| 2023 assessment replication input set | The archived 2023 BET replication model inputs stored in `ofp-sam-2026-BET/mfcl/inputs/2023_rep`. |
-| MFCL 1003 ini | Older ini layout with no explicit `# tag flags` block; tag mixing is still set in `doitall.sh`. |
-| MFCL 1007 ini | Newer ini layout with explicit `# tag flags`, tag shed rates, and reporting-rate matrix sections. |
-| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. The isolated sensitivity launcher sets `-4`; use `-5` for shortlisted production reruns. It applies to every selected step/substep. |
-
-## Source Inputs And Generated Edits
-
-These model folders are generated from source input repos, then checked and
-edited by `R/prepare_bet_2026_step_inputs.R`. The exact per-step source file and
-edit note is in `steps/<step_id>/input_manifest.csv`.
-
-| File | Source repo | Generated edits |
-| --- | --- | --- |
-| `.frq` | `ofp-sam-2026-BET-YFT-frq-build` | Copied exactly except steps 14-15, where index-fishery effort creep is applied. |
-| `.tag` | `ofp-sam-2026-BET-YFT-tag-prep` | Copied exactly. `tag_rep_map.R` is only an audit file. |
-| `.age_length` | `ofp-sam-2026-BET-YFT-age-length-build` | Records copied from source; steps 04-15 change effective sample size from `1` to `0.75`. |
-| `.ini` | `ofp-sam-2026-BET-YFT-build-ini` and archived diagnostic inputs | Step-specific generated edits apply BET 2026 L-W, `LN(R0)` from 04 onward, FixM, tag/RR alignment, and MFCL-reader compatibility checks. |
-| `bet.reg_scaling` | `ofp-sam-2026-BET-YFT-frq-build` | Steps 08-15 use rows 53-72 from the global CPUE regional-scaling source; parest flags 77-81 define the matching 1965-1969 model-period window. |
-
-Current BET input sources from `origin/main`:
-
-| Source repo | Commit used |
-| --- | --- |
-| `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` |
-| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` |
-| `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` |
-
-For the exact source-vs-generated comparison, see
-[`docs/input-source-audit.md`](docs/input-source-audit.md).
-
-Latest refresh:
-
-| Source repo | BET files pulled into generated inputs |
-| --- | --- |
-| `ofp-sam-2026-BET-YFT-build-ini@386d169` | `BET/bet.2023.new.structure.ini`, `BET/bet.2026.ini`, `BET/ini.mix-period/bet.2026.mix-0.2.ini`, and related RR summary CSVs with corrected RR initial values. |
-| `ofp-sam-2026-BET-YFT-tag-prep@471b2fd` | `BET/bet.2023.new.structure-low.recaps.removed.tag`, `BET/bet.2026.low.recaps.removed.tag`, and related RR summary CSVs with corrected RR group initial values. |
-
-## Where To Look
-
-| Path | Use |
-| --- | --- |
-| `steps/<step_id>/README.md` | short step summary, generated input changes, controls, and checks |
-| `steps/<step_id>/input_manifest.csv` | source files, commits, and generated-input notes |
-| `steps/<step_id>/model/` | MFCL-ready model folder |
-| `docs/run-configuration.md` | Kflow/local-run settings and output layout |
-| `docs/input-source-audit.md` | concise source-vs-generated input comparison |
-| `docs/tag-reporting-groups.md` | short guide to MFCL tag reporting-rate inputs |
-| `R/prepare_bet_2026_step_inputs.R` | reproducible input-generation entry point |
-| `debugging/` | troubleshooting records |
-
-## Assessment Notes
-
-| Topic | Note |
-| --- | --- |
-| Regional scaling | Steps 08-15 use an active-window `bet.reg_scaling` matrix for periods 53-72. Native MFCL allocates the regional-scaling input to the flag-defined window and streams the compact file into that matrix. |
-| Effort creep | Steps 14-15 apply 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024 to index fisheries 29-33. |
-| Region maps | Steps 01-03 use the 2023 9-region asset; steps 04-15 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md). |
-| Tag reporting rates | MFCL reads the reporting-rate blocks in `bet.ini`; `tag_rep_map.R` is only a human-readable check. See [`docs/tag-reporting-groups.md`](docs/tag-reporting-groups.md). |
-| Length-weight | Step 02c changes BET L-W from the 2023 value `3.063397e-05 2.932384` to the bias-corrected 2026 value `3.073533e-05 2.932410`; later steps retain it. |
-| Tag input source | Steps 04-15 use BET tag/ini sources from `ofp-sam-2026-BET-YFT-build-ini@386d169` and `ofp-sam-2026-BET-YFT-tag-prep@471b2fd`. The refreshed source repos correct RR initial/group initial values; generated inputs still preserve the stepwise policies documented in each manifest. |
-| Tag mixing source | Steps 10-15 use `ofp-sam-2026-BET-YFT-build-ini@386d169` `BET/ini.mix-period/bet.2026.mix-0.2.ini`; source zero mixing periods for release groups 43 and 46 are raised to `1`, while `tag_flags(it,2)=0` is retained and RR/active/target/penalty cells are validated against positive recaptures. |
