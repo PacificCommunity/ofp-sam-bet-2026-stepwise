@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """Launch the isolated Step 12 OPR terminal-penalty/LF sensitivity flow.
 
-Each explicitly configured model gets one fit job.  The launcher then submits
-the queue-safe Hessian partition count (two parts for at most 50 selected
-models, otherwise one), one merge per model, and one final BET results job.
+Each explicitly configured model gets one fit job.  With ``--fits-only`` the
+launcher stops there so screening fits can be inspected before diagnostics are
+chosen.  Otherwise it submits the queue-safe Hessian partition count (two
+parts for at most 50 selected models, otherwise one), one merge per model, and
+one final BET results job.
 The Hessian merge publishes its diagnostic delta directly onto the originating
 fit, so no separate attachment job is created.
 
 Examples:
   python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py --dry-run
   python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py --dry-run --limit 1
+  python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py --fits-only
   python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py
   python3 scripts/launch_opr_terminal_penalty_lf_sensitivity.py --resume \
     --manifest work/<flow-group>-launch.json
@@ -41,7 +44,7 @@ DEFAULT_MODEL_REPO = "PacificCommunity/ofp-sam-bet-2026-stepwise"
 DEFAULT_BRANCH = "experiment/step12-opr-terminal-penalty-lf-sensitivity"
 GRID_CODE = "opr-terminal-penalty-lf"
 GRID_LABEL = "Step 12 OPR terminal-penalty and LF/selectivity"
-MANIFEST_SCHEMA = "bet-2026-opr-terminal-penalty-lf-launch-v2"
+MANIFEST_SCHEMA = "bet-2026-opr-terminal-penalty-lf-launch-v3"
 DEFAULT_MFCLKIT_REF = "5075c9a4ab5e14b4b725e4135deabfb474da3681"
 DEFAULT_MFCLSHINY_REF = "65cf0aff15f5fd85ce96fda8c5bd89e9e2a6afe7"
 DEFAULT_SUVA_HOST = "suvofpsubmit.corp.spc.int"
@@ -413,6 +416,7 @@ def fit_payload(
             "job_title": title,
             "job_description": description,
             "hessian_nsplit": args.hessian_nsplit,
+            "launch_mode": "fits-only" if args.fits_only else "full",
             "trigger_next": False,
             "compact_model_payload": True,
             "raw_mfcl_inputs_saved": True,
@@ -756,6 +760,7 @@ def load_or_create_manifest(
             "check_prefix": args.check_prefix,
             "model_source_repo": args.model_source_repo,
             "phase_convergence": args.phase_convergence,
+            "launch_mode": "fits-only" if args.fits_only else "full",
             "runtime_packages": runtime_packages(),
             "model_selection_signature": model_selection_signature(models),
         }
@@ -767,8 +772,9 @@ def load_or_create_manifest(
                 )
         if int(manifest.get("hessian_nsplit") or 0) != int(args.hessian_nsplit):
             raise RuntimeError("Resume manifest uses a different Hessian partition count.")
-        if manifest.get("hessian_merge_direct_overlay") is not True:
-            raise RuntimeError("Resume manifest is not a direct Hessian-overlay launch.")
+        expected_overlay = not bool(args.fits_only)
+        if manifest.get("hessian_merge_direct_overlay") is not expected_overlay:
+            raise RuntimeError("Resume manifest diagnostic-overlay mode does not match.")
         expected_submitter = {
             "host": args.remote_host,
             "user": args.remote_user,
@@ -793,12 +799,22 @@ def load_or_create_manifest(
         raise RuntimeError(
             f"Launch manifest already exists: {path}. Use --resume or choose a new --flow-group."
         )
+    fits_only = bool(args.fits_only)
+    expected_job_counts = {
+        "fits": len(models),
+        "hessians": 0 if fits_only else len(models) * args.hessian_nsplit,
+        "hessian_merges": 0 if fits_only else len(models),
+        "hessian_attaches": 0,
+        "results": 0 if fits_only else 1,
+        "total": len(models) if fits_only else len(models) * (2 + args.hessian_nsplit) + 1,
+    }
     manifest = {
         "schema": MANIFEST_SCHEMA,
         "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "branch": branch,
         "model_source_repo": args.model_source_repo,
         "phase_convergence": args.phase_convergence,
+        "launch_mode": "fits-only" if fits_only else "full",
         "runtime_packages": runtime_packages(),
         "model_selection_signature": model_selection_signature(models),
         "flow_group": args.flow_group,
@@ -806,16 +822,9 @@ def load_or_create_manifest(
         "results_task": args.results_task,
         "check_prefix": args.check_prefix,
         "hessian_nsplit": args.hessian_nsplit,
-        "hessian_merge_direct_overlay": True,
-        "results_parent_stage": "hessian_merge",
-        "expected_job_counts": {
-            "fits": len(models),
-            "hessians": len(models) * args.hessian_nsplit,
-            "hessian_merges": len(models),
-            "hessian_attaches": 0,
-            "results": 1,
-            "total": len(models) * (2 + args.hessian_nsplit) + 1,
-        },
+        "hessian_merge_direct_overlay": not fits_only,
+        "results_parent_stage": "none" if fits_only else "hessian_merge",
+        "expected_job_counts": expected_job_counts,
         "submitter": {
             "host": args.remote_host,
             "user": args.remote_user,
@@ -922,6 +931,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--remote-base-dir", default=DEFAULT_SUVA_BASE_DIR)
     parser.add_argument("--manifest", default="", help="Launch manifest; defaults under ignored work/.")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument(
+        "--fits-only",
+        action="store_true",
+        help="Submit only model fits; do not submit Hessians, merges, or results.",
+    )
     parser.add_argument("--skip-remote-branch-check", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
@@ -949,12 +963,16 @@ def main() -> int:
             raise SystemExit("Set KFLOW_API_TOKEN before submitting Kflow jobs.")
         if not args.skip_remote_branch_check:
             verify_remote_branch(branch)
-        for task in (
-            args.stepwise_task,
-            f"{args.check_prefix}-hessian",
-            f"{args.check_prefix}-hessian-merge",
-            args.results_task,
-        ):
+        tasks = [args.stepwise_task]
+        if not args.fits_only:
+            tasks.extend(
+                (
+                    f"{args.check_prefix}-hessian",
+                    f"{args.check_prefix}-hessian-merge",
+                    args.results_task,
+                )
+            )
+        for task in tasks:
             report_exists(base_url, token, task)
 
     manifest_path = (
@@ -984,6 +1002,9 @@ def main() -> int:
                 if not args.dry_run:
                     print(f"submitted fit {step}: job {fit_ref}")
                 persist_manifest(manifest_path, manifest, dry_run=args.dry_run)
+
+            if args.fits_only:
+                continue
 
             parts = hessian_part_map(entry, args.hessian_nsplit)
             for part in range(1, args.hessian_nsplit + 1):
@@ -1040,6 +1061,26 @@ def main() -> int:
             errors.append(f"{step}: {exc}")
             persist_manifest(manifest_path, manifest, dry_run=args.dry_run)
             print(f"ERROR {step}: {exc}", file=sys.stderr)
+
+    if args.fits_only:
+        manifest["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+        manifest["selected_model_count"] = len(models)
+        manifest["hessian_nsplit"] = args.hessian_nsplit
+        manifest["expected_total_job_count"] = len(models)
+        persist_manifest(manifest_path, manifest, dry_run=args.dry_run)
+        print(
+            f"OPR terminal-penalty/LF fit-only launch: {len(models)} models, "
+            f"convergence=1e{args.phase_convergence}, manifest={manifest_path}"
+            f"{' (preview only)' if args.dry_run else ''}"
+        )
+        if errors:
+            print(
+                f"{len(errors)} fit submission(s) had errors; rerun with --resume "
+                "and the same --manifest.",
+                file=sys.stderr,
+            )
+            return 1
+        return 0
 
     result_parent_refs = [
         job_number(manifest_entry(manifest, row["step_id"]), "hessian_merge")

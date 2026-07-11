@@ -50,6 +50,7 @@ def launch_args(**overrides):
         "check_prefix": launcher.DEFAULT_CHECK_PREFIX,
         "dry_run": False,
         "flow_group": "test-opr-terminal-penalty-lf",
+        "fits_only": False,
         "hessian_nsplit": 2,
         "kflow_url": "https://kflow.test",
         "limit": 0,
@@ -293,6 +294,30 @@ class ResultsPayloadTests(unittest.TestCase):
 
 
 class ManifestTests(unittest.TestCase):
+    def test_fit_only_manifest_records_only_fit_jobs(self):
+        args = launch_args(fits_only=True, phase_convergence="-3")
+        models = [model_row("12s01-a"), model_row("12s02-b")]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "launch.json"
+            manifest = launcher.load_or_create_manifest(
+                path, args, launcher.DEFAULT_BRANCH, models
+            )
+
+        self.assertEqual(manifest["launch_mode"], "fits-only")
+        self.assertFalse(manifest["hessian_merge_direct_overlay"])
+        self.assertEqual(manifest["results_parent_stage"], "none")
+        self.assertEqual(
+            manifest["expected_job_counts"],
+            {
+                "fits": 2,
+                "hessians": 0,
+                "hessian_merges": 0,
+                "hessian_attaches": 0,
+                "results": 0,
+                "total": 2,
+            },
+        )
+
     def test_new_manifest_has_no_attachment_jobs_and_correct_counts(self):
         args = launch_args()
         models = [model_row("12s01-a"), model_row("12s02-b")]
@@ -361,6 +386,13 @@ class ManifestTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 launcher.load_or_create_manifest(
                     path,
+                    launch_args(resume=True, fits_only=True),
+                    launcher.DEFAULT_BRANCH,
+                    models,
+                )
+            with self.assertRaises(RuntimeError):
+                launcher.load_or_create_manifest(
+                    path,
                     launch_args(resume=True),
                     launcher.DEFAULT_BRANCH,
                     list(reversed(models)),
@@ -393,6 +425,40 @@ class ManifestTests(unittest.TestCase):
 
 
 class MainFlowTests(unittest.TestCase):
+    def test_fit_only_preview_submits_all_74_fits_and_nothing_else(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "preview.json"
+            args = launch_args(
+                dry_run=True,
+                fits_only=True,
+                hessian_nsplit="auto",
+                manifest=str(path),
+                phase_convergence="-3",
+            )
+            calls = []
+
+            def submit(_url, _token, task, payload, _dry_run):
+                calls.append((task, payload))
+                return {"job_number": f"DRY-{len(calls)}", "status": "dry-run"}
+
+            with (
+                mock.patch.object(launcher, "parse_args", return_value=args),
+                mock.patch.object(launcher, "submit_or_preview", side_effect=submit),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                status = launcher.main()
+
+        self.assertEqual(status, 0)
+        self.assertFalse(path.exists())
+        self.assertEqual(len(calls), 74)
+        self.assertEqual({task for task, _payload in calls}, {launcher.DEFAULT_STEPWISE_TASK})
+        self.assertTrue(
+            all(payload["env"]["BET_PHASE10_11_CONVERGENCE"] == "-3" for _, payload in calls)
+        )
+        self.assertTrue(
+            all(payload["metadata"]["launch_mode"] == "fits-only" for _, payload in calls)
+        )
+
     def test_real_74_model_preview_builds_only_independent_fit_hessian_merge_chains(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "preview.json"

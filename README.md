@@ -52,6 +52,7 @@ The Kflow pipeline is:
 
 It runs on Suva with `tuna-flow:v2.2`. The default convergence is `1e-4`;
 shortlisted models can be rerun at `1e-5` without regenerating inputs.
+Use `--fits-only` to screen fits first and add selected Hessians later.
 
 Detailed rationale and interpretation are in
 [`docs/opr-terminal-penalty-lf-tag-sensitivity.md`](docs/opr-terminal-penalty-lf-tag-sensitivity.md).
