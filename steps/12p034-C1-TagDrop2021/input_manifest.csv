@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Removes the two 2021 release groups as a deletion diagnostic and synchronises TAG, FRQ, all MFCL 1007 tag sections, and reporting maps. Objective values are not directly comparable because the data differ."

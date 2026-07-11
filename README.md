@@ -40,6 +40,21 @@ traced without guessing.
 | `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
 | `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
 
+## Step 11/12 terminal-recruitment experiment
+
+The branch-specific Step 11/12 experiment contains 114 generated
+sensitivities plus the two unchanged parent models. It separates the OPR
+terminal-recruitment penalty, length-frequency/selectivity controls, and
+recent tag-data assumptions, including a targeted 2021 reporting-rate prior
+response, then runs an independent Hessian for every fit before building one
+MFCL Shiny results bundle. The generated rows are disabled in the normal `all`
+workflow and are selected only by the isolated launcher.
+
+See [`docs/opr-terminal-penalty-lf-tag-sensitivity.md`](docs/opr-terminal-penalty-lf-tag-sensitivity.md)
+for the model matrix, flag definitions, interpretation rules, public technical
+references, and local/Kflow commands. The machine-readable 114-model grid is
+[`docs/opr-terminal-penalty-lf-sensitivity-grid.csv`](docs/opr-terminal-penalty-lf-sensitivity-grid.csv).
+
 ## Names Used Here
 
 | Name | Meaning |

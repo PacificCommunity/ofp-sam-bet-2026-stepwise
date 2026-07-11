@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Adds the same single 2021 campaign reporting-rate parameter and reduces its prior penalty ten-fold, widening the prior SD from about 0.032 to about 0.10. This tests prior conflict while avoiding a high-dimensional release-by-fishery expansion."

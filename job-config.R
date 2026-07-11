@@ -171,3 +171,21 @@ stepwise_models <- data.frame(
   output_par = rep("", 17),
   stringsAsFactors = FALSE
 )
+
+# Generated sensitivity rows are disabled in the ordinary `all` workflow.
+# The isolated launcher selects them explicitly and opts in with
+# STEPWISE_ALLOW_DISABLED_SELECTED=true, preventing accidental full-grid runs.
+source(file.path("R", "step12_opr_terminal_penalty_lf_config.R"))
+sensitivity_rows <- opr_terminal_penalty_lf_job_rows()
+all_columns <- union(names(stepwise_models), names(sensitivity_rows))
+for (name in setdiff(all_columns, names(stepwise_models))) stepwise_models[[name]] <- ""
+for (name in setdiff(all_columns, names(sensitivity_rows))) sensitivity_rows[[name]] <- ""
+stepwise_models <- rbind(
+  stepwise_models[, all_columns, drop = FALSE],
+  sensitivity_rows[, all_columns, drop = FALSE]
+)
+
+stepwise_run$opr_terminal_penalty_lf_sensitivity_step_select <- paste(
+  opr_terminal_penalty_lf_run_step_ids(),
+  collapse = ","
+)

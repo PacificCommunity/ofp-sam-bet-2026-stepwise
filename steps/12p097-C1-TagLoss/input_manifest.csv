@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Applies a fixed continuous tag-loss rate of 0.021 per quarter to all releases (0.084/year divided across four model periods), based on an external bigeye double-tagging estimate. This transfer is diagnostic and should not replace a Pacific-specific estimate."

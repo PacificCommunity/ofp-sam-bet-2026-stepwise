@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/11-TimeVaryingCV/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Uses ordinary quarter-specific recruitment deviations and combines an eight-quarter terminal block with tag likelihood weight 0.1. This is a structural control for the OPR terminal response."

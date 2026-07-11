@@ -78,8 +78,11 @@ copy_model_source <- function(from, to, step_dir = "") {
   invisible(to)
 }
 
-copy_raw_mfcl_inputs <- function(from, to) {
+copy_raw_mfcl_inputs <- function(from, to, source_manifest_dir = from) {
   if (!dir.exists(from)) {
+    return(FALSE)
+  }
+  if (!dir.exists(source_manifest_dir)) {
     return(FALSE)
   }
   if (dir.exists(to)) {
@@ -87,8 +90,22 @@ copy_raw_mfcl_inputs <- function(from, to) {
   }
   dir.create(to, recursive = TRUE, showWarnings = FALSE)
   files <- list.files(from, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+  source_names <- basename(list.files(
+    source_manifest_dir,
+    all.files = TRUE,
+    no.. = TRUE,
+    full.names = TRUE
+  ))
+  # The source folder is the restart-input manifest. Copy the corresponding
+  # files from the patched working case, excluding fitted PAR files already
+  # embedded in model_payload.rds.
+  files <- files[
+    basename(files) %in% source_names &
+      !grepl("[.]par[0-9]*$", basename(files)) &
+      !dir.exists(files)
+  ]
   if (!length(files)) {
-    return(TRUE)
+    return(FALSE)
   }
   ok <- file.copy(files, to, recursive = TRUE, overwrite = TRUE, copy.date = TRUE)
   all(ok)
@@ -604,6 +621,14 @@ build_payload <- function(model_dir, step_id) {
 
   validate_payload_file <- function(method) {
     payload <- tryCatch(readRDS(payload_file), error = function(e) NULL)
+    has_par_artifact <- !is.null(tryCatch(payload$artifacts$files$par$bytes, error = function(e) NULL))
+    if (!isTRUE(has_par_artifact)) {
+      stop(
+        "model_payload.rds for ", step_id,
+        " does not contain the fitted PAR artifact required by downstream diagnostics.",
+        call. = FALSE
+      )
+    }
     has_rep_object <- !is.null(tryCatch(payload$data$RepOut, error = function(e) NULL))
     has_rep_artifact <- !is.null(tryCatch(payload$artifacts$files$rep$bytes, error = function(e) NULL))
     if (!isTRUE(has_rep_object || has_rep_artifact)) {
@@ -666,6 +691,12 @@ save_final_par <- truthy(env("STEPWISE_SAVE_FINAL_PAR", "false"), default = FALS
 save_raw_mfcl_inputs <- truthy(env("STEPWISE_SAVE_RAW_MFCL_INPUTS", "false"), default = FALSE)
 step_select <- strsplit(env("STEP_SELECT", ""), ",", fixed = TRUE)[[1]]
 step_select <- trimws(step_select[nzchar(trimws(step_select))])
+explicit_step_selection <- length(step_select) &&
+  !any(tolower(step_select) %in% c("all", "*"))
+allow_disabled_selected <- truthy(
+  env("STEPWISE_ALLOW_DISABLED_SELECTED", "false"),
+  default = FALSE
+)
 default_input_dir <- env("DEFAULT_INPUT_DIR", "")
 
 config_path <- env("CONFIG_R", "job-config.R")
@@ -789,7 +820,9 @@ for (i in seq_len(nrow(step_table))) {
   cfg <- modifyList(cfg, row_to_config(step_table, i))
   cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB"))
   step_id <- basename(step_dir)
-  if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
+  selected_disabled_opt_in <- isTRUE(explicit_step_selection) &&
+    isTRUE(allow_disabled_selected) && step_id %in% step_select
+  if (!truthy(cfg$ENABLED %||% "true", default = TRUE) && !selected_disabled_opt_in) {
     message("Skipping disabled step ", step_id)
     next
   }
@@ -969,7 +1002,15 @@ for (i in seq_len(nrow(step_table))) {
   raw_mfcl_inputs_saved <- FALSE
   if (isTRUE(save_raw_mfcl_inputs)) {
     raw_mfcl_inputs_dir <- file.path(step_out, "mfcl-inputs")
-    raw_mfcl_inputs_saved <- copy_raw_mfcl_inputs(model_source, raw_mfcl_inputs_dir)
+    # Save the patched restart inputs, not the unmodified thin-step parent.
+    # The fitted par is already embedded in model_payload.rds, so it is not
+    # duplicated here. Diagnostic jobs can reconstruct the exact native case
+    # while their delta overlays remain small.
+    raw_mfcl_inputs_saved <- copy_raw_mfcl_inputs(
+      model_dir,
+      raw_mfcl_inputs_dir,
+      source_manifest_dir = model_source
+    )
     if (!isTRUE(raw_mfcl_inputs_saved)) {
       warning("Could not save raw MFCL inputs for ", step_id, call. = FALSE)
       raw_mfcl_inputs_dir <- ""
@@ -988,7 +1029,9 @@ for (i in seq_len(nrow(step_table))) {
     "phase-progress.csv",
     "phase-process-summary.csv",
     "doitall-switches.csv",
-    "post-switch-summary.csv"
+    "post-switch-summary.csv",
+    "sensitivity-input-hashes.csv",
+    "sensitivity-spec.csv"
   ))
   for (file in keep) {
     src <- file.path(model_dir, file)

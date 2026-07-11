@@ -1,0 +1,4 @@
+"role","file","source","note"
+"parent_model","steps/12-OrthogonalPoly/model","current branch","Copied at runtime; no fitted parent PAR is reused."
+"runtime_patch","patch.R","current branch","Applies documented controls after staging and before -makepar."
+"model_specification","R/step12_opr_terminal_penalty_lf_config.R","current branch","Scales only the tag likelihood to 0.030 with parest_flag(177)=30. Reporting-rate priors remain active, so this is a dose-response diagnostic rather than a literal no-tag model."

@@ -9,6 +9,8 @@
 *.Rproj
 .Rproj.user
 .positai
+__pycache__/
+*.py[cod]
 /.quarto/
 /.quarto-cache/
 /*.html

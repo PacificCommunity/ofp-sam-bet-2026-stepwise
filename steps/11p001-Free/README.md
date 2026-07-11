@@ -1,0 +1,24 @@
+# 11p001-Free
+
+Uses ordinary quarter-specific recruitment deviations and estimates every terminal recruitment deviation. This is a structural control for the OPR terminal response.
+
+## Controls
+
+- Recruitment: ordinary quarterly deviations; final fixed block = 0 quarter(s).
+- Arithmetic-mean terminal treatment: `false`.
+- Selectivity profile: `baseline`.
+- Tag likelihood scalar flag: `parest_flag(177)=0`.
+- Tag observation model: `negative_binomial`; estimate pooled dispersion: `false`.
+- Tag-release deletion: `none`; 2021 reporting-rate scope: `shared`.
+- Mixing-period reporting treatment: `inherited`; dominant 2021 mixing period override: `none`.
+- Long-term tag loss: `none`.
+
+## Interpretation
+
+This is a sensitivity, not an accepted assessment configuration. Compare quarterly recruitment (including the quarter immediately outside the terminal window), tag observed/predicted residuals by release/fishery/year/time-at-liberty, length fits for fisheries 12/17/20/26/28 and their shared groups, objective components, population scale, gradients, and Hessian eigen diagnostics.
+
+Raw objectives are not directly comparable when the tag dataset or tag likelihood family differs. A reduced spike is evidence about the source of model pressure; it is not by itself a reason to discard data or select a model.
+
+## Reproducibility
+
+The runner copies `steps/11-TimeVaryingCV/model`, applies `patch.R`, creates a new `00.par` with MFCL, and stores the compact payload, input hashes/specification, and one exact patched restart-input set with the base fit. Diagnostic delta outputs do not duplicate that restart set; parent data are not committed in this thin folder.
