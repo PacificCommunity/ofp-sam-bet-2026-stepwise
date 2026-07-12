@@ -60,7 +60,7 @@ Fishery-level LF/selectivity review on the unchanged 04-NewStructure inputs.
 | # | Note |
 | --- | --- |
 | 1 | Compare directly with 04-NewStructure to isolate the likelihood and fit effect of the reviewed LF/selectivity controls. |
-| 2 | Steps 05-15 inherit this substep; OPR and the terminal-recruitment penalty are not activated until Step 12. |
+| 2 | Steps 05-14 inherit this substep; OPR and the terminal-recruitment penalty are not activated until Step 12. |
 
 ## Checks
 

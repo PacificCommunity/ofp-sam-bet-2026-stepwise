@@ -5,8 +5,8 @@ the BET/YFT 2026 assessment work.
 
 The screening applied OPR settings to final converged fits and compared models
 with AIC. The BET screening used the 4R model, not this final 5-region stepwise
-path, but the best-ranked BET OPR setting is carried forward here as the current
-stepwise OPR choice.
+path. The table is historical context; the current reviewed PDH lineage uses a
+72-degree year effect.
 
 ## BET Result Used
 
@@ -19,9 +19,9 @@ stepwise OPR choice.
 
 ## Applied In Stepwise
 
-`12-OrthogonalPoly` applies the BET rank-1 `69-01-50-50` setting in PHASE 3:
+`12-OrthogonalPoly` applies the reviewed PDH `72-01-50-50` setting in PHASE 3:
 
-- `1 155 69`: year effect.
+- `1 155 72`: year effect.
 - `1 217 1`: season effect.
 - `1 216 50`: region effect.
 - `1 218 50`: region-season interaction effect.
@@ -32,7 +32,6 @@ stepwise OPR choice.
 - `2 70 0`, `2 71 0`, `2 178 0`, and `-100000 1:5 0`: regional recruitment-deviation/distribution controls turned off at the OPR phase. The 4-region screening example turns off regions 1-4; this 5-region step turns off regions 1-5.
 - `1 1 500`: PHASE 3 function-evaluation setting from the screening `doitall` example.
 
-`parest_flag(221)` is not part of the active OPR setup. The current MFCL source
-has the old `221` year-effect override in a commented-out block, and the manual
-appendix marks it as obsolete. The active year-degree control is
-`parest_flag(155)`.
+`parest_flag(221)=72` is retained for reference-PAR compatibility, but the
+current MFCL source does not use it as the active year-degree control. That
+control is `parest_flag(155)`.

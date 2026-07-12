@@ -284,9 +284,8 @@ reviewed_steps=(
   10-TagMixingKS
   11-TimeVaryingCV
   12-OrthogonalPoly
-  13-LengthBasedSel
-  14-EffortCreep
-  15-DataWeighting
+  13-EffortCreep
+  14-DataWeighting
 )
 
 pre_opr_steps=(
@@ -308,10 +307,17 @@ pre_opr_steps=(
 
 opr_steps=(
   12-OrthogonalPoly
-  13-LengthBasedSel
-  14-EffortCreep
-  15-DataWeighting
+  13-EffortCreep
+  14-DataWeighting
 )
+
+for obsolete_step in 13-LengthBasedSel 14-EffortCreep 15-DataWeighting; do
+  if [[ -e "$steps_root/$obsolete_step" ]]; then
+    fail "$obsolete_step: obsolete directory remains after renumbering"
+  else
+    pass
+  fi
+done
 
 for step in "${legacy_steps[@]}"; do
   if require_doitall "$step"; then
@@ -353,6 +359,38 @@ for step in "${opr_steps[@]}"; do
     fi
   fi
 done
+
+for step in 13-EffortCreep 14-DataWeighting; do
+  if require_doitall "$step"; then
+    assert_exact_setting "$step" "$doitall_path" -999 26 2 'global fish flag 26'
+  fi
+done
+
+if require_doitall 13-EffortCreep; then
+  assert_exact_setting 13-EffortCreep "$doitall_path" -999 49 20 'global LF divisor'
+  assert_exact_setting 13-EffortCreep "$doitall_path" -999 50 20 'global WF divisor'
+fi
+
+if require_doitall 14-DataWeighting; then
+  assert_exact_setting 14-DataWeighting "$doitall_path" -999 49 40 'global LF divisor'
+  assert_exact_setting 14-DataWeighting "$doitall_path" -999 50 40 'global WF divisor'
+fi
+
+if cmp -s \
+  "$steps_root/12-OrthogonalPoly/model/bet.frq" \
+  "$steps_root/13-EffortCreep/model/bet.frq"; then
+  fail "13-EffortCreep: bet.frq is unchanged from Step 12; effort creep was not applied"
+else
+  pass
+fi
+
+if cmp -s \
+  "$steps_root/13-EffortCreep/model/bet.frq" \
+  "$steps_root/14-DataWeighting/model/bet.frq"; then
+  pass
+else
+  fail "14-DataWeighting: bet.frq does not retain the Step 13 effort-creep input"
+fi
 
 for file in bet.frq bet.ini bet.tag bet.age_length; do
   if cmp -s \

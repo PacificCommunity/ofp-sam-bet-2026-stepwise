@@ -14,7 +14,8 @@ documented `doitall.sh` controls and fitted parameters.
 | `04a-SelectivityReview` | Adds the five reviewed fishery-level LF/selectivity controls without changing any data input. |
 | `05`-`11` | Inherit `04a` and retain each step's original single change. |
 | `12-OrthogonalPoly` | Adds OPR `72-01-50-50`, a two-calendar-year terminal window, and the terminal-recruitment penalty in final PHASE 11. |
-| `13`-`15` | Inherit the reconstructed Step 12 controls and retain each later step's original change. |
+| `13-EffortCreep` | Inherits Step 12 directly, keeps fish flag 26 at 2, and applies effort creep. The former length-based-selectivity test is omitted. |
+| `14-DataWeighting` | Inherits the new Step 13 and adds data weighting, still with fish flag 26 at 2. |
 
 ## Reviewed LF/selectivity controls
 

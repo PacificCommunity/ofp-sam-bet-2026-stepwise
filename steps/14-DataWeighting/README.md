@@ -1,4 +1,4 @@
-# 15 DataWeighting
+# 14 DataWeighting
 
 Initial selective data-weighting step after the effort-creep model.
 
@@ -6,16 +6,17 @@ Initial selective data-weighting step after the effort-creep model.
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/15-DataWeighting/model` |
+| Step folder | `steps/14-DataWeighting/model` |
 | Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Uses the same effort-creep `.frq`, mix-period `.ini`, tag, and CAAL as 14-EffortCreep. |
-| 2 | Keeps time-varying CPUE CV, reviewed OPR, terminal-recruitment penalty, and length-based selectivity controls. |
-| 3 | Applies the currently implemented size-composition data-weighting control change. |
+| 1 | Uses the same effort-creep `.frq`, mix-period `.ini`, tag, and CAAL as 13-EffortCreep. |
+| 2 | Keeps time-varying CPUE CV, reviewed OPR, terminal-recruitment penalty, and reviewed fishery-level selectivity controls. |
+| 3 | Keeps fish flag 26 at 2, so the omitted length-based-selectivity test is not reintroduced. |
+| 4 | Applies the currently implemented size-composition data-weighting control change. |
 
 ## Inputs
 
@@ -52,13 +53,14 @@ Initial selective data-weighting step after the effort-creep model.
 
 | # | Control |
 | --- | --- |
-| 1 | 14-EffortCreep controls are retained. |
-| 2 | `-999 49 40` and `-999 50 40` replace the global LF/WF divisor-20 settings. |
-| 3 | Fishery-specific divisor-40 settings inherited from the 5-region controls are retained. |
-| 4 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
-| 5 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
-| 6 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
-| 7 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 1 | 13-EffortCreep controls are retained. |
+| 2 | `-999 26 2` remains unchanged. |
+| 3 | `-999 49 40` and `-999 50 40` replace the global LF/WF divisor-20 settings. |
+| 4 | Fishery-specific divisor-40 settings inherited from the 5-region controls are retained. |
+| 5 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
+| 6 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
+| 7 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
+| 8 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
 
 ## Run Notes
 

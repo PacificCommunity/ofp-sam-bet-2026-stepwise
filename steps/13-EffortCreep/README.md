@@ -1,22 +1,23 @@
-# 14 EffortCreep
+# 13 EffortCreep
 
-Apply the lower effort-creep level in the diagnostic model path.
+Apply effort creep directly after Step 12 without the length-based-selectivity test.
 
 ## Snapshot
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/14-EffortCreep/model` |
+| Step folder | `steps/13-EffortCreep/model` |
 | Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Uses 13-LengthBasedSel controls and applies an effort-creep transform to index fisheries 29-33 in `bet.frq`. |
+| 1 | Uses the Step 12 inputs and applies an effort-creep transform to index fisheries 29-33 in `bet.frq`. |
 | 2 | Retains the `72-01-50-50` OPR setting, final-PHASE-11 terminal-recruitment penalty, and time-varying CPUE CV controls. |
-| 3 | The effort-creep transform multiplies index-fishery effort by a piecewise linear multiplier: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024. |
-| 4 | Only positive index-fishery effort values are changed; extraction fisheries and size compositions are untouched. |
+| 3 | Retains the reviewed fishery-level selectivity controls but omits the former length-based-selectivity step; fish flag 26 remains 2. |
+| 4 | The effort-creep transform multiplies index-fishery effort by a piecewise linear multiplier: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024. |
+| 5 | Only positive index-fishery effort values are changed; extraction fisheries and size compositions are untouched. |
 
 ## Inputs
 
@@ -53,12 +54,13 @@ Apply the lower effort-creep level in the diagnostic model path.
 
 | # | Control |
 | --- | --- |
-| 1 | 13-LengthBasedSel controls are retained. |
-| 2 | No extra MFCL flag is used for effort creep; the change is in the index-fishery effort values in `bet.frq`. |
-| 3 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
-| 4 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
-| 5 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
-| 6 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 1 | 12-OrthogonalPoly controls are retained, including the reviewed fishery-level selectivity settings. |
+| 2 | `-999 26 2` is retained; the omitted length-based-selectivity test is not inherited. |
+| 3 | No extra MFCL flag is used for effort creep; the change is in the index-fishery effort values in `bet.frq`. |
+| 4 | `bet.reg_scaling` starts in PHASE 5; flags 77-81 configure the regional-scaling MVN prior with weight 50 (approximately CV 0.1). |
+| 5 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
+| 6 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
+| 7 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
 
 ## Run Notes
 
@@ -74,5 +76,5 @@ Apply the lower effort-creep level in the diagnostic model path.
 
 | # | Check |
 | --- | --- |
-| 1 | After fitting, review index residuals and implied CPUE scaling against 13-LengthBasedSel. |
+| 1 | After fitting, review index residuals and implied CPUE scaling against 12-OrthogonalPoly. |
 | 2 | Local MFCL `-makepar` smoke can still report nonzero tag recapture timing or fishery-realization warnings; review upstream tag prep before final production runs. |

@@ -56,7 +56,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 
 | # | Control |
 | --- | --- |
-| 1 | This step is the 5-region control template for steps 05-15. |
+| 1 | This step is the 5-region control template for steps 05-14. |
 | 2 | MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed. |
 | 3 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
 

@@ -110,8 +110,8 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   1 111 4     # set likelihood function for tags to negative binomial
   1 141 3     # set likelihood function for LF data to normal
   1 139 3     # set likelihood function for WF data to normal
-  -999 49 20  # divide LF sample sizes by 20
-  -999 50 20  # divide WF sample sizes by 20
+  -999 49 40  # divide LF sample sizes by 40
+  -999 50 40  # divide WF sample sizes by 40
 # Additional LF/WF sample-size reductions retained from the inherited setup.
 # Index fisheries 29-33 are included; extraction labels need the 03 fishery map.
    -1 49 40   -1 50 40
@@ -170,7 +170,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -33 32 21  # Index R5
 # Selectivity settings
   -999 3 37  # all selectivities equal for age class 37 and older
-  -999 26 3  # use length-based selectivity
+  -999 26 2  # set length-dependent selectivity option
   -999 57 3  # uses cubic spline selectivity
   -999 61 5  # with 5 nodes for cubic spline
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.

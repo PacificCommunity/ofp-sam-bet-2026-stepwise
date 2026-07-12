@@ -7,6 +7,10 @@
 BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
 model folder with a compact README and input manifest.
 
+This branch omits the former `13-LengthBasedSel` test. Effort creep follows
+Step 12 directly as `13-EffortCreep`, and data weighting follows it as
+`14-DataWeighting`; both retain fish flag 26 at 2.
+
 ## Step Map
 
 Each row is one runnable Kflow model. Lettered rows are deliberate substeps:
@@ -30,9 +34,8 @@ traced without guessing.
 | `10-TagMixingKS` | Tag mixing | Uses release-specific mixing periods from the KS 0.2 build. | 09. |
 | `11-TimeVaryingCV` | CPUE CV | Adds time-varying CPUE CV. | 10. |
 | `12-OrthogonalPoly` | Recruitment | Applies OPR `72-01-50-50` and the terminal-recruitment penalty in final PHASE 11. | 11. |
-| `13-LengthBasedSel` | Selectivity | Adds length-based selectivity. | 12. |
-| `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
-| `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
+| `13-EffortCreep` | Effort creep | Applies agreed effort creep while keeping the Step 12 selectivity form (global fish flag 26 = 2). | 12. |
+| `14-DataWeighting` | Weighting | First data-weighting run, still without the omitted length-based-selectivity test. | 13. |
 
 ## Substep Logic
 
@@ -40,7 +43,7 @@ traced without guessing.
 | --- | --- | --- |
 | `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
 | `04` structure/selectivity | `04`, `04a` | Separates the new 5-region/33-fishery structure from the reviewed fishery-level LF/selectivity controls. |
-| `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
+| `05`-`14` | one row each | Each row adds one later assessment change on top of the selected baseline; the former length-based-selectivity step is omitted. |
 
 ## Names Used Here
 
@@ -49,7 +52,7 @@ traced without guessing.
 | 2023 assessment replication input set | The archived 2023 BET replication model inputs stored in `ofp-sam-2026-BET/mfcl/inputs/2023_rep`. |
 | MFCL 1003 ini | Older ini layout with no explicit `# tag flags` block; tag mixing is still set in `doitall.sh`. |
 | MFCL 1007 ini | Newer ini layout with explicit `# tag flags`, tag shed rates, and reporting-rate matrix sections. |
-| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. Set `-3` for quick checks or `-5` for stricter production reruns; it applies to every selected step/substep. |
+| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. This branch defaults to `-4`; set `-5` for a stricter production rerun. It applies to every selected step/substep. |
 
 ## Source Inputs And Generated Edits
 
@@ -59,11 +62,11 @@ edit note is in `steps/<step_id>/input_manifest.csv`.
 
 | File | Source repo | Generated edits |
 | --- | --- | --- |
-| `.frq` | `ofp-sam-2026-BET-YFT-frq-build` | Copied exactly except steps 14-15, where index-fishery effort creep is applied. |
+| `.frq` | `ofp-sam-2026-BET-YFT-frq-build` | Copied exactly except steps 13-14, where index-fishery effort creep is applied. |
 | `.tag` | `ofp-sam-2026-BET-YFT-tag-prep` | Copied exactly. `tag_rep_map.R` is only an audit file. |
-| `.age_length` | `ofp-sam-2026-BET-YFT-age-length-build` | Records copied from source; steps 04-15 change effective sample size from `1` to `0.75`. |
+| `.age_length` | `ofp-sam-2026-BET-YFT-age-length-build` | Records copied from source; steps 04-14 change effective sample size from `1` to `0.75`. |
 | `.ini` | `ofp-sam-2026-BET-YFT-build-ini` and archived diagnostic inputs | Step-specific generated edits apply BET 2026 L-W, `LN(R0)` from 04 onward, FixM, tag/RR alignment, and MFCL-reader compatibility checks. |
-| `bet.reg_scaling` | `ofp-sam-2026-BET-YFT-frq-build` | Steps 08-15 use rows 53-72 from the global CPUE regional-scaling source; parest flags 77-81 define the matching 1965-1969 model-period window. |
+| `bet.reg_scaling` | `ofp-sam-2026-BET-YFT-frq-build` | Steps 08-14 use rows 53-72 from the global CPUE regional-scaling source; parest flags 77-81 define the matching 1965-1969 model-period window. |
 
 Current BET input sources from `origin/main`:
 
@@ -102,10 +105,11 @@ Latest refresh:
 
 | Topic | Note |
 | --- | --- |
-| Regional scaling | Steps 08-15 use an active-window `bet.reg_scaling` matrix for periods 53-72. Native MFCL allocates the regional-scaling input to the flag-defined window and streams the compact file into that matrix. |
-| Effort creep | Steps 14-15 apply 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024 to index fisheries 29-33. |
-| Region maps | Steps 01-03 use the 2023 9-region asset; steps 04-15 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md). |
+| Regional scaling | Steps 08-14 use an active-window `bet.reg_scaling` matrix for periods 53-72. Native MFCL allocates the regional-scaling input to the flag-defined window and streams the compact file into that matrix. |
+| Effort creep | Steps 13-14 apply 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024 to index fisheries 29-33. |
+| Length-based selectivity | The former Step 13 test is omitted; Steps 13-14 inherit Step 12 with global fish flag 26 kept at 2. |
+| Region maps | Steps 01-03 use the 2023 9-region asset; steps 04-14 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md). |
 | Tag reporting rates | MFCL reads the reporting-rate blocks in `bet.ini`; `tag_rep_map.R` is only a human-readable check. See [`docs/tag-reporting-groups.md`](docs/tag-reporting-groups.md). |
 | Length-weight | Step 02c changes BET L-W from the 2023 value `3.063397e-05 2.932384` to the bias-corrected 2026 value `3.073533e-05 2.932410`; later steps retain it. |
-| Tag input source | Steps 04-15 use BET tag/ini sources from `ofp-sam-2026-BET-YFT-build-ini@386d169` and `ofp-sam-2026-BET-YFT-tag-prep@471b2fd`. The refreshed source repos correct RR initial/group initial values; generated inputs still preserve the stepwise policies documented in each manifest. |
-| Tag mixing source | Steps 10-15 use `ofp-sam-2026-BET-YFT-build-ini@386d169` `BET/ini.mix-period/bet.2026.mix-0.2.ini`; source zero mixing periods for release groups 43 and 46 are raised to `1`, while `tag_flags(it,2)=0` is retained and RR/active/target/penalty cells are validated against positive recaptures. |
+| Tag input source | Steps 04-14 use BET tag/ini sources from `ofp-sam-2026-BET-YFT-build-ini@386d169` and `ofp-sam-2026-BET-YFT-tag-prep@471b2fd`. The refreshed source repos correct RR initial/group initial values; generated inputs still preserve the stepwise policies documented in each manifest. |
+| Tag mixing source | Steps 10-14 use `ofp-sam-2026-BET-YFT-build-ini@386d169` `BET/ini.mix-period/bet.2026.mix-0.2.ini`; source zero mixing periods for release groups 43 and 46 are raised to `1`, while `tag_flags(it,2)=0` is retained and RR/active/target/penalty cells are validated against positive recaptures. |

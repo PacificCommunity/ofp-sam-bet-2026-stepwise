@@ -8,9 +8,9 @@ This file keeps the operational Kflow/local-run details out of the root README.
 
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
-| `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-stepwise-v2` | Kflow group label used to connect stepwise, results, and report jobs. |
-| `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
+| `default_step_select` | `13-EffortCreep,14-DataWeighting` | Model selection used when `STEP_SELECT` is not supplied. |
+| `flow_group` | `bet-2026-stepwise-pdh-skip-lengthsel` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `trigger_next` | `false` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.2` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 | `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
@@ -43,9 +43,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `10-TagMixingKS` | `TRUE` | 10-TagMixing | 10a | release-specific tag mixing periods | Tag mixing KS | 10 Tag mixing KS | `10-tagmixingks` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `11-TimeVaryingCV` | `TRUE` | 11-TimeVaryingCV | 11a | time-varying CPUE CV | Time-varying CV | 11 Time-varying CV | `11-timevaryingcv` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `12-OrthogonalPoly` | `TRUE` | 12-OrthogonalPoly | 12a | orthogonal-polynomial recruitment | Orthogonal polynomial | 12 Orthogonal polynomial | `12-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
-| `13-LengthBasedSel` | `TRUE` | 13-LengthBasedSel | 13a | length-based selectivity | Length-based selectivity | 13 Length-based selectivity | `13-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
-| `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
-| `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
+| `13-EffortCreep` | `TRUE` | 13-EffortCreep | 13a | effort creep without length-based selectivity | Effort creep | 13 Effort creep | `13-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
+| `14-DataWeighting` | `TRUE` | 14-DataWeighting | 14a | data weighting without length-based selectivity | Data weighting | 14 Data weighting | `14-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 
 
 ## Folder Checks
@@ -69,16 +68,15 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `10-TagMixingKS` | `steps/10-TagMixingKS/model` | `exists` |
 | `11-TimeVaryingCV` | `steps/11-TimeVaryingCV/model` | `exists` |
 | `12-OrthogonalPoly` | `steps/12-OrthogonalPoly/model` | `exists` |
-| `13-LengthBasedSel` | `steps/13-LengthBasedSel/model` | `exists` |
-| `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
-| `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
+| `13-EffortCreep` | `steps/13-EffortCreep/model` | `exists` |
+| `14-DataWeighting` | `steps/14-DataWeighting/model` | `exists` |
 
 
 ## Useful Kflow Config
 
 | Field | Typical value | Purpose |
 | --- | --- | --- |
-| `STEP_SELECT` | `15-DataWeighting` | Run one model folder. |
+| `STEP_SELECT` | `14-DataWeighting` | Run one model folder. |
 | `STEP_SELECT` | `08-RegionalCPUE,09-NewOtoliths` | Run selected model folders. |
 | `STEP_SELECT` | `all` | Run every enabled row. |
 | `MFCL_LIVE_LOG` | `true` | Stream MFCL output into the Kflow log. |

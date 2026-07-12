@@ -670,7 +670,7 @@ write_readme(
     "input_manifest.csv" = "machine-readable source/input notes with source commits"
   ),
   c(
-    "This step is the 5-region control template for steps 05-15.",
+    "This step is the 5-region control template for steps 05-14.",
     "Generated `.frq` files include region locations for every fishery, including index fisheries.",
     "MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
@@ -784,7 +784,7 @@ write_readme(
   ),
   run_notes = c(
     "Compare directly with 04-NewStructure to isolate the likelihood and fit effect of the reviewed LF/selectivity controls.",
-    "Steps 05-15 inherit this substep; OPR and the terminal-recruitment penalty are not activated until Step 12."
+    "Steps 05-14 inherit this substep; OPR and the terminal-recruitment penalty are not activated until Step 12."
   ),
   outstanding = c(
     "Confirm the intended LF fit improvement before promoting the settings beyond this reconstruction branch."
@@ -1177,43 +1177,7 @@ make_step(
 )
 
 make_step(
-  step_id = "13-LengthBasedSel",
-  frq_source = frq_regional_2024,
-  ini_source = mix_ini,
-  tag_source = new_tag,
-  age_source = new_age,
-  reg_scaling_source = reg_scaling_source,
-  mix_from_ini = TRUE,
-  retain_reporting_rates_during_mixing = TRUE,
-  tag_reporting_cell_repairs = fishery19_reporting_rate_repair,
-  doitall_edits = list(time_varying_cv = TRUE, opr = TRUE, size_based_selectivity = TRUE),
-  title = "13 LengthBasedSel",
-  summary = "Length-based selectivity test after the OPR step.",
-  bullets = c(
-    "Uses the same inputs as 12-OrthogonalPoly.",
-    "Retains time-varying CPUE CV, reviewed OPR, and terminal-recruitment penalty controls.",
-    "Sets fish flag 26 from 2 to 3 in `doitall.sh` for the length-based selectivity test."
-  ),
-  input_notes = c(
-    "bet.frq" = paste0("`", basename(frq_regional_2024), "`, full 2024 with regional CPUE"),
-    "bet.ini" = paste("`bet.2026.mix-0.2.ini`,", fixm_age_par_note),
-    "bet.tag" = latest_2026_tag_note,
-    "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
-  ),
-  control_notes = c(
-    "12-OrthogonalPoly controls are retained.",
-    "`-999 26 3` is applied for length-based selectivity."
-  ),
-  run_notes = c(
-    mix_period_alignment_run_notes,
-    "The step-specific change after OPR is limited to fish flag 26: `doitall.sh` sets `-999 26 3`."
-  ),
-  input_changes = input_changes_mix_period,
-  outstanding = c("Confirm with the modelling group whether BET should keep the same flag-26 setting after the test fit.")
-)
-
-make_step(
-  step_id = "14-EffortCreep",
+  step_id = "13-EffortCreep",
   frq_source = frq_regional_2024,
   ini_source = mix_ini,
   tag_source = new_tag,
@@ -1223,12 +1187,13 @@ make_step(
   mix_from_ini = TRUE,
   retain_reporting_rates_during_mixing = TRUE,
   tag_reporting_cell_repairs = fishery19_reporting_rate_repair,
-  doitall_edits = list(time_varying_cv = TRUE, opr = TRUE, size_based_selectivity = TRUE),
-  title = "14 EffortCreep",
-  summary = "Apply the lower effort-creep level in the diagnostic model path.",
+  doitall_edits = list(time_varying_cv = TRUE, opr = TRUE),
+  title = "13 EffortCreep",
+  summary = "Apply effort creep directly after Step 12 without the length-based-selectivity test.",
   bullets = c(
-    "Uses 13-LengthBasedSel controls and applies an effort-creep transform to index fisheries 29-33 in `bet.frq`.",
+    "Uses the Step 12 inputs and applies an effort-creep transform to index fisheries 29-33 in `bet.frq`.",
     "Retains the `72-01-50-50` OPR setting, final-PHASE-11 terminal-recruitment penalty, and time-varying CPUE CV controls.",
+    "Retains the reviewed fishery-level selectivity controls but omits the former length-based-selectivity step; fish flag 26 remains 2.",
     "The effort-creep transform multiplies index-fishery effort by a piecewise linear multiplier: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024.",
     "Only positive index-fishery effort values are changed; extraction fisheries and size compositions are untouched."
   ),
@@ -1239,7 +1204,8 @@ make_step(
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
-    "13-LengthBasedSel controls are retained.",
+    "12-OrthogonalPoly controls are retained, including the reviewed fishery-level selectivity settings.",
+    "`-999 26 2` is retained; the omitted length-based-selectivity test is not inherited.",
     "No extra MFCL flag is used for effort creep; the change is in the index-fishery effort values in `bet.frq`."
   ),
   run_notes = c(
@@ -1247,11 +1213,11 @@ make_step(
     "The effort-creep `.frq` is generated from the full 2024 regional CPUE source by changing only positive effort values for index fisheries 29-33."
   ),
   input_changes = input_changes_effort_creep,
-  outstanding = c("After fitting, review index residuals and implied CPUE scaling against 13-LengthBasedSel.")
+  outstanding = c("After fitting, review index residuals and implied CPUE scaling against 12-OrthogonalPoly.")
 )
 
 make_step(
-  step_id = "15-DataWeighting",
+  step_id = "14-DataWeighting",
   frq_source = frq_regional_2024,
   ini_source = mix_ini,
   tag_source = new_tag,
@@ -1264,14 +1230,14 @@ make_step(
   doitall_edits = list(
     time_varying_cv = TRUE,
     opr = TRUE,
-    size_based_selectivity = TRUE,
     data_weighting = TRUE
   ),
-  title = "15 DataWeighting",
+  title = "14 DataWeighting",
   summary = "Initial selective data-weighting step after the effort-creep model.",
   bullets = c(
-    "Uses the same effort-creep `.frq`, mix-period `.ini`, tag, and CAAL as 14-EffortCreep.",
-    "Keeps time-varying CPUE CV, reviewed OPR, terminal-recruitment penalty, and length-based selectivity controls.",
+    "Uses the same effort-creep `.frq`, mix-period `.ini`, tag, and CAAL as 13-EffortCreep.",
+    "Keeps time-varying CPUE CV, reviewed OPR, terminal-recruitment penalty, and reviewed fishery-level selectivity controls.",
+    "Keeps fish flag 26 at 2, so the omitted length-based-selectivity test is not reintroduced.",
     "Applies the currently implemented size-composition data-weighting control change."
   ),
   input_notes = c(
@@ -1281,7 +1247,8 @@ make_step(
     "bet.age_length" = "`bet.2026.age_length` (updated CAAL)"
   ),
   control_notes = c(
-    "14-EffortCreep controls are retained.",
+    "13-EffortCreep controls are retained.",
+    "`-999 26 2` remains unchanged.",
     "`-999 49 40` and `-999 50 40` replace the global LF/WF divisor-20 settings.",
     "Fishery-specific divisor-40 settings inherited from the 5-region controls are retained."
   ),
