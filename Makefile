@@ -52,6 +52,7 @@ STEPWISE_COMMIT_FINAL_PARS ?= $(call yml,y$$env$$STEPWISE_COMMIT_FINAL_PARS,fals
 STEPWISE_PUSH_FINAL_PARS ?= $(call yml,y$$env$$STEPWISE_PUSH_FINAL_PARS,false)
 STEPWISE_PUBLISH_REQUIRED ?= $(call yml,y$$env$$STEPWISE_PUBLISH_REQUIRED,false)
 PAR_SOURCE_JOB ?= $(call yml,y$$env$$PAR_SOURCE_JOB,)
+PAR_SOURCE_STEP_ID ?= $(call yml,y$$env$$PAR_SOURCE_STEP_ID,)
 STEPWISE_PAR_SOURCE_DIR ?= $(call yml,y$$env$$STEPWISE_PAR_SOURCE_DIR,)
 KFLOW_INPUT_JOBS ?= $(call yml,y$$env$$KFLOW_INPUT_JOBS,)
 KFLOW_JOB_MEMORY ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_kflow_memory(Sys.getenv("STEP_SELECT")))')
@@ -91,7 +92,7 @@ help:
 	  'BET_PHASE10_11_CONVERGENCE=-3 is the quick default for PHASE 10/11. Set -5 for strict runs.' \
 	  '' \
 	  'After a successful run, final .par files are archived under outputs/models/<step>/final.par.' \
-	  'Use RUN_MODE=job_par with PAR_SOURCE_JOB and KFLOW_INPUT_JOBS set to the previous same-step job number.' \
+	  'For a job-PAR rerun, use PAR_SOURCE_JOB and KFLOW_INPUT_JOBS; optionally set PAR_SOURCE_STEP_ID for a different source model.' \
 	  '' \
 	  'Common overrides: STEP_SELECT, RUN_MODE, INPUT_PAR, MFCL_LIVE_LOG, TRIGGER_NEXT, OUTPUT_DIR.'
 
@@ -150,6 +151,7 @@ local: readme
 	STEPWISE_PUSH_FINAL_PARS='$(STEPWISE_PUSH_FINAL_PARS)' \
 	STEPWISE_PUBLISH_REQUIRED='$(STEPWISE_PUBLISH_REQUIRED)' \
 	PAR_SOURCE_JOB='$(PAR_SOURCE_JOB)' \
+	PAR_SOURCE_STEP_ID='$(PAR_SOURCE_STEP_ID)' \
 	STEPWISE_PAR_SOURCE_DIR='$(STEPWISE_PAR_SOURCE_DIR)' \
 	KFLOW_INPUT_JOBS='$(KFLOW_INPUT_JOBS)' \
 	STEPWISE_BASE_INPUT_JOB='$(STEPWISE_BASE_INPUT_JOB)' \
@@ -199,6 +201,7 @@ docker: readme
 	  -e STEPWISE_PUSH_FINAL_PARS='$(STEPWISE_PUSH_FINAL_PARS)' \
 	  -e STEPWISE_PUBLISH_REQUIRED='$(STEPWISE_PUBLISH_REQUIRED)' \
 	  -e PAR_SOURCE_JOB='$(PAR_SOURCE_JOB)' \
+	  -e PAR_SOURCE_STEP_ID='$(PAR_SOURCE_STEP_ID)' \
 	  -e STEPWISE_PAR_SOURCE_DIR='$(STEPWISE_PAR_SOURCE_DIR)' \
 	  -e KFLOW_INPUT_JOBS='$(KFLOW_INPUT_JOBS)' \
 	  -e STEPWISE_BASE_INPUT_JOB='$(STEPWISE_BASE_INPUT_JOB)' \

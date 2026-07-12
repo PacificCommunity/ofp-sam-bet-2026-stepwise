@@ -254,8 +254,12 @@ write_payload_metadata <- function(payload_file, model_dir, metadata) {
   invisible(TRUE)
 }
 
+is_doitall_job_par_mode <- function(run_mode) {
+  mode_key(run_mode) %in% c("doitall_job_par", "script_job_par")
+}
+
 is_doitall_mode <- function(run_mode) {
-  mode_key(run_mode) %in% c("doitall", "script")
+  mode_key(run_mode) %in% c("doitall", "script", "doitall_job_par", "script_job_par")
 }
 
 is_doitall_like_mode <- function(run_mode) {
@@ -284,8 +288,11 @@ run_mfcl <- function(program, args, log_file, live_log = TRUE) {
   system2("bash", c("-c", command), wait = TRUE)
 }
 
-run_script <- function(script, program, log_file, live_log = TRUE) {
+run_script <- function(script, program, log_file, live_log = TRUE, extra_env = character()) {
   if (!file.exists(script)) stop("Run script not found: ", basename(script), call. = FALSE)
+  if (length(extra_env) && (is.null(names(extra_env)) || any(!nzchar(names(extra_env))))) {
+    stop("extra_env must be a named character vector.", call. = FALSE)
+  }
   mfcl_shim_dir <- tempfile("mfcl-bin-")
   dir.create(mfcl_shim_dir, recursive = TRUE, showWarnings = FALSE)
   on.exit(unlink(mfcl_shim_dir, recursive = TRUE, force = TRUE), add = TRUE)
@@ -297,7 +304,8 @@ run_script <- function(script, program, log_file, live_log = TRUE) {
   Sys.chmod(mfcl_shim, mode = "0755")
   script_env <- c(
     PROGRAM_PATH = program,
-    PATH = paste(mfcl_shim_dir, Sys.getenv("PATH"), sep = .Platform$path.sep)
+    PATH = paste(mfcl_shim_dir, Sys.getenv("PATH"), sep = .Platform$path.sep),
+    extra_env
   )
   env_assign <- paste(
     sprintf("%s=%s", names(script_env), shQuote(unname(script_env))),
@@ -518,16 +526,30 @@ restore_payload_par <- function(payload_file, dest) {
   invisible(dest)
 }
 
-stage_previous_job_par <- function(model_dir, step_id, job_ref, root, work_dir) {
-  source_par <- find_previous_job_par(step_id, job_ref = job_ref, root = root, work_dir = work_dir)
-  dest <- file.path(model_dir, "previous-job.par")
+stage_previous_job_par <- function(
+  model_dir,
+  step_id,
+  job_ref,
+  root,
+  work_dir,
+  source_step_id = step_id,
+  destination_name = "previous-job.par"
+) {
+  source_step_id <- trimws(as.character(source_step_id %||% step_id))
+  if (!nzchar(source_step_id)) source_step_id <- step_id
+  destination_name <- basename(trimws(as.character(destination_name %||% "previous-job.par")))
+  if (!nzchar(destination_name) || identical(destination_name, ".") || identical(destination_name, "..")) {
+    stop("destination_name must be a file name.", call. = FALSE)
+  }
+  source_par <- find_previous_job_par(source_step_id, job_ref = job_ref, root = root, work_dir = work_dir)
+  dest <- file.path(model_dir, destination_name)
   if (nzchar(source_par) && file.exists(source_par)) {
     ok <- file.copy(source_par, dest, overwrite = TRUE, copy.date = TRUE)
     if (!isTRUE(ok)) stop("Could not stage previous-job.par from ", source_par, call. = FALSE)
     return(list(input_par = basename(dest), source_par = source_par))
   }
 
-  source_payload <- find_previous_job_payload(step_id, job_ref = job_ref, root = root, work_dir = work_dir)
+  source_payload <- find_previous_job_payload(source_step_id, job_ref = job_ref, root = root, work_dir = work_dir)
   if (nzchar(source_payload) && file.exists(source_payload)) {
     restore_payload_par(source_payload, dest)
     return(list(input_par = basename(dest), source_par = paste0(source_payload, ":par")))
@@ -535,7 +557,7 @@ stage_previous_job_par <- function(model_dir, step_id, job_ref, root, work_dir) 
 
   if (!nzchar(source_par) || !file.exists(source_par)) {
     stop(
-      "RUN_MODE=job_par needs a previous Kflow output par for ", step_id,
+      "RUN_MODE=job_par needs a previous Kflow output par for ", source_step_id,
       if (nzchar(job_ref)) paste0(" from job ", job_ref) else "",
       ". Attach that job as an input job, or set STEPWISE_PAR_SOURCE_DIR to a folder containing outputs/models/",
       step_id, "/final.par or a compact model_payload.rds with a par artifact.",
@@ -787,7 +809,10 @@ for (i in seq_len(nrow(step_table))) {
   if (!dir.exists(step_dir)) stop("Step folder not found: steps/", step_id, call. = FALSE)
   cfg <- read_config(file.path(step_dir, "config.env"))
   cfg <- modifyList(cfg, row_to_config(step_table, i))
-  cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB"))
+  cfg <- apply_env_overrides(
+    cfg,
+    c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB", "PAR_SOURCE_STEP_ID")
+  )
   step_id <- basename(step_dir)
   if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
     message("Skipping disabled step ", step_id)
@@ -802,6 +827,7 @@ for (i in seq_len(nrow(step_table))) {
   requested_run_mode <- run_mode
   requested_input_par <- input_par
   par_source_job <- cfg$PAR_SOURCE_JOB %||% env("STEPWISE_PAR_SOURCE_JOB", "")
+  par_source_step_id <- cfg$PAR_SOURCE_STEP_ID %||% step_id
   par_source_par <- ""
   par_fallback <- FALSE
   par_fallback_reason <- ""
@@ -830,8 +856,32 @@ for (i in seq_len(nrow(step_table))) {
   message("  mode:   ", run_mode)
   message("  engine: ", engine_label(run_engine, step_program))
   message("  mfcl:   ", step_program)
-  if (is_job_par_mode(run_mode)) {
-    staged <- stage_previous_job_par(model_dir, step_id, par_source_job, root = root, work_dir = work_dir)
+  if (is_doitall_job_par_mode(run_mode)) {
+    staged <- stage_previous_job_par(
+      model_dir,
+      step_id,
+      par_source_job,
+      root = root,
+      work_dir = work_dir,
+      source_step_id = par_source_step_id
+    )
+    input_par <- staged$input_par
+    par_source_par <- staged$source_par
+    message(
+      "  previous job par: ",
+      relative_display_path(par_source_par, root),
+      " (source step ", par_source_step_id, ")",
+      if (nzchar(par_source_job)) paste0(" (requested job ", par_source_job, ")") else ""
+    )
+  } else if (is_job_par_mode(run_mode)) {
+    staged <- stage_previous_job_par(
+      model_dir,
+      step_id,
+      par_source_job,
+      root = root,
+      work_dir = work_dir,
+      source_step_id = par_source_step_id
+    )
     input_par <- staged$input_par
     par_source_par <- staged$source_par
     run_mode <- "single_par"
@@ -873,7 +923,13 @@ for (i in seq_len(nrow(step_table))) {
   status <- tryCatch({
     if (is_doitall_mode(run_mode)) {
       message("  script: ", run_script_name)
-      run_script(file.path(model_dir, run_script_name), program = step_program, log_file = log_file, live_log = mfcl_live_log)
+      run_script(
+        file.path(model_dir, run_script_name),
+        program = step_program,
+        log_file = log_file,
+        live_log = mfcl_live_log,
+        extra_env = if (is_doitall_job_par_mode(run_mode)) c(STEPWISE_START_PAR = input_par) else character()
+      )
     } else {
       if (!nzchar(output_par)) output_par <- next_par_name(input_par)
       message("  input:  ", frq, " + ", input_par)
@@ -988,7 +1044,8 @@ for (i in seq_len(nrow(step_table))) {
     "phase-progress.csv",
     "phase-process-summary.csv",
     "doitall-switches.csv",
-    "post-switch-summary.csv"
+    "post-switch-summary.csv",
+    "transfer.par"
   ))
   for (file in keep) {
     src <- file.path(model_dir, file)

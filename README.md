@@ -1,111 +1,71 @@
-# BET 2026 Stepwise
+# BET 2026 OPR phase-placement sensitivity
 
 <p align="right">
   <a href="kflow.yaml"><img src="kflow-ready.svg" alt="Kflow ready task"></a>
 </p>
 
-BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
-model folder with a compact README and input manifest.
+This branch tests whether the difference between standard recruitment and OPR
+comes from the OPR representation itself or from introducing OPR too early in
+the optimisation sequence.
 
-## Step Map
+## Common basis
 
-Each row is one runnable Kflow model. Lettered rows are deliberate substeps:
-they split one scientific change into smaller checks so differences can be
-traced without guessing.
+Every model is copied from the PDH-rebuild branch
+`experiment/step12-pdh-termpen100-rebuild`, specifically its Step 11 model.
+The `.frq`, `.ini`, `.tag`, age-length, regional-scaling, selectivity, and
+doitall controls are therefore the PDH-rebuild versions, not `main`.
 
-| Model | Major step | What changes | Input baseline |
-| --- | --- | --- | --- |
-| `01-Diag2023` | Diagnostic anchor | Reruns the 2023 diagnostic with the historical MFCL executable. | Archived 2023 diagnostic model. |
-| `02a-NewExe` | Executable bridge | Runs the archived 2023 assessment replication inputs with the current MFCL executable. | 2023 assessment replication input set; MFCL 1003 ini. |
-| `02b-Ini1007` | Executable bridge | Converts the 02a ini layout from MFCL 1003 to MFCL 1007. | 02a. |
-| `02c-LengthWeight` | Executable bridge | Applies the BET 2026 bias-corrected length-weight parameters. | 02b. |
-| `03-FixM` | FixM bridge | Applies fixed natural mortality from the 01 diagnostic `mgc=-5` final run. | 02c. |
-| `04-NewStructure` | New structure | Switches to the 5-region / 33-fishery structure with global CPUE. | 2026 new-structure input, terminal year 2021. |
-| `04a-SelectivityReview` | Selectivity review | Applies the five fishery-level LF/selectivity controls found in the reviewed PDH model. | 04 inputs unchanged. |
-| `05-ConvertToLength` | Size data | Converts existing weight compositions to length. | 04a. |
-| `06-LengthPlusLength` | Size data | Adds the extra length compositions. | 04a. |
-| `07-DataTo2024` | Data update | Extends the global-CPUE input to 2024. | 06. |
-| `08-RegionalCPUE` | CPUE update | Adds regional CPUE and the regional-scaling prior. | 07. |
-| `09-NewOtoliths` | Age data | Adds the updated 2026 CAAL / otolith input. | 08. |
-| `10-TagMixingKS` | Tag mixing | Uses release-specific mixing periods from the KS 0.2 build. | 09. |
-| `11-TimeVaryingCV` | CPUE CV | Adds time-varying CPUE CV. | 10. |
-| `12-OrthogonalPoly` | Recruitment | Applies OPR `72-01-50-50` and the terminal-recruitment penalty in final PHASE 11. | 11. |
-| `13-LengthBasedSel` | Selectivity | Adds length-based selectivity. | 12. |
-| `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
-| `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
+Every row runs `doitall.sh` from `bet.ini` and removes only stale generated
+PAR files first. No model starts from a saved PAR or another Kflow job.
 
-## Substep Logic
+## Models
 
-| Block | Substeps | Reason |
-| --- | --- | --- |
-| `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
-| `04` structure/selectivity | `04`, `04a` | Separates the new 5-region/33-fishery structure from the reviewed fishery-level LF/selectivity controls. |
-| `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
+| ID | OPR conversion point | Terminal penalty | Purpose |
+| --- | --- | ---: | --- |
+| `11-Standard-Fix6` | none | standard Fix6 | Fresh standard reference. |
+| `12a-OPR-Phase3-P0` | Phase 3 (`02.par → 03.par`) | 0 | Early OPR conversion without penalty. |
+| `12b-OPR-Phase3-P100` | Phase 3 | 100 | Early OPR path with terminal penalty. |
+| `12c-OPR-Phase8-P0` | Phase 8 (`07.par → 08.par`) | 0 | Converts after movement, regional scaling, and growth control phases. |
+| `12d-OPR-Phase8-P100` | Phase 8 | 100 | Same intermediate placement with terminal penalty. |
+| `12e-OPR-Phase10-P0` | Phase 10 (`09.par → 10.par`) | 0 | Converts only after standard SRR phases. |
+| `12f-OPR-Phase10-P100` | Phase 10 | 100 | Core late-switch candidate with terminal penalty. |
 
-## Names Used Here
+All OPR rows use `72-01-50-50`, endpoint `E2`, and `pf221=0`. The latter is
+kept explicit because it is not an active OPR degree control in the reviewed
+development source. The transition block always turns off the standard
+recruitment penalty, terminal fixed-recruitment settings, standard total-pop
+scaling, regional recruitment series/distribution controls, and the five
+time-invariant regional distribution flags before enabling OPR.
 
-| Name | Meaning |
+## Why phase placement matters
+
+MFCL converts standard recruitment estimates to OPR coefficients when OPR is
+activated. The conversion point therefore determines what has already been
+estimated under the standard representation. If Phase 3 and Phase 10 converge
+to different scales despite the same final OPR setting, the result is path or
+local-optimum sensitive rather than evidence that OPR alone fixes the scale.
+
+The Phase 10 models are the most informative compact test: selectivity,
+movement, growth, and SRR phases have already followed the standard path, but
+the terminal OPR refinement still occurs in the normal final phase.
+
+## Execution and Hessians
+
+Run locally with, for example:
+
+```sh
+make local STEP_SELECT=12f-OPR-Phase10-P100
+```
+
+Kflow submits each model separately. Each successful base fit has five
+dependent Hessian parts, followed by one Hessian merge that attaches only its
+diagnostic delta to that model's output.
+
+## Files
+
+| Path | Purpose |
 | --- | --- |
-| 2023 assessment replication input set | The archived 2023 BET replication model inputs stored in `ofp-sam-2026-BET/mfcl/inputs/2023_rep`. |
-| MFCL 1003 ini | Older ini layout with no explicit `# tag flags` block; tag mixing is still set in `doitall.sh`. |
-| MFCL 1007 ini | Newer ini layout with explicit `# tag flags`, tag shed rates, and reporting-rate matrix sections. |
-| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. Set `-3` for quick checks or `-5` for stricter production reruns; it applies to every selected step/substep. |
-
-## Source Inputs And Generated Edits
-
-These model folders are generated from source input repos, then checked and
-edited by `R/prepare_bet_2026_step_inputs.R`. The exact per-step source file and
-edit note is in `steps/<step_id>/input_manifest.csv`.
-
-| File | Source repo | Generated edits |
-| --- | --- | --- |
-| `.frq` | `ofp-sam-2026-BET-YFT-frq-build` | Copied exactly except steps 14-15, where index-fishery effort creep is applied. |
-| `.tag` | `ofp-sam-2026-BET-YFT-tag-prep` | Copied exactly. `tag_rep_map.R` is only an audit file. |
-| `.age_length` | `ofp-sam-2026-BET-YFT-age-length-build` | Records copied from source; steps 04-15 change effective sample size from `1` to `0.75`. |
-| `.ini` | `ofp-sam-2026-BET-YFT-build-ini` and archived diagnostic inputs | Step-specific generated edits apply BET 2026 L-W, `LN(R0)` from 04 onward, FixM, tag/RR alignment, and MFCL-reader compatibility checks. |
-| `bet.reg_scaling` | `ofp-sam-2026-BET-YFT-frq-build` | Steps 08-15 use rows 53-72 from the global CPUE regional-scaling source; parest flags 77-81 define the matching 1965-1969 model-period window. |
-
-Current BET input sources from `origin/main`:
-
-| Source repo | Commit used |
-| --- | --- |
-| `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` |
-| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` |
-| `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` |
-
-For the exact source-vs-generated comparison, see
-[`docs/input-source-audit.md`](docs/input-source-audit.md).
-
-Latest refresh:
-
-| Source repo | BET files pulled into generated inputs |
-| --- | --- |
-| `ofp-sam-2026-BET-YFT-build-ini@386d169` | `BET/bet.2023.new.structure.ini`, `BET/bet.2026.ini`, `BET/ini.mix-period/bet.2026.mix-0.2.ini`, and related RR summary CSVs with corrected RR initial values. |
-| `ofp-sam-2026-BET-YFT-tag-prep@471b2fd` | `BET/bet.2023.new.structure-low.recaps.removed.tag`, `BET/bet.2026.low.recaps.removed.tag`, and related RR summary CSVs with corrected RR group initial values. |
-
-## Where To Look
-
-| Path | Use |
-| --- | --- |
-| `steps/<step_id>/README.md` | short step summary, generated input changes, controls, and checks |
-| `steps/<step_id>/input_manifest.csv` | source files, commits, and generated-input notes |
-| `steps/<step_id>/model/` | MFCL-ready model folder |
-| `docs/run-configuration.md` | Kflow/local-run settings and output layout |
-| `docs/input-source-audit.md` | concise source-vs-generated input comparison |
-| `docs/step12-pdh-reconstruction.md` | reviewed PDH Step 12 controls, placement, and validation target |
-| `docs/tag-reporting-groups.md` | short guide to MFCL tag reporting-rate inputs |
-| `R/prepare_bet_2026_step_inputs.R` | reproducible input-generation entry point |
-| `debugging/` | troubleshooting records |
-
-## Assessment Notes
-
-| Topic | Note |
-| --- | --- |
-| Regional scaling | Steps 08-15 use an active-window `bet.reg_scaling` matrix for periods 53-72. Native MFCL allocates the regional-scaling input to the flag-defined window and streams the compact file into that matrix. |
-| Effort creep | Steps 14-15 apply 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024 to index fisheries 29-33. |
-| Region maps | Steps 01-03 use the 2023 9-region asset; steps 04-15 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md). |
-| Tag reporting rates | MFCL reads the reporting-rate blocks in `bet.ini`; `tag_rep_map.R` is only a human-readable check. See [`docs/tag-reporting-groups.md`](docs/tag-reporting-groups.md). |
-| Length-weight | Step 02c changes BET L-W from the 2023 value `3.063397e-05 2.932384` to the bias-corrected 2026 value `3.073533e-05 2.932410`; later steps retain it. |
-| Tag input source | Steps 04-15 use BET tag/ini sources from `ofp-sam-2026-BET-YFT-build-ini@386d169` and `ofp-sam-2026-BET-YFT-tag-prep@471b2fd`. The refreshed source repos correct RR initial/group initial values; generated inputs still preserve the stepwise policies documented in each manifest. |
-| Tag mixing source | Steps 10-15 use `ofp-sam-2026-BET-YFT-build-ini@386d169` `BET/ini.mix-period/bet.2026.mix-0.2.ini`; source zero mixing periods for release groups 43 and 46 are raised to `1`, while `tag_flags(it,2)=0` is retained and RR/active/target/penalty cells are validated against positive recaptures. |
+| `scripts/run_opr_phase_placement.sh` | Full phase-aware PDH-rebuild doitall. |
+| `steps/<model>/model/scenario.env` | Phase and penalty for each OPR row. |
+| `job-config.R` | Seven-model registry and Kflow labels. |
+| `kflow.yaml` | Suva task and tuna-flow v2.2 runtime pins. |
