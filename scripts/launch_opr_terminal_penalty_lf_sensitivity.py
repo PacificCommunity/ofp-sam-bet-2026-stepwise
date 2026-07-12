@@ -45,8 +45,8 @@ DEFAULT_BRANCH = "experiment/step12-opr-terminal-penalty-lf-sensitivity"
 GRID_CODE = "opr-terminal-penalty-lf"
 GRID_LABEL = "Step 12 OPR terminal-penalty and LF/selectivity"
 MANIFEST_SCHEMA = "bet-2026-opr-terminal-penalty-lf-launch-v3"
-DEFAULT_MFCLKIT_REF = "5075c9a4ab5e14b4b725e4135deabfb474da3681"
-DEFAULT_MFCLSHINY_REF = "65cf0aff15f5fd85ce96fda8c5bd89e9e2a6afe7"
+DEFAULT_MFCLKIT_REF = "dfb70989557d5afd6f7eed06e247b8347f7a2767"
+DEFAULT_MFCLSHINY_REF = "24f13c5b7c51b137dde2ccabad27ffa039a7b523"
 DEFAULT_SUVA_HOST = "suvofpsubmit.corp.spc.int"
 DEFAULT_SUVA_USER = (
     os.environ.get("KFLOW_REMOTE_USER")
