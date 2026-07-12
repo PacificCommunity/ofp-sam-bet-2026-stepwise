@@ -3,14 +3,14 @@
 
 stepwise_run <- list(
   # Default model when STEP_SELECT is not provided.
-  default_step_select = "all",
+  default_step_select = "12-OrthogonalPoly",
 
-  # Short Kflow group label for one stepwise -> results -> report chain.
-  # Override per launch when running several chains at once.
-  flow_group = "bet-2026-stepwise-v2",
+  # Short Kflow group label for the base fit and its diagnostics.
+  # Override per launch when running several checks at once.
+  flow_group = "bet-2026-step12-pdh-diagnostics",
 
-  # TRUE runs downstream plot/report after stepwise succeeds.
-  trigger_next = TRUE
+  # This checkpoint launches diagnostics explicitly after the base job.
+  trigger_next = FALSE
 )
 
 # One row is one independent model folder under steps/<step_id>/model/.
@@ -179,3 +179,13 @@ stepwise_models <- data.frame(
   expected_final_par = rep("11.par", 18),
   stringsAsFactors = FALSE
 )
+
+# This branch is a focused diagnostic checkpoint. Re-evaluate the reviewed
+# final PAR once to regenerate report outputs, while retaining the complete
+# model folder and doitall.sh for full-refit diagnostics.
+diagnostic_row <- match("12-OrthogonalPoly", stepwise_models$step_id)
+stopifnot(!is.na(diagnostic_row))
+stepwise_models$run_mode[[diagnostic_row]] <- "single_par"
+stepwise_models$input_par[[diagnostic_row]] <- "11-mod-termpen.par"
+stepwise_models$output_par[[diagnostic_row]] <- "final.par"
+stepwise_models$expected_final_par[[diagnostic_row]] <- "final.par"

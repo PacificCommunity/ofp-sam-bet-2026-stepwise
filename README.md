@@ -7,6 +7,27 @@
 BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
 model folder with a compact README and input manifest.
 
+## Diagnostic Checkpoint
+
+This branch focuses on `12-OrthogonalPoly`. It carries the reviewed PDH final
+PAR and runs one MFCL evaluation to regenerate a clean `final.par`, reports,
+and compact payload before launching fresh diagnostics. The full model inputs
+and `doitall.sh` remain available because jitter, self-test, and retrospective
+checks refit the model from its normal phase sequence.
+
+| Item | Setting |
+| --- | --- |
+| Input PAR | `11-mod-termpen.par` |
+| Base run | one evaluation, report outputs enabled |
+| Diagnostics | Hessian, jitter, self-test, likelihood profile, retrospective, ASPM |
+| Reference state | MFCL 2.2.7.9; PDH; 0 / 1093 non-positive eigenvalues |
+| PAR SHA-256 | `ff9129860ee9545d96f1c5e9e9548358b02d03b52b15eb624bf4ecd5bed54627` |
+
+The Kflow diagnostic launch uses 10 Hessian partitions, 10 jitter fits at
+CV 0.1, 10 self-test replicates, a two-chain likelihood profile, six annual
+retrospective peels, and one ASPM fit. Each diagnostic merges and attaches to
+the base job independently, so a slow or failed check does not block the others.
+
 ## Step Map
 
 Each row is one runnable Kflow model. Lettered rows are deliberate substeps:

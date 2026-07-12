@@ -7,7 +7,7 @@ Reviewed PDH OPR controls with the terminal-recruitment penalty in final PHASE 1
 | Field | Value |
 | --- | --- |
 | Step folder | `steps/12-OrthogonalPoly/model` |
-| Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
+| Status | Diagnostics checkpoint from the reviewed PDH final PAR. |
 
 ## Changes
 
@@ -75,6 +75,7 @@ Reviewed PDH OPR controls with the terminal-recruitment penalty in final PHASE 1
 | 4 | Positive tag recapture RR, active, target, and penalty cells are validated after copying the latest RR groupings; the fishery 19 repair only remains as a fallback for older sources that still need it. |
 | 5 | The reference fit had no non-positive Hessian eigenvalues (`0 / 1093`) and is used here as the reconstruction target. |
 | 6 | Set `BET_PDH_TERMINAL_EVALUATIONS=1000` for a shorter final PHASE 11 check; use `BET_PHASE10_11_CONVERGENCE=-5` for the strict reviewed convergence target. |
+| 7 | This branch uses `11-mod-termpen.par` only for the fast base checkpoint (`single_par` to `final.par`); full-refit diagnostics retain and use the normal `doitall.sh`. |
 
 ## Checks
 

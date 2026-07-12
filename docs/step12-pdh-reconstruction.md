@@ -68,6 +68,7 @@ terminal penalty.
 | Non-positive Hessian eigenvalues | 0 |
 | Reference PAR SHA-256 | `ff9129860ee9545d96f1c5e9e9548358b02d03b52b15eb624bf4ecd5bed54627` |
 
-The fitted parameter values themselves are not copied into earlier steps.
-Each step must refit its own model; the reconstruction preserves the observed
-control state and phase sequence that produced the PDH reference.
+The fitted parameter values are not copied into earlier steps. This diagnostic
+branch stores the reference PAR only under `12-OrthogonalPoly` and advances it
+for one evaluation to create a clean checkpoint payload. Full-refit diagnostics
+continue to use the preserved model inputs and phase sequence in `doitall.sh`.

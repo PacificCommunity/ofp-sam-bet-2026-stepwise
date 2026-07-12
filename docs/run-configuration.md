@@ -8,9 +8,9 @@ This file keeps the operational Kflow/local-run details out of the root README.
 
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
-| `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-stepwise-v2` | Kflow group label used to connect stepwise, results, and report jobs. |
-| `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
+| `default_step_select` | `12-OrthogonalPoly` | Model selection used when `STEP_SELECT` is not supplied. |
+| `flow_group` | `bet-2026-step12-pdh-diagnostics` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `trigger_next` | `false` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.2` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 | `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
@@ -42,7 +42,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `09-NewOtoliths` | `TRUE` | 09-NewOtoliths | 09a | new otolith/CAAL input | New otoliths | 09 New otoliths | `09-newotoliths` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `10-TagMixingKS` | `TRUE` | 10-TagMixing | 10a | release-specific tag mixing periods | Tag mixing KS | 10 Tag mixing KS | `10-tagmixingks` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `11-TimeVaryingCV` | `TRUE` | 11-TimeVaryingCV | 11a | time-varying CPUE CV | Time-varying CV | 11 Time-varying CV | `11-timevaryingcv` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
-| `12-OrthogonalPoly` | `TRUE` | 12-OrthogonalPoly | 12a | orthogonal-polynomial recruitment | Orthogonal polynomial | 12 Orthogonal polynomial | `12-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
+| `12-OrthogonalPoly` | `TRUE` | 12-OrthogonalPoly | 12a | orthogonal-polynomial recruitment | Orthogonal polynomial | 12 Orthogonal polynomial | `12-orthogonalpoly` | `single_par` | blank | `11-mod-termpen.par` | `bet.frq` | `final.par` | final.par |
 | `13-LengthBasedSel` | `TRUE` | 13-LengthBasedSel | 13a | length-based selectivity | Length-based selectivity | 13 Length-based selectivity | `13-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |

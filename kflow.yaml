@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/ofp-sam-bet-2026-stepwise-pdh-termpen100-rebuild
-name: ofp-sam-bet-2026-stepwise-pdh-termpen100-rebuild
-description: Run the BET 2026 Phase-11-only PDH stepwise rebuild.
+#   /api/job/ofp-sam-bet-2026-stepwise-pdh-final-par-diagnostics
+name: ofp-sam-bet-2026-stepwise-pdh-final-par-diagnostics
+description: Regenerate the reviewed Step 12 final-PAR outputs for a full diagnostic check.
 
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
@@ -33,28 +33,29 @@ exclude_slots: []
 env:
   # Default selected model folder. Override per job in the Kflow job config.
   # Examples: 01-Diag2023, 08-RegionalCPUE, 01-Diag2023,09-NewOtoliths, all
-  STEP_SELECT: all
+  STEP_SELECT: 12-OrthogonalPoly
 
   # Default Kflow display labels for the default model. `make kflow` computes
   # these from job-config.R. When launching directly from the Kflow UI and
   # changing STEP_SELECT, update these fields too if the job list should show
   # the selected model label before the run starts.
-  JOB_TITLE: "All 18 Phase-11 models"
-  JOB_DESCRIPTION: "Run the selected BET model folder and save compact plot-ready payloads."
-  MODEL_LABEL: "All 18 Phase-11 stepwise models"
-  JOB_KEY: all-18-phase11
-  FLOW_GROUP: bet-2026-stepwise-pdh-termpen100-rebuild
+  JOB_TITLE: "Step 12 PDH final-PAR diagnostic checkpoint"
+  JOB_DESCRIPTION: "Re-evaluate the reviewed final PAR once, preserve full model inputs, and provide the base payload for independent diagnostics."
+  MODEL_LABEL: "Step 12 PDH final PAR"
+  JOB_KEY: step12-pdh-final-par
+  FLOW_GROUP: bet-2026-step12-pdh-diagnostics
   TRIGGER_NEXT: "false"
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
   PLOT_TITLE: BET 2026 report-ready figures
-  PLOT_MAX_FISHERIES: "18"
+  PLOT_MAX_FISHERIES: "33"
   REPORT_QMD: assessment-report.qmd
   REPORT_FILE_STEM: bet-2026-report
   STEPWISE_BUILD_PAYLOAD: "true"
   STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
-  INPUT_PAR: ""
+  RUN_MODE: single_par
+  INPUT_PAR: 11-mod-termpen.par
   PAR_SOURCE_JOB: ""
   STEPWISE_PAR_SOURCE_DIR: ""
   KFLOW_INPUT_JOBS: ""
@@ -62,7 +63,7 @@ env:
   STEPWISE_CHECK_INPUT_JOBS: ""
   ATTACH_CHECK_TYPES: ""
   FRQ: bet.frq
-  OUTPUT_PAR: ""
+  OUTPUT_PAR: final.par
   STEPWISE_SAVE_FINAL_PAR: "false"
   STEPWISE_COMMIT_FINAL_PARS: "false"
   STEPWISE_PUSH_FINAL_PARS: "false"
@@ -82,8 +83,8 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@dcd48acd811781382b77c20cd113186ee37f18b7,mfclshiny=PacificCommunity/mfclshiny@90acece572b41061cf3756bf2b2596eb2f1a43fa
-  MFCLKIT_GITHUB_REF: dcd48acd811781382b77c20cd113186ee37f18b7
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@a093e40c0da6984e6f1c3d901e02846a5ee157f1,mfclshiny=PacificCommunity/mfclshiny@90acece572b41061cf3756bf2b2596eb2f1a43fa
+  MFCLKIT_GITHUB_REF: a093e40c0da6984e6f1c3d901e02846a5ee157f1
   MFCLSHINY_GITHUB_REF: 90acece572b41061cf3756bf2b2596eb2f1a43fa
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
@@ -113,7 +114,7 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
-      MFCLKIT_GITHUB_REF: dcd48acd811781382b77c20cd113186ee37f18b7
+      MFCLKIT_GITHUB_REF: a093e40c0da6984e6f1c3d901e02846a5ee157f1
       MFCLSHINY_GITHUB_REF: 90acece572b41061cf3756bf2b2596eb2f1a43fa
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "true"
@@ -421,8 +422,8 @@ local_apps:
       )
       RS
 
-# This experiment launches independent model -> Hessian chains explicitly.
-# Disable the normal Results/Report fan-out so one fit never waits on another.
+# The base job is followed by explicitly submitted, independent diagnostic
+# chains. Disable the normal Results/Report fan-out for this checkpoint.
 triggers: {}
 
 # Fields exposed as optional job config in the Kflow UI.
