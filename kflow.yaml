@@ -5,9 +5,14 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/ofp-sam-bet-2026-stepwise-pdh-termpen100-rebuild
-name: ofp-sam-bet-2026-stepwise-pdh-termpen100-rebuild
-description: Run the BET 2026 Phase-11-only PDH stepwise rebuild.
+#   /api/job/ofp-sam-bet-2026-stepwise-late-transfer-opr-sensitivity
+name: ofp-sam-bet-2026-stepwise-late-transfer-opr-sensitivity
+description: Test independently rebuilt Step-11-to-OPR recruitment settings from initial model inputs.
+
+# This is an intentionally isolated Suva sensitivity task.
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
 
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
@@ -39,23 +44,24 @@ env:
   # these from job-config.R. When launching directly from the Kflow UI and
   # changing STEP_SELECT, update these fields too if the job list should show
   # the selected model label before the run starts.
-  JOB_TITLE: "All 18 Phase-11 models"
-  JOB_DESCRIPTION: "Run the selected BET model folder and save compact plot-ready payloads."
-  MODEL_LABEL: "All 18 Phase-11 stepwise models"
-  JOB_KEY: all-18-phase11
-  FLOW_GROUP: bet-2026-stepwise-pdh-termpen100-rebuild
+  JOB_TITLE: "All 10 late-transfer OPR models"
+  JOB_DESCRIPTION: "Compare terminal controls and OPR structures after each model rebuilds Step 11 from initial inputs."
+  MODEL_LABEL: "All 10 late-transfer OPR models"
+  JOB_KEY: all-10-late-transfer-opr
+  FLOW_GROUP: bet-2026-late-transfer-opr
   TRIGGER_NEXT: "false"
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
   PLOT_TITLE: BET 2026 report-ready figures
-  PLOT_MAX_FISHERIES: "18"
+  PLOT_MAX_FISHERIES: "33"
   REPORT_QMD: assessment-report.qmd
   REPORT_FILE_STEM: bet-2026-report
   STEPWISE_BUILD_PAYLOAD: "true"
   STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
   INPUT_PAR: ""
   PAR_SOURCE_JOB: ""
+  PAR_SOURCE_STEP_ID: ""
   STEPWISE_PAR_SOURCE_DIR: ""
   KFLOW_INPUT_JOBS: ""
   STEPWISE_BASE_INPUT_JOB: ""
@@ -75,6 +81,10 @@ env:
   # This branch's comparison run uses -4 for every model. Override with -5 for
   # stricter production reruns without editing the model folders.
   BET_PHASE10_11_CONVERGENCE: "-4"
+  BET_LATE_TRANSFER_CONVERGENCE: "-4"
+  BET_LATE_TRANSFER_EVALUATIONS: "1"
+  BET_LATE_OPR_FINAL_EVALUATIONS: "20000"
+  BET_LATE_STANDARD_FINAL_EVALUATIONS: "20000"
 
   # Private helper packages are updated at runtime so the public image stays stable.
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
@@ -82,8 +92,8 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@dcd48acd811781382b77c20cd113186ee37f18b7,mfclshiny=PacificCommunity/mfclshiny@90acece572b41061cf3756bf2b2596eb2f1a43fa
-  MFCLKIT_GITHUB_REF: dcd48acd811781382b77c20cd113186ee37f18b7
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@cfddae86da8d3e887a6cc29ee03c3ed18805a78b,mfclshiny=PacificCommunity/mfclshiny@90acece572b41061cf3756bf2b2596eb2f1a43fa
+  MFCLKIT_GITHUB_REF: cfddae86da8d3e887a6cc29ee03c3ed18805a78b
   MFCLSHINY_GITHUB_REF: 90acece572b41061cf3756bf2b2596eb2f1a43fa
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
@@ -113,7 +123,7 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
-      MFCLKIT_GITHUB_REF: dcd48acd811781382b77c20cd113186ee37f18b7
+      MFCLKIT_GITHUB_REF: cfddae86da8d3e887a6cc29ee03c3ed18805a78b
       MFCLSHINY_GITHUB_REF: 90acece572b41061cf3756bf2b2596eb2f1a43fa
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "true"
@@ -442,6 +452,7 @@ job_config:
     - STEPWISE_SAVE_RAW_MFCL_INPUTS
     - INPUT_PAR
     - PAR_SOURCE_JOB
+    - PAR_SOURCE_STEP_ID
     - STEPWISE_PAR_SOURCE_DIR
     - KFLOW_INPUT_JOBS
     - STEPWISE_BASE_INPUT_JOB
@@ -457,6 +468,10 @@ job_config:
     - PROGRAM_PATH
     - MFCL_LIVE_LOG
     - BET_PHASE10_11_CONVERGENCE
+    - BET_LATE_TRANSFER_CONVERGENCE
+    - BET_LATE_TRANSFER_EVALUATIONS
+    - BET_LATE_OPR_FINAL_EVALUATIONS
+    - BET_LATE_STANDARD_FINAL_EVALUATIONS
     - PLOT_TITLE
     - PLOT_MAX_FISHERIES
     - FLOW_SPECIES
