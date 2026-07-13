@@ -14,7 +14,7 @@ command: bash run.sh
 
 # Use the tagged tuna-flow image so local/Kflow runs do not drift unexpectedly.
 # Change deliberately, for example:
-#   ghcr.io/pacificcommunity/tuna-flow:v2.0
+#   ghcr.io/pacificcommunity/tuna-flow:v2.2
 #   ghcr.io/pacificcommunity/tuna-flow:latest
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.2
 
@@ -84,9 +84,9 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@dfb70989557d5afd6f7eed06e247b8347f7a2767,mfclshiny=PacificCommunity/mfclshiny@24f13c5b7c51b137dde2ccabad27ffa039a7b523
-  MFCLKIT_GITHUB_REF: dfb70989557d5afd6f7eed06e247b8347f7a2767
-  MFCLSHINY_GITHUB_REF: 24f13c5b7c51b137dde2ccabad27ffa039a7b523
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@ac9a2c26f51ec6e6ad95593e3372e4928ca117a8,mfclshiny=PacificCommunity/mfclshiny@1d7cced723190967ebd33cff6f1b7126aff56780
+  MFCLKIT_GITHUB_REF: ac9a2c26f51ec6e6ad95593e3372e4928ca117a8
+  MFCLSHINY_GITHUB_REF: 1d7cced723190967ebd33cff6f1b7126aff56780
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   KFLOW_REPORT_COMMIT_GENERATED: "true"
@@ -115,8 +115,8 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
-      MFCLKIT_GITHUB_REF: dfb70989557d5afd6f7eed06e247b8347f7a2767
-      MFCLSHINY_GITHUB_REF: 24f13c5b7c51b137dde2ccabad27ffa039a7b523
+      MFCLKIT_GITHUB_REF: ac9a2c26f51ec6e6ad95593e3372e4928ca117a8
+      MFCLSHINY_GITHUB_REF: 1d7cced723190967ebd33cff6f1b7126aff56780
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "false"
       MFCLSHINY_LIVE_UPDATE: "false"
@@ -455,9 +455,9 @@ triggers:
         TUNA_FLOW_RUNTIME_UPDATE: never
         KFLOW_REPO_RUNTIME_UPDATE: auto
         KFLOW_RUNTIME_PACKAGES: none
-        KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@dfb70989557d5afd6f7eed06e247b8347f7a2767,mfclshiny=PacificCommunity/mfclshiny@24f13c5b7c51b137dde2ccabad27ffa039a7b523
-        MFCLKIT_GITHUB_REF: dfb70989557d5afd6f7eed06e247b8347f7a2767
-        MFCLSHINY_GITHUB_REF: 24f13c5b7c51b137dde2ccabad27ffa039a7b523
+        KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@ac9a2c26f51ec6e6ad95593e3372e4928ca117a8,mfclshiny=PacificCommunity/mfclshiny@1d7cced723190967ebd33cff6f1b7126aff56780
+        MFCLKIT_GITHUB_REF: ac9a2c26f51ec6e6ad95593e3372e4928ca117a8
+        MFCLSHINY_GITHUB_REF: 1d7cced723190967ebd33cff6f1b7126aff56780
         KFLOW_RUNTIME_GITHUB_AUTH: "true"
         KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
       tags:

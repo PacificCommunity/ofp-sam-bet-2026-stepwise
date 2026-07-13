@@ -267,11 +267,11 @@ class LaunchManifestTests(unittest.TestCase):
     def test_runtime_package_refs_include_independent_diagnostic_support(self):
         self.assertEqual(
             launcher.DEFAULT_MFCLKIT_REF,
-            "dfb70989557d5afd6f7eed06e247b8347f7a2767",
+            "ac9a2c26f51ec6e6ad95593e3372e4928ca117a8",
         )
         self.assertEqual(
             launcher.DEFAULT_MFCLSHINY_REF,
-            "24f13c5b7c51b137dde2ccabad27ffa039a7b523",
+            "1d7cced723190967ebd33cff6f1b7126aff56780",
         )
 
     def test_static_and_local_app_configs_pin_both_reviewed_packages(self):

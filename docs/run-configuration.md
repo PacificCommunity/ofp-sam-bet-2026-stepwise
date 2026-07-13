@@ -114,6 +114,9 @@ job with `KFLOW_INPUT_JOBS`.
 The raw MFCL inputs are preserved under
 `outputs/models/<step_id>/mfcl-inputs/` so files such as `.frq`, `.tag`,
 `.age_length`, and `.reg_scaling` can be audited exactly as read by native MFCL.
+This is a pre-run snapshot of the staged model after `patch.R` and any external
+PAR staging, so downstream diagnostics receive the same model-specific INI,
+doitall script, and auxiliary inputs used by the fitted job.
 
 Region-map assets are copied from `assets/maps/`. The root `outputs/region-map/`
 folder stores shared project-specific GeoJSON files, and each model output also

@@ -877,6 +877,18 @@ for (i in seq_len(nrow(step_table))) {
       output_par <- ""
     }
   }
+  raw_mfcl_inputs_snapshot_dir <- ""
+  raw_mfcl_inputs_snapshot_saved <- FALSE
+  if (isTRUE(save_raw_mfcl_inputs)) {
+    # Capture the exact pre-run case after patch.R and any external PAR staging.
+    # Copying model_source after the fit would lose those model-specific edits
+    # and could pair a fitted PAR with the wrong doitall/INI in diagnostics.
+    raw_mfcl_inputs_snapshot_dir <- file.path(work_dir, "raw-mfcl-inputs", step_id)
+    raw_mfcl_inputs_snapshot_saved <- copy_raw_mfcl_inputs(
+      model_dir,
+      raw_mfcl_inputs_snapshot_dir
+    )
+  }
   old <- setwd(model_dir)
   model_run_started_at <- Sys.time()
   status <- tryCatch({
@@ -978,9 +990,10 @@ for (i in seq_len(nrow(step_table))) {
   raw_mfcl_inputs_saved <- FALSE
   if (isTRUE(save_raw_mfcl_inputs)) {
     raw_mfcl_inputs_dir <- file.path(step_out, "mfcl-inputs")
-    raw_mfcl_inputs_saved <- copy_raw_mfcl_inputs(model_source, raw_mfcl_inputs_dir)
+    raw_mfcl_inputs_saved <- isTRUE(raw_mfcl_inputs_snapshot_saved) &&
+      copy_raw_mfcl_inputs(raw_mfcl_inputs_snapshot_dir, raw_mfcl_inputs_dir)
     if (!isTRUE(raw_mfcl_inputs_saved)) {
-      warning("Could not save raw MFCL inputs for ", step_id, call. = FALSE)
+      warning("Could not save the patch-applied MFCL input snapshot for ", step_id, call. = FALSE)
       raw_mfcl_inputs_dir <- ""
     }
   }
