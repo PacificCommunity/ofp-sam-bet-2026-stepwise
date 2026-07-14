@@ -8,10 +8,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
-| `default_step_select` | `12-EffortCreep,13-DataWeighting` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-stepwise-skip-opr-lengthsel` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `default_step_select` | `12-EffortCreep` | Model selection used when `STEP_SELECT` is not supplied. |
+| `flow_group` | `bet-2026-stepwise-s1s2-fixed-job604` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `false` | Whether command-line Kflow submissions keep the downstream results/report chain. |
-| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.2` | Docker image used by Kflow and local Docker runs. |
+| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.4` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 | `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
 | `stepwise_save_raw_mfcl_inputs` | `true` | Preserve the full raw MFCL input folder under `outputs/models/<step_id>/mfcl-inputs/` for native-style auditability. |
@@ -42,7 +42,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `09-NewOtoliths` | `TRUE` | 09-NewOtoliths | 09a | new otolith/CAAL input | New otoliths | 09 New otoliths | `09-newotoliths` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `10-TagMixingKS` | `TRUE` | 10-TagMixing | 10a | release-specific tag mixing periods | Tag mixing KS | 10 Tag mixing KS | `10-tagmixingks` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `11-TimeVaryingCV` | `TRUE` | 11-TimeVaryingCV | 11a | time-varying CPUE CV | Time-varying CV | 11 Time-varying CV | `11-timevaryingcv` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
-| `12-EffortCreep` | `TRUE` | 12-EffortCreep | 12a | effort creep without OPR or length-based selectivity | Effort creep | 12 Effort creep (no OPR/length selectivity) | `12-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
+| `12-EffortCreep` | `TRUE` | 12-EffortCreep | 12a | effort creep with length-at-age variance s1/s2 fixed to the job 604 final-par estimates | Effort creep, s1/s2 fixed | 12 Effort creep, s1/s2 fixed to job 604 | `12-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 | `13-DataWeighting` | `TRUE` | 13-DataWeighting | 13a | data weighting without OPR or length-based selectivity | Data weighting | 13 Data weighting (no OPR/length selectivity) | `13-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` | 11.par |
 
 
@@ -116,3 +116,8 @@ The raw MFCL inputs are preserved under
 Region-map assets are copied from `assets/maps/`. The root `outputs/region-map/`
 folder stores shared project-specific GeoJSON files, and each model output also
 gets `bet.region_map.geojson` beside its payload.
+
+## Step 12 s1/s2 fixed sensitivity
+
+The default run selects only `12-EffortCreep`. It keeps the job 4602 model structure and fixes the length-at-age variance parameters to diagnostic final-par values (`s1 = 5.792447535022320`, `s2 = 0.429071114402698`) by setting `parest_flags(15)=0` and `parest_flags(16)=0` in the Step 12 fit.
+

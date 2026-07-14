@@ -113,3 +113,8 @@ Latest refresh:
 | Length-weight | Step 02c changes BET L-W from the 2023 value `3.063397e-05 2.932384` to the bias-corrected 2026 value `3.073533e-05 2.932410`; later steps retain it. |
 | Tag input source | Steps 04-13 use BET tag/ini sources from `ofp-sam-2026-BET-YFT-build-ini@386d169` and `ofp-sam-2026-BET-YFT-tag-prep@471b2fd`. The refreshed source repos correct RR initial/group initial values; generated inputs still preserve the stepwise policies documented in each manifest. |
 | Tag mixing source | Steps 10-13 use `ofp-sam-2026-BET-YFT-build-ini@386d169` `BET/ini.mix-period/bet.2026.mix-0.2.ini`; source zero mixing periods for release groups 43 and 46 are raised to `1`, while `tag_flags(it,2)=0` is retained and RR/active/target/penalty cells are validated against positive recaptures. |
+
+### Step 12 s1/s2 fixed sensitivity
+
+This branch runs the job 4602 Step 12 lineage with the two length-at-age variance parameters fixed to the diagnostic final-par estimates: `s1 = 5.792447535022320` and `s2 = 0.429071114402698`. The Lorenzen natural-mortality scalar remains fixed as in the job 4602 lineage.
+

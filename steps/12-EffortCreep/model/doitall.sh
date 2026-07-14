@@ -335,8 +335,8 @@ PHASE6
 # ---------
 
 $program_path bet.frq 06.par 07.par -file - <<PHASE7
-  1 15 1   # estimate overall SD of length-at-age
-  1 16 1   # estimate length dependent SD
+  1 15 0   # keep overall SD of length-at-age fixed to the job 604 final-par estimate
+  1 16 0   # keep length-dependent SD fixed to the job 604 final-par estimate
   1 173 0  # activate independent mean lengths for first 0 age classes
   1 182 0  # penalty weight
   1 184 0  # estimate parameters

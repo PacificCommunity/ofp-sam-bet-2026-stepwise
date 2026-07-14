@@ -76,3 +76,8 @@ Apply effort creep directly after the time-varying-CV model.
 | --- | --- |
 | 1 | After fitting, review index residuals and implied CPUE scaling against 11-TimeVaryingCV. |
 | 2 | Local MFCL `-makepar` smoke can still report nonzero tag recapture timing or fishery-realization warnings; review upstream tag prep before final production runs. |
+
+## s1/s2 fixed sensitivity
+
+This folder keeps the job 4602 effort-creep model lineage but fixes both length-at-age variance parameters to diagnostic final-par estimates: `s1 = 5.792447535022320` and `s2 = 0.429071114402698`. The sensitivity tests whether the Step 12 fit is sensitive to re-estimating those two variance parameters.
+
