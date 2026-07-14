@@ -385,6 +385,7 @@ run_mfclrtmb_doitall <- function(model_dir, frq, script, log_file, live_log = TR
     "  write_payload = FALSE,",
     "  run_post_switches = truthy(env_chr('MFCLRTMB_RUN_POST_SWITCHES', 'true'), TRUE),",
     "  exact_report = truthy(env_chr('MFCLRTMB_EXACT_REPORT', 'true'), TRUE),",
+    "  native_parity_check = FALSE,",
     "  write_objective_trace = truthy(env_chr('MFCLRTMB_WRITE_OBJECTIVE_TRACE', 'false')),",
     "  write_progress = truthy(env_chr('MFCLRTMB_WRITE_PROGRESS', 'true'), TRUE),",
     "  verbose = truthy(env_chr('MFCLRTMB_VERBOSE', 'true'), TRUE),",
