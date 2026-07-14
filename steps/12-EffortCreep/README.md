@@ -2,6 +2,10 @@
 
 Apply effort creep directly after the time-varying-CV model.
 
+This branch is a focused sensitivity: it additionally fixes the
+length-dependent length-at-age SD parameter (`s2`) to the diagnostic final-par
+estimate, while leaving the fixed-M setup already used by this model unchanged.
+
 ## Snapshot
 
 | Field | Value |
@@ -17,6 +21,7 @@ Apply effort creep directly after the time-varying-CV model.
 | 2 | Does not apply the omitted OPR or length-based-selectivity changes; fish flag 26 remains 2 and OPR flags remain inactive. |
 | 3 | The effort-creep transform multiplies index-fishery effort by a piecewise linear multiplier: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024. |
 | 4 | Only positive index-fishery effort values are changed; extraction fisheries and size compositions are untouched. |
+| 5 | Fixes `s2` (`parest_flags(16)`) at `0.429071114402698`, the diagnostic final-par estimate, instead of estimating it in PHASE 7. |
 
 ## Inputs
 
@@ -59,6 +64,8 @@ Apply effort creep directly after the time-varying-CV model.
 | 4 | The active prior window is periods 53-72 (1965-1969), derived from parest flags 79-80 for the 292-period model. |
 | 5 | PHASE 1-4 retain CPUE_scaling; PHASE 5 switches to Prior_reg_biomass with index CPUE groups 29-33, fish flag 94 set to 0, and index selectivity groups 25-29. |
 | 6 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 7 | `parest_flags(16)=0` in PHASE 7; `parest_flags(15)=1` is retained so the generic length-at-age SD is still estimated. |
+| 8 | The fixed-M/Lorenzen scalar setup is unchanged: `age_pars(5,1)` already matches the diagnostic final-par value and `parest_flags(121)=0` remains off. |
 
 ## Run Notes
 
@@ -69,6 +76,7 @@ Apply effort creep directly after the time-varying-CV model.
 | 3 | Generation validates tag-control dimensions, shed rates, and reporting-rate matrices; source zero mixing periods are raised to 1 for the current MFCL reader. |
 | 4 | Positive tag recapture RR, active, target, and penalty cells are validated after copying the latest RR groupings; the fishery 19 repair only remains as a fallback for older sources that still need it. |
 | 5 | The effort-creep `.frq` is generated from the full 2024 regional CPUE source by changing only positive effort values for index fisheries 29-33. |
+| 6 | This run tests whether carrying the diagnostic `s2` value forward reduces length-at-age variance instability without changing the rest of the Step 12 effort-creep setup. |
 
 ## Checks
 

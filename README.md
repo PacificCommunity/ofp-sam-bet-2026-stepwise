@@ -7,11 +7,11 @@
 BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
 model folder with a compact README and input manifest.
 
-This experimental lineage omits the original OPR Step 12 and length-based-
-selectivity Step 13. Effort creep is therefore renumbered to Step 12 and
-inherits Step 11 directly; data weighting follows as Step 13. Only these two
-new downstream models are selected by default in Kflow, so completed earlier
-steps are not rerun.
+This sensitivity starts from the no-OPR / no-length-selectivity effort-creep
+lineage and runs Step 12 only. It keeps the fixed-M setup already used by the
+Step 12 effort-creep model, and additionally fixes the length-dependent
+length-at-age SD parameter (`s2`, `parest_flags(16)`) to the final-par estimate
+from the earlier diagnostic anchor run.
 
 ## Step Map
 
@@ -35,8 +35,8 @@ traced without guessing.
 | `09-NewOtoliths` | Age data | Adds the updated 2026 CAAL / otolith input. | 08. |
 | `10-TagMixingKS` | Tag mixing | Uses release-specific mixing periods from the KS 0.2 build. | 09. |
 | `11-TimeVaryingCV` | CPUE CV | Adds time-varying CPUE CV. | 10. |
-| `12-EffortCreep` | Effort creep | Applies agreed effort creep without adding OPR or length-based selectivity. | 11. |
-| `13-DataWeighting` | Weighting | Adds the first data-weighting change to the new effort-creep model. | 12. |
+| `12-EffortCreep` | Effort creep, s2 fixed | Applies agreed effort creep without adding OPR or length-based selectivity, with `s2` fixed to the diagnostic final-par estimate. | 11. |
+| `13-DataWeighting` | Weighting | Present for lineage context but not selected by default in this sensitivity. | 12. |
 
 ## Substep Logic
 
@@ -108,6 +108,8 @@ Latest refresh:
 | --- | --- |
 | Regional scaling | Steps 08-13 use an active-window `bet.reg_scaling` matrix for periods 53-72. Native MFCL allocates the regional-scaling input to the flag-defined window and streams the compact file into that matrix. |
 | Effort creep | Steps 12-13 apply 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024 to index fisheries 29-33. |
+| s2 fixed sensitivity | Step 12 fixes `parest_flags(16)=0` and sets the length-dependent length-at-age SD initial value to `0.429071114402698`, the diagnostic final-par estimate. The generic length-at-age SD (`parest_flags(15)`) remains estimated. |
+| Fixed M | Step 12 already uses the diagnostic fixed-M value in `age_pars`; the Lorenzen scaling control remains off (`parest_flags(121)=0`). |
 | Region maps | Steps 01-03 use the 2023 9-region asset; steps 04-13 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md). |
 | Tag reporting rates | MFCL reads the reporting-rate blocks in `bet.ini`; `tag_rep_map.R` is only a human-readable check. See [`docs/tag-reporting-groups.md`](docs/tag-reporting-groups.md). |
 | Length-weight | Step 02c changes BET L-W from the 2023 value `3.063397e-05 2.932384` to the bias-corrected 2026 value `3.073533e-05 2.932410`; later steps retain it. |

@@ -3,11 +3,11 @@
 
 stepwise_run <- list(
   # Default model when STEP_SELECT is not provided.
-  default_step_select = "12-EffortCreep,13-DataWeighting",
+  default_step_select = "12-EffortCreep",
 
   # Short Kflow group label for one stepwise -> results -> report chain.
   # Override per launch when running several chains at once.
-  flow_group = "bet-2026-stepwise-skip-opr-lengthsel",
+  flow_group = "bet-2026-stepwise-s2-fixed-job604",
 
   # TRUE runs downstream plot/report after stepwise succeeds.
   trigger_next = FALSE
@@ -88,7 +88,7 @@ stepwise_models <- data.frame(
     "new otolith/CAAL input",
     "release-specific tag mixing periods",
     "time-varying CPUE CV",
-    "effort creep without OPR or length-based selectivity",
+    "effort creep with length-at-age variance s2 fixed to the job 604 final-par estimate",
     "data weighting without OPR or length-based selectivity"
   ),
   # Short model label used in logs, plots, and reports.
@@ -107,7 +107,7 @@ stepwise_models <- data.frame(
     "New otoliths",
     "Tag mixing KS",
     "Time-varying CV",
-    "Effort creep",
+    "Effort creep, s2 fixed",
     "Data weighting"
   ),
 
@@ -127,7 +127,7 @@ stepwise_models <- data.frame(
     "09 New otoliths",
     "10 Tag mixing KS",
     "11 Time-varying CV",
-    "12 Effort creep (no OPR/length selectivity)",
+    "12 Effort creep, s2 fixed to job 604",
     "13 Data weighting (no OPR/length selectivity)"
   ),
 
