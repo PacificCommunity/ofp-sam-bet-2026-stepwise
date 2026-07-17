@@ -306,6 +306,57 @@ copy_tag_reporting_matrices <- function(path, source_ini) {
   )
 }
 
+write_regional_scaling_inputs <- function(source_path, active_path, full_path,
+                                          start_period, end_period) {
+  # MFCL streams only the rows allocated by parest flags 79-80. Keep that
+  # compact matrix at the executable filename, and retain the complete source
+  # beside it so alternative windows can be regenerated without another pull.
+  if (!file.exists(source_path)) {
+    stop("Missing regional-scaling source: ", source_path, call. = FALSE)
+  }
+  lines <- readLines(source_path, warn = FALSE)
+  if (!length(lines) || any(!nzchar(trimws(lines)))) {
+    stop("Regional-scaling source must contain nonblank matrix rows", call. = FALSE)
+  }
+  fields <- strsplit(trimws(lines), "[[:space:]]+")
+  widths <- unique(lengths(fields))
+  if (length(widths) != 1L) {
+    stop("Regional-scaling source has inconsistent column counts", call. = FALSE)
+  }
+  values <- suppressWarnings(as.numeric(unlist(fields, use.names = FALSE)))
+  if (anyNA(values)) {
+    stop("Regional-scaling source contains nonnumeric values", call. = FALSE)
+  }
+
+  start_period <- as.integer(start_period)
+  end_period <- as.integer(end_period)
+  if (!is.finite(start_period) || !is.finite(end_period) ||
+      start_period < 1L || end_period < start_period || end_period > length(lines)) {
+    stop(
+      "Invalid regional-scaling window ", start_period, "-", end_period,
+      " for ", length(lines), " source periods",
+      call. = FALSE
+    )
+  }
+
+  dir.create(dirname(active_path), recursive = TRUE, showWarnings = FALSE)
+  writeLines(
+    lines[start_period:end_period], active_path,
+    sep = file_eol(source_path), useBytes = TRUE
+  )
+  if (!file.copy(source_path, full_path, overwrite = TRUE, copy.mode = TRUE)) {
+    stop("Could not preserve full regional-scaling source at ", full_path, call. = FALSE)
+  }
+
+  list(
+    total_periods = length(lines),
+    active_periods = end_period - start_period + 1L,
+    columns = widths[[1L]],
+    start = start_period,
+    end = end_period
+  )
+}
+
 repair_tag_reporting_grouped_initial_values <- function(path) {
   # Native MFCL requires every cell in a reporting-rate group to have the same
   # active flag and starting value. If the upstream grouping is intentional,

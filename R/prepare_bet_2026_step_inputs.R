@@ -41,9 +41,31 @@ ini_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-build-ini", "BET")
 tag_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-tag-prep", "BET")
 age_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-age-length-build", "BET")
 reg_scaling_source <- file.path(frq_root, "bet.2026.reg_scaling")
-reg_scaling_active_start_period <- 53L
-reg_scaling_active_end_period <- 72L
-reg_scaling_active_years <- "1965-1969"
+read_reg_scaling_period <- function(name, default) {
+  raw <- trimws(Sys.getenv(name, as.character(default)))
+  value <- suppressWarnings(as.integer(raw))
+  if (is.na(value) || value < 1L) {
+    stop(name, " must be a positive integer; got `", raw, "`", call. = FALSE)
+  }
+  value
+}
+reg_scaling_active_start_period <- read_reg_scaling_period(
+  "BET_REG_SCALING_START_PERIOD", 53L
+)
+reg_scaling_active_end_period <- read_reg_scaling_period(
+  "BET_REG_SCALING_END_PERIOD", 72L
+)
+if (reg_scaling_active_end_period < reg_scaling_active_start_period) {
+  stop("BET_REG_SCALING_END_PERIOD must not precede the start period", call. = FALSE)
+}
+reg_scaling_period_label <- function(period, first_year = 1952L) {
+  offset <- as.integer(period) - 1L
+  paste0(first_year + offset %/% 4L, "Q", offset %% 4L + 1L)
+}
+reg_scaling_active_years <- paste0(
+  reg_scaling_period_label(reg_scaling_active_start_period), "-",
+  reg_scaling_period_label(reg_scaling_active_end_period)
+)
 five_region_total_population_scalar <- 17L
 bias_corrected_length_weight_parameters <- c("3.073533e-05", "2.932410")
 bias_corrected_length_weight_note <- paste(

@@ -60,14 +60,27 @@ that match the selected `.tag`.
 | `.tag`, steps 07-15 | `bet.2026.low.recaps.removed.tag` | Copied unchanged from the tag-prep repo. |
 | Tag flags, steps 04-06 | `bet.2023.new.structure.ini` | Source has 98 identical tag-control rows for a 96-release-group tag file; generated rows are trimmed to 96. |
 | Tag flags, steps 07-09 | `bet.2026.ini` | Latest 98 rows kept; column 2 `tag_flags(it,2)` set from `1` to `0`. |
-| RR matrices, steps 07-09 | `bet.2026.mix-0.2.ini` | Five RR/active/target/penalty blocks copied into the 07-09 `.ini`, then kept at 99 rows. |
+| RR matrices, steps 07-09 | `bet.2026.mix-0.2.ini` | Five RR/active/target/penalty blocks, including updated group IDs, copied into the 07-09 `.ini`, then kept at 99 rows. |
 | Tag flags, steps 10-15 | `bet.2026.mix-0.2.ini` | Column 2 `tag_flags(it,2)` set from `1` to `0`. |
 | Mixing periods, steps 10-15 | `bet.2026.mix-0.2.ini` | Source `0` mixing periods are raised to `1` for groups `43` and `46`. |
 | Positive recapture RR check, steps 04-15 | Generated `.ini` and selected `.tag` | Every positive recapture must have nonzero RR, active, target, and penalty cells. |
 
 The older fishery 19 repair helper remains available for older upstream inputs
-that still have inactive RR cells, but the latest `386d169` / `471b2fd` source
-combination passes by validation rather than by applying that repair.
+that still have inactive RR cells, but the pinned 2026 source combination
+passes by validation rather than by applying that repair.
+
+The current source combination is
+`ofp-sam-2026-BET-YFT-build-ini@f8faf7c` and
+`ofp-sam-2026-BET-YFT-tag-prep@e0b427d`. The BET tag changes originate in
+`3dad64e`; the later `e0b427d` commit changes YFT only. Steps 07-09 record
+`bet.2026.ini` as the primary INI and `bet.2026.mix-0.2.ini` as the five-block
+reporting-rate source. Steps 10-15 use `bet.2026.mix-0.2.ini` directly. The
+generated files preserve the source reporting-rate group IDs while keeping
+`tag_flags(it,2)=0`. Fishery display names and regions in `fishery_map.R` are
+synchronized from `BET/bet.RR.2026.csv`; `tag_rep_map.R` then uses those same
+labels so MFCLShiny reads a consistent pair of sidecars. Initial values are
+harmonized within one grouped RR block where native MFCL requires a shared
+start; active flags, group IDs, targets, and penalties remain source-identical.
 
 The full cell-by-cell audit remains in each model folder as
 `steps/<step_id>/model/tag_rep_map.R`.

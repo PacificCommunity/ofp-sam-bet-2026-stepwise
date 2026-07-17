@@ -167,17 +167,31 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     )
   }
   has_reg_scaling <- nzchar(reg_scaling_source)
+  reg_scaling_info <- NULL
   if (has_reg_scaling) {
-    regional_scaling_periods <- length(readLines(reg_scaling_source, warn = FALSE))
-    copy_one(reg_scaling_source, file.path(model_dir, "bet.reg_scaling"))
+    reg_scaling_info <- write_regional_scaling_inputs(
+      source_path = reg_scaling_source,
+      active_path = file.path(model_dir, "bet.reg_scaling"),
+      full_path = file.path(model_dir, "bet.reg_scaling.full"),
+      start_period = reg_scaling_active_start_period,
+      end_period = reg_scaling_active_end_period
+    )
+    regional_scaling_periods <- reg_scaling_info$total_periods
     if (!"bet.reg_scaling" %in% names(input_notes)) {
       input_notes[["bet.reg_scaling"]] <-
         paste0(
-          "Full `bet.2026.reg_scaling` global CPUE regional-scaling matrix; ",
-          "parest flags select active periods ",
-          reg_scaling_active_start_period, "-", reg_scaling_active_end_period,
-          " (", reg_scaling_active_years, ") for the prior"
+          "MFCL-ready active matrix: source periods ", reg_scaling_info$start,
+          "-", reg_scaling_info$end, " (", reg_scaling_active_years, "); ",
+          reg_scaling_info$active_periods, " rows x ",
+          reg_scaling_info$columns, " region columns"
         )
+    }
+    if (!"bet.reg_scaling.full" %in% names(input_notes)) {
+      input_notes[["bet.reg_scaling.full"]] <- paste0(
+        "Complete `bet.2026.reg_scaling` sensitivity source; ",
+        reg_scaling_info$total_periods, " rows x ",
+        reg_scaling_info$columns, " region columns; not read by MFCL"
+      )
     }
   }
   control_notes <- c(
@@ -206,7 +220,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     opr = isTRUE(doitall_edits$opr),
     data_weighting = isTRUE(doitall_edits$data_weighting),
     regional_scaling = has_reg_scaling,
-    regional_scaling_periods = if (has_reg_scaling) regional_scaling_periods else 292L
+    regional_scaling_periods = if (has_reg_scaling) regional_scaling_periods else 292L,
+    regional_scaling_start_period = reg_scaling_active_start_period,
+    regional_scaling_end_period = reg_scaling_active_end_period
   )
   reg_scaling_flags <- NULL
   reg_scaling_window <- NULL
@@ -245,6 +261,18 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       if (isTRUE(doitall_edits$data_weighting)) "global LF/WF divisors set to 40"
     ), collapse = "; "))
   )
+  if (nzchar(tag_reporting_source)) {
+    entries <- append(entries, list(list(
+      role = "ini_tag_reporting",
+      file = "bet.ini",
+      source = tag_reporting_source,
+      note = paste0(
+        "five tag reporting-rate matrix blocks copied from ",
+        basename(tag_reporting_source),
+        "; base ini and tag flags remain attributable to the primary ini entry"
+      )
+    )), after = 2L)
+  }
   if (nzchar(index_cpue_source)) {
     entries <- append(entries, list(list(
       role = "frq_cpue",
@@ -254,17 +282,26 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     )), after = 1L)
   }
   if (has_reg_scaling) {
-    entries <- append(entries, list(list(
+    entries <- c(entries, list(list(
       role = "reg_scaling",
       file = "bet.reg_scaling",
       source = reg_scaling_source,
       note = paste0(
-        "full global CPUE regional-scaling matrix copied unchanged; parest ",
-        "flags 77-81 define active periods ", reg_scaling_window$start, "-",
-        reg_scaling_window$end,
-        " so native MFCL takes only the flagged rows internally"
+        "MFCL input extracted from source periods ", reg_scaling_window$start,
+        "-", reg_scaling_window$end, "; ",
+        reg_scaling_info$active_periods, " rows x ",
+        reg_scaling_info$columns, " region columns"
       )
-    )), after = 4L)
+    ), list(
+      role = "reg_scaling_full",
+      file = "bet.reg_scaling.full",
+      source = reg_scaling_source,
+      note = paste0(
+        "complete ", reg_scaling_info$total_periods, " rows x ",
+        reg_scaling_info$columns,
+        " region columns retained for alternative-period sensitivities; MFCL does not read this filename"
+      )
+    )))
   }
   write_manifest(step_dir, entries)
   outstanding <- c(
