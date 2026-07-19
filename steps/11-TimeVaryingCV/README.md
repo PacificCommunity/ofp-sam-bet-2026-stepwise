@@ -22,7 +22,7 @@ Enable time-varying CPUE CV for the regional index fisheries.
 | File | Source / note |
 | --- | --- |
 | `.frq` | `bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq`, full 2024 with regional CPUE |
-| `.ini` | `bet.2026.mix-0.2.ini`, FixM M row applied from the 01-Diag2023 mgc=-5 diagnostic final par; harmonized initial RR values only in 1 tag reporting-rate group(s) so grouped starts are native-MFCL compatible; group flags, targets, and penalties unchanged; raised 2 zero tag mixing periods to 1 because MFCL >=2.2.7.5 disallows 0; normalized MFCL 1007 tag-control rows for 98 release groups |
+| `.ini` | `bet.2026.mix-0.2.ini`, FixM M row applied from the 01-Diag2023 mgc=-5 diagnostic final par; raised 2 zero tag mixing periods to 1 because MFCL >=2.2.7.5 disallows 0; normalized MFCL 1007 tag-control rows for 98 release groups |
 | `.tag` | `bet.2026.low.recaps.removed.tag`; latest tag-prep build with updated RR groups and canneries-based reassignment of recaptures with missing gear to purse-seine fisheries before low-recap filtering |
 | `.age_length` | `bet.2026.age_length` (updated CAAL); set age_length effective sample size to 0.75 for 181 records |
 | `.reg_scaling` | MFCL-ready active matrix: source periods 53-72 (1965Q1-1969Q4); 20 rows x 5 region columns |
@@ -42,10 +42,10 @@ Enable time-varying CPUE CV for the regional index fisheries.
 
 | Repository | Commit | Note |
 | --- | --- | --- |
-| `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `f8faf7c` | updated RR groupings |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `e0b427d` | updated RR groups |
-| `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
+| `ofp-sam-2026-BET-YFT-frq-build` | `26a4d6e` | add effort creep scenarios |
+| `ofp-sam-2026-BET-YFT-build-ini` | `8371ac1` | Merge pull request #1 from kyuhank/fix/contiguous-tag-reporting-groups |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `79733c4` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-age-length-build` | `96a06d2` | add various effective sample sizes |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
 
