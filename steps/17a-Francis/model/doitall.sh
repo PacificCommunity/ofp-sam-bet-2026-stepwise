@@ -269,9 +269,6 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -31 75 2  # Index R3 youngest age classes fixed at zero selectivity
   -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
   -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
-  -21 49 114  # Francis TA1.8 locked LF divisor for F21
-  -22 49 398  # Francis TA1.8 locked LF divisor for F22
-  -23 49 705  # Francis TA1.8 locked LF divisor for F23
   -3 49 42  # Francis TA1.8 locked LF divisor for F3
   -5 49 63  # Francis TA1.8 locked LF divisor for F5
   -9 49 85  # Francis TA1.8 locked LF divisor for F9
@@ -285,6 +282,9 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -18 49 151  # Francis TA1.8 locked LF divisor for F18
   -19 49 141  # Francis TA1.8 locked LF divisor for F19
   -20 49 258  # Francis TA1.8 locked LF divisor for F20
+  -21 49 114  # Francis TA1.8 locked LF divisor for F21
+  -22 49 398  # Francis TA1.8 locked LF divisor for F22
+  -23 49 705  # Francis TA1.8 locked LF divisor for F23
   -24 49 39  # Francis TA1.8 locked LF divisor for F24
   -25 49 27  # Francis TA1.8 locked LF divisor for F25
   -26 49 37  # Francis TA1.8 locked LF divisor for F26

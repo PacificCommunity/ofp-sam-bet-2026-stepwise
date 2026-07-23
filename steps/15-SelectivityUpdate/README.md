@@ -1,6 +1,6 @@
 # 15 Fleet-specific selectivity update
 
-Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index selectivities.
+Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specific terminal/dome controls, set F25/F26 seven-node and tail controls, and separate F29-F33.
 
 ## Snapshot
 
@@ -13,9 +13,10 @@ Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index
 
 | # | Change |
 | --- | --- |
-| 1 | Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index selectivities. |
-| 2 | Scientific parent: '14-CPUESigma'. |
-| 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
+| 1 | Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specific terminal/dome controls, set F25/F26 seven-node and tail controls, and separate F29-F33. |
+| 2 | F25/F26 each use terminal age 25, dome flag 2, seven spline nodes, and youngest-tail flag 0; F29-F33 separate in staged MFCL run 5. |
+| 3 | Scientific parent: '14-CPUESigma'. |
+| 4 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 
@@ -35,7 +36,7 @@ Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index selectivities. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specific terminal/dome controls, set F25/F26 seven-node and tail controls, and separate F29-F33. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -55,7 +56,7 @@ Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index
 | 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
 | 3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-| 4 | F25 and F26 use independent groups 25/26 and seven-node cubic splines. |
+| 4 | The intended Step 15 bundle unshares F15-F28 and applies fleet-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
 | 5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 | 6 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 7 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |

@@ -8,6 +8,8 @@ The reference penalty was 276.371. F22 `DOM.PH.2` contributed 101.92 (36.9%) and
 
 The fourth model removes all 16 active fishery-specific form penalties to show the boundary of their combined influence. It is a diagnostic boundary sensitivity, not a preferred model.
 
+The reference controls originate in the intended broad Step 15 bundle: F15-F28 are unshared, fleet-specific terminal/dome controls are applied, F25/F26 use seven-node and tail settings, and F29-F33 are separated. These sensitivities relax only the listed form penalties; they do not redefine that bundle.
+
 ## Models
 
 | Model | Change from Step 17b | Purpose |

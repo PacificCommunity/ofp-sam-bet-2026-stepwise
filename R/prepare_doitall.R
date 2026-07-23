@@ -70,40 +70,6 @@ write_program_path_doitall <- function(from, to) {
   invisible(to)
 }
 
-apply_2023_newexe_controls <- function(lines) {
-  cpue_cv <- c(
-    "33" = 24L,
-    "34" = 31L,
-    "35" = 20L,
-    "36" = 21L,
-    "37" = 26L,
-    "38" = 23L,
-    "39" = 20L,
-    "40" = 25L,
-    "41" = 47L
-  )
-  for (fishery in names(cpue_cv)) {
-    lines <- set_doitall_fishery_flag(
-      lines,
-      fishery = as.integer(fishery),
-      flag = 92L,
-      value = cpue_cv[[fishery]]
-    )
-  }
-  old_initial_z <- "^[[:space:]]*2[[:space:]]+94[[:space:]]+1[[:space:]]+2[[:space:]]+128[[:space:]]+10([[:space:]]|$)"
-  new_initial_z <- "^[[:space:]]*2[[:space:]]+94[[:space:]]+1[[:space:]]+2[[:space:]]+128[[:space:]]+100([[:space:]]|$)"
-  if (any(grepl(old_initial_z, lines))) {
-    lines <- replace_one_line(
-      lines,
-      old_initial_z,
-      "  2 94 1 2 128 100  # initial Z = 1.0*M, i.e. initial F = 0"
-    )
-  } else if (!any(grepl(new_initial_z, lines))) {
-    stop("Expected one current-executable initial Z line in doitall.sh", call. = FALSE)
-  }
-  lines
-}
-
 normalize_lorenzen_mortality_control <- function(lines, fixm = FALSE) {
   mortality_flag_pattern <- "^[[:space:]]*1[[:space:]]+121[[:space:]]+[01]([[:space:]]|$)"
   mortality_flag_lines <- grep(mortality_flag_pattern, lines)
@@ -145,7 +111,6 @@ remove_tag_mixing_override <- function(lines) {
 write_2023_newexe_doitall <- function(from, to, fixm = FALSE, mix_from_ini = TRUE) {
   write_program_path_doitall(from, to)
   lines <- readLines(to, warn = FALSE)
-  lines <- apply_2023_newexe_controls(lines)
   if (isTRUE(mix_from_ini)) {
     lines <- remove_tag_mixing_override(lines)
   }
@@ -577,7 +542,7 @@ apply_index_selectivity_separation <- function(lines, index_fisheries = 29:33) {
   append_phase_controls(lines, 5L, block)
 }
 
-apply_f25_f26_spline7 <- function(lines) {
+apply_step15_selectivity_bundle <- function(lines) {
   phase1_groups <- c(seq_len(28L), rep(29L, 5L))
   old_group_comment <- grep(
     "^# The old 29 groups become 25 groups here: 24 extraction groups [+] 1 index group[.]$",
@@ -803,7 +768,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_scaling_start_period = reg_scaling_active_start_period,
                           regional_scaling_end_period = reg_scaling_active_end_period,
                           index_selectivity = FALSE,
-                          f25_f26_spline7 = FALSE,
+                          step15_selectivity_bundle = FALSE,
                           time_varying_cv = FALSE,
                           effort_creep = FALSE,
                           dom_divisor200 = FALSE,
@@ -828,7 +793,9 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       end_period = regional_scaling_end_period
     )
   }
-  if (isTRUE(f25_f26_spline7)) lines <- apply_f25_f26_spline7(lines)
+  if (isTRUE(step15_selectivity_bundle)) {
+    lines <- apply_step15_selectivity_bundle(lines)
+  }
   if (isTRUE(index_selectivity)) lines <- apply_index_selectivity_separation(lines)
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)
   if (isTRUE(dom_divisor200)) lines <- apply_dom_lf_divisors(lines)

@@ -55,7 +55,7 @@ Retain the Step 17b model and remove the dome/old-age-tail selectivity-form pena
 |  1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 |  2 | Regional-scaling weight is 100. |
 |  3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  4 | F25 and F26 use independent groups 25/26 and seven-node cubic splines. |
+|  4 | The intended Step 15 bundle unshares F15-F28 and applies fleet-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
 |  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  6 | Only F21-F23 receive the DOM LF divisor 200. |
 |  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |

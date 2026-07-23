@@ -79,8 +79,9 @@ stepwise_models <- do.call(
     ),
     model_row(
       "02a-NewExe1003", "02-Executable", "01-Diag2023",
-      TRUE, "carry", "current MFCL executable with the 1003 ini",
+      TRUE, "carry", "run the current MFCL executable against the exact Step 01 scientific controls and 1003 ini",
       "Current executable with ini 1003", "02a Current executable with ini 1003", "02a-newexe1003",
+      "Executable-only comparison: retain Step 01 F33-F41 CPUE flag-92 values 88/53/130/109/76/93/121/77/23 and global `2 94 1 2 128 10`; change only executable invocation/safety plus reporting-only compatibility.",
       region_count = 9L
     ),
     model_row(
@@ -128,7 +129,7 @@ stepwise_models <- do.call(
       TRUE, "carry",
       "add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty",
       "Regional CPUE likelihood and weighting", "08 Regional CPUE likelihood and weighting", "08-regional-cpue-regw100",
-      "Regional CPUE data/likelihood and REGW100 only; no selectivity change"
+      "Authoritative regional CPUE source and REGW100 only; the source has two fewer F32 1952 quarterly records than Step 07 and is copied without transformation; no selectivity change."
     ),
     model_row(
       "09a-BASE075", "09-CompositionWeighting", "08-RegionalCPUE",
@@ -176,9 +177,9 @@ stepwise_models <- do.call(
     model_row(
       "15-SelectivityUpdate", "15-SelectivityUpdate", "14-CPUESigma",
       TRUE, "carry",
-      "address persistent structured F25/F26 length-frequency misfit with independent seven-node cubic-spline selectivities and separate F29-F33 regional-index selectivities",
+      "apply the intended broad selectivity bundle across F15-F33",
       "Fleet-specific selectivity update", "15 Fleet-specific selectivity update", "15-selectivity-update",
-      "F25/F26 are spatially distinct associated purse-seine fisheries: retain their common associated-purse-seine G8 DM group but use independent smooth 7-node splines for different size availability. F29-F33 are regional index fisheries: separate selectivities to avoid masking regional size-availability differences while retaining their common index-oriented DM group. Grouping and node choices are assessment-specific and evaluated stepwise, not literature-mandated."
+      "Unshare F15-F28 and apply fleet-specific terminal/dome controls. F25/F26 each use terminal age 25, dome flag 2, seven spline nodes, and youngest-tail flag 0. Separate F29-F33 selectivity groups in staged run 5. These controls are one assessment-specific bundle; DM grouping is unchanged."
     ),
     model_row(
       "16-DOMDiv200", "16-DOM", "15-SelectivityUpdate",
@@ -187,8 +188,9 @@ stepwise_models <- do.call(
     ),
     model_row(
       "17a-Francis", "17-CompositionLikelihood", "16-DOMDiv200",
-      FALSE, "stop", "apply the Francis composition-data weighting comparison",
-      "Francis length-composition weighting", "17a Francis length-composition weighting", "17a-francis"
+      FALSE, "stop", "replace Step 16 LF divisors with the Francis composition-data weighting comparison",
+      "Francis length-composition weighting", "17a Francis length-composition weighting", "17a-francis",
+      "Francis flag-49 divisors replace the Step 16 values for all 33 fisheries, including F21-F23 = 114/398/705 rather than 200/200/200."
     ),
     model_row(
       "17b-DMG8Nmax25", "17-CompositionLikelihood", "16-DOMDiv200",
@@ -225,9 +227,9 @@ stepwise_report_purpose <- c(
   "12-TimeVaryingCV" = "Allow CPUE precision to vary through time using the normalized BET 2026 uncertainty schedule.",
   "13-EffortCreep" = "Account for gradual changes in fishing efficiency in the regional index fisheries.",
   "14-CPUESigma" = "Keep CPUE weighting consistent across later comparisons using common observation-error scales calibrated from preliminary maximum-likelihood fits.",
-  "15-SelectivityUpdate" = "Represent persistent fishery-specific size-availability differences without forcing F25/F26 or regional indices to share selectivity.",
+  "15-SelectivityUpdate" = "Apply the intended broad fleet-specific selectivity bundle: unshare F15-F28, set terminal/dome controls, use seven-node F25/F26 tails, and separate F29-F33.",
   "16-DOMDiv200" = "Limit the influence of lower-quality, previously unweighted DOM length compositions from F21-F23.",
-  "17a-Francis" = "Evaluate fishery-specific Francis weighting as an alternative treatment of composition information.",
+  "17a-Francis" = "Evaluate Francis weighting as a substitute for all Step 16 fishery-specific LF divisors, including F21-F23.",
   "17b-DMG8Nmax25" = "Estimate composition overdispersion within the model while limiting excessive length-frequency influence on the integrated fit."
 )
 stepwise_models$report_purpose <- unname(

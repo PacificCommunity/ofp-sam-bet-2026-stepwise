@@ -160,6 +160,26 @@ check_flag <- function(flags, scope, flag, expected, model_id, description = "")
   }
 }
 
+initial_z_control_value <- function(lines) {
+  clean <- trimws(sub("#.*$", "", lines))
+  words <- strsplit(clean[nzchar(clean)], "[[:space:]]+")
+  prefix <- c("2", "94", "1", "2", "128")
+  matches <- words[vapply(
+    words,
+    function(x) length(x) == 6L && identical(x[seq_along(prefix)], prefix),
+    logical(1)
+  )]
+  if (length(matches) != 1L) return(NA_real_)
+  suppressWarnings(as.numeric(matches[[1L]][[6L]]))
+}
+
+scientific_flag_table <- function(flags) {
+  reporting_only <- flags$scope == 1L & flags$flag == 246L
+  out <- flags[!reporting_only, c("scope", "flag", "value", "phase"), drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
 placeholder_pattern <- "(?i)(TODO|TBD|FIXME|CHANGEME|REPLACE[_ -]?ME|UNKNOWN|<[^>]+>)"
 check_placeholders <- function(values, scope) {
   values <- trim_character(values)
@@ -192,7 +212,18 @@ if (!is.data.frame(models)) {
   models <- data.frame(step_id = character(), stringsAsFactors = FALSE)
 }
 configured_models <- models
-if ("enabled" %in% names(models)) models <- models[truthy(models$enabled), , drop = FALSE]
+early_isolation_audit_ids <- c(
+  "01-Diag2023", "02a-NewExe1003", "02b-Ini1007",
+  "02c-LengthWeight", "03-FixM"
+)
+if ("enabled" %in% names(models)) {
+  models <- models[
+    truthy(models$enabled) |
+      trim_character(models$step_id) %in% early_isolation_audit_ids,
+    ,
+    drop = FALSE
+  ]
+}
 
 if (!"step_id" %in% names(models)) {
   add_failure("job-config", "`stepwise_models` must include `step_id`.")
@@ -754,9 +785,85 @@ for (i in seq_len(nrow(models))) {
     token = token,
     model_dir = model_dir,
     ini = ini,
+    doitall = doitall,
+    flags = flags,
     tag_flags = tag_flags,
     hashes = setNames(vapply(required_files, function(file) sha256_file(file.path(model_dir, file)), character(1)), required_files)
   )
+}
+
+## Step 02a is executable-only: its source inputs and scientific controls must
+## match Step 01. Steps 02b-03 inherit the Step 01 CPUE and initial-Z controls.
+early_control_ids <- c(
+  "01-Diag2023", "02a-NewExe1003", "02b-Ini1007",
+  "02c-LengthWeight", "03-FixM"
+)
+available_early_ids <- early_control_ids[early_control_ids %in% names(model_cache)]
+if ("01-Diag2023" %in% available_early_ids) {
+  anchor <- model_cache[["01-Diag2023"]]
+  expected_cpue_flag92 <- c(88, 53, 130, 109, 76, 93, 121, 77, 23)
+  anchor_cpue_flag92 <- vapply(
+    33:41,
+    function(fishery) effective_flag_at_phase(anchor$flags, -fishery, 92L, 1L),
+    numeric(1)
+  )
+  if (!identical(as.numeric(anchor_cpue_flag92), as.numeric(expected_cpue_flag92))) {
+    add_failure(
+      "01-Diag2023",
+      paste0(
+        "audited F33-F41 CPUE flag-92 anchor must be `",
+        paste(expected_cpue_flag92, collapse = " "),
+        "`; found `", paste(anchor_cpue_flag92, collapse = " "), "`."
+      )
+    )
+  }
+  for (model_id in available_early_ids) {
+    cached <- model_cache[[model_id]]
+    cpue_flag92 <- vapply(
+      33:41,
+      function(fishery) effective_flag_at_phase(cached$flags, -fishery, 92L, 1L),
+      numeric(1)
+    )
+    if (!identical(as.numeric(cpue_flag92), as.numeric(anchor_cpue_flag92))) {
+      add_failure(
+        model_id,
+        paste0(
+          "F33-F41 CPUE flag-92 controls must inherit Step 01 unchanged; found `",
+          paste(cpue_flag92, collapse = " "), "`."
+        )
+      )
+    }
+    initial_z <- initial_z_control_value(cached$doitall)
+    if (!is.finite(initial_z) || initial_z != 10) {
+      add_failure(
+        model_id,
+        paste0(
+          "global `2 94 1 2 128` control must inherit Step 01 value 10; found ",
+          if (is.finite(initial_z)) initial_z else "missing/ambiguous", "."
+        )
+      )
+    }
+  }
+  if ("02a-NewExe1003" %in% available_early_ids) {
+    executable_step <- model_cache[["02a-NewExe1003"]]
+    for (file in c("bet.frq", "bet.ini", "bet.tag", "bet.age_length", "mfcl.cfg")) {
+      if (!identical(anchor$hashes[[file]], executable_step$hashes[[file]])) {
+        add_failure(
+          "02a-NewExe1003",
+          paste0("executable-only isolation changed ", file, " relative to Step 01.")
+        )
+      }
+    }
+    if (!identical(
+      scientific_flag_table(anchor$flags),
+      scientific_flag_table(executable_step$flags)
+    )) {
+      add_failure(
+        "02a-NewExe1003",
+        "scientific controls differ from Step 01 outside allowed reporting-only flag 1/246."
+      )
+    }
+  }
 }
 
 ## Isolation checks for matched TAGF2 and mixing-period pairs, when configured.

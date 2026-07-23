@@ -7,7 +7,7 @@ copied as-is and what is intentionally changed in the generated model folders?
 
 | Input | Source-exact? | Intentional generated change |
 | --- | --- | --- |
-| `.frq` | Yes for steps 01-13. | Steps 14-15 change only index-fishery effort values for effort creep. |
+| `.frq` | Yes for steps 01-13. | Step 08 uses the authoritative regional CPUE replacement as supplied; it has two fewer F32 1952 quarterly records than Step 07 and no transform. Steps 14-15 change only index-fishery effort values for effort creep. |
 | `.tag` | Yes for all steps. | None. `tag_rep_map.R` is an MFCLShiny display/audit sidecar, not an MFCL input. |
 | `.age_length` | Records are copied from source. | Steps 04-15 set effective sample size from `1` to `0.75`. |
 | `.ini` | 01 and 02a are unchanged from source. Later steps are generated from source baselines. | MFCL 1007 conversion, BET 2026 L-W, `LN(R0)` from 04 onward, FixM, tag/RR alignment, and current-reader compatibility edits. |
@@ -27,7 +27,8 @@ copied as-is and what is intentionally changed in the generated model folders?
 
 | File type | Steps | Source file | Generated difference |
 | --- | --- | --- | --- |
-| `.frq` | 01-13 | Selected source in `frq-build`, diagnostic repo, or archived 2023 replication inputs. | None found in byte-for-byte source checks. |
+| `.frq` | 01-07 | Selected source in `frq-build`, diagnostic repo, or archived 2023 replication inputs. | None found in byte-for-byte source checks. |
+| `.frq` | 08-13 | `BET/bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq` | Authoritative regional CPUE replacement; two fewer F32 1952 quarterly records than Step 07, copied without transformation. |
 | `.frq` | 14-15 | `BET/bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq` | Effort values for index fisheries 29-33 are multiplied by the agreed effort-creep schedule. |
 | `.tag` | 01-15 | Selected source `.tag` for each step family. | None. |
 | `.age_length` | 01-03 | Diagnostic or archived 2023 replication source. | None. |

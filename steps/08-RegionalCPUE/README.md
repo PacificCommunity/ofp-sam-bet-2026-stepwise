@@ -14,8 +14,9 @@ Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty.
 | # | Change |
 | --- | --- |
 | 1 | Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty. |
-| 2 | Scientific parent: '07-DataTo2024'. |
-| 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
+| 2 | The authoritative regional CPUE replacement has two fewer F32 1952 quarterly records than Step 07; the source FRQ is copied without transformation. |
+| 3 | Scientific parent: '07-DataTo2024'. |
+| 4 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 

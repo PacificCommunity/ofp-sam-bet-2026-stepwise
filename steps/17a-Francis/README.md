@@ -1,6 +1,6 @@
 # 17a Francis length-composition weighting
 
-Apply the locked Francis TA1.8 composition-data weighting comparison.
+Replace all Step 16 LF divisors with locked Francis TA1.8 values, including F21-F23 = 114/398/705.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Apply the locked Francis TA1.8 composition-data weighting comparison.
 
 | # | Change |
 | --- | --- |
-| 1 | Apply the locked Francis TA1.8 composition-data weighting comparison. |
+| 1 | Replace all Step 16 LF divisors with locked Francis TA1.8 values, including F21-F23 = 114/398/705. |
 | 2 | Scientific parent: '16-DOMDiv200'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Apply the locked Francis TA1.8 composition-data weighting comparison.
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Apply the locked Francis TA1.8 composition-data weighting comparison. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Replace all Step 16 LF divisors with locked Francis TA1.8 values, including F21-F23 = 114/398/705. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -55,9 +55,9 @@ Apply the locked Francis TA1.8 composition-data weighting comparison.
 |  1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 |  2 | Regional-scaling weight is 100. |
 |  3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  4 | F25 and F26 use independent groups 25/26 and seven-node cubic splines. |
+|  4 | The intended Step 15 bundle unshares F15-F28 and applies fleet-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
 |  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
-|  6 | Only F21-F23 receive the DOM LF divisor 200. |
+|  6 | Francis divisors replace all Step 16 LF flag-49 values, including F21-F23 = 114/398/705. |
 |  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 |  8 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 |  9 | No OPR or length-bin selectivity controls are generated. |

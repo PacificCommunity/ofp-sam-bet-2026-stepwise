@@ -337,52 +337,55 @@ copy_model_core_files <- function(from_dir, to_dir) {
 
 write_02a_newexe_step <- function() {
   paths <- prepare_step_model_dir("02a-NewExe1003")
-  copy_model_core_files(rep2023_root, paths$model_dir)
+  step01_model_dir <- file.path(root, "steps", "01-Diag2023", "model")
+  copy_model_core_files(step01_model_dir, paths$model_dir)
   write_generated_tag_rep_map(paths$model_dir)
   write_2023_newexe_doitall(
-    rep2023_file("doitall.sh"),
+    file.path(step01_model_dir, "doitall.sh"),
     file.path(paths$model_dir, "doitall.sh"),
     fixm = FALSE,
     mix_from_ini = FALSE
   )
   write_manifest(paths$step_dir, list(
-    list(role = "frq", file = "bet.frq", source = rep2023_file("bet.frq"), note = "2023 assessment replication frequency/catch/size input"),
-    list(role = "ini", file = "bet.ini", source = rep2023_file("bet.ini"), note = "MFCL 1003 ini from the 2023 assessment replication input set; not promoted in this substep"),
-    list(role = "tag", file = "bet.tag", source = rep2023_file("bet.tag"), note = "2023 replication tag input; tag reporting map regenerated from ini/tag"),
-    list(role = "age_length", file = "bet.age_length", source = rep2023_file("bet.age_length"), note = "2023 replication CAAL input"),
-    list(role = "doitall", file = "doitall.sh", source = rep2023_file("doitall.sh"), note = "2023 assessment replication controls adapted for the current executable with PROGRAM_PATH wrapper, PHASE 10/11 convergence switch, and 1003 ini tag mixing override retained")
+    list(role = "frq", file = "bet.frq", source = diagnostic_file("bet.frq"), note = "exact Step 01 diagnostic frequency/catch/size input"),
+    list(role = "ini", file = "bet.ini", source = diagnostic_file("bet.ini"), note = "exact Step 01 MFCL 1003 ini; not promoted in this substep"),
+    list(role = "tag", file = "bet.tag", source = diagnostic_file("bet.tag"), note = "exact Step 01 diagnostic tag input; tag reporting map regenerated from ini/tag"),
+    list(role = "age_length", file = "bet.age_length", source = diagnostic_file("bet.age_length"), note = "exact Step 01 diagnostic CAAL input"),
+    list(role = "doitall", file = "doitall.sh", source = diagnostic_file("doitall.sh"), note = "Step 01 scientific controls retained exactly; only the PROGRAM_PATH/set -eu safety wrapper, existing convergence switch, and reporting-only indepvar.rpt compatibility control are added")
   ))
   write_readme(
     paths$step_dir,
     "02a NewExe1003",
-    "2023 assessment replication inputs run with the current MFCL executable while keeping the MFCL 1003 ini.",
+    "Step 01 inputs and scientific controls run with the current MFCL executable while keeping the MFCL 1003 ini.",
     c(
-      "Uses the archived 2023 assessment replication input set as the source model (`ofp-sam-2026-BET/mfcl/inputs/2023_rep`).",
-      "Keeps `bet.ini` as version 1003 so this substep isolates the current executable and the original 2023 control script.",
+      "Uses the generated Step 01 model files, sourced from `ofp-sam-bet-2023-diagnostic/MFCL`, as the exact comparison baseline.",
+      "Keeps `bet.ini` as version 1003 and retains every Step 01 scientific control so this is an executable-only comparison.",
+      "Preserves Step 01 F33-F41 CPUE flag-92 values `88, 53, 130, 109, 76, 93, 121, 77, 23` and global `2 94 1 2 128 10`.",
       "Retains the `-9999 1 2` doitall tag-mixing override because MFCL 1003 inputs do not contain an explicit `# tag flags` block.",
-      "Adds the usual Kflow safety wrapper: `set -eu`, PROGRAM_PATH guard, and `BET_PHASE10_11_CONVERGENCE` for PHASE 10/11."
+      "Only modernizes executable invocation/safety with `set -eu` and a PROGRAM_PATH guard; the existing PHASE 10/11 switch is retained and reporting-only `1 246 1` compatibility is added."
     ),
     c(
-      "bet.frq" = "2023 assessment replication `.frq`; 9 regions, 41 fisheries, terminal year 2021",
-      "bet.ini" = "2023 assessment replication `.ini`; MFCL 1003, no explicit tag flags",
-      "bet.tag" = "2023 assessment replication `.tag`",
-      "bet.age_length" = "2023 assessment replication `.age_length`",
+      "bet.frq" = "exact Step 01 diagnostic `.frq`; 9 regions, 41 fisheries, terminal year 2021",
+      "bet.ini" = "exact Step 01 diagnostic `.ini`; MFCL 1003, no explicit tag flags",
+      "bet.tag" = "exact Step 01 diagnostic `.tag`",
+      "bet.age_length" = "exact Step 01 diagnostic `.age_length`",
       "input_manifest.csv" = "machine-readable source/input notes with source commits"
     ),
     c(
       "The current MFCL executable configured by the runtime is used.",
-      "This substep is the executable/control-script bridge before changing the ini layout.",
+      "This substep changes the executable invocation, not scientific controls, before changing the ini layout.",
+      "The reporting-only `1 246 1` control requests `indepvar.rpt` and does not alter the fit.",
       "The 2023 nine-region GeoJSON asset remains display-only; it does not change MFCL inputs."
     ),
     c(
-      "Compare directly with 01-Diag2023 to isolate historical-executable versus current-executable/control effects.",
+      "Compare directly with 01-Diag2023 to isolate only the historical versus current executable.",
       "Do not interpret this as a 1007 ini test; that is isolated in 02b-Ini1007."
     ),
     "Ready for Kflow smoke runs; full MFCL fit not run here.",
     input_changes = input_change_table(
       c(".ini", ".frq", ".tag", ".age_length"),
       c("No generated input edit; MFCL 1003 layout is retained.", "No generated edit.", "No generated edit.", "No generated edit."),
-      c("2023 replication ini values.", "2023 replication source file.", "2023 replication source file.", "2023 replication source file.")
+      c("Step 01 diagnostic ini values.", "Step 01 diagnostic source file.", "Step 01 diagnostic source file.", "Step 01 diagnostic source file.")
     ),
     source_revisions = input_repo_revision_table()
   )
@@ -851,6 +854,7 @@ francis_lf_divisors <- as.integer(francis_ta18_audit$recommended_divisor)
 
 write_sequence_step <- function(
     step_id, title, parent, change,
+    audit_notes = character(),
     frq_source = frq_global_2024,
     ini_source = new_ini,
     tag_source = new_tag,
@@ -865,7 +869,7 @@ write_sequence_step <- function(
     regional_scaling = FALSE,
     regional_scaling_weight = NA_integer_,
     index_selectivity = FALSE,
-    f25_f26_spline7 = FALSE,
+    step15_selectivity_bundle = FALSE,
     time_varying_cv = FALSE,
     effort_creep = FALSE,
     dom_divisor200 = FALSE,
@@ -879,7 +883,7 @@ write_sequence_step <- function(
     list(
       regional_cpue = regional_cpue,
       index_selectivity = index_selectivity,
-      f25_f26_spline7 = f25_f26_spline7,
+      step15_selectivity_bundle = step15_selectivity_bundle,
       time_varying_cv = time_varying_cv,
       dom_divisor200 = dom_divisor200,
       dm_grouping = dm_grouping,
@@ -913,6 +917,7 @@ write_sequence_step <- function(
     summary = change,
     bullets = c(
       change,
+      audit_notes,
       paste0("Scientific parent: '", parent, "'."),
       "The model folder is rebuilt from source inputs plus the complete cumulative edit set."
     ),
@@ -926,9 +931,17 @@ write_sequence_step <- function(
       if (regional_cpue) "Regional CPUE indices use the configured stationary-catchability/likelihood groups.",
       if (!is.na(regional_scaling_weight)) paste0("Regional-scaling weight is ", regional_scaling_weight, "."),
       if (index_selectivity) "F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5.",
-      if (f25_f26_spline7) "F25 and F26 use independent groups 25/26 and seven-node cubic splines.",
+      if (step15_selectivity_bundle) paste0(
+        "The intended Step 15 bundle unshares F15-F28 and applies fleet-specific ",
+        "terminal/dome and youngest-age-tail controls; F25/F26 each use seven ",
+        "nodes, terminal age 25, dome flag 2, and youngest-tail flag 0."
+      ),
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
+      if (length(francis_divisors)) paste0(
+        "Francis divisors replace all Step 16 LF flag-49 values, including ",
+        "F21-F23 = ", paste(francis_divisors[21:23], collapse = "/"), "."
+      ),
       if (fixed_cpue_sigma) paste0(
         "Fixed CPUE observation-error scales (flag 92 integer percentages): ",
         paste(cpue_sigma_calibration$flag92, collapse = ", "), "."
@@ -999,6 +1012,10 @@ write_sequence_step(
 write_sequence_step(
   "08-RegionalCPUE", "08 Regional CPUE likelihood and weighting", "07-DataTo2024",
   "Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty.",
+  audit_notes = paste0(
+    "The authoritative regional CPUE replacement has two fewer F32 1952 ",
+    "quarterly records than Step 07; the source FRQ is copied without transformation."
+  ),
   frq_source = frq_regional_2024,
   reporting_rate_variant = "rrpttp26",
   tag_reporting_source = peatman_rr_ini,
@@ -1030,14 +1047,16 @@ for (age_spec in list(
 
 write_selected_path_step <- function(
     step_id, title, parent, change,
+    audit_notes = character(),
     tag_mixing = FALSE, tag_flag2 = 0L,
     time_varying_cv = FALSE, effort_creep = FALSE,
     fixed_cpue_sigma = FALSE,
-    index_selectivity = FALSE, f25_f26_spline7 = FALSE,
+    index_selectivity = FALSE, step15_selectivity_bundle = FALSE,
     dom = FALSE, francis = numeric(),
     dm_grouping = "", dm_nmax = NA_integer_) {
   write_sequence_step(
     step_id, title, parent, change,
+    audit_notes = audit_notes,
     frq_source = frq_regional_2024,
     age_source = sub_basin_age_075,
     age_effective_sample_size = NA_real_,
@@ -1049,7 +1068,7 @@ write_selected_path_step <- function(
     regional_scaling = TRUE,
     regional_scaling_weight = 100L,
     index_selectivity = index_selectivity,
-    f25_f26_spline7 = f25_f26_spline7,
+    step15_selectivity_bundle = step15_selectivity_bundle,
     time_varying_cv = time_varying_cv,
     effort_creep = effort_creep,
     dom_divisor200 = dom,
@@ -1091,35 +1110,43 @@ write_selected_path_step(
 )
 write_selected_path_step(
   "15-SelectivityUpdate", "15 Fleet-specific selectivity update", "14-CPUESigma",
-  "Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index selectivities.",
+  paste0(
+    "Apply the intended broad selectivity bundle: unshare F15-F28, apply ",
+    "fleet-specific terminal/dome controls, set F25/F26 seven-node and tail ",
+    "controls, and separate F29-F33."
+  ),
+  audit_notes = paste0(
+    "F25/F26 each use terminal age 25, dome flag 2, seven spline nodes, and ",
+    "youngest-tail flag 0; F29-F33 separate in staged MFCL run 5."
+  ),
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, f25_f26_spline7 = TRUE
+  index_selectivity = TRUE, step15_selectivity_bundle = TRUE
 )
 write_selected_path_step(
   "16-DOMDiv200", "16 F21-F23 length-composition downweighting", "15-SelectivityUpdate",
   "Apply the assessment-specific DOM divisor 200 only to F21-F23.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, f25_f26_spline7 = TRUE,
+  index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
   dom = TRUE
 )
 
 # The only final composition-likelihood siblings share 16-DOMDiv200 directly.
 write_selected_path_step(
   "17a-Francis", "17a Francis length-composition weighting", "16-DOMDiv200",
-  "Apply the locked Francis TA1.8 composition-data weighting comparison.",
+  "Replace all Step 16 LF divisors with locked Francis TA1.8 values, including F21-F23 = 114/398/705.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, f25_f26_spline7 = TRUE,
-  dom = TRUE, francis = francis_lf_divisors
+  index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
+  francis = francis_lf_divisors
 )
 write_selected_path_step(
   "17b-DMG8Nmax25", "17b DM length-composition likelihood", "16-DOMDiv200",
   "Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, f25_f26_spline7 = TRUE,
+  index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
   dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
 )
 
@@ -1141,7 +1168,7 @@ write_selectivity_form_sensitivity <- function(step_id, title, fisheries = integ
     step_id, title, "17b-DMG8Nmax25", summary,
     tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
     effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-    index_selectivity = TRUE, f25_f26_spline7 = TRUE,
+    index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
     dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
   )
 
