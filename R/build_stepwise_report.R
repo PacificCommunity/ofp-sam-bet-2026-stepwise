@@ -12,6 +12,12 @@ stepwise_html_escape <- function(x) {
 stepwise_scientific_html <- function(x) {
   x <- stepwise_html_escape(x)
   x <- gsub(
+    "r_i = epsilon + n_i/(epsilon + nbar_g)",
+    "<i>r</i><sub>i</sub> = <i>&epsilon;</i> + <i>n</i><sub>i</sub>/(<i>&epsilon;</i> + <i>n&#772;</i><sub>g</sub>)",
+    x,
+    fixed = TRUE
+  )
+  x <- gsub(
     "lambda_i = exp(d_g) r_i^(c_g)",
     "<i>&lambda;</i><sub>i</sub> = exp(<i>d</i><sub>g</sub>) <i>r</i><sub>i</sub><sup><i>c</i><sub>g</sub></sup>",
     x,
@@ -23,10 +29,30 @@ stepwise_scientific_html <- function(x) {
     x,
     fixed = TRUE
   )
+  x <- gsub(
+    "N_eff_i = Nmax(1 + lambda_i)/(Nmax + lambda_i)",
+    "<i>N</i><sub>eff,i</sub> = <i>N</i><sub>max</sub>(1 + <i>&lambda;</i><sub>i</sub>)/(<i>N</i><sub>max</sub> + <i>&lambda;</i><sub>i</sub>)",
+    x,
+    fixed = TRUE
+  )
   x <- gsub("Nmax", "<i>N</i><sub>max</sub>", x, fixed = TRUE)
   x <- gsub("as lambda increases", "as <i>&lambda;</i> increases", x, fixed = TRUE)
   x <- gsub("parameter d (flag", "parameter <i>d</i> (flag", x, fixed = TRUE)
   x <- gsub("exponent c relating", "exponent <i>c</i> relating", x, fixed = TRUE)
+  x <- gsub(
+    "For composition i", "For composition <i>i</i>", x, fixed = TRUE
+  )
+  x <- gsub(
+    "for composition i as", "for composition <i>i</i> as", x, fixed = TRUE
+  )
+  x <- gsub(
+    "fishery group g", "fishery group <i>g</i>", x, fixed = TRUE
+  )
+  x <- gsub("n_i is", "<i>n</i><sub>i</sub> is", x, fixed = TRUE)
+  x <- gsub("nbar_g is", "<i>n&#772;</i><sub>g</sub> is", x, fixed = TRUE)
+  x <- gsub("epsilon = 0.001", "<i>&epsilon;</i> = 0.001", x, fixed = TRUE)
+  x <- gsub("d_g is", "<i>d</i><sub>g</sub> is", x, fixed = TRUE)
+  x <- gsub("c_g is", "<i>c</i><sub>g</sub> is", x, fixed = TRUE)
   x
 }
 
@@ -177,7 +203,7 @@ stepwise_dm_configuration <- data.frame(
   implementation = c(
     "Dirichlet-multinomial without random effects (flag 141 = 11).",
     "Eight groups covering all 33 fisheries (flag 68; Table XX).",
-    "Group-specific baseline concentration (flag 69) and relative-sample-size exponent (flag 89; estimated from phase 2).",
+    "Group-specific baseline log-concentration (flag 69) and relative-sample-size exponent (flag 89; estimated from phase 2).",
     "Nmax = 25 (flag 342; MFCL default = 1,000).",
     "Minimum span of five observed bins (flag 320 = 5); flag 313 = 0."
   ),
@@ -185,16 +211,21 @@ stepwise_dm_configuration <- data.frame(
     "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
     "Pool fisheries with similar gear and data roles while retaining major differences.",
     "Allow dispersion and its scaling with relative sample size to vary among groups.",
-    "Match the upper range of Francis ESS estimates (95th percentile 22.22-23.81; n = 2,399) while limiting composition influence relative to CPUE.",
+    "Set just above the Francis ESS 95th-percentile range (22.22-23.81 across 2,399 compositions), limiting composition influence relative to CPUE.",
     "Apply the DM support rule; the robust-normal 1% tail control is not used."
   ),
   stringsAsFactors = FALSE
 )
 
 stepwise_dm_configuration_note <- paste0(
-  "For composition i, lambda_i = exp(d_g) r_i^(c_g), and ",
-  "N_eff = Nmax(1 + lambda)/(Nmax + lambda). Nmax is the asymptotic upper ",
-  "bound on effective sample size, not a fixed sample size (Davies et al., 2026)."
+  "For composition i in fishery group g, the relative sample-size covariate is ",
+  "r_i = epsilon + n_i/(epsilon + nbar_g), and the Dirichlet-multinomial ",
+  "concentration is lambda_i = exp(d_g) r_i^(c_g). Here n_i is the observed ",
+  "sample size, nbar_g is the group mean, epsilon = 0.001 is a stabilizing ",
+  "constant, d_g is the group-specific baseline log-concentration, and c_g is ",
+  "the group-specific sample-size exponent. MFCL calculates the effective sample ",
+  "size for composition i as N_eff_i = Nmax(1 + lambda_i)/(Nmax + lambda_i), ",
+  "where Nmax is the asymptotic upper bound (Davies et al., 2026)."
 )
 
 stepwise_dm_groups <- data.frame(
@@ -583,7 +614,7 @@ build_stepwise_report <- function(
   table_latex <- stepwise_table_latex(table, include_jobs)
   dm_configuration_caption <- paste0(
     "Dirichlet-multinomial configuration used for length-composition weighting ",
-    "in the final BET 2026 model."
+    "in the BET 2026 diagnostic model."
   )
   dm_groups_caption <- paste0(
     "Eight fishery groups used to estimate group-specific Dirichlet-multinomial ",
@@ -593,7 +624,7 @@ build_stepwise_report <- function(
   dm_configuration_html <- stepwise_named_table_html(
     stepwise_dm_configuration,
     id = "dm-configuration-table",
-    headers = c("Component", "Final specification", "Rationale"),
+    headers = c("Component", "Diagnostic-model setting", "Rationale"),
     widths = c(18, 37, 45),
     first_column_class = "row-label",
     note = stepwise_dm_configuration_note
@@ -607,7 +638,7 @@ build_stepwise_report <- function(
   )
   dm_configuration_latex <- stepwise_named_table_latex(
     stepwise_dm_configuration,
-    headers = c("Component", "Final specification", "Rationale"),
+    headers = c("Component", "Diagnostic-model setting", "Rationale"),
     widths = c(0.17, 0.36, 0.42),
     caption = dm_configuration_caption,
     label = "tab:bet-dm-configuration",
@@ -635,6 +666,18 @@ build_stepwise_report <- function(
     fixed = TRUE
   )
   dm_configuration_latex <- gsub(
+    "r\\_i = epsilon + n\\_i/(epsilon + nbar\\_g)",
+    "$r_i = \\varepsilon + n_i/(\\varepsilon + \\bar{n}_g)$",
+    dm_configuration_latex,
+    fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "N\\_eff\\_i = Nmax(1 + lambda\\_i)/(Nmax + lambda\\_i)",
+    "$N_{\\mathrm{eff},i} = N_{\\max}(1 + \\lambda_i)/(N_{\\max} + \\lambda_i)$",
+    dm_configuration_latex,
+    fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
     "Nmax", "$N_{\\max}$", dm_configuration_latex, fixed = TRUE
   )
   dm_configuration_latex <- gsub(
@@ -648,6 +691,36 @@ build_stepwise_report <- function(
   dm_configuration_latex <- gsub(
     "exponent c relating", "exponent $c$ relating",
     dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "For composition i", "For composition $i$",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "for composition i as", "for composition $i$ as",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "fishery group g", "fishery group $g$",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "n\\_i is", "$n_i$ is",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "nbar\\_g is", "$\\bar{n}_g$ is",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "epsilon = 0.001", "$\\varepsilon = 0.001$",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "d\\_g is", "$d_g$ is", dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "c\\_g is", "$c_g$ is", dm_configuration_latex, fixed = TRUE
   )
   discovered <- stepwise_discover_results(job_map, input_dir)
   result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
@@ -677,8 +750,8 @@ build_stepwise_report <- function(
     "rationale. Step numbers correspond to the pathway in Figure XX."
   )
   dm_section <- paste0(
-    "<section class=\"model-card\"><h2>Final-model Dirichlet-multinomial configuration</h2>",
-    "<p>The final model used a Dirichlet-multinomial likelihood for length compositions. ",
+    "<section class=\"model-card\"><h2>Diagnostic-model Dirichlet-multinomial configuration</h2>",
+    "<p>The diagnostic model used a Dirichlet-multinomial likelihood for length compositions. ",
     "The 33 fisheries were pooled into eight groups, with dispersion estimated by group. ",
     "An effective-sample-size upper bound of 25 was selected from the Francis diagnostics.</p>",
     "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
