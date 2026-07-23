@@ -7,7 +7,7 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/ofp-sam-bet-2026-stepwise
 name: bet-2026-selectivity-form-f15-f22-sensitivity
-description: Fit BET 2026 F15 and F22 selectivity-form sensitivity models with profile and Hessian follow-up.
+description: Fit four BET 2026 selectivity-form sensitivities, including an all-fisheries boundary case, with profile and Hessian follow-up.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot

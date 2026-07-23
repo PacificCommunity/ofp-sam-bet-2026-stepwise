@@ -1106,12 +1106,20 @@ write_selected_path_step(
   dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
 )
 
-write_selectivity_form_sensitivity <- function(step_id, title, fisheries) {
-  summary <- paste0(
-    "Retain the Step 17b model and remove the dome/old-age-tail selectivity-form penalty for ",
-    paste0("F", fisheries, collapse = " and "),
-    " only."
-  )
+write_selectivity_form_sensitivity <- function(step_id, title, fisheries = integer(), all_active = FALSE) {
+  if (isTRUE(all_active)) {
+    summary <- paste0(
+      "Retain the Step 17b model and remove every active fishery-specific ",
+      "dome/old-age-tail selectivity-form penalty. This is an all-fisheries ",
+      "boundary sensitivity, not a preferred model."
+    )
+  } else {
+    summary <- paste0(
+      "Retain the Step 17b model and remove the dome/old-age-tail selectivity-form penalty for ",
+      paste0("F", fisheries, collapse = " and "),
+      " only."
+    )
+  }
   write_selected_path_step(
     step_id, title, "17b-DMG8Nmax25", summary,
     tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
@@ -1123,31 +1131,59 @@ write_selectivity_form_sensitivity <- function(step_id, title, fisheries) {
   step_dir <- file.path(root, "steps", step_id)
   doitall_path <- file.path(step_dir, "model", "doitall.sh")
   lines <- readLines(doitall_path, warn = FALSE)
-  phase1_end <- which(lines == "PHASE1")
-  if (length(phase1_end) != 1L) {
-    stop("Expected exactly one PHASE1 terminator in ", doitall_path, call. = FALSE)
-  }
-  fishery_labels <- c(`15` = "HL.PH.2", `22` = "DOM.PH.2")
-  overrides <- c(
-    paste0(
-      "# SELECTIVITY-FORM SENSITIVITY: remove the ",
-      paste0("F", fisheries, collapse = " and "),
-      " dome/old-age-tail penalty",
-      if (length(fisheries) == 1L) " only." else " penalties."
-    ),
-    vapply(
-      fisheries,
-      function(fishery) {
-        paste0(
-          "  -", fishery, " 16 0  # F", fishery, " ",
-          fishery_labels[[as.character(fishery)]],
-          ": no dome/old-age-tail selectivity-form penalty"
-        )
+  if (isTRUE(all_active)) {
+    active_pattern <- "^([[:space:]]*-[0-9]+[[:space:]]+16[[:space:]]+)2(.*)$"
+    active_lines <- grep(active_pattern, lines, perl = TRUE)
+    active_fisheries <- as.integer(sub(
+      "^[[:space:]]*-([0-9]+)[[:space:]]+16[[:space:]]+2.*$",
+      "\\1",
+      lines[active_lines],
+      perl = TRUE
+    ))
+    expected_fisheries <- c(12L, 13L, 15L, 16L, 17L, 18L, 19L, 20L,
+                            21L, 22L, 23L, 24L, 25L, 26L, 27L, 28L)
+    if (!identical(sort(unique(active_fisheries)), expected_fisheries)) {
+      stop(
+        "Unexpected active flag-16 fishery set in ", doitall_path, ": ",
+        paste(sort(unique(active_fisheries)), collapse = ", "),
+        call. = FALSE
+      )
+    }
+    lines[active_lines] <- vapply(
+      lines[active_lines],
+      function(line) {
+        captures <- regmatches(line, regexec(active_pattern, line, perl = TRUE))[[1L]]
+        paste0(captures[[2L]], "0", captures[[3L]])
       },
       character(1)
     )
-  )
-  lines <- append(lines, overrides, after = phase1_end - 1L)
+  } else {
+    phase1_end <- which(lines == "PHASE1")
+    if (length(phase1_end) != 1L) {
+      stop("Expected exactly one PHASE1 terminator in ", doitall_path, call. = FALSE)
+    }
+    fishery_labels <- c(`15` = "HL.PH.2", `22` = "DOM.PH.2")
+    overrides <- c(
+      paste0(
+        "# SELECTIVITY-FORM SENSITIVITY: remove the ",
+        paste0("F", fisheries, collapse = " and "),
+        " dome/old-age-tail penalty",
+        if (length(fisheries) == 1L) " only." else " penalties."
+      ),
+      vapply(
+        fisheries,
+        function(fishery) {
+          paste0(
+            "  -", fishery, " 16 0  # F", fishery, " ",
+            fishery_labels[[as.character(fishery)]],
+            ": no dome/old-age-tail selectivity-form penalty"
+          )
+        },
+        character(1)
+      )
+    )
+    lines <- append(lines, overrides, after = phase1_end - 1L)
+  }
   writeLines(lines, doitall_path, useBytes = TRUE)
   Sys.chmod(doitall_path, mode = "0755")
 
@@ -1188,6 +1224,11 @@ write_selectivity_form_sensitivity(
   "18c-F15F22FormRelaxed",
   "18c F15 and F22 selectivity-form penalty sensitivity",
   c(15L, 22L)
+)
+write_selectivity_form_sensitivity(
+  "18d-AllSelectivityFormRelaxed",
+  "18d All-fisheries selectivity-form boundary sensitivity",
+  all_active = TRUE
 )
 
 # Remove only folders that are no longer configured. The existing

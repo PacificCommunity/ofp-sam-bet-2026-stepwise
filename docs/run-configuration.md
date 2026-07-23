@@ -53,6 +53,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `18a-F22FormRelaxed` | `TRUE` | 18-SelectivityFormSensitivity | 18a | remove the F22 DOM.PH.2 dome/old-age-tail selectivity-form penalty | F22 selectivity-form penalty removed | BET 2026 selectivity-form sensitivity \| F22 | `18a-f22-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `18b-F15FormRelaxed` | `TRUE` | 18-SelectivityFormSensitivity | 18b | remove the F15 HL.PH.2 dome/old-age-tail selectivity-form penalty | F15 selectivity-form penalty removed | BET 2026 selectivity-form sensitivity \| F15 | `18b-f15-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `18c-F15F22FormRelaxed` | `TRUE` | 18-SelectivityFormSensitivity | 18c | remove the F15 HL.PH.2 and F22 DOM.PH.2 dome/old-age-tail selectivity-form penalties | F15 and F22 selectivity-form penalties removed | BET 2026 selectivity-form sensitivity \| F15 + F22 | `18c-f15-f22-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `18d-AllSelectivityFormRelaxed` | `TRUE` | 18-SelectivityFormSensitivity | 18d | remove every active fishery-specific dome/old-age-tail selectivity-form penalty | All-fisheries selectivity-form boundary sensitivity | BET 2026 selectivity-form boundary sensitivity \| all fisheries | `18d-all-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -86,6 +87,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `18a-F22FormRelaxed` | `steps/18a-F22FormRelaxed/model` | `exists` |
 | `18b-F15FormRelaxed` | `steps/18b-F15FormRelaxed/model` | `exists` |
 | `18c-F15F22FormRelaxed` | `steps/18c-F15F22FormRelaxed/model` | `exists` |
+| `18d-AllSelectivityFormRelaxed` | `steps/18d-AllSelectivityFormRelaxed/model` | `exists` |
 
 
 ## Useful Kflow Config

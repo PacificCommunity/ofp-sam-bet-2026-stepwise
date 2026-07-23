@@ -258,7 +258,7 @@ stepwise_models$regional_scaling_weight[step_number >= 8L] <- 100L
 stepwise_models$reporting_rate_prior <- ifelse(step_number >= 7L, "RRPTTP26", "")
 
 # Dedicated sensitivity branch: retain the public stepwise rows for provenance,
-# but submit only the three independent Step 17b selectivity-form sensitivities.
+# but submit only the four independent Step 17b selectivity-form sensitivities.
 stepwise_models$enabled <- FALSE
 
 sensitivity_models <- do.call(
@@ -290,13 +290,23 @@ sensitivity_models <- do.call(
       "BET 2026 selectivity-form sensitivity | F15 + F22",
       "18c-f15-f22-selectivity-form-relaxed",
       "Fishery flag 16 changes from 2 to 0 for F15 and F22 only; all other Step 17b inputs and controls are unchanged."
+    ),
+    model_row(
+      "18d-AllSelectivityFormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      FALSE, "sensitivity",
+      "remove every active fishery-specific dome/old-age-tail selectivity-form penalty",
+      "All-fisheries selectivity-form boundary sensitivity",
+      "BET 2026 selectivity-form boundary sensitivity | all fisheries",
+      "18d-all-selectivity-form-relaxed",
+      "All 16 active fishery flag-16 controls change from 2 to 0; every other Step 17b input and control is unchanged. This is a boundary sensitivity, not a preferred model."
     )
   )
 )
 sensitivity_models$report_purpose <- c(
   "Test sensitivity to the dominant F22 dome/old-age-tail selectivity-form penalty.",
   "Test sensitivity to the dominant F15 dome/old-age-tail selectivity-form penalty.",
-  "Test their combined influence on fit, profile curvature and Hessian stability."
+  "Test their combined influence on fit, profile curvature and Hessian stability.",
+  "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model."
 )
 sensitivity_models$age_length_variant <- "SUB075"
 sensitivity_models$tag_flag2 <- 1L

@@ -664,14 +664,28 @@ for (i in seq_len(nrow(models))) {
       "age-based selectivity evaluated against scaled mean length-at-age"
     )
     check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
+    all_form_boundary <- identical(model_id, "18d-AllSelectivityFormRelaxed")
     for (fishery in 25:26) {
       check_flag(
         flags, -fishery, 3L, 25L, model_id,
         paste0("F", fishery, " last age class with non-zero dome selectivity")
       )
       check_flag(flags, -fishery, 24L, fishery, model_id, paste0("F", fishery, " independent selectivity group"))
-      for (pair in list(c(61, 7), c(16, 2), c(75, 0))) {
+      expected_form_flag <- if (all_form_boundary) 0L else 2L
+      for (pair in list(c(61, 7), c(16, expected_form_flag), c(75, 0))) {
         check_flag(flags, -fishery, pair[[1L]], pair[[2L]], model_id, paste0("F", fishery, " N7 selectivity"))
+      }
+    }
+    if (all_form_boundary) {
+      active_form_fisheries <- c(
+        12L, 13L, 15L, 16L, 17L, 18L, 19L, 20L,
+        21L, 22L, 23L, 24L, 25L, 26L, 27L, 28L
+      )
+      for (fishery in active_form_fisheries) {
+        check_flag(
+          flags, -fishery, 16L, 0L, model_id,
+          paste0("F", fishery, " all-fisheries selectivity-form boundary sensitivity")
+        )
       }
     }
   }
