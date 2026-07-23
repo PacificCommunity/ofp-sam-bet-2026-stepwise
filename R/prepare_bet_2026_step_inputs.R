@@ -546,6 +546,11 @@ new_tag <- file.path(root, "inputs", "bet.2026.low.recaps.removed.tag")
 mix_ini <- file.path(ini_root, "ini.mix-period", "bet.2026.mix-0.2.ini")
 regfish_ini_source <- file.path(ini_root, "bet.2023.new.structure.ini")
 regfish_tag_source <- file.path(tag_root, "bet.2023.new.structure-low.recaps.removed.tag")
+pooled_historical_group17_prior <- list(
+  group_id = 17L,
+  expected_mean = 0.595,
+  expected_penalty = 676
+)
 
 frq_new_structure_global_2021 <- file.path(frq_root, "bet.2023.new-structure.global-cpue.frq")
 frq_convert_length_2021 <- file.path(frq_root, "bet.2023.new-structure.global-cpue.wt-as-len.frq")
@@ -609,6 +614,12 @@ ini_tag_note_04 <- ensure_ini_tag_flags(
 tag_reporting_group_note_04 <- repair_tag_reporting_grouped_initial_values(
   file.path(newstructure_model_dir, "bet.ini")
 )
+tag_reporting_prior_note_04 <- standardize_positive_tag_reporting_group_prior(
+  file.path(newstructure_model_dir, "bet.ini"),
+  group_id = pooled_historical_group17_prior$group_id,
+  expected_mean = pooled_historical_group17_prior$expected_mean,
+  expected_penalty = pooled_historical_group17_prior$expected_penalty
+)
 validate_tag_reporting_grouped_initial_values(file.path(newstructure_model_dir, "bet.ini"))
 write_generated_tag_rep_map(newstructure_model_dir)
 write_doitall(
@@ -631,8 +642,8 @@ write_manifest(newstructure_dir, list(
     file = "bet.ini",
     source = regfish_ini_source,
     note = paste(
-      c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_group_note_04)[
-        nzchar(c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_group_note_04))
+      c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_group_note_04, tag_reporting_prior_note_04)[
+        nzchar(c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_group_note_04, tag_reporting_prior_note_04))
       ],
       collapse = "; "
     )
@@ -679,14 +690,16 @@ write_readme(
         total_population_note_04,
         length_weight_note_04,
         ini_tag_note_04,
-        tag_reporting_group_note_04
+        tag_reporting_group_note_04,
+        tag_reporting_prior_note_04
       )[nzchar(c(
         "`bet.2023.new.structure.ini`",
         fixm_age_par_note,
         total_population_note_04,
         length_weight_note_04,
         ini_tag_note_04,
-        tag_reporting_group_note_04
+        tag_reporting_group_note_04,
+        tag_reporting_prior_note_04
       ))],
       collapse = "; "
     ),
@@ -713,7 +726,7 @@ write_readme(
       paste(
         "Applies the fixed Lorenzen natural-mortality coefficients, normalizes the tag-flags marker, and uses",
         paste0(bias_corrected_length_weight_note, "."),
-        "Grouped tag reporting-rate initial values are harmonized for native MFCL without changing group flags, targets, or penalties."
+        "Grouped tag reporting-rate initial values are harmonized for native MFCL; pooled historical group 17 prior metadata is standardized to its already effective first-positive signature without changing group flags or the fitted objective."
       ),
       "No generated edit.",
       "Changes effective sample size from `1` to `0.75`."
@@ -847,6 +860,7 @@ write_sequence_step <- function(
     tag_reporting_source = "",
     tag_mixing_source = "",
     tag_flag_column2 = 0L,
+    reporting_rate_group_prior_repairs = list(),
     regional_cpue = FALSE,
     regional_scaling = FALSE,
     regional_scaling_weight = NA_integer_,
@@ -886,6 +900,7 @@ write_sequence_step <- function(
     reporting_rate_variant = reporting_rate_variant,
     tag_mixing_source = tag_mixing_source,
     tag_flag_column2 = tag_flag_column2,
+    reporting_rate_group_prior_repairs = reporting_rate_group_prior_repairs,
     age_effective_sample_size = age_effective_sample_size,
     reg_scaling_source = if (isTRUE(regional_scaling)) reg_scaling_source else "",
     regional_scaling_weight = regional_scaling_weight,
@@ -959,7 +974,8 @@ write_sequence_step(
   "Convert the existing weight compositions to length.",
   frq_source = frq_convert_length_2021,
   ini_source = regfish_ini_source,
-  tag_source = regfish_tag_source
+  tag_source = regfish_tag_source,
+  reporting_rate_group_prior_repairs = list(pooled_historical_group17_prior)
 )
 
 write_sequence_step(
@@ -967,7 +983,8 @@ write_sequence_step(
   "Add the additional length-composition data.",
   frq_source = frq_length_plus_length_2021,
   ini_source = regfish_ini_source,
-  tag_source = regfish_tag_source
+  tag_source = regfish_tag_source,
+  reporting_rate_group_prior_repairs = list(pooled_historical_group17_prior)
 )
 
 # RRPTTP26 is integrated in step 07 and inherited by every descendant.

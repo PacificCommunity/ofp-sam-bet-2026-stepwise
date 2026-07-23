@@ -525,6 +525,26 @@ for (i in seq_len(nrow(models))) {
     if (any(means[active_cells] <= 0) || any(target[active_cells] <= 0) || any(penalty[active_cells] <= 0)) {
       add_failure(model_id, "active reporting-rate cells require positive mean, target, and penalty values.")
     }
+    groups <- rr[["tag fish rep group flags"]]
+    positive_group_cells <- active_cells & groups > 0 & target > 0 & penalty > 0
+    for (group_id in sort(unique(as.integer(groups[positive_group_cells])))) {
+      cells <- positive_group_cells & groups == group_id
+      signatures <- unique(paste(
+        format(target[cells], digits = 15L, scientific = FALSE, trim = TRUE),
+        format(penalty[cells], digits = 15L, scientific = FALSE, trim = TRUE),
+        sep = ", "
+      ))
+      if (length(signatures) > 1L) {
+        add_failure(
+          model_id,
+          paste0(
+            "active reporting-rate group ", group_id,
+            " has multiple positive target/penalty signatures: (",
+            paste(signatures, collapse = "), ("), ")."
+          )
+        )
+      }
+    }
     rr_prior <- row_value(row, "reporting_rate_prior")
     signature <- paste(vapply(rr, function(x) paste(format(x, scientific = FALSE, trim = TRUE), collapse = ","), character(1)), collapse = "|")
     if (nzchar(rr_prior)) {

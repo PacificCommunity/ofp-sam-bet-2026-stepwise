@@ -437,6 +437,100 @@ repair_tag_reporting_grouped_initial_values <- function(path) {
   )
 }
 
+standardize_positive_tag_reporting_group_prior <- function(
+    path, group_id, expected_mean, expected_penalty) {
+  # Native MFCL uses one objective contribution per reporting-rate group. Keep
+  # that effective first-positive prior and remove conflicting metadata from
+  # later cells without changing means, grouping, or active flags.
+  markers <- c(
+    rep = "# tag fish rep",
+    group = "# tag fish rep group flags",
+    target = "# tag_fish_rep target",
+    penalty = "# tag_fish_rep penalty"
+  )
+  lines <- readLines(path, warn = FALSE)
+  row_idx <- lapply(markers, function(marker) ini_matrix_row_indices(lines, marker))
+  rows <- lapply(row_idx, function(idx) strsplit(trimws(lines[idx]), "[[:space:]]+"))
+  widths <- lapply(rows, function(x) unique(lengths(x)))
+  if (any(lengths(widths) != 1L) ||
+      length(unique(unlist(widths, use.names = FALSE))) != 1L) {
+    stop("Tag reporting-rate matrices have inconsistent widths in ", path, call. = FALSE)
+  }
+  row_counts <- vapply(rows, length, integer(1))
+  if (length(unique(row_counts)) != 1L) {
+    stop("Tag reporting-rate matrices have inconsistent row counts in ", path, call. = FALSE)
+  }
+
+  to_matrix <- function(x, mode = c("numeric", "integer")) {
+    mode <- match.arg(mode)
+    value <- unlist(x, use.names = FALSE)
+    value <- if (identical(mode, "integer")) as.integer(value) else as.numeric(value)
+    matrix(value, nrow = length(x), byrow = TRUE)
+  }
+  rep <- to_matrix(rows$rep, "numeric")
+  group <- to_matrix(rows$group, "integer")
+  target <- to_matrix(rows$target, "numeric")
+  penalty <- to_matrix(rows$penalty, "numeric")
+  dimensions <- vapply(
+    list(rep = rep, group = group, target = target, penalty = penalty),
+    function(x) paste(dim(x), collapse = "x"),
+    character(1)
+  )
+  if (length(unique(dimensions)) != 1L) {
+    stop("Tag reporting-rate matrices have inconsistent dimensions in ", path, call. = FALSE)
+  }
+
+  group_id <- as.integer(group_id)
+  cells <- which(group == group_id & target > 0 & penalty > 0, arr.ind = TRUE)
+  if (!nrow(cells)) {
+    stop(
+      "Tag reporting-rate group ", group_id,
+      " has no positive target/penalty cells in ", path,
+      call. = FALSE
+    )
+  }
+  cells <- cells[order(cells[, "row"], cells[, "col"]), , drop = FALSE]
+  first <- cells[1L, , drop = FALSE]
+  first_mean <- rep[first]
+  first_target <- target[first]
+  first_penalty <- penalty[first]
+  expected_target <- 100 * as.numeric(expected_mean)
+  if (!isTRUE(all.equal(first_mean, as.numeric(expected_mean), tolerance = 1e-12)) ||
+      !isTRUE(all.equal(first_target, expected_target, tolerance = 1e-12)) ||
+      !isTRUE(all.equal(first_penalty, as.numeric(expected_penalty), tolerance = 1e-12))) {
+    stop(
+      "Unexpected first-positive prior for tag reporting-rate group ", group_id,
+      " in ", path, ": mean=", format(first_mean, digits = 15L),
+      ", target=", format(first_target, digits = 15L),
+      ", penalty=", format(first_penalty, digits = 15L),
+      call. = FALSE
+    )
+  }
+
+  changed <- target[cells] != first_target | penalty[cells] != first_penalty
+  if (!any(changed)) return(invisible(""))
+  target_replacement <- rows$target[[first[[1L, "row"]]]][[first[[1L, "col"]]]]
+  penalty_replacement <- rows$penalty[[first[[1L, "row"]]]][[first[[1L, "col"]]]]
+  for (i in seq_len(nrow(cells))) {
+    row <- cells[[i, "row"]]
+    col <- cells[[i, "col"]]
+    rows$target[[row]][[col]] <- target_replacement
+    rows$penalty[[row]][[col]] <- penalty_replacement
+  }
+  lines[row_idx$target] <- vapply(rows$target, paste, collapse = " ", character(1))
+  lines[row_idx$penalty] <- vapply(rows$penalty, paste, collapse = " ", character(1))
+  writeLines(lines, path, sep = file_eol(path), useBytes = TRUE)
+
+  paste0(
+    "standardized positive group-", group_id,
+    " prior metadata to the already effective first signature (mean ",
+    format(first_mean, scientific = FALSE, trim = TRUE),
+    "; stored target ", format(first_target, scientific = FALSE, trim = TRUE),
+    "; coefficient ", format(first_penalty, scientific = FALSE, trim = TRUE),
+    ") in ", sum(changed), " cell(s); grouping and effective MFCL objective unchanged"
+  )
+}
+
 validate_tag_reporting_grouped_initial_values <- function(path) {
   rep <- extract_ini_matrix(path, "# tag fish rep")
   group <- extract_ini_matrix(path, "# tag fish rep group flags")

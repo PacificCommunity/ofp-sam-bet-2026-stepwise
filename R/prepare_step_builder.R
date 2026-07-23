@@ -11,6 +11,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
                       tag_flag_column2 = 0L,
                       age_effective_sample_size = NA_real_,
                       tag_reporting_cell_repairs = list(),
+                      reporting_rate_group_prior_repairs = list(),
                       reg_scaling_source = "",
                       regional_scaling_weight = NA_integer_,
                       doitall_edits = list(),
@@ -114,6 +115,16 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     ini_notes <- c(ini_notes, set_ini_tag_flag_column(ini_out, 2L, tag_flag_column2))
   }
   ini_notes <- c(ini_notes, repair_tag_reporting_grouped_initial_values(ini_out))
+  if (length(reporting_rate_group_prior_repairs)) {
+    for (repair in reporting_rate_group_prior_repairs) {
+      ini_notes <- c(ini_notes, standardize_positive_tag_reporting_group_prior(
+        ini_out,
+        group_id = repair$group_id,
+        expected_mean = repair$expected_mean,
+        expected_penalty = repair$expected_penalty
+      ))
+    }
+  }
   validate_positive_tag_recapture_reporting_rates(ini_out, tag_out)
   validate_tag_reporting_grouped_initial_values(ini_out)
 

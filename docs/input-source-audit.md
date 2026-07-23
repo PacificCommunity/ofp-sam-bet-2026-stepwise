@@ -45,7 +45,7 @@ copied as-is and what is intentionally changed in the generated model folders?
 | 02b | 02a generated input | Sets ini version to `1007`; inserts 118 `# tag flags` rows with two-quarter mixing and `tag_flags(it,2)=0`; inserts a zero tag-shed vector; inserts MFCL 1007 defaults for `LN(R0)=25` and Richards growth parameter `0`. | Converts the 2023 replication ini into a current-reader layout without changing the assessment data. |
 | 02c | 02b generated input | Changes `# Length-weight parameters` from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`. `LN(R0)` remains `25`. | Isolates the BET 2026 bias-corrected L-W update before later structural changes. |
 | 03 | 02c generated input | Replaces the `# age_pars` natural-mortality row with the fixed-M row from the 01 diagnostic `mgc=-5` final par. | Carries the chosen diagnostic M estimate and 02c L-W update into later current-executable runs. |
-| 04-06 | `BET/bet.2023.new.structure.ini` from `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` | Applies FixM, `LN(R0)=17`, BET 2026 L-W, and tag/RR alignment. The 96-release-group tag source is `ofp-sam-2026-BET-YFT-tag-prep@e0b427d`; grouped RR starts are harmonized only where native MFCL requires equality. | Keeps the intended 2023-structure transition while adopting the refreshed RR starts. |
+| 04-06 | `BET/bet.2023.new.structure.ini` from `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` | Applies FixM, `LN(R0)=17`, BET 2026 L-W, and tag/RR alignment. The 96-release-group tag source is `ofp-sam-2026-BET-YFT-tag-prep@e0b427d`; grouped RR starts are harmonized only where native MFCL requires equality. Positive pooled group-17 prior metadata is standardized to its already effective first signature, mean `0.595` (stored target `59.5`) and coefficient `676`. | Keeps the intended 2023-structure transition and native MFCL objective semantics without splitting the historical pooled group. |
 | 07-09 | Primary base `BET/bet.2026.ini`; five RR blocks from `BET/ini.mix-period/bet.2026.mix-0.2.ini`; both at `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` | Keeps two-quarter mixing from the base, copies the updated reporting-rate matrices and group IDs from the mix-period INI, sets `tag_flags(it,2)=0`, and validates positive recaptures. | Records both INI sources explicitly while preserving the requested mixing-period treatment. |
 | 10-15 | `BET/ini.mix-period/bet.2026.mix-0.2.ini` from `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` | Uses release-specific KS mixing and updated RR group IDs from one primary INI; sets `tag_flags(it,2)=0`, raises two zero mixing periods to `1`, and validates positive recaptures. | Preserves KS mixing without reverting the refreshed reporting-rate grouping. |
 
@@ -64,8 +64,11 @@ With the latest upstream RR grouping and initial-value refresh, generated
 steps 04-15 harmonize starting values within one reporting-rate group where
 native MFCL requires a common grouped start. Every positive tag recapture is
 then validated against nonzero RR, active, target, and penalty cells. This
-harmonization does not change reporting-rate group flags, targets, or penalties. The
-The reporting-rate source is machine-readable in each `input_manifest.csv`:
+harmonization does not change reporting-rate group flags. Steps 04-06 retain
+the historical pooled PTTP West/East group 17 and normalize its positive prior
+metadata to the first signature already used by native MFCL. Step 07
+intentionally separates West and East into groups 17 and 18. The reporting-rate
+source is machine-readable in each `input_manifest.csv`:
 07-09 record both the primary base INI and the mix-period RR-block source,
 while 10-15 record the mix-period INI as the primary source. The older fishery
 19 fallback repair remains in the generator only for older source
