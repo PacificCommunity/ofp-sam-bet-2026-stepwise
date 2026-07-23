@@ -12,10 +12,10 @@ stepwise_run <- list(
   selected_path_models = 19L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
-  flow_group = "bet-2026-stepwise-2307",
+  flow_group = "bet-2026-selectivity-form-f15-f22",
 
   # TRUE runs downstream plot/report after stepwise succeeds.
-  trigger_next = TRUE
+  trigger_next = FALSE
 )
 
 model_row <- function(step_id,
@@ -256,3 +256,57 @@ stepwise_models$dm_nmax[stepwise_models$step_id == "17b-DMG8Nmax25"] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
 stepwise_models$regional_scaling_weight[step_number >= 8L] <- 100L
 stepwise_models$reporting_rate_prior <- ifelse(step_number >= 7L, "RRPTTP26", "")
+
+# Dedicated sensitivity branch: retain the public stepwise rows for provenance,
+# but submit only the three independent Step 17b selectivity-form sensitivities.
+stepwise_models$enabled <- FALSE
+
+sensitivity_models <- do.call(
+  rbind,
+  list(
+    model_row(
+      "18a-F22FormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      FALSE, "sensitivity",
+      "remove the F22 DOM.PH.2 dome/old-age-tail selectivity-form penalty",
+      "F22 selectivity-form penalty removed",
+      "BET 2026 selectivity-form sensitivity | F22",
+      "18a-f22-selectivity-form-relaxed",
+      "Fishery flag 16 changes from 2 to 0 for F22 only; all other Step 17b inputs and controls are unchanged."
+    ),
+    model_row(
+      "18b-F15FormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      FALSE, "sensitivity",
+      "remove the F15 HL.PH.2 dome/old-age-tail selectivity-form penalty",
+      "F15 selectivity-form penalty removed",
+      "BET 2026 selectivity-form sensitivity | F15",
+      "18b-f15-selectivity-form-relaxed",
+      "Fishery flag 16 changes from 2 to 0 for F15 only; all other Step 17b inputs and controls are unchanged."
+    ),
+    model_row(
+      "18c-F15F22FormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      FALSE, "sensitivity",
+      "remove the F15 HL.PH.2 and F22 DOM.PH.2 dome/old-age-tail selectivity-form penalties",
+      "F15 and F22 selectivity-form penalties removed",
+      "BET 2026 selectivity-form sensitivity | F15 + F22",
+      "18c-f15-f22-selectivity-form-relaxed",
+      "Fishery flag 16 changes from 2 to 0 for F15 and F22 only; all other Step 17b inputs and controls are unchanged."
+    )
+  )
+)
+sensitivity_models$report_purpose <- c(
+  "Test sensitivity to the dominant F22 dome/old-age-tail selectivity-form penalty.",
+  "Test sensitivity to the dominant F15 dome/old-age-tail selectivity-form penalty.",
+  "Test their combined influence on fit, profile curvature and Hessian stability."
+)
+sensitivity_models$age_length_variant <- "SUB075"
+sensitivity_models$tag_flag2 <- 1L
+sensitivity_models$dm_grouping <- "G8PSSET"
+sensitivity_models$dm_nmax <- 25L
+sensitivity_models$regional_scaling_weight <- 100L
+sensitivity_models$reporting_rate_prior <- "RRPTTP26"
+sensitivity_models <- sensitivity_models[, names(stepwise_models), drop = FALSE]
+stepwise_models <- rbind(stepwise_models, sensitivity_models)
+rownames(stepwise_models) <- NULL
+stepwise_run$numbered_groups <- 18L
+stepwise_run$model_rows <- nrow(stepwise_models)
+stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

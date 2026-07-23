@@ -1106,6 +1106,90 @@ write_selected_path_step(
   dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
 )
 
+write_selectivity_form_sensitivity <- function(step_id, title, fisheries) {
+  summary <- paste0(
+    "Retain the Step 17b model and remove the dome/old-age-tail selectivity-form penalty for ",
+    paste0("F", fisheries, collapse = " and "),
+    " only."
+  )
+  write_selected_path_step(
+    step_id, title, "17b-DMG8Nmax25", summary,
+    tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
+    effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+    index_selectivity = TRUE, f25_f26_spline7 = TRUE,
+    dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
+  )
+
+  step_dir <- file.path(root, "steps", step_id)
+  doitall_path <- file.path(step_dir, "model", "doitall.sh")
+  lines <- readLines(doitall_path, warn = FALSE)
+  phase1_end <- which(lines == "PHASE1")
+  if (length(phase1_end) != 1L) {
+    stop("Expected exactly one PHASE1 terminator in ", doitall_path, call. = FALSE)
+  }
+  fishery_labels <- c(`15` = "HL.PH.2", `22` = "DOM.PH.2")
+  overrides <- c(
+    paste0(
+      "# SELECTIVITY-FORM SENSITIVITY: remove the ",
+      paste0("F", fisheries, collapse = " and "),
+      " dome/old-age-tail penalty",
+      if (length(fisheries) == 1L) " only." else " penalties."
+    ),
+    vapply(
+      fisheries,
+      function(fishery) {
+        paste0(
+          "  -", fishery, " 16 0  # F", fishery, " ",
+          fishery_labels[[as.character(fishery)]],
+          ": no dome/old-age-tail selectivity-form penalty"
+        )
+      },
+      character(1)
+    )
+  )
+  lines <- append(lines, overrides, after = phase1_end - 1L)
+  writeLines(lines, doitall_path, useBytes = TRUE)
+  Sys.chmod(doitall_path, mode = "0755")
+
+  manifest_path <- file.path(step_dir, "input_manifest.csv")
+  manifest <- utils::read.csv(
+    manifest_path,
+    stringsAsFactors = FALSE,
+    check.names = FALSE,
+    na.strings = character()
+  )
+  doitall_row <- manifest$file == "doitall.sh"
+  if (sum(doitall_row) != 1L) {
+    stop("Expected exactly one doitall.sh row in ", manifest_path, call. = FALSE)
+  }
+  sha_output <- system2("sha256sum", doitall_path, stdout = TRUE, stderr = TRUE)
+  sha_status <- attr(sha_output, "status")
+  if (!is.null(sha_status) && !identical(as.integer(sha_status), 0L)) {
+    stop("sha256sum failed for ", doitall_path, call. = FALSE)
+  }
+  manifest$sha256[doitall_row] <- strsplit(sha_output[[1L]], "[[:space:]]+")[[1L]][[1L]]
+  if ("note" %in% names(manifest)) {
+    manifest$note[doitall_row] <- summary
+  }
+  utils::write.csv(manifest, manifest_path, row.names = FALSE, na = "")
+}
+
+write_selectivity_form_sensitivity(
+  "18a-F22FormRelaxed",
+  "18a F22 selectivity-form penalty sensitivity",
+  22L
+)
+write_selectivity_form_sensitivity(
+  "18b-F15FormRelaxed",
+  "18b F15 selectivity-form penalty sensitivity",
+  15L
+)
+write_selectivity_form_sensitivity(
+  "18c-F15F22FormRelaxed",
+  "18c F15 and F22 selectivity-form penalty sensitivity",
+  c(15L, 22L)
+)
+
 # Remove only folders that are no longer configured. The existing
 # 04-NewStructure control files are intentionally retained as the rerunnable
 # five-region template until their replacement has been generated.

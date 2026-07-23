@@ -191,6 +191,7 @@ if (!is.data.frame(models)) {
   add_failure("job-config", "`stepwise_models` is not a data frame.")
   models <- data.frame(step_id = character(), stringsAsFactors = FALSE)
 }
+configured_models <- models
 if ("enabled" %in% names(models)) models <- models[truthy(models$enabled), , drop = FALSE]
 
 if (!"step_id" %in% names(models)) {
@@ -241,8 +242,13 @@ for (container in c("steps", "sensitivity")) {
   actual_ids <- c(actual_ids, children[dir.exists(file.path(container_path, children, "model"))])
 }
 actual_ids <- sort(unique(actual_ids))
-missing_ids <- setdiff(models$step_id, actual_ids)
-extra_ids <- setdiff(actual_ids, models$step_id)
+configured_ids <- if ("step_id" %in% names(configured_models)) {
+  trim_character(configured_models$step_id)
+} else {
+  character()
+}
+missing_ids <- setdiff(configured_ids, actual_ids)
+extra_ids <- setdiff(actual_ids, configured_ids)
 if (length(missing_ids)) add_failure("folder-set", paste0("configured model folders are missing: ", paste(missing_ids, collapse = ", "), "."))
 if (length(extra_ids)) add_failure("folder-set", paste0("unconfigured model folders must be removed or configured: ", paste(extra_ids, collapse = ", "), "."))
 if (any(grepl(forbidden_pattern, actual_ids, ignore.case = TRUE, perl = TRUE))) {

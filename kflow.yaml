@@ -6,8 +6,8 @@
 
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/ofp-sam-bet-2026-stepwise
-name: bet-2026-stepwise-2307
-description: Run independent frozen-input BET 2026 MFCL model fits, one selected model per job.
+name: bet-2026-selectivity-form-f15-f22-sensitivity
+description: Fit BET 2026 F15 and F22 selectivity-form sensitivity models with profile and Hessian follow-up.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -40,14 +40,14 @@ env:
   # A public-task launch is safe by default: exactly one model is selected.
   # Campaign rows override all four identity fields together. Local sequential
   # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
-  STEP_SELECT: 01-Diag2023
+  STEP_SELECT: 18a-F22FormRelaxed
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "01 Diag2023"
-  JOB_DESCRIPTION: "Run one independent frozen-input BET model fit and save its required payload."
-  MODEL_LABEL: Diag2023
-  JOB_KEY: 01-diag2023
+  JOB_TITLE: "BET 2026 selectivity-form sensitivity | F22"
+  JOB_DESCRIPTION: "Refit the Step 17b DM model after removing one specified selectivity-form penalty."
+  MODEL_LABEL: F22 selectivity-form penalty removed
+  JOB_KEY: 18a-f22-selectivity-form-relaxed
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-stepwise-2307
+  FLOW_GROUP: bet-2026-selectivity-form-f15-f22
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -84,9 +84,9 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@d8df08e2b7891cdb93b395aa84e0dcf770e3b09f,mfclshiny=PacificCommunity/mfclshiny@346598a31728cffca606de9e45d9b289c705117b
-  MFCLKIT_GITHUB_REF: d8df08e2b7891cdb93b395aa84e0dcf770e3b09f
-  MFCLSHINY_GITHUB_REF: 346598a31728cffca606de9e45d9b289c705117b
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@2c931ebd20fd04286fb4ff476c774ec036c49bb9,mfclshiny=PacificCommunity/mfclshiny@dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
+  MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   KFLOW_REPORT_COMMIT_GENERATED: "true"
@@ -119,8 +119,8 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
-      MFCLKIT_GITHUB_REF: d8df08e2b7891cdb93b395aa84e0dcf770e3b09f
-      MFCLSHINY_GITHUB_REF: 346598a31728cffca606de9e45d9b289c705117b
+      MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
+      MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "true"
       MFCLSHINY_LIVE_UPDATE: "false"
