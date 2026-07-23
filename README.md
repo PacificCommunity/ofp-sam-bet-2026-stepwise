@@ -58,7 +58,7 @@ Dirichlet-multinomial is abbreviated DM in technical settings.
 For reports and papers, use the compact DAG for the development flow and this
 table for the functional explanation and implementation detail of each step.
 
-| Step | Reader-facing name | Internal ID | Parent | Change and scientific rationale | Held constant | Decision |
+| Step | Reader-facing name | Internal ID | Parent | Change and rationale | Held constant | Decision |
 | --- | --- | --- | --- | --- | --- | --- |
 | 01 | 2023 diagnostic rerun | `01-Diag2023` | 2023 diagnostic model | Reproduce the previous diagnostic model as a common reference. | Archived data and scientific controls. | Carried forward. |
 | 02 | Updated executable | `02-NewExe1003` | `01-Diag2023` | Change only the executable to isolate software-version effects. | Inputs and scientific controls. | Carried forward. |

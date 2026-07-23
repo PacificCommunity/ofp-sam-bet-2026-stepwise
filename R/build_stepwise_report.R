@@ -138,7 +138,7 @@ stepwise_stage_table <- function(nodes, job_map) {
     } else {
       stepwise_sentence(nodes$change_axis)
     },
-    scientific_rationale = stepwise_sentence(
+    rationale = stepwise_sentence(
       if ("report_purpose" %in% names(nodes)) {
         nodes$report_purpose
       } else {
@@ -169,7 +169,7 @@ stepwise_table_html <- function(table, include_jobs = FALSE) {
     )
   }
   rows <- vapply(seq_len(nrow(table)), function(i) {
-    rationale <- trimws(table$scientific_rationale[[i]])
+    rationale <- trimws(table$rationale[[i]])
     job_cell <- if (include_jobs) {
       value <- table$job_number[[i]]
       paste0("<td class=\"job\">", if (is.na(value)) "" else paste0("#", value), "</td>")
@@ -183,7 +183,7 @@ stepwise_table_html <- function(table, include_jobs = FALSE) {
   paste0(
     "<table id=\"stage-table\"><colgroup>", colgroup, "</colgroup>",
     "<thead><tr><th>Step</th><th>Model change</th>",
-    "<th>Scientific rationale</th>", job_header,
+    "<th>Rationale</th>", job_header,
     "</tr></thead><tbody>", paste(rows, collapse = ""), "</tbody></table>"
   )
 }
@@ -203,15 +203,15 @@ stepwise_table_latex <- function(table, include_jobs = FALSE) {
     )
   }
   header <- if (include_jobs) {
-    "Step & Model change & Scientific rationale & Job"
+    "Step & Model change & Rationale & Job"
   } else {
-    "Step & Model change & Scientific rationale"
+    "Step & Model change & Rationale"
   }
   rows <- vapply(seq_len(nrow(table)), function(i) {
     values <- c(
       paste0("\\textbf{", stepwise_latex_escape(table$step[[i]]), "}"),
       stepwise_latex_escape(table$change[[i]]),
-      stepwise_latex_escape(table$scientific_rationale[[i]])
+      stepwise_latex_escape(table$rationale[[i]])
     )
     if (include_jobs) {
       values <- c(values, if (is.na(table$job_number[[i]])) "" else paste0("\\#", table$job_number[[i]]))
@@ -222,7 +222,7 @@ stepwise_table_latex <- function(table, include_jobs = FALSE) {
     "% Requires \\usepackage{booktabs,longtable,array}\n",
     "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n\\renewcommand{\\arraystretch}{1.08}\n",
     "\\begin{longtable}{", columns, "}\n",
-    "\\caption{Changes evaluated during stepwise development of the BET 2026 assessment and their scientific rationale.}",
+    "\\caption{Changes evaluated during stepwise development of the BET 2026 assessment and their rationale.}",
     "\\label{tab:bet-stepwise-development}\\\\\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endfirsthead\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endhead\n",
@@ -312,7 +312,7 @@ build_stepwise_report <- function(
   )
   table_caption <- paste0(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
-    "scientific rationale. Step numbers correspond to the pathway in Figure XX."
+    "rationale. Step numbers correspond to the pathway in Figure XX."
   )
 
   result_section <- ""
@@ -381,7 +381,7 @@ build_stepwise_report <- function(
     "button,.actions,.action-status{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
     "tr{break-inside:avoid}.table-shell{overflow:visible}}",
     "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
-    "<p>Assessment pathway and scientific rationale</p></header><main>",
+    "<p>Assessment pathway and rationale</p></header><main>",
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
     "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy analysis for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy analysis for LaTeX</button></div>",
@@ -422,7 +422,7 @@ build_stepwise_report <- function(
     "</script></main></body></html>"
   )
   writeLines(html, html_file, useBytes = TRUE)
-  export_columns <- c("step", "change", "scientific_rationale")
+  export_columns <- c("step", "change", "rationale")
   if (include_jobs) export_columns <- c(export_columns, "job_number")
   export_table <- table[export_columns]
   write.csv(
