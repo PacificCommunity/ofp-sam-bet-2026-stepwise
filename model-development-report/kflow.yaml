@@ -12,7 +12,7 @@ resources:
   disk: 10GB
 
 env:
-  OUTPUT_DIR: model-development
+  REPORT_OUTPUT_DIR: model-development
   STEPWISE_MODEL_JOBS: ""
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna

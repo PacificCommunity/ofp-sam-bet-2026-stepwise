@@ -3,11 +3,21 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${HERE}/.." && pwd)"
-OUTPUT_DIR="${OUTPUT_DIR:-model-development}"
+REPORT_OUTPUT_DIR="${REPORT_OUTPUT_DIR:-model-development}"
 INPUT_DIR="${INPUT_DIR:-inputs}"
 R_LIBRARY="${R_LIBS_USER:-${HERE}/.R-library}"
 
-mkdir -p "${HERE}/${OUTPUT_DIR}" "${HERE}/${INPUT_DIR}" "${R_LIBRARY}"
+resolve_path() {
+  case "$1" in
+    /*) printf '%s\n' "$1" ;;
+    *) printf '%s/%s\n' "${HERE}" "$1" ;;
+  esac
+}
+
+REPORT_OUTPUT_PATH="$(resolve_path "${REPORT_OUTPUT_DIR}")"
+INPUT_PATH="$(resolve_path "${INPUT_DIR}")"
+
+mkdir -p "${REPORT_OUTPUT_PATH}" "${INPUT_PATH}" "${R_LIBRARY}"
 export R_LIBS_USER="${R_LIBRARY}"
 
 Rscript - <<'RS'
@@ -63,9 +73,9 @@ for (api in c("build_model_dag_report", "build_report_figures")) {
 RS
 
 cd "${ROOT}"
-OUTPUT_DIR="${HERE}/${OUTPUT_DIR}" \
-INPUT_DIR="${HERE}/${INPUT_DIR}" \
+OUTPUT_DIR="${REPORT_OUTPUT_PATH}" \
+INPUT_DIR="${INPUT_PATH}" \
 Rscript R/build_stepwise_report.R
 
 printf 'Stepwise model-development report: %s\n' \
-  "${HERE}/${OUTPUT_DIR}/bet-2026-stepwise-model-development.html"
+  "${REPORT_OUTPUT_PATH}/bet-2026-stepwise-model-development.html"
