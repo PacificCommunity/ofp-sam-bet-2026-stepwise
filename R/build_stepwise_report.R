@@ -129,52 +129,16 @@ stepwise_discover_results <- function(job_map, input_dir) {
   )
 }
 
-stepwise_settings <- function(row) {
-  labels <- c(
-    region_count = "Regions",
-    age_length_variant = "Age-length weighting",
-    tag_flag2 = "Tag flag 2",
-    dm_grouping = "DM grouping",
-    dm_nmax = "DM Nmax",
-    regional_scaling_weight = "Regional-scaling weight",
-    reporting_rate_prior = "Reporting-rate setting"
-  )
-  values <- vapply(names(labels), function(name) {
-    value <- row[[name]]
-    if (is.null(value) || !length(value) || is.na(value[[1L]]) ||
-        !nzchar(trimws(as.character(value[[1L]])))) {
-      return("")
-    }
-    paste0(labels[[name]], ": ", trimws(as.character(value[[1L]])))
-  }, character(1))
-  paste(values[nzchar(values)], collapse = "; ")
-}
-
-stepwise_status_label <- function(selected, carry_status, selected_branch = FALSE) {
-  if (identical(tolower(carry_status), "final")) return("Selected final")
-  if (!isTRUE(selected)) return("Comparison")
-  if (isTRUE(selected_branch)) return("Selected")
-  "Carried forward"
-}
-
 stepwise_stage_table <- function(nodes, job_map) {
-  sibling_count <- ave(
-    as.character(nodes$scientific_parent_id),
-    as.character(nodes$scientific_parent_id),
-    FUN = length
-  )
   table <- data.frame(
     step_id = nodes$step_id,
-    model = nodes$model_label,
-    change = stepwise_sentence(nodes$change_axis),
-    decision = mapply(
-      stepwise_status_label,
-      as.logical(nodes$selected),
-      as.character(nodes$carry_status),
-      as.logical(nodes$selected) & sibling_count > 1L,
-      USE.NAMES = FALSE
-    ),
-    notes = stepwise_sentence(
+    step = sub("-.*$", "", nodes$step_id),
+    change = if ("report_change" %in% names(nodes)) {
+      trimws(as.character(nodes$report_change))
+    } else {
+      stepwise_sentence(nodes$change_axis)
+    },
+    scientific_rationale = stepwise_sentence(
       if ("report_purpose" %in% names(nodes)) {
         nodes$report_purpose
       } else {
@@ -183,13 +147,6 @@ stepwise_stage_table <- function(nodes, job_map) {
     ),
     stringsAsFactors = FALSE
   )
-  table$settings <- vapply(seq_len(nrow(nodes)), function(i) {
-    stepwise_settings(nodes[i, , drop = FALSE])
-  }, character(1))
-  parent_index <- match(nodes$scientific_parent_id, nodes$step_id)
-  repeated <- !is.na(parent_index) &
-    table$settings == table$settings[parent_index]
-  table$settings[repeated] <- ""
   if (nrow(job_map)) {
     table$job_number <- job_map$job_number[match(table$step_id, job_map$step_id)]
   } else {
@@ -202,76 +159,59 @@ stepwise_table_html <- function(table, include_jobs = FALSE) {
   job_header <- if (include_jobs) "<th>Job</th>" else ""
   colgroup <- if (include_jobs) {
     paste0(
-      "<col style=\"width:23%\"><col style=\"width:25%\">",
-      "<col style=\"width:34%\"><col style=\"width:12%\"><col style=\"width:6%\">"
+      "<col style=\"width:8%\"><col style=\"width:39%\">",
+      "<col style=\"width:47%\"><col style=\"width:6%\">"
     )
   } else {
     paste0(
-      "<col style=\"width:24%\"><col style=\"width:27%\">",
-      "<col style=\"width:36%\"><col style=\"width:13%\">"
+      "<col style=\"width:8%\"><col style=\"width:42%\">",
+      "<col style=\"width:50%\">"
     )
   }
   rows <- vapply(seq_len(nrow(table)), function(i) {
-    purpose <- trimws(table$notes[[i]])
-    settings <- trimws(table$settings[[i]])
-    detail <- paste0(
-      if (nzchar(purpose)) paste0(
-        "<div class=\"setting-line\"><span class=\"setting-label\">Purpose</span>",
-        stepwise_html_escape(purpose), "</div>"
-      ) else "",
-      if (nzchar(settings)) paste0(
-        "<div class=\"row-note\"><span class=\"setting-label\">Key setting</span>",
-        stepwise_html_escape(settings), "</div>"
-      ) else ""
-    )
+    rationale <- trimws(table$scientific_rationale[[i]])
     job_cell <- if (include_jobs) {
       value <- table$job_number[[i]]
       paste0("<td class=\"job\">", if (is.na(value)) "" else paste0("#", value), "</td>")
     } else ""
     paste0(
-      "<tr><td><div class=\"stage-title\">", stepwise_html_escape(table$model[[i]]),
-      "</div><span class=\"stage-id\">", stepwise_html_escape(table$step_id[[i]]), "</span></td>",
+      "<tr><td class=\"step-number\">", stepwise_html_escape(table$step[[i]]), "</td>",
       "<td>", stepwise_html_escape(table$change[[i]]), "</td>",
-      "<td>", detail, "</td><td><span class=\"decision ",
-      tolower(gsub(" ", "-", table$decision[[i]], fixed = TRUE)), "\">",
-      stepwise_html_escape(table$decision[[i]]), "</span></td>", job_cell, "</tr>"
+      "<td>", stepwise_html_escape(rationale), "</td>", job_cell, "</tr>"
     )
   }, character(1))
   paste0(
     "<table id=\"stage-table\"><colgroup>", colgroup, "</colgroup>",
-    "<thead><tr><th>Stage</th><th>Change evaluated</th>",
-    "<th>Purpose and implementation</th><th>Decision</th>", job_header,
+    "<thead><tr><th>Step</th><th>Model change</th>",
+    "<th>Scientific rationale</th>", job_header,
     "</tr></thead><tbody>", paste(rows, collapse = ""), "</tbody></table>"
   )
 }
 
 stepwise_table_latex <- function(table, include_jobs = FALSE) {
   columns <- if (include_jobs) {
-    "@{}p{0.21\\linewidth}p{0.23\\linewidth}p{0.32\\linewidth}p{0.12\\linewidth}r@{}"
+    paste0(
+      "@{}>{\\centering\\arraybackslash}p{0.06\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.38\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.45\\linewidth}r@{}"
+    )
   } else {
-    "@{}p{0.22\\linewidth}p{0.25\\linewidth}p{0.36\\linewidth}p{0.13\\linewidth}@{}"
+    paste0(
+      "@{}>{\\centering\\arraybackslash}p{0.06\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.41\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.48\\linewidth}@{}"
+    )
   }
   header <- if (include_jobs) {
-    "Stage & Change evaluated & Purpose and implementation & Decision & Job"
+    "Step & Model change & Scientific rationale & Job"
   } else {
-    "Stage & Change evaluated & Purpose and implementation & Decision"
+    "Step & Model change & Scientific rationale"
   }
   rows <- vapply(seq_len(nrow(table)), function(i) {
-    detail <- paste(
-      c(table$notes[[i]], table$settings[[i]])[
-        nzchar(c(table$notes[[i]], table$settings[[i]]))
-      ],
-      collapse = " "
-    )
-    stage <- paste0(
-      "\\textbf{", stepwise_latex_escape(table$model[[i]]), "}\\\\[-1pt]",
-      "{\\scriptsize\\texttt{", stepwise_latex_escape(table$step_id[[i]]), "}}"
-    )
     values <- c(
-      stage,
+      paste0("\\textbf{", stepwise_latex_escape(table$step[[i]]), "}"),
       stepwise_latex_escape(table$change[[i]]),
-      stepwise_latex_escape(detail),
-      stepwise_latex_escape(table$decision[[i]])
+      stepwise_latex_escape(table$scientific_rationale[[i]])
     )
     if (include_jobs) {
       values <- c(values, if (is.na(table$job_number[[i]])) "" else paste0("\\#", table$job_number[[i]]))
@@ -280,9 +220,9 @@ stepwise_table_latex <- function(table, include_jobs = FALSE) {
   }, character(1))
   paste0(
     "% Requires \\usepackage{booktabs,longtable,array}\n",
-    "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n\\renewcommand{\\arraystretch}{1.15}\n",
+    "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n\\renewcommand{\\arraystretch}{1.08}\n",
     "\\begin{longtable}{", columns, "}\n",
-    "\\caption{Stepwise model configurations evaluated during development of the BET 2026 assessment.}",
+    "\\caption{Changes evaluated during stepwise development of the BET 2026 assessment and their scientific rationale.}",
     "\\label{tab:bet-stepwise-development}\\\\\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endfirsthead\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endhead\n",
@@ -358,17 +298,12 @@ build_stepwise_report <- function(
   discovered <- stepwise_discover_results(job_map, input_dir)
   result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
 
-  selected_count <- sum(nodes$selected, na.rm = TRUE)
-  comparison_count <- nrow(nodes) - selected_count
-  endpoint <- nodes$model_label[tolower(nodes$carry_status) == "final"]
-  endpoint <- if (length(endpoint)) endpoint[[1L]] else nodes$model_label[[nrow(nodes)]]
   method_text <- paste0(
-    "Model development followed a stepwise pathway. Each configuration altered a defined ",
-    "component relative to its scientific parent, while other inputs and controls were held ",
-    "constant wherever possible. Models retained after evaluation formed the main pathway; ",
-    "sibling branches document alternatives that were evaluated but not carried forward. ",
-    "The accompanying table records the change, scientific purpose, key implementation ",
-    "settings and decision for each configuration. The selected endpoint is ", endpoint, "."
+    "Model development followed a stepwise pathway in which a defined model component or data ",
+    "treatment was changed at each stage, while other inputs and controls were retained where ",
+    "possible. Retained configurations formed the main pathway; sibling branches represented ",
+    "alternatives. The final selected configuration used Dirichlet-multinomial (DM) composition ",
+    "weighting."
   )
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Solid teal arrows ",
@@ -376,9 +311,8 @@ build_stepwise_report <- function(
     "The dark-teal node marks the selected final model."
   )
   table_caption <- paste0(
-    "Stepwise model configurations evaluated during development of the BET 2026 assessment. ",
-    "Each row identifies the change relative to its scientific parent, the scientific purpose ",
-    "and key implementation settings, and whether the configuration was carried forward."
+    "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
+    "scientific rationale. Step numbers correspond to the pathway in Figure XX."
   )
 
   result_section <- ""
@@ -435,23 +369,19 @@ build_stepwise_report <- function(
     "button.done{background:#24784f}.table-shell{width:100%;overflow:auto;max-height:950px;border:1px solid var(--line);margin:14px 0 18px}",
     "table{width:100%;border-collapse:collapse;font-size:.89rem;table-layout:fixed}th{position:sticky;top:0;z-index:1;background:var(--ink);color:#fff;text-align:left;",
     "padding:10px 12px;line-height:1.25}td{vertical-align:top;padding:11px 12px;border-bottom:1px solid #dce7ea;",
-    "overflow-wrap:anywhere;word-break:normal;hyphens:auto}.stage-title{font-weight:700;line-height:1.28}.stage-id{display:block;margin-top:4px;",
-    "font:600 .76rem/1.25 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);letter-spacing:.01em}.setting-line{line-height:1.38}",
-    ".setting-label{display:block;font:700 .72rem/1.2 ui-sans-serif,sans-serif;text-transform:uppercase;letter-spacing:.055em;color:var(--sea);",
-    "margin-bottom:3px}.row-note{font-size:.86rem;line-height:1.38;color:var(--muted);margin-top:7px}.job{font-weight:700;white-space:nowrap}",
-    ".decision{display:inline-block;",
-    "padding:3px 8px;border-radius:999px;background:#e5f1ef;color:#07545a;font-weight:700;white-space:nowrap}.decision.comparison{background:#fff4dc;",
-    "color:#8a5b00}.decision.selected,.decision.selected-final{background:#006b70;color:#fff}.note{padding:13px 16px;border-left:4px solid var(--sea);",
+    "overflow-wrap:anywhere;word-break:normal;hyphens:auto}.step-number{font-weight:800;color:var(--ink);text-align:center;white-space:nowrap}",
+    ".job{font-weight:700;white-space:nowrap}",
+    ".note{padding:13px 16px;border-left:4px solid var(--sea);",
     "background:#eff5f5;color:#3a5967}.hidden-copy{position:absolute;left:-100000px;white-space:pre-wrap}.results-frame{width:100%;height:1100px;",
     "border:1px solid var(--line);background:#fff}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
     "background:var(--ink);color:#fff;padding:10px 15px;box-shadow:0 8px 24px rgba(18,59,93,.2);opacity:0;transform:translateY(8px);",
     "pointer-events:none;transition:opacity .16s ease,transform .16s ease}.action-status.show{opacity:1;transform:translateY(0)}",
-    "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:940px}}@media print{body{background:#fff}",
+    "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:700px}}@media print{body{background:#fff}",
     "header{padding:0 0 20px;background:#fff;color:var(--ink)}header p{color:var(--muted)}main{max-width:none;padding:0}.overview,.model-card{border:0;padding:0;margin:0}",
     "button,.actions,.action-status{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
     "tr{break-inside:avoid}.table-shell{overflow:visible}}",
     "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
-    "<p>Assessment pathway, scientific rationale and reproducible configuration record</p></header><main>",
+    "<p>Assessment pathway and scientific rationale</p></header><main>",
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
     "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy analysis for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy analysis for LaTeX</button></div>",
@@ -461,7 +391,7 @@ build_stepwise_report <- function(
     "<div class=\"actions\"><button onclick=\"copyFigure(this)\">Copy figure + caption for Word</button>",
     "<a class=\"button\" download href=\"data:image/png;base64,", png_data, "\">Save PNG</a>",
     "<button class=\"secondary\" onclick=\"copyText('figure-latex',this)\">Copy figure + caption for LaTeX</button></div></div>",
-    "<div class=\"format-block\"><h2>Model-development configurations</h2><p class=\"caption\" id=\"table-caption\"><strong>Table ",
+    "<div class=\"format-block\"><h2>Stepwise changes</h2><p class=\"caption\" id=\"table-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ", stepwise_html_escape(table_caption), "</p>",
     "<div class=\"table-shell\">", table_html, "</div><div class=\"actions\"><button onclick=\"copyTable(this)\">Copy table + caption for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('table-latex',this)\">Copy table + caption for LaTeX</button></div></div></section>",
@@ -492,7 +422,14 @@ build_stepwise_report <- function(
     "</script></main></body></html>"
   )
   writeLines(html, html_file, useBytes = TRUE)
-  write.csv(table, file.path(output_dir, "stepwise-model-configurations.csv"), row.names = FALSE)
+  export_columns <- c("step", "change", "scientific_rationale")
+  if (include_jobs) export_columns <- c(export_columns, "job_number")
+  export_table <- table[export_columns]
+  write.csv(
+    export_table,
+    file.path(output_dir, "stepwise-model-configurations.csv"),
+    row.names = FALSE
+  )
   writeLines(table_latex, file.path(output_dir, "stepwise-model-configurations.tex"))
   writeLines(paste0("Figure XX. ", figure_caption), file.path(output_dir, "stepwise-pathway-caption.txt"))
   writeLines(paste0("Table XX. ", table_caption), file.path(output_dir, "stepwise-table-caption.txt"))
