@@ -666,16 +666,38 @@ save_final_par <- truthy(env("STEPWISE_SAVE_FINAL_PAR", "false"), default = FALS
 save_raw_mfcl_inputs <- truthy(env("STEPWISE_SAVE_RAW_MFCL_INPUTS", "false"), default = FALSE)
 step_select <- strsplit(env("STEP_SELECT", ""), ",", fixed = TRUE)[[1]]
 step_select <- trimws(step_select[nzchar(trimws(step_select))])
+allow_sequential_all <- truthy(env("STEPWISE_ALLOW_SEQUENTIAL_ALL", "false"), default = FALSE)
 default_input_dir <- env("DEFAULT_INPUT_DIR", "")
 
 config_path <- env("CONFIG_R", "job-config.R")
 step_table <- read_step_table(file.path(root, config_path), file.path(root, "steps"))
-if (length(step_select) && !any(tolower(step_select) %in% c("all", "*"))) {
+if (!length(step_select)) {
+  stop("STEP_SELECT must name exactly one model folder.", call. = FALSE)
+}
+all_requested <- any(tolower(step_select) %in% c("all", "*"))
+if (isTRUE(all_requested)) {
+  if (!isTRUE(allow_sequential_all)) {
+    stop(
+      "STEP_SELECT=all (or *) is disabled for independent fit jobs. ",
+      "For an intentional local sequential run, set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.",
+      call. = FALSE
+    )
+  }
+  if (length(step_select) != 1L) {
+    stop("STEP_SELECT=all (or *) cannot be combined with model folder names.", call. = FALSE)
+  }
+} else {
   unknown <- setdiff(step_select, step_table$step_id)
   if (length(unknown)) stop("Unknown STEP_SELECT value(s): ", paste(unknown, collapse = ", "), call. = FALSE)
+  if (!isTRUE(allow_sequential_all) && length(step_select) != 1L) {
+    stop("Independent fit jobs require exactly one STEP_SELECT value.", call. = FALSE)
+  }
   step_table <- step_table[step_table$step_id %in% step_select, , drop = FALSE]
 }
 if (!nrow(step_table)) stop("No step folders selected.", call. = FALSE)
+if (!isTRUE(allow_sequential_all) && nrow(step_table) != 1L) {
+  stop("Independent fit jobs must resolve to exactly one enabled model row.", call. = FALSE)
+}
 
 region_map_helper <- file.path(root, "R", "write_bet_region_map_assets.R")
 if (file.exists(region_map_helper)) {
@@ -1066,3 +1088,25 @@ if (!nrow(saved_par_index)) {
   )
 }
 write.csv(saved_par_index, file.path(out_dir, "saved-pars.csv"), row.names = FALSE)
+
+required_outputs <- c(
+  file.path(out_dir, "selected-steps.csv"),
+  file.path(out_dir, "model-index.csv"),
+  file.path(out_dir, "saved-pars.csv")
+)
+if (isTRUE(build_payloads)) {
+  required_outputs <- c(
+    required_outputs,
+    file.path(out_dir, "models", model_index$step_id, "model_payload.rds")
+  )
+}
+missing_outputs <- required_outputs[!file.exists(required_outputs)]
+empty_outputs <- required_outputs[file.exists(required_outputs) & file.info(required_outputs)$size <= 0]
+if (length(missing_outputs) || length(empty_outputs)) {
+  stop(
+    "Required fit outputs are missing or empty: ",
+    paste(c(missing_outputs, empty_outputs), collapse = ", "),
+    ". MFCL logs are retained under outputs/logs by run.sh.",
+    call. = FALSE
+  )
+}

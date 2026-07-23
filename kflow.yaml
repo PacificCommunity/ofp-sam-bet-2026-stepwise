@@ -7,22 +7,28 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/ofp-sam-bet-2026-stepwise
 name: ofp-sam-bet-2026-stepwise
-description: Run numbered BET 2026 stepwise MFCL model folders.
+description: Run independent frozen-input BET 2026 MFCL model fits, one selected model per job.
+
+# All campaign fits are intentionally submitted on the Suva pool. Keep both
+# the submitter and node requirement explicit so a task-default change cannot
+# move this scientific campaign to another site.
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
 
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
 
-# Use the tagged tuna-flow image so local/Kflow runs do not drift unexpectedly.
-# Change deliberately, for example:
-#   ghcr.io/pacificcommunity/tuna-flow:v2.0
-#   ghcr.io/pacificcommunity/tuna-flow:latest
-docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.2
+# Immutable digest resolved for tuna-flow:v2.2. Never replace this with a tag
+# for a campaign run.
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:2bc826175533c3ed325ae1c572c1bda8f7c4435714d4dcabdfabf7e81e2d1ea2
 
 # HTCondor resource request. Increase memory/disk before increasing CPUs unless
 # the MFCL command itself can use more threads.
 resources:
   cpus: 2
-  memory: 8GB
+  memory: 12GB
   disk: 8GB
 
 # Default is intentionally empty. Add machines only for a temporary launch or
@@ -31,18 +37,16 @@ exclude_machines: []
 exclude_slots: []
 
 env:
-  # Default selected model folder. Override per job in the Kflow job config.
-  # Examples: 01-Diag2023, 08-RegionalCPUE, 01-Diag2023,09-NewOtoliths, all
-  STEP_SELECT: all
-
-  # Default Kflow display labels for the default model. `make kflow` computes
-  # these from job-config.R. When launching directly from the Kflow UI and
-  # changing STEP_SELECT, update these fields too if the job list should show
-  # the selected model label before the run starts.
-  JOB_TITLE: "All 17 models"
-  JOB_DESCRIPTION: "Run the selected BET model folder and save compact plot-ready payloads."
-  MODEL_LABEL: "All 17 stepwise models"
-  JOB_KEY: all-17
+  # A public-task launch is safe by default: exactly one model is selected.
+  # Campaign rows override all four identity fields together. Local sequential
+  # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
+  STEP_SELECT: 01-Diag2023
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "01 Diag2023"
+  JOB_DESCRIPTION: "Run one independent frozen-input BET model fit and save its required payload."
+  MODEL_LABEL: Diag2023
+  JOB_KEY: 01-diag2023
+  TRIGGER_NEXT: "false"
   FLOW_GROUP: bet-2026-stepwise-v2
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
@@ -93,7 +97,11 @@ env:
 # Keep artifacts compact. The final .par is stored losslessly inside
 # model_payload.rds; outputs/ contains the payload plus small manifests/indexes.
 output_patterns:
-  - outputs/**
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
 
 local_apps:
   - key: mfclshiny
@@ -199,7 +207,9 @@ local_apps:
         askpass
       }
       ensure_github_package <- function(package, repo, ref, ref_env) {
-        if (!nzchar(ref)) stop(ref_env, " must not be empty.", call. = FALSE)
+        if (!grepl("^[0-9a-fA-F]{40}$", ref)) {
+          stop(ref_env, " must be an exact 40-character commit SHA.", call. = FALSE)
+        }
         git_url <- paste0("https://github.com/PacificCommunity/", repo, ".git")
         installed_description <- function() {
           desc <- tryCatch(
@@ -209,37 +219,10 @@ local_apps:
           if (length(desc) == 1L && is.na(desc[[1L]])) NULL else desc
         }
         installed_desc <- installed_description()
-        ref_is_sha <- grepl("^[0-9a-f]{7,40}$", ref, ignore.case = TRUE)
-        desired_sha <- if (isTRUE(ref_is_sha)) ref else ""
-        if (!isTRUE(ref_is_sha) && nzchar(git)) {
-          askpass <- write_askpass(paste0(package, "-lsremote-askpass-"))
-          on.exit(unlink(askpass, recursive = TRUE, force = TRUE), add = TRUE)
-          out <- tryCatch(
-            system2(
-              git,
-              c("ls-remote", git_url, ref, paste0("refs/heads/", ref), paste0("refs/tags/", ref)),
-              env = c(
-                paste0("GIT_ASKPASS=", askpass),
-                "GIT_TERMINAL_PROMPT=0",
-                paste0("KFLOW_GIT_ASKPASS_TOKEN=", token)
-              ),
-              stdout = TRUE,
-              stderr = FALSE
-            ),
-            error = function(e) character()
-          )
-          sha_lines <- out[grepl("^[0-9a-fA-F]{40}[[:space:]]", out)]
-          if (length(sha_lines)) desired_sha <- sub("[[:space:]].*$", "", sha_lines[[1L]])
-        }
+        desired_sha <- tolower(ref)
         matches_ref <- function(desc) {
-          installed_sha <- desc_field(desc, "RemoteSha")
-          installed_ref <- desc_field(desc, "RemoteRef")
-          if (isTRUE(ref_is_sha)) {
-            nzchar(installed_sha) && startsWith(tolower(installed_sha), tolower(ref))
-          } else {
-            identical(installed_ref, ref) && nzchar(installed_sha) && nzchar(desired_sha) &&
-              startsWith(tolower(installed_sha), tolower(desired_sha))
-          }
+          installed_sha <- tolower(desc_field(desc, "RemoteSha"))
+          identical(installed_sha, desired_sha)
         }
         if (!is.null(installed_desc) && isTRUE(matches_ref(installed_desc))) {
           return(invisible(TRUE))
@@ -420,52 +403,24 @@ local_apps:
       )
       RS
 
-# Automatic dependency chain:
-#   stepwise succeeds -> run ofp-sam-bet-2026-results with this job as input
-#   results succeeds  -> run the report task from downstream task config
-#
-# One-off command-line override:
-#   make kflow TRIGGER_NEXT=false STEP_SELECT=08-RegionalCPUE
-triggers:
-  on_success:
-    - key: results-from-stepwise
-      report: ofp-sam-bet-2026-results
-      input_jobs:
-        - "{{ job.job_number }}"
-      env:
-        FLOW_GROUP: "{{ job.config.FLOW_GROUP }}"
-        JOB_TITLE: BET results
-        JOB_KEY: results
-        JOB_DESCRIPTION: Build report-ready figures and tables from the selected stepwise model payload.
-        PLOT_TITLE: "{{ job.config.PLOT_TITLE }}"
-        PLOT_MAX_FISHERIES: "{{ job.config.PLOT_MAX_FISHERIES }}"
-        FLOW_SPECIES: "{{ job.config.FLOW_SPECIES }}"
-        FLOW_SPECIES_LABEL: "{{ job.config.FLOW_SPECIES_LABEL }}"
-        FLOW_ASSESSMENT_YEAR: "{{ job.config.FLOW_ASSESSMENT_YEAR }}"
-        REPORT_QMD: "{{ job.config.REPORT_QMD }}"
-        REPORT_FILE_STEM: "{{ job.config.REPORT_FILE_STEM }}"
-        KFLOW_REPORT_COMMIT_GENERATED: "{{ job.config.KFLOW_REPORT_COMMIT_GENERATED }}"
-        KFLOW_REPORT_PUSH_GENERATED: "{{ job.config.KFLOW_REPORT_PUSH_GENERATED }}"
-        KFLOW_REPORT_PUBLISH_REQUIRED: "{{ job.config.KFLOW_REPORT_PUBLISH_REQUIRED }}"
-        KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
-        KFLOW_RUNTIME_UPDATE: never
-        TUNA_FLOW_RUNTIME_UPDATE: never
-        KFLOW_REPO_RUNTIME_UPDATE: auto
-        KFLOW_RUNTIME_PACKAGES: none
-        KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@5075c9a4ab5e14b4b725e4135deabfb474da3681,mfclshiny=PacificCommunity/mfclshiny@65cf0aff15f5fd85ce96fda8c5bd89e9e2a6afe7
-        MFCLKIT_GITHUB_REF: 5075c9a4ab5e14b4b725e4135deabfb474da3681
-        MFCLSHINY_GITHUB_REF: 65cf0aff15f5fd85ce96fda8c5bd89e9e2a6afe7
-        KFLOW_RUNTIME_GITHUB_AUTH: "true"
-        KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
-      tags:
-        auto: "true"
-        stage: results
+# Each fit is terminal. Results aggregation is deliberately a separate launch,
+# so one failed fit cannot gate or fan out from any other fit.
+triggers: {}
+
+# Consumed by scripts/register_kflow_task.py. Rows and their descriptions are
+# derived at registration/plan time; no model count is duplicated here.
+model_campaign:
+  rows_source: job-config.R
+  execution: independent-concurrent
+  inputs: frozen
+  scientific_parent: metadata-only
 
 # Fields exposed as optional job config in the Kflow UI.
 # Add a field here only if the user should be able to override it at launch.
 job_config:
   optional:
     - STEP_SELECT
+    - STEPWISE_ALLOW_SEQUENTIAL_ALL
     - TRIGGER_NEXT
     - FLOW_GROUP
     - JOB_TITLE

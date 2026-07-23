@@ -126,6 +126,14 @@ specs <- lapply(parts, function(part) {
   }
   list(package = package, repo = repo, ref = ref)
 })
+bad_refs <- vapply(specs, function(spec) !grepl("^[0-9a-fA-F]{40}$", spec$ref), logical(1))
+if (any(bad_refs)) {
+  stop(
+    "Runtime package refs must be exact 40-character SHAs: ",
+    paste(vapply(specs[bad_refs], function(spec) paste0(spec$package, "@", spec$ref), character(1)), collapse = ", "),
+    call. = FALSE
+  )
+}
 lib <- Sys.getenv("R_LIBS_USER", "")
 if (!nzchar(lib)) quit(save = "no", status = 43)
 dir.create(lib, recursive = TRUE, showWarnings = FALSE)
@@ -145,11 +153,7 @@ needs_install <- function(spec) {
   desc <- installed_desc(spec$package)
   if (is.null(desc)) return(TRUE)
   installed_sha <- desc_field(desc, "RemoteSha")
-  ref_is_sha <- grepl("^[0-9a-f]{7,40}$", spec$ref, ignore.case = TRUE)
-  if (ref_is_sha) {
-    return(!nzchar(installed_sha) || !startsWith(tolower(installed_sha), tolower(spec$ref)))
-  }
-  TRUE
+  !identical(tolower(installed_sha), tolower(spec$ref))
 }
 missing <- specs[vapply(specs, needs_install, logical(1))]
 if (!length(missing)) quit(save = "no", status = 0)
@@ -320,19 +324,14 @@ write_remote_metadata <- function(package, repo, ref, sha, lib) {
 for (spec in missing) {
   message("[kflow-runtime-update] Installing/updating runtime package ", spec$package, " from ", spec$repo, "@", spec$ref, ".")
   err <- tryCatch({
-    ref_is_sha <- grepl("^[0-9a-f]{7,40}$", spec$ref, ignore.case = TRUE)
-    source_path <- if (ref_is_sha) {
-      tryCatch(
-        download_github_archive(spec$repo, spec$ref),
-        error = function(err) {
-          message("[kflow-runtime-update] Runtime archive download failed for ", spec$package,
-                  "; trying git clone fallback.")
-          clone_github_source(spec$repo, spec$ref)
-        }
-      )
-    } else {
-      clone_github_source(spec$repo, spec$ref)
-    }
+    source_path <- tryCatch(
+      download_github_archive(spec$repo, spec$ref),
+      error = function(err) {
+        message("[kflow-runtime-update] Runtime archive download failed for ", spec$package,
+                "; trying git clone fallback.")
+        clone_github_source(spec$repo, spec$ref)
+      }
+    )
     resolved_sha <- attr(source_path, "kflow_resolved_sha", exact = TRUE)
     if (is.null(resolved_sha) || !nzchar(resolved_sha)) {
       resolved_sha <- spec$ref
@@ -350,13 +349,65 @@ for (spec in missing) {
     message("[kflow-runtime-update] Runtime package install failed for ", spec$package, ": ", conditionMessage(err))
   }
 }
-missing_after <- specs[!vapply(specs, function(spec) requireNamespace(spec$package, quietly = TRUE), logical(1))]
-if (length(missing_after) && truthy(Sys.getenv("KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES", "false"))) {
-  message("[kflow-runtime-update] Required runtime package(s) unavailable: ",
-          paste(vapply(missing_after, function(spec) spec$package, character(1)), collapse = ", "))
+mismatched_after <- specs[vapply(specs, needs_install, logical(1))]
+if (length(mismatched_after)) {
+  message("[kflow-runtime-update] Runtime package revision mismatch after install: ",
+          paste(vapply(mismatched_after, function(spec) paste0(spec$package, "@", spec$ref), character(1)), collapse = ", "))
   quit(save = "no", status = 44)
 }
 quit(save = "no", status = 0)
+RS
+}
+
+verify_runtime_package_revisions() {
+  runtime_packages_disabled && return 0
+  ensure_runtime_library
+  Rscript - <<'RS'
+spec_text <- Sys.getenv("KFLOW_REPO_RUNTIME_PACKAGES", Sys.getenv("KFLOW_RUNTIME_PACKAGES", ""))
+parts <- trimws(strsplit(spec_text, ",", fixed = TRUE)[[1]])
+parts <- parts[nzchar(parts) & grepl("=", parts, fixed = TRUE)]
+if (!length(parts)) stop("No runtime package revisions were configured.", call. = FALSE)
+specs <- lapply(parts, function(part) {
+  eq <- regexpr("=", part, fixed = TRUE)[1]
+  package <- trimws(substr(part, 1, eq - 1))
+  repo_ref <- trimws(substr(part, eq + 1, nchar(part)))
+  at <- regexpr("@", repo_ref, fixed = TRUE)[1]
+  if (at <= 0) stop("Runtime package spec lacks an immutable ref: ", part, call. = FALSE)
+  list(package = package, ref = substr(repo_ref, at + 1, nchar(repo_ref)))
+})
+lib <- Sys.getenv("R_LIBS_USER", "")
+.libPaths(unique(c(lib, .libPaths())))
+declared_refs <- c(
+  mfclkit = Sys.getenv("MFCLKIT_GITHUB_REF", ""),
+  mfclshiny = Sys.getenv("MFCLSHINY_GITHUB_REF", "")
+)
+problems <- character()
+for (spec in specs) {
+  if (!grepl("^[0-9a-fA-F]{40}$", spec$ref)) {
+    problems <- c(problems, paste0(spec$package, " ref is not a full SHA: ", spec$ref))
+    next
+  }
+  declared <- unname(declared_refs[[spec$package]])
+  if (!is.null(declared) && !identical(tolower(declared), tolower(spec$ref))) {
+    problems <- c(problems, paste0(spec$package, " env ref does not match package spec"))
+  }
+  desc <- tryCatch(
+    suppressWarnings(utils::packageDescription(spec$package, lib.loc = lib)),
+    error = function(e) NULL
+  )
+  installed_sha <- if (is.null(desc) || (length(desc) == 1L && is.na(desc[[1L]]))) "" else {
+    value <- tryCatch(desc[["RemoteSha"]], error = function(e) "")
+    if (is.null(value) || !length(value) || is.na(value[[1L]])) "" else as.character(value[[1L]])
+  }
+  if (!identical(tolower(installed_sha), tolower(spec$ref))) {
+    problems <- c(problems, paste0(spec$package, " installed ", if (nzchar(installed_sha)) installed_sha else "<unknown>", " expected ", spec$ref))
+  }
+}
+if (length(problems)) {
+  stop("Runtime package revision verification failed: ", paste(problems, collapse = "; "), call. = FALSE)
+}
+message("[kflow-runtime-update] Verified exact runtime package revisions: ",
+        paste(vapply(specs, function(spec) paste0(spec$package, "@", spec$ref), character(1)), collapse = ", "))
 RS
 }
 
@@ -365,6 +416,7 @@ prepare_runtime_packages() {
   ensure_runtime_library
   if runtime_updates_direct; then
     install_missing_runtime_packages
+    verify_runtime_package_revisions
     drop_runtime_tokens
     return 0
   fi
@@ -382,6 +434,7 @@ prepare_runtime_packages() {
     echo "[kflow-runtime-update] Runtime updater not found; using bundled packages." >&2
   fi
   install_missing_runtime_packages
+  verify_runtime_package_revisions
 }
 
 kflow_job_ref() {
@@ -562,6 +615,26 @@ EOF
   rm -f "$askpass"
   publish_fail "Final .par commit was created, but git push failed."
 }
+
+preserve_fit_logs() {
+  local log rel step target
+  [[ -d "${WORK_DIR}/models" ]] || return 0
+  while IFS= read -r -d '' log; do
+    rel="${log#${WORK_DIR}/models/}"
+    step="${rel%%/*}"
+    target="${OUT_DIR}/logs/${step}"
+    mkdir -p "$target"
+    cp -f "$log" "${target}/mfcl.log"
+  done < <(find "${WORK_DIR}/models" -mindepth 2 -maxdepth 2 -type f -name mfcl.log -print0)
+}
+
+finish_with_logs() {
+  local status=$?
+  trap - EXIT
+  preserve_fit_logs || true
+  exit "$status"
+}
+trap finish_with_logs EXIT
 
 mkdir -p "${OUT_DIR}" "${WORK_DIR}"
 rm -rf "${WORK_DIR}/inputs"

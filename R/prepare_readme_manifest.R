@@ -2,15 +2,49 @@
 
 write_manifest <- function(step_dir, entries) {
   manifest <- do.call(rbind, lapply(entries, function(x) {
+    provenance <- source_provenance_metadata(x$source)
+    prepared_path <- file.path(step_dir, "model", x$file)
     data.frame(
       role = x$role,
       file = x$file,
-      source = public_source_path(x$source),
-      source_commit = source_commit_for_path(x$source),
+      source = provenance$source,
+      source_repository = provenance$repository,
+      source_commit = provenance$commit,
+      source_path = provenance$path,
+      source_sha256 = provenance$source_sha256,
+      sha256 = if (file.exists(prepared_path)) stepwise_sha256_file(prepared_path) else "",
+      source_access = provenance$access,
+      provenance_status = provenance$status,
       note = x$note,
       stringsAsFactors = FALSE
     )
   }))
+  lock <- read_public_run_provenance()
+  global_roles <- c("fitted_source", "hessian_merge")
+  if (nrow(lock) && all(c("role", "name") %in% names(lock))) {
+    global <- lock[lock$role %in% global_roles, , drop = FALSE]
+    if (nrow(global)) {
+      global_manifest <- do.call(rbind, lapply(seq_len(nrow(global)), function(i) {
+        record <- global[i, , drop = FALSE]
+        data.frame(
+          role = as.character(record$role[[1L]]),
+          file = as.character(record$name[[1L]]),
+          source = locked_provenance_url(record),
+          source_repository = as.character(record$repository_url[[1L]]),
+          source_commit = as.character(record$repository_commit[[1L]]),
+          source_path = as.character(record$repository_path[[1L]]),
+          source_sha256 = as.character(record$source_sha256[[1L]]),
+          sha256 = as.character(record$prepared_sha256[[1L]]),
+          source_access = if (tolower(as.character(record$public_access[[1L]])) == "true") "public" else "not-public",
+          provenance_status = as.character(record$status[[1L]]),
+          note = as.character(record$note[[1L]]),
+          stringsAsFactors = FALSE
+        )
+      }))
+      manifest <- rbind(manifest, global_manifest)
+    }
+  }
+  manifest <- manifest[order(manifest$role, manifest$file), , drop = FALSE]
   write.csv(manifest, file.path(step_dir, "input_manifest.csv"), row.names = FALSE)
 }
 

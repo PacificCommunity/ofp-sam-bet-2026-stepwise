@@ -9,9 +9,9 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
 | `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-stepwise-v2` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `flow_group` | `bet-2026-stepwise-public` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
-| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.2` | Docker image used by Kflow and local Docker runs. |
+| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow@sha256:2bc826175533c3ed325ae1c572c1bda8f7c4435714d4dcabdfabf7e81e2d1ea2` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 | `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
 | `stepwise_save_raw_mfcl_inputs` | `true` | Preserve the full raw MFCL input folder under `outputs/models/<step_id>/mfcl-inputs/` for native-style auditability. |
@@ -28,23 +28,28 @@ This file keeps the operational Kflow/local-run details out of the root README.
 
 | `step_id` | `enabled` | `major_step` | `substep` | `change_axis` | `model_label` | `job_title` | `job_key` | `run_mode` | `mfcl_program_path` | `input_par` | `frq` | `output_par` |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `01-Diag2023` | `TRUE` | 01-Diagnostic | 01a | historical diagnostic | Diag2023 | 01 Diag2023 | `01-diag2023` | `doitall` | /home/mfcl/mfclo64_2023_diagnostic_2.2.2.0 | `blank` | `bet.frq` | `blank` |
-| `02a-NewExe` | `TRUE` | 02-Executable | 02a | current MFCL executable with 1003 ini | NewExe 1003 | 02a NewExe 1003 | `02a-newexe` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `02b-Ini1007` | `TRUE` | 02-Executable | 02b | promote diagnostic ini to 1007 | Ini 1007 | 02b Ini 1007 | `02b-ini1007` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `02c-LengthWeight` | `TRUE` | 02-Executable | 02c | bias-corrected 2026 length-weight parameters | Length-weight | 02c Length-weight | `02c-lengthweight` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `03-FixM` | `TRUE` | 03-FixM | 03a | fixed natural mortality from mgc=-5 diagnostic after 02c | FixM | 03 FixM | `03-fixm` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `04-NewStructure` | `TRUE` | 04-NewStructure | 04 | 5-region structure with global CPUE | New structure | 04 New structure | `04-newstructure` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `05-ConvertToLength` | `TRUE` | 05-ConvertToLength | 05a | convert weight compositions to length | Convert to length | 05 Convert to length | `05-converttolength` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `06-LengthPlusLength` | `TRUE` | 06-LengthPlusLength | 06a | add additional length compositions | Length plus length | 06 Length plus length | `06-lengthpluslength` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `07-DataTo2024` | `TRUE` | 07-DataTo2024 | 07a | 2024 data with global CPUE | Data to 2024 | 07 Data to 2024 | `07-datato2024` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `08-RegionalCPUE` | `TRUE` | 08-RegionalCPUE | 08a | regional CPUE and regional-scaling prior | Regional CPUE | 08 Regional CPUE | `08-regionalcpue` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `09-NewOtoliths` | `TRUE` | 09-NewOtoliths | 09a | new otolith/CAAL input | New otoliths | 09 New otoliths | `09-newotoliths` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `10-TagMixingKS` | `TRUE` | 10-TagMixing | 10a | release-specific tag mixing periods | Tag mixing KS | 10 Tag mixing KS | `10-tagmixingks` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `11-TimeVaryingCV` | `TRUE` | 11-TimeVaryingCV | 11a | time-varying CPUE CV | Time-varying CV | 11 Time-varying CV | `11-timevaryingcv` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `12-OrthogonalPoly` | `TRUE` | 12-OrthogonalPoly | 12a | orthogonal-polynomial recruitment | Orthogonal polynomial | 12 Orthogonal polynomial | `12-orthogonalpoly` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `13-LengthBasedSel` | `TRUE` | 13-LengthBasedSel | 13a | length-based selectivity | Length-based selectivity | 13 Length-based selectivity | `13-lengthbasedsel` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `14-EffortCreep` | `TRUE` | 14-EffortCreep | 14a | effort creep | Effort creep | 14 Effort creep | `14-effortcreep` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
-| `15-DataWeighting` | `TRUE` | 15-DataWeighting | 15a | data weighting | Data weighting | 15 Data weighting | `15-dataweighting` | `doitall` | blank | `blank` | `bet.frq` | `blank` |
+| `01-Diag2023` | `TRUE` | 01-Diagnostic | 01 | rerun the 2023 diagnostic anchor | Diag2023 | 01 Diag2023 | `01-diag2023` | `doitall` | /home/mfcl/mfclo64_2023_diagnostic_2.2.2.0 | `blank` | `bet.frq` | `blank` |
+| `02a-NewExe1003` | `TRUE` | 02-Executable | 02a | current MFCL executable with the 1003 ini | NewExe1003 | 02a NewExe1003 | `02a-newexe1003` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `02b-Ini1007` | `TRUE` | 02-Executable | 02b | convert the ini layout from 1003 to 1007 | Ini1007 | 02b Ini1007 | `02b-ini1007` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `02c-LengthWeight` | `TRUE` | 02-Executable | 02c | apply BET 2026 bias-corrected length-weight parameters | LengthWeight | 02c LengthWeight | `02c-lengthweight` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `03-FixM` | `TRUE` | 03-FixM | 03 | fix natural mortality from the mgc=-5 diagnostic fit | FixM | 03 FixM | `03-fixm` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `04-NewStructure` | `TRUE` | 04-NewStructure | 04 | adopt the five-region and 33-fishery structure | NewStructure | 04 NewStructure | `04-newstructure` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `05-ConvertToLength` | `TRUE` | 05-ConvertToLength | 05 | convert the existing weight compositions to length | ConvertToLength | 05 ConvertToLength | `05-converttolength` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `06-AddLengthData` | `TRUE` | 06-AddLengthData | 06 | add the additional length-composition data | AddLengthData | 06 AddLengthData | `06-addlengthdata` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `07-DataTo2024` | `TRUE` | 07-DataTo2024 | 07 | extend data through 2024 and integrate the latest RRPTTP26 reporting-rate penalties | DataTo2024-RRPTTP26 | 07 DataTo2024 with RRPTTP26 | `07-datato2024-rrpttp26` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `08-RegionalCPUE` | `TRUE` | 08-RegionalCPUE | 08 | add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty | RegionalCPUE-REGW100 | 08 Regional CPUE and REGW100 | `08-regional-cpue-regw100` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `09a-BASE075` | `TRUE` | 09-CompositionWeighting | 09a | apply the BASE075 composition-weighting alternative | BASE075 | 09a BASE075 | `09a-base075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `09b-REG075` | `TRUE` | 09-CompositionWeighting | 09b | apply the REG075 composition-weighting alternative | REG075 | 09b REG075 | `09b-reg075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `09c-SUB075` | `TRUE` | 09-CompositionWeighting | 09c | apply the selected SUB075 composition weighting | SUB075 | 09c SUB075 selected | `09c-sub075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `10-MIX015` | `TRUE` | 10-TagMixing | 10 | apply the MIX015 tag-mixing setting | MIX015 | 10 MIX015 | `10-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `11-TAGF2ON` | `TRUE` | 11-TagFlags | 11 | turn on tag flag column 2 only | TAGF2ON | 11 TAGF2ON column 2 | `11-tagf2on-col2` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `12-TimeVaryingCV` | `TRUE` | 12-TimeVaryingCV | 12 | apply time-varying CPUE CVs | TimeVaryingCV | 12 TimeVaryingCV | `12-timevaryingcv` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `13-EffortCreep` | `TRUE` | 13-EffortCreep | 13 | apply the BET 2026 effort-creep series | EffortCreep | 13 EffortCreep | `13-effortcreep` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `14-CPUESigma` | `TRUE` | 14-CPUESigma | 14 | apply the common index-specific CPUE MLE sigma values | CPUE MLE sigma | 14 CPUE MLE sigma | `14-cpue-mle-sigma` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `15-SelectivityUpdate` | `TRUE` | 15-SelectivityUpdate | 15 | address persistent structured F25/F26 length-frequency misfit with independent seven-node cubic-spline selectivities and separate F29-F33 regional-index selectivities | SelectivityUpdate | 15 Consolidated selectivity update | `15-selectivity-update` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `16-DOMDiv200` | `TRUE` | 16-DOM | 16 | apply the assessment-specific DOM divisor 200 to F21-F23 | DOMDiv200 | 16 DOM F21-F23 divisor 200 | `16-dom-f21-f23-div200` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `17a-Francis` | `TRUE` | 17-CompositionLikelihood | 17a | apply the Francis composition-data weighting comparison | Francis | 17a Francis comparison | `17a-francis` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `17b-DMG8Nmax25` | `TRUE` | 17-CompositionLikelihood | 17b | apply the DM likelihood, G8 PSSET grouping, and Nmax 25 as one bundled final configuration | DM-G8PSSET-Nmax25-Final | 17b DM-G8PSSET-Nmax25 final | `17b-dm-g8psset-nmax25-final` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -54,22 +59,27 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `step_id` | `expected_source_folder` | `status` |
 | --- | --- | --- |
 | `01-Diag2023` | `steps/01-Diag2023/model` | `exists` |
-| `02a-NewExe` | `steps/02a-NewExe/model` | `exists` |
+| `02a-NewExe1003` | `steps/02a-NewExe1003/model` | `exists` |
 | `02b-Ini1007` | `steps/02b-Ini1007/model` | `exists` |
 | `02c-LengthWeight` | `steps/02c-LengthWeight/model` | `exists` |
 | `03-FixM` | `steps/03-FixM/model` | `exists` |
 | `04-NewStructure` | `steps/04-NewStructure/model` | `exists` |
 | `05-ConvertToLength` | `steps/05-ConvertToLength/model` | `exists` |
-| `06-LengthPlusLength` | `steps/06-LengthPlusLength/model` | `exists` |
+| `06-AddLengthData` | `steps/06-AddLengthData/model` | `exists` |
 | `07-DataTo2024` | `steps/07-DataTo2024/model` | `exists` |
 | `08-RegionalCPUE` | `steps/08-RegionalCPUE/model` | `exists` |
-| `09-NewOtoliths` | `steps/09-NewOtoliths/model` | `exists` |
-| `10-TagMixingKS` | `steps/10-TagMixingKS/model` | `exists` |
-| `11-TimeVaryingCV` | `steps/11-TimeVaryingCV/model` | `exists` |
-| `12-OrthogonalPoly` | `steps/12-OrthogonalPoly/model` | `exists` |
-| `13-LengthBasedSel` | `steps/13-LengthBasedSel/model` | `exists` |
-| `14-EffortCreep` | `steps/14-EffortCreep/model` | `exists` |
-| `15-DataWeighting` | `steps/15-DataWeighting/model` | `exists` |
+| `09a-BASE075` | `steps/09a-BASE075/model` | `exists` |
+| `09b-REG075` | `steps/09b-REG075/model` | `exists` |
+| `09c-SUB075` | `steps/09c-SUB075/model` | `exists` |
+| `10-MIX015` | `steps/10-MIX015/model` | `exists` |
+| `11-TAGF2ON` | `steps/11-TAGF2ON/model` | `exists` |
+| `12-TimeVaryingCV` | `steps/12-TimeVaryingCV/model` | `exists` |
+| `13-EffortCreep` | `steps/13-EffortCreep/model` | `exists` |
+| `14-CPUESigma` | `steps/14-CPUESigma/model` | `exists` |
+| `15-SelectivityUpdate` | `steps/15-SelectivityUpdate/model` | `exists` |
+| `16-DOMDiv200` | `steps/16-DOMDiv200/model` | `exists` |
+| `17a-Francis` | `steps/17a-Francis/model` | `exists` |
+| `17b-DMG8Nmax25` | `steps/17b-DMG8Nmax25/model` | `exists` |
 
 
 ## Useful Kflow Config

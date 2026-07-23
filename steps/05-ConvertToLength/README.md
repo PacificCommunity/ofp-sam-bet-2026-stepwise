@@ -1,6 +1,6 @@
 # 05 ConvertToLength
 
-Data to 2021, global CPUE, converting existing weight compositions to length.
+Convert the existing weight compositions to length.
 
 ## Snapshot
 
@@ -13,36 +13,37 @@ Data to 2021, global CPUE, converting existing weight compositions to length.
 
 | # | Change |
 | --- | --- |
-| 1 | Uses `bet.2023.new-structure.global-cpue.wt-as-len.frq` from the frq-build repo. |
-| 2 | Keeps the 04-NewStructure `.ini`, tag, and old CAAL inputs so this step isolates the weight-to-length conversion. |
-| 3 | Applies FixM M row from the 01-Diag2023 mgc=-5 diagnostic final par through the inherited 04-NewStructure ini. |
+| 1 | Convert the existing weight compositions to length. |
+| 2 | Scientific parent: '04-NewStructure'. |
+| 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 
 | File | Source / note |
 | --- | --- |
-| `.frq` | `bet.2023.new-structure.global-cpue.wt-as-len.frq`; terminal year 2021, global CPUE |
-| `.ini` | `steps/04-NewStructure/model/bet.ini`, FixM M row applied from the 01-Diag2023 mgc=-5 diagnostic final par |
-| `.tag` | `steps/04-NewStructure/model/bet.tag` |
-| `.age_length` | `bet.2023.new-structure.age_length` (old CAAL); set age_length effective sample size to 0.75 for 112 records |
-| `input_manifest.csv` | machine-readable source/input notes |
+| `.frq` | bet.2023.new-structure.global-cpue.wt-as-len.frq |
+| `.ini` | bet.2023.new.structure.ini |
+| `.tag` | bet.2023.new.structure-low.recaps.removed.tag |
+| `.age_length` | bet.2023.new-structure.age_length |
+| `input_manifest.csv` | machine-readable source and generated-edit provenance |
 
 ## Generated Input Changes
 
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
-| `.frq` | Uses the selected length-composition source file; no extra generated edit. | Catch, effort, and composition records from the selected source. |
-| `.ini` | Inherits the generated 04 `.ini` with fixed M and 5-region tag controls. | All other 04-NewStructure ini controls. |
-| `.tag` | No generated edit. | 04-NewStructure source tag file. |
-| `.age_length` | Changes effective sample size from `1` to `0.75`. | CAAL records themselves. |
+| `.frq` | Uses the selected source without additional scientific transformation. | All non-effort FRQ values. |
+| `.ini` | tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
+| `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
+| `.age_length` | Sets only the effective-sample-size row to 0.75. | Age-length records and variant-specific structure. |
+| `doitall.sh` | Convert the existing weight compositions to length. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `f8faf7c` | updated RR groupings |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `e0b427d` | updated RR groups |
+| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` | Correct RR init values |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
@@ -51,18 +52,18 @@ Data to 2021, global CPUE, converting existing weight compositions to length.
 
 | # | Control |
 | --- | --- |
-| 1 | 04-NewStructure 5-region `doitall.sh` controls retained. |
-| 2 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 1 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
+| 2 | No OPR or length-bin selectivity controls are generated. |
+| 3 | INI and TAG inputs are never rolled back to an earlier selected row. |
 
 ## Run Notes
 
 | # | Note |
 | --- | --- |
-| 1 | Compare directly with 04-NewStructure to isolate the effect of converting existing weight compositions to length. |
+| 1 | No preliminary parameter file or scientific-parent model folder is read at runtime. |
 
 ## Checks
 
 | # | Check |
 | --- | --- |
-| 1 | Review fit impacts before deciding whether any size-composition weighting needs adjustment at this stage. |
-| 2 | Local MFCL `-makepar` smoke can still report nonzero tag recapture timing or fishery-realization warnings; review upstream tag prep before final production runs. |
+| 1 | No extra unresolved build items for this transition beyond fitting diagnostics. |

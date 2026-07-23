@@ -1,21 +1,27 @@
-## Constructor for generated BET 2026 step folders.
+## Constructor for self-contained BET 2026 step folders.
 
 make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
-                      frq_chop_year = NA_integer_, mix_from_ini = TRUE,
-                      force_tag_mixing_period = NA_integer_,
+                      frq_chop_year = NA_integer_, frq_transform = NULL,
+                      frq_tag_groups = NA_integer_, index_cpue_source = "",
+                      mix_from_ini = TRUE,
                       retain_reporting_rates_during_mixing = TRUE,
                       tag_reporting_source = "",
+                      reporting_rate_variant = "none",
+                      tag_mixing_source = "",
+                      tag_flag_column2 = 0L,
+                      age_effective_sample_size = NA_real_,
                       tag_reporting_cell_repairs = list(),
-                      frq_tag_groups = NA_integer_,
-                      frq_transform = NULL, index_cpue_source = "",
-                      doitall_edits = list(),
                       reg_scaling_source = "",
+                      regional_scaling_weight = NA_integer_,
+                      doitall_edits = list(),
+                      cpue_sigma_calibration = NULL,
+                      francis_divisors = numeric(),
+                      francis_source = "",
+                      francis_source_note = "",
                       title, summary, bullets, input_notes, control_notes,
-                      input_changes = NULL,
-                      run_notes = character(),
+                      input_changes = NULL, run_notes = character(),
                       outstanding = character(),
                       status = "Ready for Kflow smoke runs; full MFCL fit not run here.") {
-  # Main constructor for generated 2026 step folders.
   step_dir <- file.path(root, "steps", step_id)
   model_dir <- file.path(step_dir, "model")
   dir.create(model_dir, recursive = TRUE, showWarnings = FALSE)
@@ -24,301 +30,233 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   frq_out <- file.path(model_dir, "bet.frq")
   if (identical(frq_transform, "effort_creep")) {
     if (!is.na(frq_chop_year)) {
-      stop("Effort-creep transform is only implemented for full-year frq files", call. = FALSE)
+      stop("Effort creep is only supported for the complete FRQ", call. = FALSE)
     }
     write_frq_with_effort_creep(frq_source, frq_out)
-    frq_note <- "copied with agreed effort-creep multiplier applied to index fisheries 29-33: 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024"
+    frq_note <- "generated from the authoritative FRQ by changing only positive effort for F29-F33"
   } else if (is.na(frq_chop_year)) {
     copy_one(frq_source, frq_out)
     frq_note <- "copied without year chopping"
   } else {
     chop_frq(frq_source, frq_out, max_year = frq_chop_year)
-    frq_note <- paste0("chopped to records with year <= ", frq_chop_year)
+    frq_note <- paste0("chopped to year <= ", frq_chop_year)
   }
   if (nzchar(index_cpue_source)) {
-    replaced_cpue <- replace_frq_index_cpue_records(
-      frq_out,
-      index_cpue_source,
+    replaced <- replace_frq_index_cpue_records(
+      frq_out, index_cpue_source,
       max_year = frq_chop_year,
       index_fisheries = 29:33
     )
-    frq_note <- paste0(
-      frq_note,
-      "; replaced ", replaced_cpue,
-      " CPUE/index records for fisheries 29-33 with records from ",
-      basename(index_cpue_source)
-    )
+    frq_note <- paste0(frq_note, "; replaced ", replaced, " F29-F33 CPUE records")
   }
-  n_normalized <- normalize_frq_absent_lf_records(frq_out)
-  if (n_normalized) {
-    frq_note <- paste0(
-      frq_note,
-      "; normalized ", n_normalized,
-      " records with stray absent-LF bins"
-    )
-  }
-  fixed_fishery_regions <- ensure_frq_fishery_region_locations(frq_out)
-  if (isTRUE(fixed_fishery_regions)) {
-    frq_note <- paste0(
-      frq_note,
-      "; completed the fishery-region location line for all fisheries, including index fisheries"
-    )
-  }
-  if (!is.na(frq_tag_groups) && set_frq_tag_group_count(frq_out, frq_tag_groups)) {
-    frq_note <- paste0(
-      frq_note,
-      "; reset frq tag-group header to ", frq_tag_groups,
-      " to match the selected tag input"
-    )
-  }
+  normalized <- normalize_frq_absent_lf_records(frq_out)
+  if (normalized) frq_note <- paste0(frq_note, "; normalized ", normalized, " absent-LF records")
+  ensure_frq_fishery_region_locations(frq_out)
+  if (!is.na(frq_tag_groups)) set_frq_tag_group_count(frq_out, frq_tag_groups)
   frq_counts <- frq_header_counts(readLines(frq_out, warn = FALSE), frq_out)
+
   ini_out <- file.path(model_dir, "bet.ini")
   tag_out <- file.path(model_dir, "bet.tag")
   copy_one(ini_source, ini_out)
   copy_one(tag_source, tag_out)
-  tag_rep_repair_note <- repair_tag_reporting_matrices(
+  ini_notes <- c(repair_tag_reporting_matrices(
     ini_out,
     tag_out,
     reference_ini = if (exists("regfish_ini_source")) regfish_ini_source else "",
     reference_tag = if (exists("regfish_tag_source")) regfish_tag_source else ""
-  )
-  tag_reporting_note <- ""
+  ))
   if (nzchar(tag_reporting_source)) {
-    tag_reporting_note <- copy_tag_reporting_matrices(ini_out, tag_reporting_source)
+    ini_notes <- c(ini_notes, copy_tag_reporting_matrices(ini_out, tag_reporting_source))
   }
-  tag_reporting_cell_notes <- character()
   if (length(tag_reporting_cell_repairs)) {
     for (repair in tag_reporting_cell_repairs) {
-      tag_reporting_cell_notes <- c(
-        tag_reporting_cell_notes,
-        repair_positive_tag_recapture_reporting_rates(
-          ini_out,
-          tag_out,
-          target_fishery = repair$target_fishery,
-          source_fishery = repair$source_fishery
-        )
-      )
+      ini_notes <- c(ini_notes, repair_positive_tag_recapture_reporting_rates(
+        ini_out, tag_out,
+        target_fishery = repair$target_fishery,
+        source_fishery = repair$source_fishery
+      ))
     }
-    tag_reporting_cell_notes <- tag_reporting_cell_notes[nzchar(tag_reporting_cell_notes)]
   }
-  validate_positive_tag_recapture_reporting_rates(ini_out, tag_out)
-  tag_reporting_group_note <- repair_tag_reporting_grouped_initial_values(ini_out)
-  validate_tag_reporting_grouped_initial_values(ini_out)
   apply_fixm_m(ini_out)
-  total_population_note <- set_total_population_scalar(
-    ini_out,
-    get0("five_region_total_population_scalar", ifnotfound = 17L)
-  )
-  length_weight_note <- ""
-  length_weight_parameters <- get0("bias_corrected_length_weight_parameters", ifnotfound = character())
-  if (length(length_weight_parameters)) {
-    length_weight_note <- set_length_weight_parameters(ini_out, length_weight_parameters)
-  }
-  ini_tag_note <- ensure_ini_tag_flags(
-    ini_out,
-    frq_counts$n_tag_groups,
-    tag_path = tag_out,
-    terminal_year = frq_chop_year,
-    retain_reporting_rates_during_mixing = retain_reporting_rates_during_mixing,
-    force_mixing_period = force_tag_mixing_period
-  )
-  ini_shed_note <- ensure_ini_tag_shed_rates(ini_out, frq_counts$n_tag_groups)
-  fixm_note <- "FixM M row applied"
-  fixm_source <- get0("fixm_age_par_source", ifnotfound = "")
-  if (nzchar(fixm_source)) {
-    fixm_note <- paste(fixm_note, "from", fixm_source)
-  }
   ini_notes <- c(
-    fixm_note,
-    total_population_note,
-    length_weight_note,
-    tag_rep_repair_note,
-    tag_reporting_note,
-    tag_reporting_cell_notes,
-    tag_reporting_group_note,
-    ini_tag_note,
-    ini_shed_note
-  )
-  ini_note <- paste(ini_notes[nzchar(ini_notes)], collapse = "; ")
-  visible_ini_notes <- c(
-    total_population_note,
-    length_weight_note,
-    tag_rep_repair_note,
-    tag_reporting_note,
-    tag_reporting_cell_notes,
-    tag_reporting_group_note,
-    ini_tag_note,
-    ini_shed_note
-  )
-  visible_ini_notes <- visible_ini_notes[nzchar(visible_ini_notes)]
-  if (length(visible_ini_notes) && "bet.ini" %in% names(input_notes)) {
-    input_notes[["bet.ini"]] <- paste(
-      c(input_notes[["bet.ini"]], visible_ini_notes),
-      collapse = "; "
+    ini_notes,
+    paste("FixM M row applied from", get0("fixm_age_par_source", ifnotfound = "locked diagnostic")),
+    set_total_population_scalar(
+      ini_out,
+      get0("five_region_total_population_scalar", ifnotfound = 17L)
     )
+  )
+  lw <- get0("bias_corrected_length_weight_parameters", ifnotfound = character())
+  if (length(lw)) ini_notes <- c(ini_notes, set_length_weight_parameters(ini_out, lw))
+  ini_notes <- c(
+    ini_notes,
+    ensure_ini_tag_flags(
+      ini_out,
+      frq_counts$n_tag_groups,
+      tag_path = tag_out,
+      terminal_year = frq_chop_year,
+      retain_reporting_rates_during_mixing = retain_reporting_rates_during_mixing
+    ),
+    ensure_ini_tag_shed_rates(ini_out, frq_counts$n_tag_groups)
+  )
+  if (identical(reporting_rate_variant, "rrpttp26")) {
+    ini_notes <- c(ini_notes, apply_rrpttp26_reporting_rates(ini_out))
+  } else if (!reporting_rate_variant %in% c("none", "peatman")) {
+    stop("Unknown reporting-rate variant: ", reporting_rate_variant, call. = FALSE)
   }
+  if (nzchar(tag_mixing_source)) {
+    ini_notes <- c(ini_notes, copy_ini_tag_flag_column(ini_out, tag_mixing_source, 1L))
+  }
+  if (!is.na(tag_flag_column2)) {
+    ini_notes <- c(ini_notes, set_ini_tag_flag_column(ini_out, 2L, tag_flag_column2))
+  }
+  ini_notes <- c(ini_notes, repair_tag_reporting_grouped_initial_values(ini_out))
+  validate_positive_tag_recapture_reporting_rates(ini_out, tag_out)
+  validate_tag_reporting_grouped_initial_values(ini_out)
+
   age_out <- file.path(model_dir, "bet.age_length")
   copy_one(age_source, age_out)
-  age_note <- set_age_length_effective_sample_size(age_out)
-  if ("bet.age_length" %in% names(input_notes)) {
-    input_notes[["bet.age_length"]] <- paste(
-      c(input_notes[["bet.age_length"]], age_note),
-      collapse = "; "
-    )
+  age_note <- "exact source variant retained"
+  if (!is.na(age_effective_sample_size)) {
+    age_note <- set_age_length_effective_sample_size(age_out, age_effective_sample_size)
   }
+
   has_reg_scaling <- nzchar(reg_scaling_source)
-  reg_scaling_info <- NULL
+  reg_info <- NULL
   if (has_reg_scaling) {
-    reg_scaling_info <- write_regional_scaling_inputs(
+    reg_info <- write_regional_scaling_inputs(
       source_path = reg_scaling_source,
       active_path = file.path(model_dir, "bet.reg_scaling"),
       full_path = file.path(model_dir, "bet.reg_scaling.full"),
       start_period = reg_scaling_active_start_period,
       end_period = reg_scaling_active_end_period
     )
-    regional_scaling_periods <- reg_scaling_info$total_periods
-    if (!"bet.reg_scaling" %in% names(input_notes)) {
-      input_notes[["bet.reg_scaling"]] <-
-        paste0(
-          "MFCL-ready active matrix: source periods ", reg_scaling_info$start,
-          "-", reg_scaling_info$end, " (", reg_scaling_active_years, "); ",
-          reg_scaling_info$active_periods, " rows x ",
-          reg_scaling_info$columns, " region columns"
-        )
-    }
-    if (!"bet.reg_scaling.full" %in% names(input_notes)) {
-      input_notes[["bet.reg_scaling.full"]] <- paste0(
-        "Complete `bet.2026.reg_scaling` sensitivity source; ",
-        reg_scaling_info$total_periods, " rows x ",
-        reg_scaling_info$columns, " region columns; not read by MFCL"
-      )
-    }
   }
-  control_notes <- c(
-    control_notes,
-    "Generated `.frq` files include region locations for every fishery, including index fisheries, and MFCL 1007 `.ini` files carry explicit tag flags immediately after `# number of age classes`.",
-    "Generated `.ini` files also validate that `# tag flags`, `# tag shed rate`, and the five tag reporting-rate matrices match the selected tag release-group count.",
-    "`age_flags(128)` is kept at 100 so the current MFCL reader interprets the initial equilibrium natural-mortality multiplier as 1.0.",
-    "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
-    "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders."
-  )
-  template_step_id <- get0("stepwise_5_region_template_step_id", ifnotfound = "04-NewStructure")
-  template_model_dir <- file.path(root, "steps", template_step_id, "model")
-  copy_one(file.path(template_model_dir, "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
+
+  template_step <- get0("stepwise_5_region_template_step_id", ifnotfound = "04-NewStructure")
+  template_model <- file.path(root, "steps", template_step, "model")
+  copy_one(file.path(template_model, "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
   fishery_map_out <- file.path(model_dir, "fishery_map.R")
-  copy_one(file.path(template_model_dir, "fishery_map.R"), fishery_map_out)
-  if (has_reg_scaling) {
+  copy_one(file.path(template_model, "fishery_map.R"), fishery_map_out)
+  if (isTRUE(doitall_edits$index_selectivity)) {
     apply_regional_index_selectivity_map(fishery_map_out)
   }
   write_generated_tag_rep_map(model_dir)
+
+  sigma_flags <- integer()
+  if (!is.null(cpue_sigma_calibration)) {
+    sigma_flags <- cpue_sigma_calibration$flag92
+    write_cpue_mle_sigma_audit(model_dir, cpue_sigma_calibration)
+  }
   write_doitall(
-    file.path(template_model_dir, "doitall.sh"),
+    file.path(template_model, "doitall.sh"),
     file.path(model_dir, "doitall.sh"),
     mix_from_ini = mix_from_ini,
-    size_based_selectivity = isTRUE(doitall_edits$size_based_selectivity),
-    time_varying_cv = isTRUE(doitall_edits$time_varying_cv),
-    opr = isTRUE(doitall_edits$opr),
-    data_weighting = isTRUE(doitall_edits$data_weighting),
-    regional_scaling = has_reg_scaling,
-    regional_scaling_periods = if (has_reg_scaling) regional_scaling_periods else 292L,
+    regional_cpue = isTRUE(doitall_edits$regional_cpue),
+    regional_scaling_weight = regional_scaling_weight,
+    regional_scaling_periods = if (has_reg_scaling) reg_info$total_periods else 292L,
     regional_scaling_start_period = reg_scaling_active_start_period,
-    regional_scaling_end_period = reg_scaling_active_end_period
+    regional_scaling_end_period = reg_scaling_active_end_period,
+    index_selectivity = isTRUE(doitall_edits$index_selectivity),
+    f25_f26_spline7 = isTRUE(doitall_edits$f25_f26_spline7),
+    time_varying_cv = isTRUE(doitall_edits$time_varying_cv),
+    effort_creep = identical(frq_transform, "effort_creep"),
+    dom_divisor200 = isTRUE(doitall_edits$dom_divisor200),
+    cpue_sigma_flag92 = sigma_flags,
+    cpue_mle_sigma = if (!is.null(cpue_sigma_calibration)) {
+      cpue_sigma_calibration$cpue_mle_sigma
+    } else {
+      numeric()
+    },
+    francis_divisors = francis_divisors,
+    dm_grouping = get0("dm_grouping", doitall_edits, ifnotfound = ""),
+    dm_nmax = get0("dm_nmax", doitall_edits, ifnotfound = NA_integer_)
   )
-  reg_scaling_flags <- NULL
-  reg_scaling_window <- NULL
-  if (has_reg_scaling) {
-    doitall_out <- file.path(model_dir, "doitall.sh")
-    reg_scaling_flags <- parse_doitall_parest_flags(doitall_out, 77:81)
-    reg_scaling_window <- regional_scaling_period_window(reg_scaling_flags, regional_scaling_periods)
-    control_notes <- c(
-      control_notes,
-      regional_scaling_control_notes(doitall_out, regional_scaling_periods, reg_scaling_active_years)
-    )
+  if (length(francis_divisors)) {
+    if (!nzchar(francis_source)) {
+      stop("Francis divisors require their bundled audit CSV source", call. = FALSE)
+    }
+    copy_one(francis_source, file.path(model_dir, "francis_weights.csv"))
   }
 
   entries <- list(
     list(role = "frq", file = "bet.frq", source = frq_source, note = frq_note),
-    list(role = "ini", file = "bet.ini", source = ini_source, note = ini_note),
-    list(role = "tag", file = "bet.tag", source = tag_source, note = "tag reporting map regenerated from ini/tag; five MFCL reporting-rate matrices parsed"),
-    list(role = "age_length", file = "bet.age_length", source = age_source, note = paste("CAAL input", age_note, sep = "; ")),
-    list(role = "doitall", file = "doitall.sh", source = file.path("steps", template_step_id, "model", "doitall.sh"), note = paste(c(
-      ifelse(mix_from_ini, "mixing override removed", paste0(template_step_id, " 5-region controls retained")),
-      if (has_reg_scaling) paste0(
-        "regional scaling Prior_reg_biomass switch applied in PHASE 5 with ",
-        "flags 77=", format_flag_value(reg_scaling_flags[["77"]]),
-        ", 78=", format_flag_value(reg_scaling_flags[["78"]]),
-        ", 79=", format_flag_value(reg_scaling_flags[["79"]]),
-        ", 80=", format_flag_value(reg_scaling_flags[["80"]]),
-        ", 81=", format_flag_value(reg_scaling_flags[["81"]]),
-        "; active periods ", reg_scaling_window$start, "-", reg_scaling_window$end,
-        " (", reg_scaling_active_years, ")"
-      ),
-      if (has_reg_scaling) "index CPUE/selectivity groups unshared from PHASE 5",
-      "doitall exits immediately on MFCL command failure",
-      if (isTRUE(doitall_edits$time_varying_cv)) "index fishery time-varying CPUE CV flags enabled",
-      if (isTRUE(doitall_edits$size_based_selectivity)) "fish flag 26 set to 3",
-      if (isTRUE(doitall_edits$opr)) "OPR recruitment flags applied",
-      if (isTRUE(doitall_edits$data_weighting)) "global LF/WF divisors set to 40"
-    ), collapse = "; "))
+    list(role = "ini", file = "bet.ini", source = ini_source,
+         note = paste(ini_notes[nzchar(ini_notes)], collapse = "; ")),
+    list(role = "tag", file = "bet.tag", source = tag_source,
+         note = "exact selected tag input; never replaced by an earlier step"),
+    list(role = "age_length", file = "bet.age_length", source = age_source, note = age_note),
+    list(role = "doitall", file = "doitall.sh",
+         source = file.path("steps", template_step, "model", "doitall.sh"),
+         note = "generated from the five-region template with only declared cumulative controls")
   )
   if (nzchar(tag_reporting_source)) {
-    entries <- append(entries, list(list(
-      role = "ini_tag_reporting",
-      file = "bet.ini",
-      source = tag_reporting_source,
-      note = paste0(
-        "five tag reporting-rate matrix blocks copied from ",
-        basename(tag_reporting_source),
-        "; base ini and tag flags remain attributable to the primary ini entry"
-      )
-    )), after = 2L)
+    entries <- c(entries, list(list(
+      role = "ini_reporting_rates", file = "bet.ini", source = tag_reporting_source,
+      note = paste0(reporting_rate_variant, " reporting-rate matrices only")
+    )))
   }
-  if (nzchar(index_cpue_source)) {
-    entries <- append(entries, list(list(
-      role = "frq_cpue",
-      file = "bet.frq",
-      source = index_cpue_source,
-      note = "CPUE/index fishery records 29-33 retained from the 2023 new-structure frq while non-index size/catch records come from the 2026 frq source"
-    )), after = 1L)
+  if (identical(reporting_rate_variant, "rrpttp26")) {
+    entries <- c(entries, list(list(
+      role = "rrpttp26_reporting_audit", file = "bet.ini",
+      source = get0("rrpttp26_reporting_source", ifnotfound = ""),
+      note = "complete audited 33-fishery RRPTTP26 matrix specification"
+    )))
+  }
+  if (nzchar(tag_mixing_source)) {
+    entries <- c(entries, list(list(
+      role = "ini_tag_mixing", file = "bet.ini", source = tag_mixing_source,
+      note = "only tag_flags(:,1) copied; tag_flags(:,2) and all other INI fields retained"
+    )))
   }
   if (has_reg_scaling) {
+    entries <- c(entries, list(
+      list(role = "reg_scaling", file = "bet.reg_scaling", source = reg_scaling_source,
+           note = paste0("active periods ", reg_scaling_active_start_period, "-", reg_scaling_active_end_period)),
+      list(role = "reg_scaling_full", file = "bet.reg_scaling.full", source = reg_scaling_source,
+           note = "complete source matrix retained as a calculation/audit artifact")
+    ))
+  }
+  if (!is.null(cpue_sigma_calibration)) {
     entries <- c(entries, list(list(
-      role = "reg_scaling",
-      file = "bet.reg_scaling",
-      source = reg_scaling_source,
-      note = paste0(
-        "MFCL input extracted from source periods ", reg_scaling_window$start,
-        "-", reg_scaling_window$end, "; ",
-        reg_scaling_info$active_periods, " rows x ",
-        reg_scaling_info$columns, " region columns"
-      )
-    ), list(
-      role = "reg_scaling_full",
-      file = "bet.reg_scaling.full",
-      source = reg_scaling_source,
-      note = paste0(
-        "complete ", reg_scaling_info$total_periods, " rows x ",
-        reg_scaling_info$columns,
-        " region columns retained for alternative-period sensitivities; MFCL does not read this filename"
+      role = "cpue_mle_sigma", file = "cpue_mle_sigma_audit.csv",
+      source = if (!is.null(cpue_sigma_calibration$source_file)) {
+        cpue_sigma_calibration$source_file
+      } else {
+        file.path("R", "prepare_bet_2026_step_inputs.R")
+      },
+      note = cpue_sigma_calibration$basis
+    )))
+  }
+  if (length(francis_divisors)) {
+    entries <- c(entries, list(list(
+      role = "francis_weights",
+      file = "francis_weights.csv",
+      source = francis_source,
+      note = paste(
+        francis_source_note,
+        "All 33 positive recommended_divisor values are validated and applied to fish flag 49."
       )
     )))
   }
   write_manifest(step_dir, entries)
-  outstanding <- c(
-    outstanding,
-    "Local MFCL `-makepar` smoke can still report nonzero tag recapture timing or fishery-realization warnings; review upstream tag prep before final production runs."
-  )
   write_readme(
     step_dir = step_dir,
     title = title,
     summary = summary,
     bullets = bullets,
-    inputs = c(input_notes, "input_manifest.csv" = "machine-readable source/input notes"),
-    controls = control_notes,
+    inputs = c(input_notes, "input_manifest.csv" = "machine-readable source and generated-edit provenance"),
+    controls = c(
+      control_notes,
+      "The folder is generated independently from source inputs; its scientific parent is not a runtime dependency.",
+      "No OPR or length-bin selectivity controls are generated.",
+      "INI and TAG inputs are never rolled back to an earlier selected row."
+    ),
     outstanding = outstanding,
     status = status,
     run_notes = run_notes,
     input_changes = input_changes,
     source_revisions = input_repo_revision_table()
   )
+  invisible(step_dir)
 }

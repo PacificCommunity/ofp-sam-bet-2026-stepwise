@@ -4,6 +4,9 @@ CONFIG_R ?= job-config.R
 CONFIG_HELPERS_R ?= R/stepwise_config_helpers.R
 RUN_CONFIG_MD ?= docs/run-configuration.md
 RUN_CONFIG_SOURCES := $(CONFIG_R) $(CONFIG_HELPERS_R) R/update_readme.R kflow.yaml
+PREPARE_R ?= R/prepare_bet_2026_step_inputs.R
+VALIDATE_R ?= R/validate_stepwise_inputs.R
+PROVENANCE_LOCK ?= config/public-run-provenance.csv
 cfg = $(shell Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_value("$(1)", "$(2)"))')
 yml = $(shell Rscript -e 'y <- yaml::read_yaml("kflow.yaml"); v <- $(1); if (is.null(v) || length(v) == 0 || is.na(v[[1]])) v <- "$(2)"; if (is.logical(v)) v <- tolower(as.character(v)); cat(as.character(v[[1]]))')
 
@@ -59,13 +62,19 @@ STEPWISE_BASE_INPUT_JOB ?= $(call yml,y$$env$$STEPWISE_BASE_INPUT_JOB,)
 STEPWISE_CHECK_INPUT_JOBS ?= $(call yml,y$$env$$STEPWISE_CHECK_INPUT_JOBS,)
 ATTACH_CHECK_TYPES ?= $(call yml,y$$env$$ATTACH_CHECK_TYPES,)
 
-.PHONY: help setup hooks readme list clean fix-permissions local docker kflow kflow-register kflow-register-chain
+.PHONY: help setup hooks prepare validate readme list clean fix-permissions local docker kflow kflow-register kflow-register-chain
 
 help:
 	@printf '%s\n' \
 	  'BET 2026 stepwise shortcuts' \
 	  '' \
 	  'Models live in job-config.R; Kflow/runtime defaults live in kflow.yaml.' \
+	  '' \
+	  'make prepare PROGRAM_PATH=/path/to/mfclo64' \
+	  '  Rebuild all configured public-run inputs, then validate without fitting MFCL.' \
+	  '' \
+	  'make validate PROGRAM_PATH=/path/to/mfclo64' \
+	  '  Fail closed on provenance, folder, parent-graph, input, and MFCL-control drift.' \
 	  '' \
 	  'make list' \
 	  '  Refresh docs/run-configuration.md, enable the commit hook, then show configured model rows from job-config.R.' \
@@ -96,6 +105,19 @@ help:
 	  'Common overrides: STEP_SELECT, RUN_MODE, INPUT_PAR, MFCL_LIVE_LOG, TRIGGER_NEXT, OUTPUT_DIR.'
 
 setup: hooks
+
+prepare:
+	@PUBLIC_RUN_PROVENANCE='$(PROVENANCE_LOCK)' Rscript '$(PREPARE_R)'
+	@$(MAKE) --no-print-directory validate \
+	  CONFIG_R='$(CONFIG_R)' \
+	  PROVENANCE_LOCK='$(PROVENANCE_LOCK)' \
+	  PROGRAM_PATH='$(PROGRAM_PATH)'
+
+validate:
+	@CONFIG_R='$(CONFIG_R)' \
+	PUBLIC_RUN_PROVENANCE='$(PROVENANCE_LOCK)' \
+	PROGRAM_PATH='$(PROGRAM_PATH)' \
+	Rscript '$(VALIDATE_R)'
 
 hooks:
 	@if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \

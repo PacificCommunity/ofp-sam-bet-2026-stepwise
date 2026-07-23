@@ -1521,3 +1521,207 @@ write_generated_tag_rep_map <- function(model_dir) {
   }
   writeLines(out, file.path(model_dir, "tag_rep_map.R"), useBytes = TRUE)
 }
+
+## Isolated BET 2026 stepwise INI edits --------------------------------------
+
+ini_tag_flag_indices <- function(lines, path = "<ini>") {
+  marker <- which(vapply(lines, is_tag_flags_marker, logical(1)))
+  if (length(marker) != 1L) {
+    stop("Expected one # tag flags block in ", path, call. = FALSE)
+  }
+  next_comment <- which(seq_along(lines) > marker & grepl("^[[:space:]]*#", lines))
+  if (!length(next_comment)) {
+    stop("Could not find the end of # tag flags in ", path, call. = FALSE)
+  }
+  idx <- seq.int(marker + 1L, next_comment[[1L]] - 1L)
+  idx[nzchar(trimws(lines[idx]))]
+}
+
+copy_ini_tag_flag_column <- function(path, source_ini, column) {
+  column <- as.integer(column)
+  if (!column %in% 1:10) stop("Tag-flag column must be in 1:10", call. = FALSE)
+  eol <- file_eol(path)
+  target <- readLines(path, warn = FALSE)
+  source <- readLines(source_ini, warn = FALSE)
+  target_i <- ini_tag_flag_indices(target, path)
+  source_i <- ini_tag_flag_indices(source, source_ini)
+  if (length(target_i) != length(source_i)) {
+    stop("Tag-flag row count differs between target and source INIs", call. = FALSE)
+  }
+  target_fields <- strsplit(trimws(target[target_i]), "[[:space:]]+")
+  source_fields <- strsplit(trimws(source[source_i]), "[[:space:]]+")
+  if (any(lengths(target_fields) != 10L) || any(lengths(source_fields) != 10L)) {
+    stop("Tag-flag rows must have exactly 10 columns", call. = FALSE)
+  }
+  for (i in seq_along(target_fields)) {
+    target_fields[[i]][[column]] <- source_fields[[i]][[column]]
+  }
+  target[target_i] <- vapply(target_fields, paste, collapse = " ", character(1))
+  writeLines(target, path, sep = eol, useBytes = TRUE)
+  paste0("copied only tag_flags(:,", column, ") from ", basename(source_ini))
+}
+
+set_ini_tag_flag_column <- function(path, column, value) {
+  column <- as.integer(column)
+  if (!column %in% 1:10) stop("Tag-flag column must be in 1:10", call. = FALSE)
+  eol <- file_eol(path)
+  lines <- readLines(path, warn = FALSE)
+  idx <- ini_tag_flag_indices(lines, path)
+  fields <- strsplit(trimws(lines[idx]), "[[:space:]]+")
+  if (any(lengths(fields) != 10L)) {
+    stop("Tag-flag rows must have exactly 10 columns in ", path, call. = FALSE)
+  }
+  fields <- lapply(fields, function(x) {
+    x[[column]] <- as.character(value)
+    x
+  })
+  lines[idx] <- vapply(fields, paste, collapse = " ", character(1))
+  writeLines(lines, path, sep = eol, useBytes = TRUE)
+  paste0("set only tag_flags(:,", column, ") to ", value)
+}
+
+apply_rrpttp26_reporting_rates <- function(
+    path,
+    source_csv = get0("rrpttp26_reporting_source", ifnotfound = "")) {
+  # Rebuild all five reporting-rate matrices from the audited RRPTTP26 table.
+  # Tag flags and TAG observations remain untouched.
+  if (!nzchar(source_csv) || !file.exists(source_csv)) {
+    stop("Missing RRPTTP26 reporting-rate audit CSV: ", source_csv, call. = FALSE)
+  }
+  programs <- list(RTTP = 1:15, PTTP = c(16:61, 99L), JPTP = 62:98)
+  fields <- c("group", "active", "initial", "target", "penalty")
+  expected <- c(
+    "fishery",
+    unlist(lapply(names(programs), function(program) paste0(program, "_", fields)), use.names = FALSE)
+  )
+  spec <- read.csv(source_csv, stringsAsFactors = FALSE, check.names = FALSE)
+  if (!identical(names(spec), expected) || nrow(spec) != 33L ||
+      !identical(as.integer(spec$fishery), 1:33)) {
+    stop("RRPTTP26 audit CSV must contain the exact 33-fishery schema", call. = FALSE)
+  }
+  numeric_values <- suppressWarnings(as.numeric(unlist(spec[setdiff(expected, "fishery")], use.names = FALSE)))
+  if (anyNA(numeric_values) || any(!is.finite(numeric_values))) {
+    stop("RRPTTP26 audit CSV contains non-finite values", call. = FALSE)
+  }
+  for (program in names(programs)) {
+    group <- spec[[paste0(program, "_group")]]
+    active <- spec[[paste0(program, "_active")]]
+    if (any(group <= 0) || any(group != as.integer(group)) || any(!active %in% 0:1)) {
+      stop("RRPTTP26 audit CSV has invalid ", program, " group or active values", call. = FALSE)
+    }
+  }
+
+  eol <- file_eol(path)
+  lines <- readLines(path, warn = FALSE)
+  patch_matrix <- function(marker, field) {
+    idx <- ini_matrix_row_indices(lines, marker)
+    matrix_fields <- strsplit(trimws(lines[idx]), "[[:space:]]+")
+    if (length(matrix_fields) != 99L || any(lengths(matrix_fields) != 33L)) {
+      stop(marker, " must be a 99 x 33 matrix", call. = FALSE)
+    }
+    for (program in names(programs)) {
+      values <- format(
+        spec[[paste0(program, "_", field)]],
+        scientific = FALSE, trim = TRUE, digits = 15
+      )
+      for (r in programs[[program]]) for (f in seq_len(33L)) {
+        matrix_fields[[r]][[f]] <- values[[f]]
+      }
+    }
+    lines[idx] <<- vapply(matrix_fields, paste, collapse = " ", character(1))
+  }
+  patch_matrix("# tag fish rep group flags", "group")
+  patch_matrix("# tag_fish_rep active flags", "active")
+  patch_matrix("# tag fish rep", "initial")
+  patch_matrix("# tag_fish_rep target", "target")
+  patch_matrix("# tag_fish_rep penalty", "penalty")
+  writeLines(lines, path, sep = eol, useBytes = TRUE)
+  paste(
+    "RRPTTP26 rebuilt the complete RTTP/PTTP/JPTP group, active, initial,",
+    "target, and penalty matrices from the audited 33-fishery table"
+  )
+}
+
+derive_cpue_sigma_calibration <- function(mle_estimates = NULL,
+                                           source_ids = character(),
+                                           locked_vector = numeric()) {
+  if (!is.null(mle_estimates) && length(mle_estimates)) {
+    estimates <- as.matrix(mle_estimates)
+    storage.mode(estimates) <- "double"
+    if (ncol(estimates) != 5L || any(!is.finite(estimates)) || any(estimates <= 0)) {
+      stop("CPUE MLE estimates must be a positive finite matrix with five columns", call. = FALSE)
+    }
+    if (!length(source_ids)) source_ids <- paste0("preliminary-MLE-", seq_len(nrow(estimates)))
+    if (length(source_ids) != nrow(estimates)) {
+      stop("CPUE MLE source labels must match the estimate rows", call. = FALSE)
+    }
+    median_sigma <- apply(estimates, 2L, stats::median)
+    basis <- "median of actual preliminary MLE sigma estimates"
+  } else {
+    median_sigma <- as.numeric(locked_vector)
+    if (length(median_sigma) != 5L || any(!is.finite(median_sigma)) ||
+        any(median_sigma <= 0)) {
+      stop(
+        "No actual preliminary CPUE MLE estimates are available; supply a locked five-value vector",
+        call. = FALSE
+      )
+    }
+    estimates <- matrix(numeric(), nrow = 0L, ncol = 5L)
+    source_ids <- character()
+    basis <- "MLE-based empirical locked vector (underlying estimates unavailable)"
+  }
+  colnames(estimates) <- paste0("R", 1:5)
+  list(
+    estimates = estimates,
+    source_ids = source_ids,
+    median_sigma = median_sigma,
+    flag92 = as.integer(round(100 * median_sigma)),
+    basis = basis
+  )
+}
+
+write_cpue_mle_sigma_audit <- function(model_dir, calibration) {
+  estimate_rows <- if (nrow(calibration$estimates)) {
+    data.frame(
+      row_type = "preliminary_MLE",
+      source = calibration$source_ids,
+      calibration$estimates,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  } else {
+    data.frame(
+      row_type = character(), source = character(),
+      R1 = numeric(), R2 = numeric(), R3 = numeric(), R4 = numeric(), R5 = numeric(),
+      stringsAsFactors = FALSE
+    )
+  }
+  sigma_values <- if (!is.null(calibration$cpue_mle_sigma)) {
+    calibration$cpue_mle_sigma
+  } else {
+    calibration$median_sigma
+  }
+  sigma_row_type <- if (!is.null(calibration$sigma_row_type)) {
+    calibration$sigma_row_type
+  } else {
+    "median_sigma"
+  }
+  summary_rows <- data.frame(
+    row_type = c(sigma_row_type, "applied_fish_flag_92"),
+    source = c(calibration$basis, "exact executed fish flag 92 controls"),
+    R1 = c(sigma_values[[1L]], calibration$flag92[[1L]]),
+    R2 = c(sigma_values[[2L]], calibration$flag92[[2L]]),
+    R3 = c(sigma_values[[3L]], calibration$flag92[[3L]]),
+    R4 = c(sigma_values[[4L]], calibration$flag92[[4L]]),
+    R5 = c(sigma_values[[5L]], calibration$flag92[[5L]]),
+    stringsAsFactors = FALSE
+  )
+  out <- rbind(estimate_rows, summary_rows)
+  write.csv(
+    out,
+    file.path(model_dir, "cpue_mle_sigma_audit.csv"),
+    row.names = FALSE,
+    quote = TRUE
+  )
+  invisible(file.path(model_dir, "cpue_mle_sigma_audit.csv"))
+}

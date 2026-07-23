@@ -43,6 +43,96 @@ public_source_path <- function(path) {
   norm
 }
 
+public_run_provenance_path <- function() {
+  configured <- trimws(Sys.getenv("PUBLIC_RUN_PROVENANCE", ""))
+  if (nzchar(configured)) configured else file.path(root, "config", "public-run-provenance.csv")
+}
+
+read_public_run_provenance <- function(path = public_run_provenance_path()) {
+  if (!file.exists(path)) {
+    return(data.frame(stringsAsFactors = FALSE))
+  }
+  utils::read.csv(
+    path,
+    stringsAsFactors = FALSE,
+    check.names = FALSE,
+    na.strings = character()
+  )
+}
+
+stepwise_sha256_file <- function(path) {
+  if (!file.exists(path)) stop("Cannot SHA256 missing file: ", path, call. = FALSE)
+  sha256sum <- Sys.which("sha256sum")
+  if (!nzchar(sha256sum)) {
+    stop("`sha256sum` is required to create deterministic input manifests.", call. = FALSE)
+  }
+  output <- system2(sha256sum, shQuote(path), stdout = TRUE, stderr = TRUE)
+  status <- attr(output, "status")
+  if (!is.null(status) && status != 0L) {
+    stop("Failed to calculate SHA256 for ", path, ": ", paste(output, collapse = " "), call. = FALSE)
+  }
+  value <- strsplit(output[[1L]], "[[:space:]]+")[[1L]][[1L]]
+  if (!grepl("^[0-9a-f]{64}$", value)) {
+    stop("Invalid SHA256 output for ", path, call. = FALSE)
+  }
+  value
+}
+
+locked_provenance_for_source <- function(path, provenance = read_public_run_provenance()) {
+  if (!nrow(provenance) || !"repository_path" %in% names(provenance) || !nzchar(path)) {
+    return(NULL)
+  }
+  norm <- gsub("\\\\", "/", normalizePath(path, winslash = "/", mustWork = FALSE))
+  repository_path <- gsub("^/+|\\\\", "", as.character(provenance$repository_path))
+  matched <- vapply(repository_path, function(candidate) {
+    nzchar(candidate) && (identical(norm, candidate) || endsWith(norm, paste0("/", candidate)))
+  }, logical(1))
+  if (sum(matched) != 1L) return(NULL)
+  provenance[which(matched), , drop = FALSE]
+}
+
+locked_provenance_url <- function(record) {
+  if (is.null(record) || !nrow(record)) return("")
+  repo <- sub("[.]git$", "", as.character(record$repository_url[[1L]]))
+  commit <- as.character(record$repository_commit[[1L]])
+  path <- gsub("^/+", "", as.character(record$repository_path[[1L]]))
+  if (!nzchar(repo) || !nzchar(commit) || !nzchar(path)) return("")
+  paste0(repo, "/blob/", commit, "/", path)
+}
+
+source_provenance_metadata <- function(path) {
+  record <- locked_provenance_for_source(path)
+  source_sha256 <- if (file.exists(path)) stepwise_sha256_file(path) else ""
+  if (!is.null(record)) {
+    locked_sha <- as.character(record$source_sha256[[1L]])
+    if (nzchar(locked_sha) && nzchar(source_sha256) && !identical(locked_sha, source_sha256)) {
+      stop(
+        "Source SHA256 does not match config/public-run-provenance.csv for ", path,
+        ": expected ", locked_sha, ", got ", source_sha256, ".",
+        call. = FALSE
+      )
+    }
+    return(list(
+      source = locked_provenance_url(record),
+      repository = as.character(record$repository_url[[1L]]),
+      commit = as.character(record$repository_commit[[1L]]),
+      path = as.character(record$repository_path[[1L]]),
+      source_sha256 = source_sha256,
+      access = if (tolower(as.character(record$public_access[[1L]])) == "true") "public" else "not-public",
+      status = as.character(record$status[[1L]])
+    ))
+  }
+  list(
+    source = public_source_path(path),
+    repository = "",
+    commit = source_commit_for_path(path),
+    path = public_source_path(path),
+    source_sha256 = source_sha256,
+    access = "unverified",
+    status = "unlocked"
+  )
+}
+
 copy_one <- function(from, to) {
   if (!file.exists(from)) stop("Missing source file: ", from, call. = FALSE)
   dir.create(dirname(to), recursive = TRUE, showWarnings = FALSE)

@@ -1,109 +1,210 @@
 # BET 2026 Stepwise
 
-<p align="right">
-  <a href="kflow.yaml"><img src="kflow-ready.svg" alt="Kflow ready task"></a>
-</p>
+Public, reproducible configuration for the 2026 bigeye tuna (BET) MFCL
+stepwise analysis. It contains 17 scientific groups and 22 independently
+runnable model rows. Nineteen models form the selected carry-forward path.
 
-BET 2026 MFCL stepwise model inputs. Each folder under `steps/` is a runnable
-model folder with a compact README and input manifest.
+## Run Contract
+
+- Each `STEP_SELECT` value maps to one self-contained
+  `steps/<STEP_SELECT>/model/` folder. A row does not consume its parent's run
+  output.
+- `scientific_parent_id` records the model used for scientific comparison. It
+  is provenance, not a scheduler dependency.
+- All 22 rows can run independently and in parallel through Kflow.
+- `selected = TRUE` identifies the adopted BET 2026 route. `carry_status` is
+  `carry` when later rows inherit that model, `stop` for an unselected sibling,
+  and `final` for the terminal model.
+- `STEP_SELECT=all` runs all 22 rows, including sibling alternatives. Any row
+  can be run alone, for example `STEP_SELECT=15-SelectivityUpdate`.
+- Every row has a unique `STEP_SELECT`, `job_key`, `job_title`, and
+  `model_label`, plus explicit CPU, memory, disk, expected-output, and artifact
+  metadata in `job-config.R`.
+- Native `doitall` runs auto-detect the final MFCL `.par`; the compact output
+  contract also includes `model_payload.rds`. Outputs are identified by the
+  row's unique `output_artifact` value.
+
+The selected route follows the numbered chain except at sibling branches:
+`09c-SUB075` and `17b-DMG8Nmax25` are carried forward. Step 17b is the final
+selected model.
 
 ## Step Map
 
-Each row is one runnable Kflow model. Lettered rows are deliberate substeps:
-they split one scientific change into smaller checks so differences can be
-traced without guessing.
+| Group | `STEP_SELECT` | Scientific parent | Selection / carry | Scientific change |
+| --- | --- | --- | --- | --- |
+| 01 | `01-Diag2023` | `external-2023-diagnostic-archive` | selected / carry | Rerun the 2023 diagnostic anchor. |
+| 02a | `02a-NewExe1003` | `01-Diag2023` | selected / carry | Run the 2023 inputs with the current executable and 1003 ini. |
+| 02b | `02b-Ini1007` | `02a-NewExe1003` | selected / carry | Convert the ini layout from 1003 to 1007. |
+| 02c | `02c-LengthWeight` | `02b-Ini1007` | selected / carry | Apply the BET 2026 bias-corrected length-weight parameters. |
+| 03 | `03-FixM` | `02c-LengthWeight` | selected / carry | Fix natural mortality from the `mgc=-5` diagnostic fit. |
+| 04 | `04-NewStructure` | `03-FixM` | selected / carry | Adopt the five-region, 33-fishery structure. |
+| 05 | `05-ConvertToLength` | `04-NewStructure` | selected / carry | Convert existing weight compositions to length. |
+| 06 | `06-AddLengthData` | `05-ConvertToLength` | selected / carry | Add the additional length-composition data. |
+| 07 | `07-DataTo2024` | `06-AddLengthData` | selected / carry | Extend data through 2024 and integrate the latest RRPTTP26 reporting-rate penalties. |
+| 08 | `08-RegionalCPUE` | `07-DataTo2024` | selected / carry | Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty. No selectivity changes occur in this row. |
+| 09a | `09a-BASE075` | `08-RegionalCPUE` | alternative / stop | Apply BASE075 composition weighting. |
+| 09b | `09b-REG075` | `08-RegionalCPUE` | alternative / stop | Apply REG075 composition weighting. |
+| 09c | `09c-SUB075` | `08-RegionalCPUE` | selected / carry | Apply the selected SUB075 composition weighting. |
+| 10 | `10-MIX015` | `09c-SUB075` | selected / carry | Apply the MIX015 tag-mixing setting. |
+| 11 | `11-TAGF2ON` | `10-MIX015` | selected / carry | Turn on tag flag column 2 only. |
+| 12 | `12-TimeVaryingCV` | `11-TAGF2ON` | selected / carry | Apply time-varying CPUE CVs. |
+| 13 | `13-EffortCreep` | `12-TimeVaryingCV` | selected / carry | Apply the BET 2026 effort-creep series. |
+| 14 | `14-CPUESigma` | `13-EffortCreep` | selected / carry | Apply common index-specific CPUE MLE sigma values. |
+| 15 | `15-SelectivityUpdate` | `14-CPUESigma` | selected / carry | Address persistent structured F25/F26 length-frequency misfit with independent seven-node cubic-spline selectivities, and separate F29-F33 regional-index selectivities. |
+| 16 | `16-DOMDiv200` | `15-SelectivityUpdate` | selected / carry | Apply DOM divisor 200 to F21-F23. |
+| 17a | `17a-Francis` | `16-DOMDiv200` | alternative / stop | Apply the Francis composition-data weighting comparison. |
+| 17b | `17b-DMG8Nmax25` | `16-DOMDiv200` | selected / final | Apply the DM likelihood and G8 PSSET grouping with a rounded Nmax 25 cap selected just above the preliminary Francis ESS 95th percentile. |
 
-| Model | Major step | What changes | Input baseline |
-| --- | --- | --- | --- |
-| `01-Diag2023` | Diagnostic anchor | Reruns the 2023 diagnostic with the historical MFCL executable. | Archived 2023 diagnostic model. |
-| `02a-NewExe` | Executable bridge | Runs the archived 2023 assessment replication inputs with the current MFCL executable. | 2023 assessment replication input set; MFCL 1003 ini. |
-| `02b-Ini1007` | Executable bridge | Converts the 02a ini layout from MFCL 1003 to MFCL 1007. | 02a. |
-| `02c-LengthWeight` | Executable bridge | Applies the BET 2026 bias-corrected length-weight parameters. | 02b. |
-| `03-FixM` | FixM bridge | Applies fixed natural mortality from the 01 diagnostic `mgc=-5` final run. | 02c. |
-| `04-NewStructure` | New structure | Switches to the 5-region / 33-fishery structure with global CPUE. | 2026 new-structure input, terminal year 2021. |
-| `05-ConvertToLength` | Size data | Converts existing weight compositions to length. | 04. |
-| `06-LengthPlusLength` | Size data | Adds the extra length compositions. | 04. |
-| `07-DataTo2024` | Data update | Extends the global-CPUE input to 2024. | 06. |
-| `08-RegionalCPUE` | CPUE update | Adds regional CPUE and the regional-scaling prior. | 07. |
-| `09-NewOtoliths` | Age data | Adds the updated 2026 CAAL / otolith input. | 08. |
-| `10-TagMixingKS` | Tag mixing | Uses release-specific mixing periods from the KS 0.2 build. | 09. |
-| `11-TimeVaryingCV` | CPUE CV | Adds time-varying CPUE CV. | 10. |
-| `12-OrthogonalPoly` | Recruitment | Applies the orthogonal-polynomial recruitment setting. | 11. |
-| `13-LengthBasedSel` | Selectivity | Adds length-based selectivity. | 12. |
-| `14-EffortCreep` | Effort creep | Applies agreed effort creep to index fisheries. | 13. |
-| `15-DataWeighting` | Weighting | First data-weighting run. | 14. |
+The latest RRPTTP26 reporting-rate penalties are part of
+`07-DataTo2024`; there is no standalone reporting-rate model row. Because
+`07-DataTo2024` is selected, `08-RegionalCPUE` and every later descendant
+inherit that reporting-rate setup.
 
-## Substep Logic
+## Exact Selectivity Controls
 
-| Block | Substeps | Reason |
+All recent selectivity and node changes are introduced together in
+`15-SelectivityUpdate`, immediately after `14-CPUESigma`:
+
+| Control | Setting |
+| --- | --- |
+| F29-F33 | Separate the regional-index selectivity definitions for fisheries F29 through F33. |
+| F25 | Use an independent cubic-spline selectivity with seven nodes. |
+| F26 | Use a separate independent cubic-spline selectivity with seven nodes; do not share the F25 curve. |
+| Other fisheries | Retain the selected parent configuration; this row introduces no other selectivity change. |
+
+These controls are bundled as one scientific update. They are not included in
+`08-RegionalCPUE`, and there is no earlier standalone spline-selectivity row.
+
+Persistent structured length-frequency misfit remained for F25 and F26 under
+the previous shared, limited-node selectivity structure. F25 and F26 are
+spatially distinct associated purse-seine fisheries. They remain together in
+the associated-purse-seine G8 DM overdispersion group, but receive independent
+selectivities and seven-node cubic splines so different size availability can
+be represented while each curve remains smooth.
+
+F29-F33 are regional index fisheries. Their selectivities are separated so a
+single selectivity constraint cannot mask regional size-availability
+differences, while the fisheries retain their common index-oriented DM group.
+The exact fishery groupings, separation decisions, and seven-node setting are
+assessment-specific choices evaluated stepwise; they are not mandated by the
+selectivity or DM literature.
+
+## Final DM Cap Rationale
+
+The DM likelihood is useful because it estimates composition overdispersion
+within the model rather than treating the nominal sample size as the effective
+amount of information. The fitted overdispersion therefore determines the
+effective weight assigned to the length-frequency data, subject to `Nmax`.
+
+Preliminary BET fits showed a clear trade-off: increasing `Nmax` allowed the
+length-frequency component to exert more influence and improve its fit, but it
+also reduced the fit to CPUE indices. `Nmax` was therefore treated as an upper
+bound on composition information, not as a target effective sample size.
+
+| Consideration | Evidence from preliminary fits | Stepwise decision |
 | --- | --- | --- |
-| `02` executable bridge | `02a`, `02b`, `02c` | Separates current executable effects, MFCL 1007 ini conversion, and the BET 2026 bias-corrected L-W parameter update. |
-| `05`-`15` | one row each | Each row adds one later assessment change on top of the selected baseline. |
+| Composition weighting | DM estimated overdispersion and effective composition information internally, avoiding direct use of large nominal sample sizes. | Retain DM as the selected composition likelihood. |
+| Integrated-model balance | Larger `Nmax` values increased the influence of length-frequency data and degraded CPUE fit. | Cap the maximum effective composition information rather than allowing the LF component to dominate the joint objective function. |
+| Empirical scale | The upper tail of preliminary fishery-level Francis ESS estimates provided an independent scale for a plausible cap. | Use the rounded value `Nmax=25`, selected just above the preliminary Francis ESS 95th percentile. |
+| Interpretation | The 95th percentile describes the empirical location of the cap, not a 95% data weight. | State explicitly that `Nmax=25` is a pragmatic upper bound assessed using LF fit, CPUE fit, convergence, and model stability together. |
 
-## Names Used Here
+This choice preserves the main advantage of DM weighting while limiting the
+ability of a small number of highly informative composition series to dominate
+the integrated fit. The G8 PSSET grouping and `Nmax=25` remain
+assessment-specific choices evaluated in this stepwise design. A concise
+report-ready record is provided in
+[`DM_NMAX_RATIONALE.md`](DM_NMAX_RATIONALE.md).
 
-| Name | Meaning |
-| --- | --- |
-| 2023 assessment replication input set | The archived 2023 BET replication model inputs stored in `ofp-sam-2026-BET/mfcl/inputs/2023_rep`. |
-| MFCL 1003 ini | Older ini layout with no explicit `# tag flags` block; tag mixing is still set in `doitall.sh`. |
-| MFCL 1007 ini | Newer ini layout with explicit `# tag flags`, tag shed rates, and reporting-rate matrix sections. |
-| `BET_PHASE10_11_CONVERGENCE` | Run-time convergence knob used by Kflow/local runs. Set `-3` for quick checks or `-5` for stricter production reruns; it applies to every selected step/substep. |
+## Method And Assessment Choices
 
-## Source Inputs And Generated Edits
+The distinction below is intentional. A general method can be supported by the
+assessment literature while its datasets, fleet groupings, constants, and
+branch selection remain BET 2026 decisions.
 
-These model folders are generated from source input repos, then checked and
-edited by `R/prepare_bet_2026_step_inputs.R`. The exact per-step source file and
-edit note is in `steps/<step_id>/input_manifest.csv`.
-
-| File | Source repo | Generated edits |
+| Group | General or literature method | BET 2026 assessment-specific choice |
 | --- | --- | --- |
-| `.frq` | `ofp-sam-2026-BET-YFT-frq-build` | Copied exactly except steps 14-15, where index-fishery effort creep is applied. |
-| `.tag` | `ofp-sam-2026-BET-YFT-tag-prep` | Copied exactly. `tag_rep_map.R` is an MFCLShiny display/audit sidecar, not an MFCL input. |
-| `.age_length` | `ofp-sam-2026-BET-YFT-age-length-build` | Records copied from source; steps 04-15 change effective sample size from `1` to `0.75`. |
-| `.ini` | `ofp-sam-2026-BET-YFT-build-ini` and archived diagnostic inputs | Step-specific generated edits apply BET 2026 L-W, `LN(R0)` from 04 onward, FixM, tag/RR alignment, and MFCL-reader compatibility checks. |
-| `bet.reg_scaling` | `ofp-sam-2026-BET-YFT-frq-build` | Steps 08-15 write the active source window, by default periods 53-72 (`1965Q1-1969Q4`), as the exact 20x5 MFCL input. |
-| `bet.reg_scaling.full` | `ofp-sam-2026-BET-YFT-frq-build` | Preserves the complete 292x5 source for sensitivity windows; MFCL does not read this filename. |
+| 01 | Re-running an earlier model provides a reproducibility anchor. | Use the archived 2023 diagnostic and historical diagnostic executable. |
+| 02 | Separating software, input-format, and biological-coefficient changes isolates implementation effects. | Use the current executable with 1003 first, then ini 1007, then the BET 2026 bias-corrected length-weight coefficients. |
+| 03 | Natural mortality may be fixed while other model parameters are estimated. | Carry the fixed mortality from the `mgc=-5` BET diagnostic result. |
+| 04 | Spatial and fleet stratification represents heterogeneous population and fishery processes. | Use five regions and 33 fisheries. |
+| 05-07 | Composition-unit conversion, addition of observations, terminal-year updates, and reporting-rate inputs are standard assessment-build operations. | Convert the designated weight data, add the designated BET length data, extend through 2024, and integrate the latest RRPTTP26 penalties at step 07. RRPTTP26 is an assessment input, not a universal reporting-rate method. |
+| 08 | Relative-abundance indices enter through an observation likelihood, and likelihood components can be assigned relative weights. | Add the designated regional CPUE data and likelihood and apply `REGW100` regional scaling. No selectivity choice is made in this row. |
+| 09 | Composition likelihood weighting controls the influence of composition observations. | Compare BASE075, REG075, and SUB075 as siblings; the `075` design and selected SUB075 branch are assessment choices. |
+| 10 | Tag-mixing assumptions control when releases contribute to the tag likelihood. | Apply the fixed `MIX015` setting. |
+| 11 | MFCL tag flags activate specified tag-model behavior. | Turn on column 2 only (`TAGF2ON`); do not imply that every tag-flag column is enabled. |
+| 12 | Time-varying observation CVs allow index precision to vary through time. | Use the BET 2026 CPUE CV schedule. |
+| 13 | Effort-creep corrections account for changing fishing efficiency. | Apply 1%/year for 1952-1976 and 0.5%/year for 1977-2024 to index fisheries F29-F33. |
+| 14 | Index-specific observation error controls the relative influence of CPUE series in the integrated fit. | Preliminary fits across alternative configurations gave similar MLE sigma estimates. Fix these common values for all later stepwise comparisons so CPUE weighting remains consistent. |
+| 15 | Fleet-specific selectivity avoids forcing unlike fisheries to share one curve, and flexible splines retain smoothness while representing size availability. | Address persistent structured F25/F26 LF misfit with independent seven-node splines while retaining both fisheries in associated-purse-seine G8; separate F29-F33 regional-index selectivities while retaining their common index-oriented DM group. These exact choices are assessment-specific and evaluated stepwise. |
+| 16 | Data weighting can alter a likelihood component's influence. | The DOM treatment for F21-F23 and divisor `200` are assessment-specific. No literature-derived claim is made for that divisor. |
+| 17 | Francis weighting accounts for composition residual behavior; the Dirichlet-multinomial (DM) models overdispersion and estimates effective composition information. | Compare Francis with one bundled final DM configuration using G8 PSSET and a rounded `Nmax=25` cap just above the preliminary fishery-level Francis ESS 95th percentile. This limits extreme DM ESS while leaving about 95% of that empirical distribution uncapped; it is not "95% weighting." |
 
-Current BET input sources from `origin/main`:
+Useful method references:
 
-| Source repo | Commit used |
+- Francis, R.I.C.C. (2011), [Data weighting in statistical fisheries stock
+  assessment models](https://doi.org/10.1139/f2011-025).
+- Thorson, J.T., Johnson, K.F., Methot, R.D., and Taylor, I.G. (2017),
+  [Model-based estimates of effective sample size in stock assessment models
+  using the Dirichlet-multinomial distribution](https://doi.org/10.1016/j.fishres.2016.06.005).
+- Maunder, M.N. and Punt, A.E. (2013), [A review of integrated analysis in
+  fisheries stock assessment](https://doi.org/10.1016/j.fishres.2012.07.025),
+  for the broader integrated-assessment context.
+
+The references motivate general methods only. They do not determine the BET
+fleet numbers, reporting-rate source, spline node count, weighting codes,
+effort-creep schedule, DOM divisor, sigma calibration, G8 grouping, or Nmax.
+
+## CPUE MLE Sigma
+
+Index-specific CPUE sigma values were estimated by maximum likelihood in a
+range of preliminary model configurations. The estimates were similar across
+those fits, indicating that the observation-error scale was not sensitive to
+the preliminary structural choices. Step 14 therefore fixes sigma at the
+common values selected from the preliminary fits. This keeps CPUE weighting constant in all later
+stepwise comparisons and avoids confounding selectivity or composition-
+likelihood changes with simultaneous reweighting of the abundance indices.
+
+| CPUE MLE sigma setting | R1 | R2 | R3 | R4 | R5 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| CPUE MLE sigma | 0.354 | 0.237 | 0.212 | 0.239 | 0.225 |
+| Applied fish flag 92 | 35 | 24 | 21 | 24 | 23 |
+
+The archived fitted input is the controlling implementation record for these common
+production values.
+
+## DOM Naming
+
+`DOM` is the assessment's short scenario name for the F21-F23 treatment. It is
+not the name of a general statistical method. The divisor `200` is a BET 2026
+assessment-specific choice and is not implied by the name or prescribed by the
+literature.
+
+## Final Model Provenance
+
+`17b-DMG8Nmax25` is the terminal selected model. Its fitted model matches Job
+`13328`, and its Hessian merge is Job `13432`. These job numbers are provenance
+references only; this repository does not submit, fetch, or merge jobs as part
+of `job-config.R`.
+
+## Resources And Outputs
+
+| Rows | Regions | CPUs | Memory | Disk | Run mode | Expected output |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| 01-03 | 9 | 2 | 12 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
+| 04-17 | 5 | 2 | 8 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
+
+Step 01 alone pins the historical diagnostic executable. All other rows use
+the current container MFCL executable. `BET_PHASE10_11_CONVERGENCE` remains a
+run-time convergence control and can be overridden without changing model
+inputs.
+
+## Repository Layout
+
+| Path | Purpose |
 | --- | --- |
-| `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` |
-| `ofp-sam-2026-BET-YFT-build-ini` | `f8faf7c` |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `e0b427d` |
-| `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` |
-
-For the exact source-vs-generated comparison, see
-[`docs/input-source-audit.md`](docs/input-source-audit.md).
-
-Latest refresh:
-
-| Source repo | BET files pulled into generated inputs |
-| --- | --- |
-| `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` | `BET/bet.2023.new.structure.ini`, `BET/bet.2026.ini`, `BET/ini.mix-period/bet.2026.mix-0.2.ini`, and related RR files with updated reporting-rate groupings and initial values. |
-| `ofp-sam-2026-BET-YFT-tag-prep@e0b427d` | `BET/bet.2023.new.structure-low.recaps.removed.tag`, `BET/bet.2026.low.recaps.removed.tag`, and related RR summaries. The BET grouping update was introduced in `3dad64e`; `e0b427d` changes YFT only and carries those BET files forward unchanged. |
-
-## Where To Look
-
-| Path | Use |
-| --- | --- |
-| `steps/<step_id>/README.md` | short step summary, generated input changes, controls, and checks |
-| `steps/<step_id>/input_manifest.csv` | source files, commits, and generated-input notes |
-| `steps/<step_id>/model/` | MFCL-ready model folder |
-| `docs/run-configuration.md` | Kflow/local-run settings and output layout |
-| `docs/input-source-audit.md` | concise source-vs-generated input comparison |
-| `docs/tag-reporting-groups.md` | short guide to MFCL tag reporting-rate inputs |
-| `R/prepare_bet_2026_step_inputs.R` | reproducible input-generation entry point |
-| `debugging/` | troubleshooting records |
-
-## Assessment Notes
-
-| Topic | Note |
-| --- | --- |
-| Regional scaling | Steps 08-15 use a compact `bet.reg_scaling` containing only periods 53-72 (20 rows x 5 regions). The complete 292x5 matrix is retained as `bet.reg_scaling.full`; set `BET_REG_SCALING_START_PERIOD` and `BET_REG_SCALING_END_PERIOD` when regenerating a sensitivity window. |
-| Effort creep | Steps 14-15 apply 1%/yr for 1952-1976 and 0.5%/yr for 1977-2024 to index fisheries 29-33. |
-| Region maps | Steps 01-03 use the 2023 9-region asset; steps 04-15 use the 2026 5-region asset. See [`docs/region-map-assets.md`](docs/region-map-assets.md). |
-| Tag reporting rates | MFCL reads the reporting-rate blocks in `bet.ini`; MFCLShiny reads `tag_rep_map.R` for consistent group labels and audit display. See [`docs/tag-reporting-groups.md`](docs/tag-reporting-groups.md). |
-| Length-weight | Step 02c changes BET L-W from the 2023 value `3.063397e-05 2.932384` to the bias-corrected 2026 value `3.073533e-05 2.932410`; later steps retain it. |
-| Tag input source | Steps 04-15 use BET tag/ini sources from `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` and `ofp-sam-2026-BET-YFT-tag-prep@e0b427d`. Each manifest records the primary INI and any separate reporting-rate INI. Fishery labels and regions are synchronized from `BET/bet.RR.2026.csv`. |
-| Tag mixing source | Steps 10-15 use `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` `BET/ini.mix-period/bet.2026.mix-0.2.ini`; source zero mixing periods for release groups 43 and 46 are raised to `1`, while `tag_flags(it,2)=0` and the updated RR group IDs are retained. |
+| `job-config.R` | Public 22-row run matrix and row metadata. |
+| `steps/<STEP_SELECT>/README.md` | Model-specific scientific and input notes. |
+| `steps/<STEP_SELECT>/input_manifest.csv` | Source-input provenance. |
+| `steps/<STEP_SELECT>/model/` | Self-contained MFCL run folder. |
+| `docs/run-configuration.md` | Kflow and local-run behavior. |
+| `R/prepare_bet_2026_step_inputs.R` | Reproducible model-input preparation. |
