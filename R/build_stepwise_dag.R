@@ -59,7 +59,9 @@ build_stepwise_dag <- function(
     title = "BET 2026 model-development pathway",
     subtitle = subtitle,
     caption = caption,
-    max_levels_per_row = 7L
+    max_levels_per_row = 5L,
+    label_width = 24L,
+    max_label_lines = 3L
   )
 }
 
