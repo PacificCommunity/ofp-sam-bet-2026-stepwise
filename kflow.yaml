@@ -6,7 +6,7 @@
 
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/ofp-sam-bet-2026-stepwise
-name: ofp-sam-bet-2026-stepwise
+name: bet-2026-stepwise-2307
 description: Run independent frozen-input BET 2026 MFCL model fits, one selected model per job.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
@@ -47,7 +47,7 @@ env:
   MODEL_LABEL: Diag2023
   JOB_KEY: 01-diag2023
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-stepwise-v2
+  FLOW_GROUP: bet-2026-stepwise-2307
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"

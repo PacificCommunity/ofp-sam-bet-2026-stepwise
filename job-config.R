@@ -12,7 +12,7 @@ stepwise_run <- list(
   selected_path_models = 19L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
-  flow_group = "bet-2026-stepwise-public",
+  flow_group = "bet-2026-stepwise-2307",
 
   # TRUE runs downstream plot/report after stepwise succeeds.
   trigger_next = TRUE
@@ -153,7 +153,7 @@ stepwise_models <- do.call(
     model_row(
       "11-TAGF2ON", "11-TagFlags", "10-MIX015",
       TRUE, "carry",
-      "set tag-flag column 2 to 1 so reporting-rate effects are excluded during each release group's configured mixing periods",
+      "set tag-flag column 2 to 1 so reporting-rate effects are excluded for each release group throughout its configured mixing periods",
       "Reporting-rate mixing-period treatment", "11 Reporting-rate mixing-period treatment", "11-tagf2on-col2"
     ),
     model_row(

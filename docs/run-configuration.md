@@ -9,7 +9,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
 | `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-stepwise-public` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `flow_group` | `bet-2026-stepwise-2307` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `true` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `docker_image` | `ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
@@ -42,7 +42,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `09b-REG075` | `TRUE` | 09-CompositionWeighting | 09b | apply the REG075 composition-weighting alternative | Regional age-length weighting | 09b Regional age-length weighting | `09b-reg075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `09c-SUB075` | `TRUE` | 09-CompositionWeighting | 09c | apply the selected SUB075 composition weighting | Sub-basin age-length weighting | 09c Sub-basin age-length weighting | `09c-sub075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `10-MIX015` | `TRUE` | 10-TagMixing | 10 | apply the MIX015 tag-mixing setting | Tag-mixing periods | 10 Tag-mixing periods | `10-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
-| `11-TAGF2ON` | `TRUE` | 11-TagFlags | 11 | set tag-flag column 2 to 1 so reporting-rate effects are excluded during each release group's configured mixing periods | Reporting-rate mixing-period treatment | 11 Reporting-rate mixing-period treatment | `11-tagf2on-col2` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `11-TAGF2ON` | `TRUE` | 11-TagFlags | 11 | set tag-flag column 2 to 1 so reporting-rate effects are excluded for each release group throughout its configured mixing periods | Reporting-rate mixing-period treatment | 11 Reporting-rate mixing-period treatment | `11-tagf2on-col2` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `12-TimeVaryingCV` | `TRUE` | 12-TimeVaryingCV | 12 | apply normalized time-varying CPUE relative-variance multipliers from the frequency data | Time-varying CPUE uncertainty | 12 Time-varying CPUE uncertainty | `12-timevaryingcv` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `13-EffortCreep` | `TRUE` | 13-EffortCreep | 13 | apply the BET 2026 effort-creep series | Effort-creep adjustment | 13 Effort-creep adjustment | `13-effortcreep` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `14-CPUESigma` | `TRUE` | 14-CPUESigma | 14 | fix index-specific CPUE observation-error scales calibrated from preliminary MLE fits | Fixed CPUE observation-error calibration | 14 Fixed CPUE observation-error calibration | `14-fixed-cpue-observation-error` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
