@@ -104,7 +104,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     ensure_ini_tag_shed_rates(ini_out, frq_counts$n_tag_groups)
   )
   if (identical(reporting_rate_variant, "rrpttp26")) {
-    ini_notes <- c(ini_notes, apply_rrpttp26_reporting_rates(ini_out))
+    ini_notes <- c(
+      ini_notes,
+      apply_rrpttp26_reporting_rates(ini_out, tag_path = tag_out)
+    )
   } else if (!reporting_rate_variant %in% c("none", "peatman")) {
     stop("Unknown reporting-rate variant: ", reporting_rate_variant, call. = FALSE)
   }

@@ -41,10 +41,10 @@ selected model.
 | 02b | `02b-Ini1007` | `02a-NewExe1003` | selected / carry | Convert the ini layout from 1003 to 1007. |
 | 02c | `02c-LengthWeight` | `02b-Ini1007` | selected / carry | Apply the BET 2026 bias-corrected length-weight parameters. |
 | 03 | `03-FixM` | `02c-LengthWeight` | selected / carry | Fix natural mortality from the `mgc=-5` diagnostic fit. |
-| 04 | `04-NewStructure` | `03-FixM` | selected / carry | Adopt the five-region, 33-fishery structure. |
+| 04 | `04-NewStructure` | `03-FixM` | selected / carry | Adopt the five-region, 33-fishery structure and SC22 BET purse-seine reporting-rate penalties. |
 | 05 | `05-ConvertToLength` | `04-NewStructure` | selected / carry | Convert existing weight compositions to length. |
 | 06 | `06-AddLengthData` | `05-ConvertToLength` | selected / carry | Add the additional length-composition data. |
-| 07 | `07-DataTo2024` | `06-AddLengthData` | selected / carry | Extend data through 2024 and integrate the latest RRPTTP26 reporting-rate penalties. |
+| 07 | `07-DataTo2024` | `06-AddLengthData` | selected / carry | Extend data through 2024 and remap the carried reporting-rate specification to the updated tag releases. |
 | 08 | `08-RegionalCPUE` | `07-DataTo2024` | selected / carry | Replace the FRQ with the authoritative regional CPUE source and add its likelihood plus REGW100; the source has two fewer F32 1952 quarterly records and receives no transform. |
 | 09a | `09a-BASE075` | `08-RegionalCPUE` | alternative / stop | Apply BASE075 composition weighting. |
 | 09b | `09b-REG075` | `08-RegionalCPUE` | alternative / stop | Apply REG075 composition weighting. |
@@ -59,10 +59,10 @@ selected model.
 | 17a | `17a-Francis` | `16-DOMDiv200` | alternative / stop | Replace all Step 16 LF divisors with Francis values, including F21-F23 `114/398/705`. |
 | 17b | `17b-DMG8Nmax25` | `16-DOMDiv200` | selected / final | Apply the DM likelihood and G8 PSSET grouping with `Nmax=25`, calibrated from the fishery-level Francis ESS diagnostics underlying Step 17a. Steps 17a and 17b are sibling likelihood alternatives, not sequential fits. |
 
-The latest RRPTTP26 reporting-rate penalties are part of
-`07-DataTo2024`; there is no standalone reporting-rate model row. Because
-`07-DataTo2024` is selected, `08-RegionalCPUE` and every later descendant
-inherit that reporting-rate setup.
+The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
+structure at `04-NewStructure`. They are carried through steps 05-06 and
+remapped to the updated tag-release rows at `07-DataTo2024`. West and East
+purse-seine fisheries remain separate reporting-rate groups throughout.
 
 ## Exact Selectivity Controls
 
@@ -135,8 +135,8 @@ branch selection remain BET 2026 decisions.
 | 01 | Re-running an earlier model provides a reproducibility anchor. | Use the archived 2023 diagnostic and historical diagnostic executable. |
 | 02 | Separating software, input-format, and biological-coefficient changes isolates implementation effects. | Compare executables first with exact Step 01 scientific controls, then change only ini layout to 1007, then apply the BET 2026 bias-corrected length-weight coefficients. |
 | 03 | Natural mortality may be fixed while other model parameters are estimated. | Carry the fixed mortality from the `mgc=-5` BET diagnostic result. |
-| 04 | Spatial and fleet stratification represents heterogeneous population and fishery processes. | Use five regions and 33 fisheries. |
-| 05-07 | Composition-unit conversion, addition of observations, terminal-year updates, and reporting-rate inputs are standard assessment-build operations. | Convert the designated weight data, add the designated BET length data, extend through 2024, and integrate the latest RRPTTP26 penalties at step 07. RRPTTP26 is an assessment input, not a universal reporting-rate method. |
+| 04 | Spatial and fleet stratification represents heterogeneous population and fishery processes. External tag-seeding analyses can inform reporting-rate penalties. | Use five regions and 33 fisheries, with the BET means and penalties reported by Peatman et al. (2026, SC22-SA-IP05). |
+| 05-07 | Composition-unit conversion, addition of observations, and terminal-year updates are standard assessment-build operations. | Convert the designated weight data, add the designated BET length data, extend through 2024, and remap the carried reporting-rate specification to the updated tag releases. |
 | 08 | Relative-abundance indices enter through an observation likelihood, and likelihood components can be assigned relative weights. | Use the authoritative regional CPUE source as supplied, including two fewer F32 1952 quarterly records, and apply `REGW100`; no FRQ transform or selectivity choice is made in this row. |
 | 09 | Composition likelihood weighting controls the influence of composition observations. | Compare BASE075, REG075, and SUB075 as siblings; the `075` design and selected SUB075 branch are assessment choices. |
 | 10 | Tag-mixing assumptions control when releases contribute to the tag likelihood. | Apply the fixed `MIX015` setting. |

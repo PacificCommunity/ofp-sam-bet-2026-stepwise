@@ -1676,17 +1676,23 @@ set_ini_tag_flag_column <- function(path, column, value) {
 
 apply_rrpttp26_reporting_rates <- function(
     path,
+    tag_path,
     source_csv = get0("rrpttp26_reporting_source", ifnotfound = "")) {
   # Rebuild all five reporting-rate matrices from the audited RRPTTP26 table.
-  # Tag flags and TAG observations remain untouched.
+  # Release rows are identified from the matching tag file so the same
+  # fishery-level specification works with both the 2023-structure and 2026
+  # tag datasets. Tag flags and TAG observations remain untouched.
   if (!nzchar(source_csv) || !file.exists(source_csv)) {
     stop("Missing RRPTTP26 reporting-rate audit CSV: ", source_csv, call. = FALSE)
   }
-  programs <- list(RTTP = 1:15, PTTP = c(16:61, 99L), JPTP = 62:98)
+  if (!nzchar(tag_path) || !file.exists(tag_path)) {
+    stop("Missing tag file for RRPTTP26 row mapping: ", tag_path, call. = FALSE)
+  }
+  expected_programs <- c("RTTP", "PTTP", "JPTP")
   fields <- c("group", "active", "initial", "target", "penalty")
   expected <- c(
     "fishery",
-    unlist(lapply(names(programs), function(program) paste0(program, "_", fields)), use.names = FALSE)
+    unlist(lapply(expected_programs, function(program) paste0(program, "_", fields)), use.names = FALSE)
   )
   spec <- read.csv(source_csv, stringsAsFactors = FALSE, check.names = FALSE)
   if (!identical(names(spec), expected) || nrow(spec) != 33L ||
@@ -1697,7 +1703,7 @@ apply_rrpttp26_reporting_rates <- function(
   if (anyNA(numeric_values) || any(!is.finite(numeric_values))) {
     stop("RRPTTP26 audit CSV contains non-finite values", call. = FALSE)
   }
-  for (program in names(programs)) {
+  for (program in expected_programs) {
     group <- spec[[paste0(program, "_group")]]
     active <- spec[[paste0(program, "_active")]]
     if (any(group <= 0) || any(group != as.integer(group)) || any(!active %in% 0:1)) {
@@ -1707,15 +1713,91 @@ apply_rrpttp26_reporting_rates <- function(
 
   eol <- file_eol(path)
   lines <- readLines(path, warn = FALSE)
+  releases <- parse_tag_release_map(tag_path)
+  release_program <- toupper(trimws(releases$tag_program))
+  unknown_programs <- setdiff(unique(release_program), expected_programs)
+  if (length(unknown_programs)) {
+    stop(
+      "Unsupported tag programme(s) in ", tag_path, ": ",
+      paste(unknown_programs, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  programs <- setNames(
+    lapply(expected_programs, function(program) which(release_program == program)),
+    expected_programs
+  )
+  if (any(lengths(programs) == 0L)) {
+    stop("Tag file does not contain all RTTP, PTTP, and JPTP programmes: ", tag_path, call. = FALSE)
+  }
+  group_rows <- ini_matrix_row_indices(lines, "# tag fish rep group flags")
+  expected_rows <- nrow(releases) + 1L
+  if (length(group_rows) != expected_rows) {
+    stop(
+      "Reporting-rate matrices in ", path, " require ", expected_rows,
+      " rows for ", nrow(releases), " tag releases plus the pooled row; found ",
+      length(group_rows), ".",
+      call. = FALSE
+    )
+  }
+  programs$PTTP <- c(programs$PTTP, expected_rows)
+
+  program_spec <- setNames(lapply(expected_programs, function(program) {
+    data.frame(
+      group = spec[[paste0(program, "_group")]],
+      active = spec[[paste0(program, "_active")]],
+      initial = spec[[paste0(program, "_initial")]],
+      target = spec[[paste0(program, "_target")]],
+      penalty = spec[[paste0(program, "_penalty")]],
+      stringsAsFactors = FALSE
+    )
+  }), expected_programs)
+  recaps <- tag_recapture_table(tag_path)
+  recaps <- recaps[
+    recaps$recap_number > 0L & recaps$release_group <= nrow(releases),
+    ,
+    drop = FALSE
+  ]
+  if (nrow(recaps)) {
+    recap_program <- release_program[recaps$release_group]
+    required <- unique(data.frame(
+      program = recap_program,
+      fishery = as.integer(recaps$recap_fishery),
+      stringsAsFactors = FALSE
+    ))
+    if (any(required$fishery < 1L | required$fishery > 33L)) {
+      stop("Positive tag recaptures reference fisheries outside 1:33 in ", tag_path, call. = FALSE)
+    }
+    for (i in seq_len(nrow(required))) {
+      program <- required$program[[i]]
+      fishery <- required$fishery[[i]]
+      if (program_spec[[program]]$active[[fishery]] == 0) {
+        reference <- program_spec$PTTP[fishery, , drop = FALSE]
+        if (reference$active[[1L]] == 0 ||
+            any(reference[c("initial", "target", "penalty")] <= 0)) {
+          stop(
+            "No active SC22 PTTP prior is available for positive ", program,
+            " recaptures in fishery ", fishery, " from ", tag_path, ".",
+            call. = FALSE
+          )
+        }
+        program_spec[[program]]$active[[fishery]] <- 1
+        program_spec[[program]]$initial[[fishery]] <- reference$initial[[1L]]
+        program_spec[[program]]$target[[fishery]] <- reference$target[[1L]]
+        program_spec[[program]]$penalty[[fishery]] <- reference$penalty[[1L]]
+      }
+    }
+  }
+
   patch_matrix <- function(marker, field) {
     idx <- ini_matrix_row_indices(lines, marker)
     matrix_fields <- strsplit(trimws(lines[idx]), "[[:space:]]+")
-    if (length(matrix_fields) != 99L || any(lengths(matrix_fields) != 33L)) {
-      stop(marker, " must be a 99 x 33 matrix", call. = FALSE)
+    if (length(matrix_fields) != expected_rows || any(lengths(matrix_fields) != 33L)) {
+      stop(marker, " must be a ", expected_rows, " x 33 matrix", call. = FALSE)
     }
     for (program in names(programs)) {
       values <- format(
-        spec[[paste0(program, "_", field)]],
+        program_spec[[program]][[field]],
         scientific = FALSE, trim = TRUE, digits = 15
       )
       for (r in programs[[program]]) for (f in seq_len(33L)) {

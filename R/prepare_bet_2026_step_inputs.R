@@ -549,11 +549,7 @@ new_tag <- file.path(root, "inputs", "bet.2026.low.recaps.removed.tag")
 mix_ini <- file.path(ini_root, "ini.mix-period", "bet.2026.mix-0.2.ini")
 regfish_ini_source <- file.path(ini_root, "bet.2023.new.structure.ini")
 regfish_tag_source <- file.path(tag_root, "bet.2023.new.structure-low.recaps.removed.tag")
-pooled_historical_group17_prior <- list(
-  group_id = 17L,
-  expected_mean = 0.595,
-  expected_penalty = 676
-)
+rrpttp26_reporting_source <- file.path(root, "config", "rrpttp26-reporting-rates.csv")
 
 frq_new_structure_global_2021 <- file.path(frq_root, "bet.2023.new-structure.global-cpue.frq")
 frq_convert_length_2021 <- file.path(frq_root, "bet.2023.new-structure.global-cpue.wt-as-len.frq")
@@ -614,14 +610,13 @@ ini_tag_note_04 <- ensure_ini_tag_flags(
   file.path(newstructure_model_dir, "bet.ini"),
   frq_counts_04$n_tag_groups
 )
+tag_reporting_source_note_04 <- apply_rrpttp26_reporting_rates(
+  file.path(newstructure_model_dir, "bet.ini"),
+  tag_path = file.path(newstructure_model_dir, "bet.tag"),
+  source_csv = rrpttp26_reporting_source
+)
 tag_reporting_group_note_04 <- repair_tag_reporting_grouped_initial_values(
   file.path(newstructure_model_dir, "bet.ini")
-)
-tag_reporting_prior_note_04 <- standardize_positive_tag_reporting_group_prior(
-  file.path(newstructure_model_dir, "bet.ini"),
-  group_id = pooled_historical_group17_prior$group_id,
-  expected_mean = pooled_historical_group17_prior$expected_mean,
-  expected_penalty = pooled_historical_group17_prior$expected_penalty
 )
 validate_tag_reporting_grouped_initial_values(file.path(newstructure_model_dir, "bet.ini"))
 write_generated_tag_rep_map(newstructure_model_dir)
@@ -645,11 +640,17 @@ write_manifest(newstructure_dir, list(
     file = "bet.ini",
     source = regfish_ini_source,
     note = paste(
-      c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_group_note_04, tag_reporting_prior_note_04)[
-        nzchar(c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_group_note_04, tag_reporting_prior_note_04))
+      c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_source_note_04, tag_reporting_group_note_04)[
+        nzchar(c(fixm_age_par_note, total_population_note_04, length_weight_note_04, ini_tag_note_04, tag_reporting_source_note_04, tag_reporting_group_note_04))
       ],
       collapse = "; "
     )
+  ),
+  list(
+    role = "rrpttp26_reporting_audit",
+    file = "bet.ini",
+    source = rrpttp26_reporting_source,
+    note = "SC22 BET purse-seine reporting-rate means and penalties mapped to the 2023-structure tag rows"
   ),
   list(
     role = "tag",
@@ -680,6 +681,7 @@ write_readme(
     "Keeps data through 2021 and uses the global CPUE setup for this structural transition.",
     "Uses old CAAL re-assigned to the new fisheries.",
     paste0("Uses the restructured tag setup with ", frq_counts_04$n_tag_groups, " release groups."),
+    "Applies the SC22 BET purse-seine reporting-rate penalties with separate West and East groups.",
     paste("Applies", fixm_age_par_display, "while retaining the 5-region `.ini` structure."),
     paste0("Sets total population scaling factor LN(R0) to ", five_region_total_population_scalar, "."),
     paste0("Uses ", bias_corrected_length_weight_note, ".")
@@ -693,16 +695,16 @@ write_readme(
         total_population_note_04,
         length_weight_note_04,
         ini_tag_note_04,
-        tag_reporting_group_note_04,
-        tag_reporting_prior_note_04
+        tag_reporting_source_note_04,
+        tag_reporting_group_note_04
       )[nzchar(c(
         "`bet.2023.new.structure.ini`",
         fixm_age_par_note,
         total_population_note_04,
         length_weight_note_04,
         ini_tag_note_04,
-        tag_reporting_group_note_04,
-        tag_reporting_prior_note_04
+        tag_reporting_source_note_04,
+        tag_reporting_group_note_04
       ))],
       collapse = "; "
     ),
@@ -729,7 +731,7 @@ write_readme(
       paste(
         "Applies the fixed Lorenzen natural-mortality coefficients, normalizes the tag-flags marker, and uses",
         paste0(bias_corrected_length_weight_note, "."),
-        "Grouped tag reporting-rate initial values are harmonized for native MFCL; pooled historical group 17 prior metadata is standardized to its already effective first-positive signature without changing group flags or the fitted objective."
+        "SC22 BET reporting-rate means and penalties are mapped by tag programme and fishery, with West and East purse-seine groups kept separate."
       ),
       "No generated edit.",
       "Changes effective sample size from `1` to `0.75`."
@@ -757,7 +759,6 @@ regional_age_075 <- file.path(age_variant_root, "bet.2026.regional.0.75.age_leng
 sub_basin_age_075 <- file.path(age_variant_root, "bet.2026.sub.basin.0.75.age_length")
 mix015_ini <- file.path(root, "inputs", "bet.2026.mix-0.15.ini")
 peatman_rr_ini <- mix_ini
-rrpttp26_reporting_source <- file.path(root, "config", "rrpttp26-reporting-rates.csv")
 
 # Step 14 carries the CPUE MLE sigma controls actually submitted and executed
 # for Job13328. It is an exact input transfer, not a newly recalculated median.
@@ -988,7 +989,7 @@ write_sequence_step(
   frq_source = frq_convert_length_2021,
   ini_source = regfish_ini_source,
   tag_source = regfish_tag_source,
-  reporting_rate_group_prior_repairs = list(pooled_historical_group17_prior)
+  reporting_rate_variant = "rrpttp26"
 )
 
 write_sequence_step(
@@ -997,13 +998,15 @@ write_sequence_step(
   frq_source = frq_length_plus_length_2021,
   ini_source = regfish_ini_source,
   tag_source = regfish_tag_source,
-  reporting_rate_group_prior_repairs = list(pooled_historical_group17_prior)
+  reporting_rate_variant = "rrpttp26"
 )
 
-# RRPTTP26 is integrated in step 07 and inherited by every descendant.
+# The SC22 BET reporting-rate priors enter with the 33-fishery structure in
+# step 04. Step 07 remaps the same fishery-level specification to the two
+# additional 2026 tag-release rows.
 write_sequence_step(
-  "07-DataTo2024", "07 Data through 2024 and updated tag reporting rates", "06-AddLengthData",
-  "Extend data through 2024 and integrate the latest RRPTTP26 penalties.",
+  "07-DataTo2024", "07 Data through 2024", "06-AddLengthData",
+  "Extend data through 2024 while carrying the SC22 BET reporting-rate penalties.",
   reporting_rate_variant = "rrpttp26",
   tag_reporting_source = peatman_rr_ini
 )

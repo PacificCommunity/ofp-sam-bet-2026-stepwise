@@ -18,16 +18,17 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 | 3 | Keeps data through 2021 and uses the global CPUE setup for this structural transition. |
 | 4 | Uses old CAAL re-assigned to the new fisheries. |
 | 5 | Uses the restructured tag setup with 96 release groups. |
-| 6 | Applies Fixed Lorenzen natural-mortality intercept from the 01-Diag2023 mgc=-5 diagnostic final par while retaining the 5-region `.ini` structure. |
-| 7 | Sets total population scaling factor LN(R0) to 17. |
-| 8 | Uses bias-corrected BET 2026 L-W parameters a=3.073533e-05, b=2.932410. |
+| 6 | Applies the SC22 BET purse-seine reporting-rate penalties with separate West and East groups. |
+| 7 | Applies Fixed Lorenzen natural-mortality intercept from the 01-Diag2023 mgc=-5 diagnostic final par while retaining the 5-region `.ini` structure. |
+| 8 | Sets total population scaling factor LN(R0) to 17. |
+| 9 | Uses bias-corrected BET 2026 L-W parameters a=3.073533e-05, b=2.932410. |
 
 ## Inputs
 
 | File | Source / note |
 | --- | --- |
 | `.frq` | `bet.2023.new-structure.global-cpue.frq`; 5-region, 33-fishery structure, terminal year 2021, global CPUE |
-| `.ini` | `bet.2023.new.structure.ini`; Fixed Lorenzen natural-mortality intercept applied from the 01-Diag2023 mgc=-5 diagnostic final par; set Length-weight parameters from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; normalized MFCL 1007 tag-control rows for 96 release groups; harmonized initial RR values only in 1 tag reporting-rate group(s) so grouped starts are native-MFCL compatible; group flags, targets, and penalties unchanged; standardized positive group-17 prior metadata to the already effective first signature (mean 0.595; stored target 59.5; coefficient 676) in 84 cell(s); grouping and effective MFCL objective unchanged |
+| `.ini` | `bet.2023.new.structure.ini`; Fixed Lorenzen natural-mortality intercept applied from the 01-Diag2023 mgc=-5 diagnostic final par; set Length-weight parameters from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; normalized MFCL 1007 tag-control rows for 96 release groups; RRPTTP26 rebuilt the complete RTTP/PTTP/JPTP group, active, initial, target, and penalty matrices from the audited 33-fishery table |
 | `.tag` | `bet.2023.new.structure-low.recaps.removed.tag`; low-recapture-removed tag input |
 | `.age_length` | `bet.2023.new-structure.age_length`; old CAAL / age_length re-assigned to new fisheries; set age_length effective sample size to 0.75 for 112 records |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
@@ -37,7 +38,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
 | `.frq` | No generated edit beyond source validation. | 2023 new-structure global-CPUE source records. |
-| `.ini` | Applies the fixed Lorenzen natural-mortality coefficients, normalizes the tag-flags marker, and uses bias-corrected BET 2026 L-W parameters a=3.073533e-05, b=2.932410. Grouped tag reporting-rate initial values are harmonized for native MFCL; pooled historical group 17 prior metadata is standardized to its already effective first-positive signature without changing group flags or the fitted objective. | `LN(R0)=17`, bias-corrected L-W, tag grouping, and `tag_flags(it,2)=0`. |
+| `.ini` | Applies the fixed Lorenzen natural-mortality coefficients, normalizes the tag-flags marker, and uses bias-corrected BET 2026 L-W parameters a=3.073533e-05, b=2.932410. SC22 BET reporting-rate means and penalties are mapped by tag programme and fishery, with West and East purse-seine groups kept separate. | `LN(R0)=17`, bias-corrected L-W, tag grouping, and `tag_flags(it,2)=0`. |
 | `.tag` | No generated edit. | 2023 new-structure low-recapture-removed source file. |
 | `.age_length` | Changes effective sample size from `1` to `0.75`. | CAAL records themselves. |
 
@@ -46,7 +47,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` | Correct RR init values |
+| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
 | `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |

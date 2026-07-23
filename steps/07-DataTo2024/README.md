@@ -1,6 +1,6 @@
-# 07 Data through 2024 and updated tag reporting rates
+# 07 Data through 2024
 
-Extend data through 2024 and integrate the latest RRPTTP26 penalties.
+Extend data through 2024 while carrying the SC22 BET reporting-rate penalties.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Extend data through 2024 and integrate the latest RRPTTP26 penalties.
 
 | # | Change |
 | --- | --- |
-| 1 | Extend data through 2024 and integrate the latest RRPTTP26 penalties. |
+| 1 | Extend data through 2024 while carrying the SC22 BET reporting-rate penalties. |
 | 2 | Scientific parent: '06-AddLengthData'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,14 +35,14 @@ Extend data through 2024 and integrate the latest RRPTTP26 penalties.
 | `.ini` | rrpttp26 reporting-rate matrices; tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Sets only the effective-sample-size row to 0.75. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Extend data through 2024 and integrate the latest RRPTTP26 penalties. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Extend data through 2024 while carrying the SC22 BET reporting-rate penalties. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` | Correct RR init values |
+| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
 | `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
