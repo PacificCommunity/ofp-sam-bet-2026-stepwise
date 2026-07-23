@@ -705,6 +705,22 @@ if (file.exists(region_map_helper)) {
 }
 
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# A diagram/report failure must never invalidate a completed model fit.
+dag_script <- file.path(root, "R", "build_stepwise_dag.R")
+if (file.exists(dag_script) && requireNamespace("mfclshiny", quietly = TRUE)) {
+  tryCatch({
+    dag_env <- new.env(parent = globalenv())
+    sys.source(dag_script, envir = dag_env)
+    dag_env$build_stepwise_dag(
+      config_path = file.path(root, "job-config.R"),
+      output_dir = out_dir
+    )
+  }, error = function(e) {
+    warning("Stepwise diagram was not generated: ", conditionMessage(e))
+  })
+}
+
 write.csv(
   step_table,
   file.path(out_dir, "selected-steps.csv"),

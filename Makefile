@@ -62,7 +62,7 @@ STEPWISE_BASE_INPUT_JOB ?= $(call yml,y$$env$$STEPWISE_BASE_INPUT_JOB,)
 STEPWISE_CHECK_INPUT_JOBS ?= $(call yml,y$$env$$STEPWISE_CHECK_INPUT_JOBS,)
 ATTACH_CHECK_TYPES ?= $(call yml,y$$env$$ATTACH_CHECK_TYPES,)
 
-.PHONY: help setup hooks prepare validate readme list clean fix-permissions local docker kflow kflow-register kflow-register-chain
+.PHONY: help setup hooks prepare validate readme list dag report clean fix-permissions local docker kflow kflow-register kflow-register-report kflow-register-chain
 
 help:
 	@printf '%s\n' \
@@ -135,6 +135,12 @@ readme: hooks
 
 list: readme
 	@Rscript -e "source('$(CONFIG_R)'); print(stepwise_models, row.names = FALSE)"
+
+dag:
+	@OUTPUT_DIR='$(OUTPUT_DIR)' Rscript R/build_stepwise_dag.R
+
+report:
+	@OUTPUT_DIR='$(OUTPUT_DIR)' Rscript R/build_stepwise_report.R
 
 clean:
 	rm -rf '$(OUTPUT_DIR)' work .R-library .kflow-runtime-cache .docker-home
@@ -239,6 +245,10 @@ kflow: readme
 kflow-register:
 	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before running make kflow-register.' >&2; exit 2; }
 	python3 scripts/register_kflow_task.py --repo-root . --config kflow.yaml --kflow-url '$(KFLOW_URL)'
+
+kflow-register-report:
+	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before running make kflow-register-report.' >&2; exit 2; }
+	python3 scripts/register_kflow_task.py --repo-root . --config model-development-report/kflow.yaml --kflow-url '$(KFLOW_URL)'
 
 kflow-register-chain:
 	@test -n "$${KFLOW_API_TOKEN:-}" || { echo 'Set KFLOW_API_TOKEN before running make kflow-register-chain.' >&2; exit 2; }
