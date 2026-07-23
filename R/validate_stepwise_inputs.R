@@ -212,18 +212,8 @@ if (!is.data.frame(models)) {
   models <- data.frame(step_id = character(), stringsAsFactors = FALSE)
 }
 configured_models <- models
-early_isolation_audit_ids <- c(
-  "01-Diag2023", "02a-NewExe1003", "02b-Ini1007",
-  "02c-LengthWeight", "03-FixM"
-)
-if ("enabled" %in% names(models)) {
-  models <- models[
-    truthy(models$enabled) |
-      trim_character(models$step_id) %in% early_isolation_audit_ids,
-    ,
-    drop = FALSE
-  ]
-}
+# Validation covers the complete configured scientific chain, including rows
+# that are not currently enabled for execution.
 
 if (!"step_id" %in% names(models)) {
   add_failure("job-config", "`stepwise_models` must include `step_id`.")
@@ -353,6 +343,34 @@ visit_parent <- function(id, trail = character()) {
 }
 for (id in models$step_id) visit_parent(id)
 
+expected_weighting_parents <- c(
+  "16a-DOMDiv200" = "15-SelectivityUpdate",
+  "16b-Francis" = "16a-DOMDiv200",
+  "16c-DMG8Nmax25" = "15-SelectivityUpdate",
+  "18a-F22FormRelaxed" = "16c-DMG8Nmax25",
+  "18b-F15FormRelaxed" = "16c-DMG8Nmax25",
+  "18c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
+  "18d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25"
+)
+for (child in names(expected_weighting_parents)) {
+  index <- match(child, models$step_id)
+  if (is.na(index)) {
+    add_failure("parent-graph", paste0("required weighting branch `", child, "` is missing."))
+    next
+  }
+  actual_parent <- parents[[index]]
+  expected_parent <- expected_weighting_parents[[child]]
+  if (!identical(actual_parent, expected_parent)) {
+    add_failure(
+      child,
+      paste0(
+        "scientific parent must be `", expected_parent,
+        "`; found `", actual_parent, "`."
+      )
+    )
+  }
+}
+
 ## Provenance lock validation.
 lock <- if (file.exists(lock_path)) {
   tryCatch(
@@ -443,6 +461,216 @@ g8_expected <- c(1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 3, 7, 6, 6, 7, 3, 3, 4, 5, 7, 
 rr_signatures <- list()
 model_cache <- list()
 
+normalise_exact_control <- function(line) {
+  body <- sub("[[:space:]]+#.*$", "", line)
+  paste(strsplit(trimws(body), "[[:space:]]+")[[1L]], collapse = " ")
+}
+
+exact_control_count <- function(lines, control) {
+  expected <- normalise_exact_control(control)
+  sum(vapply(
+    lines,
+    function(line) {
+      words <- strsplit(trimws(sub("[[:space:]]+#.*$", "", line)), "[[:space:]]+")[[1L]]
+      if (length(words) < 3L || length(words) %% 3L != 0L) return(0L)
+      starts <- seq.int(1L, length(words) - 2L, by = 3L)
+      sum(vapply(
+        starts,
+        function(start) identical(
+          paste(words[start:(start + 2L)], collapse = " "),
+          expected
+        ),
+        logical(1)
+      ))
+    },
+    integer(1)
+  ))
+}
+
+require_exact_controls <- function(lines, controls, model_id, description) {
+  counts <- vapply(
+    controls,
+    function(control) exact_control_count(lines, control),
+    integer(1)
+  )
+  if (any(counts != 1L)) {
+    details <- paste0("`", controls[counts != 1L], "`=", counts[counts != 1L])
+    add_failure(
+      model_id,
+      paste0(description, " requires exactly one of each control; found ", paste(details, collapse = ", "), ".")
+    )
+  }
+}
+
+forbid_exact_controls <- function(lines, controls, model_id, description) {
+  counts <- vapply(
+    controls,
+    function(control) exact_control_count(lines, control),
+    integer(1)
+  )
+  if (any(counts != 0L)) {
+    details <- paste0("`", controls[counts != 0L], "`=", counts[counts != 0L])
+    add_failure(
+      model_id,
+      paste0(description, " forbids these controls; found ", paste(details, collapse = ", "), ".")
+    )
+  }
+}
+
+legacy_selectivity_controls <- c(
+  "-5 16 1", "-14 75 5", "-20 16 2",
+  "-20 3 30", "-28 16 2", "-28 3 30"
+)
+dom_divisor_controls <- c("-21 49 200", "-22 49 200", "-23 49 200")
+francis_dom_controls <- c("-21 49 114", "-22 49 398", "-23 49 705")
+job13328_dm_controls <- c(
+  "1 141 11", "1 311 1", "1 320 5", "1 342 25",
+  "-999 69 1", "-999 89 0", "-999 89 1"
+)
+dm_branch_only_controls <- setdiff(job13328_dm_controls, "1 311 1")
+
+tag_release_programs <- function(lines, path) {
+  headers <- grep("#[[:space:]]+[0-9]+ - RELEASE REGION", lines)
+  if (!length(headers)) {
+    add_failure(path, "bet.tag has no readable release-group headers.")
+    return(character())
+  }
+  titles <- trimws(sub("^#[[:space:]]*", "", lines[headers]))
+  groups <- suppressWarnings(as.integer(sub("^([0-9]+).*", "\\1", titles)))
+  programs <- toupper(trimws(sub(".*Tag_program[[:space:]]+", "", titles)))
+  if (anyNA(groups) || !identical(groups, seq_along(groups)) ||
+      any(!programs %in% c("RTTP", "PTTP", "JPTP"))) {
+    add_failure(path, "bet.tag release groups/programmes are not a contiguous RTTP/PTTP/JPTP map.")
+    return(character())
+  }
+  programs
+}
+
+rr_source_path <- file.path(root, "config", "rrpttp26-reporting-rates.csv")
+rr_fields <- c("group", "active", "initial", "target", "penalty")
+rr_programs <- c("RTTP", "PTTP", "JPTP")
+rr_expected_columns <- c(
+  "fishery",
+  unlist(lapply(rr_programs, function(program) paste0(program, "_", rr_fields)), use.names = FALSE)
+)
+rr_spec <- if (file.exists(rr_source_path)) {
+  tryCatch(
+    utils::read.csv(rr_source_path, stringsAsFactors = FALSE, check.names = FALSE),
+    error = function(e) {
+      add_failure("reporting-rates", paste0("could not read ", rr_source_path, ": ", conditionMessage(e)))
+      data.frame()
+    }
+  )
+} else {
+  add_failure("reporting-rates", paste0("missing audited mapping ", rr_source_path, "."))
+  data.frame()
+}
+if (nrow(rr_spec) != 33L || !identical(names(rr_spec), rr_expected_columns) ||
+    !identical(as.integer(rr_spec$fishery), 1:33)) {
+  add_failure("reporting-rates", "audited reporting-rate mapping must contain the exact 33-fishery RTTP/PTTP/JPTP schema.")
+}
+if (nrow(rr_spec) == 33L) {
+  for (program in rr_programs) {
+    west <- as.integer(rr_spec[[paste0(program, "_group")]][c(25L, 27L)])
+    east <- as.integer(rr_spec[[paste0(program, "_group")]][c(26L, 28L)])
+    if (length(unique(west)) != 1L || length(unique(east)) != 1L ||
+        identical(west[[1L]], east[[1L]])) {
+      add_failure(
+        "reporting-rates",
+        paste0(program, " West F25/F27 and East F26/F28 must use separate, internally consistent penalty groups.")
+      )
+    }
+  }
+}
+
+rr_parser_env <- new.env(parent = baseenv())
+rr_parser_env$read_words <- function(line) {
+  strsplit(trimws(line), "[[:space:]]+")[[1L]]
+}
+tryCatch(
+  sys.source(file.path(root, "R", "prepare_mfcl_inputs.R"), envir = rr_parser_env),
+  error = function(e) {
+    add_failure("reporting-rates", paste0("could not load tag parser: ", conditionMessage(e)))
+  }
+)
+
+expected_rr_matrices <- function(program_rows, release_programs, tag_path, model_id) {
+  if (!nrow(rr_spec) || !length(program_rows) ||
+      !exists("tag_recapture_table", envir = rr_parser_env, inherits = FALSE)) {
+    return(NULL)
+  }
+  program_spec <- setNames(lapply(rr_programs, function(program) {
+    setNames(
+      lapply(rr_fields, function(field) {
+        as.numeric(rr_spec[[paste0(program, "_", field)]])
+      }),
+      rr_fields
+    )
+  }), rr_programs)
+
+  recaps <- tryCatch(
+    rr_parser_env$tag_recapture_table(tag_path),
+    error = function(e) {
+      add_failure(model_id, paste0("could not parse positive tag recaptures: ", conditionMessage(e)))
+      data.frame()
+    }
+  )
+  if (nrow(recaps)) {
+    recaps <- recaps[
+      recaps$recap_number > 0L &
+        recaps$release_group <= length(release_programs),
+      ,
+      drop = FALSE
+    ]
+  }
+  if (nrow(recaps)) {
+    required <- unique(data.frame(
+      program = release_programs[recaps$release_group],
+      fishery = as.integer(recaps$recap_fishery),
+      stringsAsFactors = FALSE
+    ))
+    for (i in seq_len(nrow(required))) {
+      program <- required$program[[i]]
+      fishery <- required$fishery[[i]]
+      if (program_spec[[program]]$active[[fishery]] == 0) {
+        if (program_spec$PTTP$active[[fishery]] == 0 ||
+            any(c(
+              program_spec$PTTP$initial[[fishery]],
+              program_spec$PTTP$target[[fishery]],
+              program_spec$PTTP$penalty[[fishery]]
+            ) <= 0)) {
+          add_failure(
+            model_id,
+            paste0(
+              "positive ", program, " recaptures in F", fishery,
+              " have no active audited PTTP reporting-rate prior."
+            )
+          )
+          next
+        }
+        for (field in c("active", "initial", "target", "penalty")) {
+          program_spec[[program]][[field]][[fishery]] <-
+            program_spec$PTTP[[field]][[fishery]]
+        }
+      }
+    }
+  }
+
+  setNames(lapply(rr_fields, function(field) {
+    do.call(
+      rbind,
+      lapply(program_rows, function(program) program_spec[[program]][[field]])
+    )
+  }), rr_fields)
+}
+
+format_rr_map_values <- function(x) {
+  x <- unique(as.vector(x))
+  x <- x[!is.na(x)]
+  if (!length(x)) return("")
+  paste(format(x, digits = 10L, scientific = FALSE, trim = TRUE), collapse = ",")
+}
+
 for (i in seq_len(nrow(models))) {
   row <- models[i, , drop = FALSE]
   model_id <- row$step_id[[1L]]
@@ -480,6 +708,55 @@ for (i in seq_len(nrow(models))) {
   ini <- read_text(ini_path)
   flags <- parse_control_flags(doitall)
   check_placeholders(c(doitall, if (file.exists(manifest_path)) read_text(manifest_path) else character()), model_id)
+
+  if (is.finite(major_number) && major_number >= 15L) {
+    forbid_exact_controls(
+      doitall, legacy_selectivity_controls, model_id,
+      "Step 15 Job13328-compatible selectivity cleanup"
+    )
+  }
+  if (identical(model_id, "15-SelectivityUpdate")) {
+    forbid_exact_controls(
+      doitall,
+      c(dom_divisor_controls, francis_dom_controls, dm_branch_only_controls),
+      model_id,
+      "Step 15 pre-weighting state"
+    )
+  }
+  if (identical(model_id, "16a-DOMDiv200")) {
+    require_exact_controls(doitall, dom_divisor_controls, model_id, "16a DOM weighting")
+    forbid_exact_controls(
+      doitall, c(francis_dom_controls, dm_branch_only_controls), model_id,
+      "16a DOM-only weighting"
+    )
+  }
+  if (identical(model_id, "16b-Francis")) {
+    require_exact_controls(doitall, francis_dom_controls, model_id, "16b Francis weighting")
+    forbid_exact_controls(
+      doitall, c(dom_divisor_controls, dm_branch_only_controls), model_id,
+      "16b Francis replacement weighting"
+    )
+  }
+  if (model_id %in% c(
+    "16c-DMG8Nmax25",
+    "18a-F22FormRelaxed", "18b-F15FormRelaxed",
+    "18c-F15F22FormRelaxed", "18d-AllSelectivityFormRelaxed"
+  )) {
+    require_exact_controls(
+      doitall, job13328_dm_controls, model_id,
+      "Job 13328 S011 DM/G8/Nmax25 state"
+    )
+    forbid_exact_controls(
+      doitall, c(dom_divisor_controls, francis_dom_controls), model_id,
+      "direct Step 15 DM branch"
+    )
+    if (sum(trimws(doitall) == "phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}") != 1L) {
+      add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE10_11_CONVERGENCE=-4`).")
+    }
+    if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
+      add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+    }
+  }
 
   if (length(ini)) {
     first_value <- suppressWarnings(as.integer(trimws(ini[which(nzchar(trimws(ini)) & !grepl("^#", trimws(ini)))[[1L]]])))
@@ -590,6 +867,116 @@ for (i in seq_len(nrow(models))) {
       required_targets <- c(49.62, 51.21, 52.82)
       if (!all(required_targets %in% as.numeric(target))) add_failure(model_id, "PTTP RR matrices are missing exact targets 49.62, 51.21, and 52.82.")
     }
+
+    if (is.finite(major_number) && major_number >= 4L) {
+      release_programs <- tag_release_programs(read_text(tag_path), tag_path)
+      program_rows <- c(release_programs, "PTTP")
+      expected_matrices <- expected_rr_matrices(
+        program_rows, release_programs, tag_path, model_id
+      )
+      rr_by_field <- list(
+        initial = rr[["tag fish rep"]],
+        group = rr[["tag fish rep group flags"]],
+        active = rr[["tag_fish_rep active flags"]],
+        target = rr[["tag_fish_rep target"]],
+        penalty = rr[["tag_fish_rep penalty"]]
+      )
+      if (length(release_programs) && length(expected_matrices)) {
+        for (field in names(rr_by_field)) {
+          expected_matrix <- expected_matrices[[field]]
+          actual_matrix <- rr_by_field[[field]]
+          if (!identical(dim(actual_matrix), dim(expected_matrix)) ||
+              !isTRUE(all.equal(
+                unname(actual_matrix), unname(expected_matrix),
+                tolerance = 1e-12, check.attributes = FALSE
+              ))) {
+            add_failure(
+              model_id,
+              paste0(
+                "reporting-rate ", field,
+                " matrix does not match the audited fishery/program mapping implied by bet.tag."
+              )
+            )
+          }
+        }
+      }
+
+      if (any(flags$scope == -9999L & flags$flag == 1L)) {
+        add_failure(
+          model_id,
+          "doitall.sh must not override the release-specific tag/reporting map held in bet.ini."
+        )
+      }
+
+      tag_map_path <- file.path(model_dir, "tag_rep_map.R")
+      if (!file.exists(tag_map_path)) {
+        add_failure(model_id, "missing generated tag_rep_map.R reporting-rate audit.")
+      } else {
+        tag_map_env <- new.env(parent = baseenv())
+        loaded <- tryCatch(
+          {
+            sys.source(tag_map_path, envir = tag_map_env)
+            TRUE
+          },
+          error = function(e) {
+            add_failure(model_id, paste0("could not load tag_rep_map.R: ", conditionMessage(e)))
+            FALSE
+          }
+        )
+        if (loaded) {
+          required_map_objects <- c(
+            "tag_rep_matrix", "tag_rep_active_matrix",
+            "tag_rep_map", "tag_release_map"
+          )
+          missing_map_objects <- required_map_objects[
+            !vapply(required_map_objects, exists, logical(1), envir = tag_map_env, inherits = FALSE)
+          ]
+          if (length(missing_map_objects)) {
+            add_failure(
+              model_id,
+              paste0("tag_rep_map.R is missing: ", paste(missing_map_objects, collapse = ", "), ".")
+            )
+          } else {
+            if (!isTRUE(all.equal(
+              unname(tag_map_env$tag_rep_matrix),
+              unname(rr[["tag fish rep group flags"]]),
+              tolerance = 1e-12, check.attributes = FALSE
+            )) || !isTRUE(all.equal(
+              unname(tag_map_env$tag_rep_active_matrix),
+              unname(rr[["tag_fish_rep active flags"]]),
+              tolerance = 1e-12, check.attributes = FALSE
+            ))) {
+              add_failure(model_id, "tag_rep_map.R numeric matrices differ from bet.ini.")
+            }
+            map_programs <- toupper(trimws(as.character(tag_map_env$tag_release_map$tag_program)))
+            if (!identical(map_programs, release_programs)) {
+              add_failure(model_id, "tag_rep_map.R release programmes differ from bet.tag.")
+            }
+            group_matrix <- rr[["tag fish rep group flags"]]
+            group_table <- tag_map_env$tag_rep_map
+            expected_groups <- sort(unique(as.integer(group_matrix)))
+            if (anyDuplicated(group_table$tag_rep_group) ||
+                !identical(as.integer(group_table$tag_rep_group), expected_groups)) {
+              add_failure(model_id, "tag_rep_map.R must contain exactly one row per reporting-rate group.")
+            } else {
+              for (group_id in expected_groups) {
+                table_row <- match(group_id, group_table$tag_rep_group)
+                cells <- group_matrix == group_id
+                expected_target <- format_rr_map_values(rr[["tag_fish_rep target"]][cells])
+                expected_penalty <- format_rr_map_values(rr[["tag_fish_rep penalty"]][cells])
+                if (!identical(as.character(group_table$target_values[[table_row]]), expected_target) ||
+                    !identical(as.character(group_table$penalty_values[[table_row]]), expected_penalty)) {
+                  add_failure(
+                    model_id,
+                    paste0("tag_rep_map.R target/penalty summary differs from bet.ini for group ", group_id, ".")
+                  )
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   regional_expected <- grepl("REGW[0-9]+", token) || nzchar(row_value(row, "regional_scaling_weight"))
@@ -642,7 +1029,10 @@ for (i in seq_len(nrow(models))) {
     }
   }
 
-  dom_expected <- grepl("DW10|DOM200", token) || identical(row_value(row, "lf_size_divisor"), "200") || identical(row_value(row, "dom_lf_divisor"), "200")
+  dom_expected <- identical(model_id, "16a-DOMDiv200") ||
+    grepl("DW10|DOM200", token) ||
+    identical(row_value(row, "lf_size_divisor"), "200") ||
+    identical(row_value(row, "dom_lf_divisor"), "200")
   dom_200 <- flags$scope <= -1L & flags$scope >= -998L & flags$flag == 49L & flags$value == 200
   dom_200_fisheries <- sort(unique(abs(flags$scope[dom_200])))
   if (length(dom_200_fisheries) && !identical(dom_200_fisheries, 21:23)) {
@@ -716,6 +1106,34 @@ for (i in seq_len(nrow(models))) {
     )
     check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
     all_form_boundary <- identical(model_id, "18d-AllSelectivityFormRelaxed")
+    expected_active_form_fisheries <- c(
+      12L, 13L, 15L, 16L, 17L, 18L, 19L,
+      21L, 22L, 23L, 24L, 25L, 26L, 27L
+    )
+    if (identical(model_id, "18a-F22FormRelaxed")) {
+      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 22L)
+    } else if (identical(model_id, "18b-F15FormRelaxed")) {
+      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 15L)
+    } else if (identical(model_id, "18c-F15F22FormRelaxed")) {
+      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, c(15L, 22L))
+    } else if (all_form_boundary) {
+      expected_active_form_fisheries <- integer()
+    }
+    actual_active_form_fisheries <- which(vapply(
+      1:33,
+      function(fishery) identical(effective_flag(flags, -fishery, 16L), 2),
+      logical(1)
+    ))
+    if (!identical(actual_active_form_fisheries, expected_active_form_fisheries)) {
+      add_failure(
+        model_id,
+        paste0(
+          "active fishery flag-16 set must be `",
+          paste(expected_active_form_fisheries, collapse = " "),
+          "`; found `", paste(actual_active_form_fisheries, collapse = " "), "`."
+        )
+      )
+    }
     for (fishery in 25:26) {
       check_flag(
         flags, -fishery, 3L, 25L, model_id,
@@ -729,8 +1147,8 @@ for (i in seq_len(nrow(models))) {
     }
     if (all_form_boundary) {
       active_form_fisheries <- c(
-        12L, 13L, 15L, 16L, 17L, 18L, 19L, 20L,
-        21L, 22L, 23L, 24L, 25L, 26L, 27L, 28L
+        12L, 13L, 15L, 16L, 17L, 18L, 19L,
+        21L, 22L, 23L, 24L, 25L, 26L, 27L
       )
       for (fishery in active_form_fisheries) {
         check_flag(

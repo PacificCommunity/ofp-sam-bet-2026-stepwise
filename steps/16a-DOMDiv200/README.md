@@ -1,21 +1,24 @@
-# 17b DM length-composition likelihood
+# 16a DOM downweighting
 
-Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25.
+Apply divisor 200 only to the low-quality, previously unreweighted DOM F21-F23 length compositions.
 
 ## Snapshot
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/17b-DMG8Nmax25/model` |
-| Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
+| Step folder | `steps/16a-DOMDiv200/model` |
+| Status | Prepared alternative-comparison snapshot; model fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25. |
-| 2 | Scientific parent: '16-DOMDiv200'. |
-| 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
+| 1 | Apply divisor 200 only to the low-quality, previously unreweighted DOM F21-F23 length compositions. |
+| 2 | Scientific rationale: test whether reducing the influence of these three composition series improves balance with other data. |
+| 3 | Held constant: the Step 15 data, biology, selectivity, CPUE, tag, and all non-DOM composition settings. |
+| 4 | Status: alternative comparison; carried only as the parent of 16b. |
+| 5 | Scientific parent: '15-SelectivityUpdate'. |
+| 6 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 
@@ -35,14 +38,14 @@ Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Apply divisor 200 only to the low-quality, previously unreweighted DOM F21-F23 length compositions. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` | Correct RR init values |
+| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
 | `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
@@ -59,10 +62,9 @@ Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping
 |  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  6 | Only F21-F23 receive the DOM LF divisor 200. |
 |  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
-|  8 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25. |
-|  9 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
-| 10 | No OPR or length-bin selectivity controls are generated. |
-| 11 | INI and TAG inputs are never rolled back to an earlier selected row. |
+|  8 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
+|  9 | No OPR or length-bin selectivity controls are generated. |
+| 10 | INI and TAG inputs are never rolled back to an earlier selected row. |
 
 ## Run Notes
 

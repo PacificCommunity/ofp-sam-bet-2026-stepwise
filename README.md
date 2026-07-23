@@ -19,7 +19,8 @@ runnable model rows. Nineteen models form the selected carry-forward path.
 - `selected = TRUE` identifies the adopted BET 2026 route. `carry_status` is
   `carry` when later rows inherit that model, `stop` for an unselected sibling,
   and `final` for the terminal model.
-- `STEP_SELECT=all` runs all 22 rows, including sibling alternatives. Any row
+- `STEP_SELECT=all` runs all 22 development rows and four sensitivity rows,
+  including sibling alternatives. Any row
   can be run alone, for example `STEP_SELECT=15-SelectivityUpdate`.
 - Every row has a unique `STEP_SELECT`, `job_key`, `job_title`, and
   `model_label`, plus explicit CPU, memory, disk, expected-output, and artifact
@@ -29,35 +30,44 @@ runnable model rows. Nineteen models form the selected carry-forward path.
   row's unique `output_artifact` value.
 
 The selected route follows the numbered chain except at sibling branches:
-`09c-SUB075` and `17b-DMG8Nmax25` are carried forward. Step 17b is the final
+`09c-SUB075` and `16c-DMG8Nmax25` are carried forward. Step 16c is the final
 selected model.
 
 ## Step Map
 
-| Group | `STEP_SELECT` | Scientific parent | Selection / carry | Scientific change |
-| --- | --- | --- | --- | --- |
-| 01 | `01-Diag2023` | `external-2023-diagnostic-archive` | selected / carry | Rerun the 2023 diagnostic anchor. |
-| 02a | `02a-NewExe1003` | `01-Diag2023` | selected / carry | Change only executable invocation/safety while retaining the Step 01 inputs and scientific controls, including CPUE flag-92 and global `2/94` value `10`. |
-| 02b | `02b-Ini1007` | `02a-NewExe1003` | selected / carry | Convert the ini layout from 1003 to 1007. |
-| 02c | `02c-LengthWeight` | `02b-Ini1007` | selected / carry | Apply the BET 2026 bias-corrected length-weight parameters. |
-| 03 | `03-FixM` | `02c-LengthWeight` | selected / carry | Fix natural mortality from the `mgc=-5` diagnostic fit. |
-| 04 | `04-NewStructure` | `03-FixM` | selected / carry | Adopt the five-region, 33-fishery structure and SC22 BET purse-seine reporting-rate penalties. |
-| 05 | `05-ConvertToLength` | `04-NewStructure` | selected / carry | Convert existing weight compositions to length. |
-| 06 | `06-AddLengthData` | `05-ConvertToLength` | selected / carry | Add the additional length-composition data. |
-| 07 | `07-DataTo2024` | `06-AddLengthData` | selected / carry | Extend data through 2024 and remap the carried reporting-rate specification to the updated tag releases. |
-| 08 | `08-RegionalCPUE` | `07-DataTo2024` | selected / carry | Replace the FRQ with the authoritative regional CPUE source and add its likelihood plus REGW100; the source has two fewer F32 1952 quarterly records and receives no transform. |
-| 09a | `09a-BASE075` | `08-RegionalCPUE` | alternative / stop | Apply BASE075 composition weighting. |
-| 09b | `09b-REG075` | `08-RegionalCPUE` | alternative / stop | Apply REG075 composition weighting. |
-| 09c | `09c-SUB075` | `08-RegionalCPUE` | selected / carry | Apply the selected SUB075 composition weighting. |
-| 10 | `10-MIX015` | `09c-SUB075` | selected / carry | Apply the MIX015 tag-mixing setting. |
-| 11 | `11-TAGF2ON` | `10-MIX015` | selected / carry | Exclude reporting-rate effects during each release group's configured mixing periods. |
-| 12 | `12-TimeVaryingCV` | `11-TAGF2ON` | selected / carry | Apply normalized time-varying CPUE relative-variance multipliers. |
-| 13 | `13-EffortCreep` | `12-TimeVaryingCV` | selected / carry | Apply the BET 2026 effort-creep series. |
-| 14 | `14-CPUESigma` | `13-EffortCreep` | selected / carry | Apply common index-specific CPUE MLE sigma values. |
-| 15 | `15-SelectivityUpdate` | `14-CPUESigma` | selected / carry | Apply the intended broad bundle: unshare F15-F28, set fleet-specific terminal/dome controls, apply F25/F26 seven-node/tail controls, and separate F29-F33. |
-| 16 | `16-DOMDiv200` | `15-SelectivityUpdate` | selected / carry | Apply DOM divisor 200 to F21-F23. |
-| 17a | `17a-Francis` | `16-DOMDiv200` | alternative / stop | Replace all Step 16 LF divisors with Francis values, including F21-F23 `114/398/705`. |
-| 17b | `17b-DMG8Nmax25` | `16-DOMDiv200` | selected / final | Apply the DM likelihood and G8 PSSET grouping with `Nmax=25`, calibrated from the fishery-level Francis ESS diagnostics underlying Step 17a. Steps 17a and 17b are sibling likelihood alternatives, not sequential fits. |
+Reader-facing names are used in this table and the diagram; stable internal IDs
+remain available for reproducible runs. CPUE means catch per unit effort, DOM
+identifies the domestic-fishery composition series, and
+Dirichlet-multinomial is abbreviated DM in technical settings.
+
+| Step | Reader-facing name | Internal ID | Parent | Change and scientific rationale | Held constant | Decision |
+| --- | --- | --- | --- | --- | --- | --- |
+| 01 | Diagnostic rerun | `01-Diag2023` | 2023 diagnostic model | Reproduce the previous diagnostic model as a common reference. | Archived data and scientific controls. | Carried forward. |
+| 02a | Updated executable | `02a-NewExe1003` | `01-Diag2023` | Change only the executable to isolate software-version effects. | Inputs and scientific controls. | Carried forward. |
+| 02b | Updated INI format | `02b-Ini1007` | `02a-NewExe1003` | Convert the input layout to the current format for later development. | Data and scientific assumptions. | Carried forward. |
+| 02c | Length-weight update | `02c-LengthWeight` | `02b-Ini1007` | Update the length-weight relationship used to convert size to biomass. | All other inputs and controls. | Carried forward. |
+| 03 | Fixed natural mortality | `03-FixM` | `02c-LengthWeight` | Fix natural mortality at the selected diagnostic estimate. | Data, structure, and other biological settings. | Carried forward. |
+| 04 | Five-region structure | `04-NewStructure` | `03-FixM` | Introduce the five-region, 33-fishery structure and the audited tag reporting-rate mapping. | Fixed mortality and preceding biological settings. | Carried forward. |
+| 05 | Length conversion | `05-ConvertToLength` | `04-NewStructure` | Convert existing weight compositions to length for a common composition scale. | Fishery structure, catches, tags, and controls. | Carried forward. |
+| 06 | Additional length data | `06-AddLengthData` | `05-ConvertToLength` | Add the available length compositions to improve size coverage. | Model structure and existing observations. | Carried forward. |
+| 07 | Data through 2024 | `07-DataTo2024` | `06-AddLengthData` | Extend observations through 2024 and map the unchanged reporting-rate specification to updated tag releases. | Biological and fishery-structure settings. | Carried forward. |
+| 08 | Regional CPUE | `08-RegionalCPUE` | `07-DataTo2024` | Add regional abundance indices and their regional-scaling likelihood. | Selectivity and other observation models. | Carried forward. |
+| 09a | Common age weighting | `09a-BASE075` | `08-RegionalCPUE` | Compare common age-length weighting as one treatment of composition information. | Data, structure, tags, and CPUE settings. | Alternative comparison. |
+| 09b | Regional age weighting | `09b-REG075` | `08-RegionalCPUE` | Compare region-specific age-length weighting. | Data, structure, tags, and CPUE settings. | Alternative comparison. |
+| 09c | Sub-basin age weighting | `09c-SUB075` | `08-RegionalCPUE` | Apply sub-basin age-length weighting to represent spatial variation. | Data, structure, tags, and CPUE settings. | Carried forward. |
+| 10 | Tag mixing | `10-MIX015` | `09c-SUB075` | Apply release-specific tag-mixing periods to limit early recapture bias. | Reporting-rate values and all non-tag settings. | Carried forward. |
+| 11 | Tag reporting rates | `11-TAGF2ON` | `10-MIX015` | Exclude reporting-rate effects during each configured mixing period. | Numeric reporting-rate mapping and other inputs. | Carried forward. |
+| 12 | Time-varying CV | `12-TimeVaryingCV` | `11-TAGF2ON` | Allow CPUE precision to vary through time using the normalized uncertainty series. | Index observations and all non-CV settings. | Carried forward. |
+| 13 | Effort creep | `13-EffortCreep` | `12-TimeVaryingCV` | Adjust positive index-fishery effort for gradual efficiency change. | Catch, composition, tag, and biological inputs. | Carried forward. |
+| 14 | CPUE sigma | `14-CPUESigma` | `13-EffortCreep` | Fix common index-specific observation-error scales for consistent later comparisons. | Data and all other likelihood controls. | Carried forward. |
+| 15 | Selectivity update | `15-SelectivityUpdate` | `14-CPUESigma` | Apply fleet-specific selectivity forms and remove six superseded controls before weighting comparisons. | Data, biology, CPUE, tags, and reporting-rate mapping. | Carried forward. |
+| 16a | DOM downweighting | `16a-DOMDiv200` | `15-SelectivityUpdate` | As a comparison, divide the low-quality, previously unreweighted F21-F23 DOM compositions by 200. | Step 15 settings and all other composition weights. | Alternative; parent of 16b only. |
+| 16b | Francis weighting | `16b-Francis` | `16a-DOMDiv200` | Replace every 16a divisor with a fishery-specific Francis divisor based on preliminary residual behavior. | Step 15 settings and the standard composition likelihood. | Alternative comparison. |
+| 16c | Dirichlet-multinomial | `16c-DMG8Nmax25` | `15-SelectivityUpdate` | Estimate composition information internally using G8 grouping, capped at `Nmax=25` to limit excessive dominance over CPUE. | Step 15 settings; no 16a divisor or 16b Francis weight is inherited. | Selected final weighting treatment. |
+| 18a | F22 form relaxed | `18a-F22FormRelaxed` | `16c-DMG8Nmax25` | Relax the F22 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
+| 18b | F15 form relaxed | `18b-F15FormRelaxed` | `16c-DMG8Nmax25` | Relax the F15 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
+| 18c | F15/F22 forms relaxed | `18c-F15F22FormRelaxed` | `16c-DMG8Nmax25` | Relax F15 and F22 together to test their combined influence. | Every other 16c input and control. | Alternative sensitivity. |
+| 18d | All forms relaxed | `18d-AllSelectivityFormRelaxed` | `16c-DMG8Nmax25` | Remove every active fishery-specific form penalty to bound their overall influence. | Every non-form 16c input and control. | Alternative boundary sensitivity. |
 
 The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
 structure at `04-NewStructure`. They are carried through steps 05-06 and
@@ -94,8 +104,8 @@ seven-node/tail controls, and F29-F33 separation are one assessment-specific
 bundle evaluated stepwise; they are not mandated by the selectivity or DM
 literature.
 
-Step 17a is a replacement weighting comparison, not a cumulative DOM-plus-
-Francis treatment. Its Francis divisors replace every Step 16 flag-49 value;
+Step 16b is a replacement weighting comparison, not a cumulative DOM-plus-
+Francis treatment. Its Francis divisors replace every Step 16a flag-49 value;
 for F21-F23 the resulting values are `114`, `398`, and `705`, not `200`.
 
 ## Final DM Cap Rationale
@@ -114,8 +124,8 @@ bound on composition information, not as a target effective sample size.
 | --- | --- | --- |
 | Composition weighting | DM estimated overdispersion and effective composition information internally, avoiding direct use of large nominal sample sizes. | Retain DM as the selected composition likelihood. |
 | Integrated-model balance | Larger `Nmax` values increased the influence of length-frequency data and degraded CPUE fit. | Use a finite upper asymptote for DM effective composition information rather than allowing the LF component to dominate the joint objective function. |
-| Empirical scale | The upper range of preliminary fishery-level Francis ESS diagnostics provided an independent calibration scale. | Use the rounded value `Nmax=25` as the DM effective-sample-size upper asymptote. |
-| Interpretation | Francis diagnostics calibrate the scale but are not clipped by the DM implementation. | State explicitly that MFCL estimates the DM parameter internally and approaches `Nmax=25` smoothly. |
+| Empirical scale | Preliminary effective-sample-size behavior indicated a practical range for the cap. | Use the rounded value `Nmax=25` as the DM effective-sample-size upper asymptote. |
+| Interpretation | The cap limits the result of the internal DM information estimate; it does not define a Francis model. | State explicitly that MFCL estimates the DM parameter internally and approaches `Nmax=25` smoothly. |
 
 This choice preserves the main advantage of DM weighting while limiting the
 ability of a small number of highly informative composition series to dominate
@@ -146,7 +156,7 @@ branch selection remain BET 2026 decisions.
 | 14 | Index-specific observation error controls the relative influence of CPUE series in the integrated fit. | Preliminary fits across alternative configurations gave similar MLE sigma estimates. Fix these common values for all later stepwise comparisons so CPUE weighting remains consistent. |
 | 15 | Fleet-specific selectivity avoids forcing unlike fisheries to share one curve, and flexible splines retain smoothness while representing size availability. | Apply one broad bundle: unshare F15-F28, set fleet-specific terminal/dome controls, use terminal age 25/dome flag 2/seven nodes/youngest-tail flag 0 for F25/F26, and separate F29-F33 in staged run 5. DM grouping is unchanged. |
 | 16 | Data weighting can alter a likelihood component's influence. | The DOM treatment for F21-F23 and divisor `200` are assessment-specific. No literature-derived claim is made for that divisor. |
-| 17 | Francis weighting adjusts fishery-specific composition weights while retaining the normal likelihood; the Dirichlet-multinomial (DM) instead models overdispersion and estimates effective composition information internally. | Compare replacement Francis divisors, including F21-F23 `114/398/705`, with one bundled DM configuration using G8 PSSET and `Nmax=25`. Preliminary Francis diagnostics calibrate the DM scale but are not directly clipped by its implementation. |
+| 16 | Francis weighting adjusts fishery-specific composition weights while retaining the normal likelihood; the Dirichlet-multinomial (DM) instead models overdispersion and estimates effective composition information internally. | Compare the 16a DOM treatment, its 16b Francis replacement child, and the separate direct-from-Step-15 16c DM configuration using G8 PSSET and `Nmax=25`. |
 
 Useful method references:
 
@@ -190,7 +200,7 @@ literature.
 
 ## Final Model Provenance
 
-`17b-DMG8Nmax25` is the terminal selected model. Its fitted model matches Job
+`16c-DMG8Nmax25` is the terminal selected model. Its scientific/input settings match Job
 `13328`, and its Hessian merge is Job `13432`. These job numbers are provenance
 references only; this repository does not submit, fetch, or merge jobs as part
 of `job-config.R`.
@@ -200,7 +210,7 @@ of `job-config.R`.
 | Rows | Regions | CPUs | Memory | Disk | Run mode | Expected output |
 | --- | ---: | ---: | ---: | ---: | --- | --- |
 | 01-03 | 9 | 2 | 12 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
-| 04-17 | 5 | 2 | 8 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
+| 04-18 | 5 | 2 | 8 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
 
 Step 01 alone pins the historical diagnostic executable. All other rows use
 the current container MFCL executable. `BET_PHASE10_11_CONVERGENCE` remains a
@@ -211,7 +221,7 @@ inputs.
 
 | Path | Purpose |
 | --- | --- |
-| `job-config.R` | Public 22-row run matrix and row metadata. |
+| `job-config.R` | Public 22-row development matrix plus four Step 18 sensitivity rows and their metadata. |
 | `steps/<STEP_SELECT>/README.md` | Model-specific scientific and input notes. |
 | `steps/<STEP_SELECT>/input_manifest.csv` | Source-input provenance. |
 | `steps/<STEP_SELECT>/model/` | Self-contained MFCL run folder. |

@@ -7,7 +7,7 @@
 stepwise_run <- list(
   # Run all 22 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 17L,
+  numbered_groups = 16L,
   model_rows = 22L,
   selected_path_models = 19L,
 
@@ -73,27 +73,27 @@ stepwise_models <- do.call(
     model_row(
       "01-Diag2023", "01-Diagnostic", "external-2023-diagnostic-archive",
       TRUE, "carry", "rerun the 2023 diagnostic anchor",
-      "2023 diagnostic rerun", "01 2023 diagnostic rerun", "01-diag2023",
+      "Diagnostic rerun", "01 2023 diagnostic rerun", "01-diag2023",
       region_count = 9L,
       mfcl_program_path = "/home/mfcl/mfclo64_2023_diagnostic_2.2.2.0"
     ),
     model_row(
       "02a-NewExe1003", "02-Executable", "01-Diag2023",
       TRUE, "carry", "run the current MFCL executable against the exact Step 01 scientific controls and 1003 ini",
-      "Current executable with ini 1003", "02a Current executable with ini 1003", "02a-newexe1003",
+      "Updated executable", "02a Current executable with ini 1003", "02a-newexe1003",
       "Executable-only comparison: retain Step 01 F33-F41 CPUE flag-92 values 88/53/130/109/76/93/121/77/23 and global `2 94 1 2 128 10`; change only executable invocation/safety plus reporting-only compatibility.",
       region_count = 9L
     ),
     model_row(
       "02b-Ini1007", "02-Executable", "02a-NewExe1003",
       TRUE, "carry", "convert the ini layout from 1003 to 1007",
-      "MFCL ini format 1007", "02b MFCL ini format 1007", "02b-ini1007",
+      "Updated INI format", "02b MFCL ini format 1007", "02b-ini1007",
       region_count = 9L
     ),
     model_row(
       "02c-LengthWeight", "02-Executable", "02b-Ini1007",
       TRUE, "carry", "apply BET 2026 bias-corrected length-weight parameters",
-      "Updated length-weight relationship", "02c Updated length-weight relationship", "02c-lengthweight",
+      "Length-weight update", "02c Updated length-weight relationship", "02c-lengthweight",
       region_count = 9L
     ),
     model_row(
@@ -105,99 +105,100 @@ stepwise_models <- do.call(
     model_row(
       "04-NewStructure", "04-NewStructure", "03-FixM",
       TRUE, "carry", "adopt the five-region and 33-fishery structure",
-      "Five-region assessment structure", "04 Five-region assessment structure", "04-newstructure"
+      "Five-region structure", "04 Five-region assessment structure", "04-newstructure"
     ),
     model_row(
       "05-ConvertToLength", "05-ConvertToLength", "04-NewStructure",
       TRUE, "carry", "convert the existing weight compositions to length",
-      "Length-composition conversion", "05 Convert weight to length compositions", "05-converttolength"
+      "Length conversion", "05 Convert weight to length compositions", "05-converttolength"
     ),
     model_row(
       "06-AddLengthData", "06-AddLengthData", "05-ConvertToLength",
       TRUE, "carry", "add the additional length-composition data",
-      "Additional length-composition data", "06 Add length-composition data", "06-addlengthdata"
+      "Additional length data", "06 Add length-composition data", "06-addlengthdata"
     ),
     model_row(
       "07-DataTo2024", "07-DataTo2024", "06-AddLengthData",
       TRUE, "carry",
       "extend data through 2024 and integrate the latest RRPTTP26 reporting-rate penalties",
-      "Data through 2024 and updated tag reporting rates", "07 Data through 2024 and updated tag reporting rates", "07-datato2024-rrpttp26",
+      "Data through 2024", "07 Data through 2024 and updated tag reporting rates", "07-datato2024-rrpttp26",
       "Latest RRPTTP26 penalties are embedded here and inherited by every descendant"
     ),
     model_row(
       "08-RegionalCPUE", "08-RegionalCPUE", "07-DataTo2024",
       TRUE, "carry",
       "add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty",
-      "Regional CPUE likelihood and weighting", "08 Regional CPUE likelihood and weighting", "08-regional-cpue-regw100",
+      "Regional CPUE", "08 Regional CPUE likelihood and weighting", "08-regional-cpue-regw100",
       "Authoritative regional CPUE source and REGW100 only; the source has two fewer F32 1952 quarterly records than Step 07 and is copied without transformation; no selectivity change."
     ),
     model_row(
       "09a-BASE075", "09-CompositionWeighting", "08-RegionalCPUE",
       FALSE, "stop", "apply the BASE075 composition-weighting alternative",
-      "Baseline age-length weighting", "09a Baseline age-length weighting", "09a-base075"
+      "Common age weighting", "09a Baseline age-length weighting", "09a-base075"
     ),
     model_row(
       "09b-REG075", "09-CompositionWeighting", "08-RegionalCPUE",
       FALSE, "stop", "apply the REG075 composition-weighting alternative",
-      "Regional age-length weighting", "09b Regional age-length weighting", "09b-reg075"
+      "Regional age weighting", "09b Regional age-length weighting", "09b-reg075"
     ),
     model_row(
       "09c-SUB075", "09-CompositionWeighting", "08-RegionalCPUE",
       TRUE, "carry", "apply the selected SUB075 composition weighting",
-      "Sub-basin age-length weighting", "09c Sub-basin age-length weighting", "09c-sub075"
+      "Sub-basin age weighting", "09c Sub-basin age-length weighting", "09c-sub075"
     ),
     model_row(
       "10-MIX015", "10-TagMixing", "09c-SUB075",
       TRUE, "carry", "apply the MIX015 tag-mixing setting",
-      "Tag-mixing periods", "10 Tag-mixing periods", "10-mix015"
+      "Tag mixing", "10 Tag-mixing periods", "10-mix015"
     ),
     model_row(
       "11-TAGF2ON", "11-TagFlags", "10-MIX015",
       TRUE, "carry",
       "set tag-flag column 2 to 1 so reporting-rate effects are excluded for each release group throughout its configured mixing periods",
-      "Reporting-rate mixing-period treatment", "11 Reporting-rate mixing-period treatment", "11-tagf2on-col2"
+      "Tag reporting rates", "11 Reporting-rate mixing-period treatment", "11-tagf2on-col2"
     ),
     model_row(
       "12-TimeVaryingCV", "12-TimeVaryingCV", "11-TAGF2ON",
       TRUE, "carry", "apply normalized time-varying CPUE relative-variance multipliers from the frequency data",
-      "Time-varying CPUE uncertainty", "12 Time-varying CPUE uncertainty", "12-timevaryingcv"
+      "Time-varying CV", "12 Time-varying CPUE uncertainty", "12-timevaryingcv"
     ),
     model_row(
       "13-EffortCreep", "13-EffortCreep", "12-TimeVaryingCV",
       TRUE, "carry", "apply the BET 2026 effort-creep series",
-      "Effort-creep adjustment", "13 Effort-creep adjustment", "13-effortcreep"
+      "Effort creep", "13 Effort-creep adjustment", "13-effortcreep"
     ),
     model_row(
       "14-CPUESigma", "14-CPUESigma", "13-EffortCreep",
       TRUE, "carry",
       "fix index-specific CPUE observation-error scales calibrated from preliminary MLE fits",
-      "Fixed CPUE observation-error calibration", "14 Fixed CPUE observation-error calibration", "14-fixed-cpue-observation-error",
+      "CPUE sigma", "14 Fixed CPUE observation-error calibration", "14-fixed-cpue-observation-error",
       "Preliminary fits across alternative configurations produced similar index-specific MLE sigma estimates. Carry fish flag 92 values for R1-R5 of 35, 24, 21, 24, and 23, corresponding to executed error scales 0.35, 0.24, 0.21, 0.24, and 0.23, so later comparisons retain consistent CPUE weighting."
     ),
     model_row(
       "15-SelectivityUpdate", "15-SelectivityUpdate", "14-CPUESigma",
       TRUE, "carry",
       "apply the intended broad selectivity bundle across F15-F33",
-      "Fleet-specific selectivity update", "15 Fleet-specific selectivity update", "15-selectivity-update",
+      "Selectivity update", "15 Fleet-specific selectivity update", "15-selectivity-update",
       "Unshare F15-F28 and apply fleet-specific terminal/dome controls. F25/F26 each use terminal age 25, dome flag 2, seven spline nodes, and youngest-tail flag 0. Separate F29-F33 selectivity groups in staged run 5. These controls are one assessment-specific bundle; DM grouping is unchanged."
     ),
     model_row(
-      "16-DOMDiv200", "16-DOM", "15-SelectivityUpdate",
-      TRUE, "carry", "apply the assessment-specific DOM divisor 200 to F21-F23",
-      "F21-F23 length-composition downweighting", "16 F21-F23 length-composition downweighting", "16-dom-f21-f23-div200"
+      "16a-DOMDiv200", "16-CompositionWeighting", "15-SelectivityUpdate",
+      FALSE, "carry", "apply the assessment-specific DOM divisor 200 to F21-F23",
+      "DOM downweighting", "16a F21-F23 length-composition downweighting", "16a-dom-f21-f23-div200",
+      "Alternative length-composition weighting branch from Step 15. Only F21-F23 receive flag-49 divisor 200."
     ),
     model_row(
-      "17a-Francis", "17-CompositionLikelihood", "16-DOMDiv200",
-      FALSE, "stop", "replace Step 16 LF divisors with the Francis composition-data weighting comparison",
-      "Francis length-composition weighting", "17a Francis length-composition weighting", "17a-francis",
-      "Francis flag-49 divisors replace the Step 16 values for all 33 fisheries, including F21-F23 = 114/398/705 rather than 200/200/200."
+      "16b-Francis", "16-CompositionWeighting", "16a-DOMDiv200",
+      FALSE, "stop", "inherit 16a and replace all LF divisors with the Francis composition-data weighting comparison",
+      "Francis weighting", "16b Francis length-composition weighting", "16b-francis",
+      "Alternative length-composition weighting treatment. Francis flag-49 divisors replace every 16a value for all 33 fisheries, including F21-F23 = 114/398/705 rather than 200/200/200."
     ),
     model_row(
-      "17b-DMG8Nmax25", "17-CompositionLikelihood", "16-DOMDiv200",
+      "16c-DMG8Nmax25", "16-CompositionWeighting", "15-SelectivityUpdate",
       TRUE, "final",
-      "use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25",
-      "DM length-composition likelihood", "17b DM length-composition likelihood", "17b-dm-length-composition-likelihood",
-      "Nmax=25 is the upper asymptote of the DM effective-sample-size transformation. Its scale was calibrated against the fishery-level Francis ESS diagnostics underlying the sibling Step 17a comparison, but MFCL estimates the DM parameter internally and approaches Nmax smoothly rather than clipping Francis ESS values. Steps 17a and 17b share Step 16 as their computational parent and are not sequential fits. G8 PSSET grouping and Nmax are assessment-specific stepwise choices.",
+      "branch directly from Step 15 and use a Dirichlet-multinomial likelihood with G8 grouping and Nmax 25",
+      "Dirichlet-multinomial", "16c DM length-composition weighting", "16c-dm-length-composition-weighting",
+      "Selected length-composition weighting treatment. This branch does not inherit divisor 200 or Francis controls. Nmax=25 caps internally estimated composition information to limit excessive dominance over CPUE; its scale reflects preliminary effective-sample-size behavior.",
       fitted_job_id = "13328", hessian_merge_job_id = "13432"
     )
   )
@@ -228,9 +229,9 @@ stepwise_report_purpose <- c(
   "13-EffortCreep" = "Account for gradual changes in fishing efficiency in the regional index fisheries.",
   "14-CPUESigma" = "Keep CPUE weighting consistent across later comparisons using common observation-error scales calibrated from preliminary maximum-likelihood fits.",
   "15-SelectivityUpdate" = "Apply the intended broad fleet-specific selectivity bundle: unshare F15-F28, set terminal/dome controls, use seven-node F25/F26 tails, and separate F29-F33.",
-  "16-DOMDiv200" = "Limit the influence of lower-quality, previously unweighted DOM length compositions from F21-F23.",
-  "17a-Francis" = "Evaluate Francis weighting as a substitute for all Step 16 fishery-specific LF divisors, including F21-F23.",
-  "17b-DMG8Nmax25" = "Estimate composition overdispersion within the model while limiting excessive length-frequency influence on the integrated fit."
+  "16a-DOMDiv200" = "Evaluate divisor-200 downweighting for lower-quality, previously unweighted DOM length compositions from F21-F23.",
+  "16b-Francis" = "Evaluate Francis weighting as a substitute for every fishery-specific LF divisor on the DOM branch.",
+  "16c-DMG8Nmax25" = "Estimate composition overdispersion within the model while limiting excessive length-frequency influence, without inheriting DOM or Francis divisors."
 )
 stepwise_models$report_purpose <- unname(
   stepwise_report_purpose[stepwise_models$step_id]
@@ -252,55 +253,55 @@ stepwise_models$tag_flag2 <- NA_integer_
 stepwise_models$tag_flag2[step_number >= 2L & stepwise_models$step_id != "02a-NewExe1003"] <- 0L
 stepwise_models$tag_flag2[step_number >= 11L] <- 1L
 stepwise_models$dm_grouping <- ""
-stepwise_models$dm_grouping[stepwise_models$step_id == "17b-DMG8Nmax25"] <- "G8PSSET"
+stepwise_models$dm_grouping[stepwise_models$step_id == "16c-DMG8Nmax25"] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
-stepwise_models$dm_nmax[stepwise_models$step_id == "17b-DMG8Nmax25"] <- 25L
+stepwise_models$dm_nmax[stepwise_models$step_id == "16c-DMG8Nmax25"] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
 stepwise_models$regional_scaling_weight[step_number >= 8L] <- 100L
 stepwise_models$reporting_rate_prior <- ifelse(step_number >= 7L, "RRPTTP26", "")
 
 # Dedicated sensitivity branch: retain the public stepwise rows for provenance,
-# but submit only the four independent Step 17b selectivity-form sensitivities.
+# but submit only the four independent Step 16c selectivity-form sensitivities.
 stepwise_models$enabled <- FALSE
 
 sensitivity_models <- do.call(
   rbind,
   list(
     model_row(
-      "18a-F22FormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      "18a-F22FormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove the F22 DOM.PH.2 dome/old-age-tail selectivity-form penalty",
-      "F22 selectivity-form penalty removed",
+      "F22 form relaxed",
       "BET 2026 selectivity-form sensitivity | F22",
       "18a-f22-selectivity-form-relaxed",
-      "Fishery flag 16 changes from 2 to 0 for F22 only; all other Step 17b inputs and controls are unchanged."
+      "Fishery flag 16 changes from 2 to 0 for F22 only; all other Step 16c inputs and controls are unchanged."
     ),
     model_row(
-      "18b-F15FormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      "18b-F15FormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove the F15 HL.PH.2 dome/old-age-tail selectivity-form penalty",
-      "F15 selectivity-form penalty removed",
+      "F15 form relaxed",
       "BET 2026 selectivity-form sensitivity | F15",
       "18b-f15-selectivity-form-relaxed",
-      "Fishery flag 16 changes from 2 to 0 for F15 only; all other Step 17b inputs and controls are unchanged."
+      "Fishery flag 16 changes from 2 to 0 for F15 only; all other Step 16c inputs and controls are unchanged."
     ),
     model_row(
-      "18c-F15F22FormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      "18c-F15F22FormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove the F15 HL.PH.2 and F22 DOM.PH.2 dome/old-age-tail selectivity-form penalties",
-      "F15 and F22 selectivity-form penalties removed",
+      "F15/F22 forms relaxed",
       "BET 2026 selectivity-form sensitivity | F15 + F22",
       "18c-f15-f22-selectivity-form-relaxed",
-      "Fishery flag 16 changes from 2 to 0 for F15 and F22 only; all other Step 17b inputs and controls are unchanged."
+      "Fishery flag 16 changes from 2 to 0 for F15 and F22 only; all other Step 16c inputs and controls are unchanged."
     ),
     model_row(
-      "18d-AllSelectivityFormRelaxed", "18-SelectivityFormSensitivity", "external-step-17b-DMG8Nmax25",
+      "18d-AllSelectivityFormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove every active fishery-specific dome/old-age-tail selectivity-form penalty",
-      "All-fisheries selectivity-form boundary sensitivity",
+      "All forms relaxed",
       "BET 2026 selectivity-form boundary sensitivity | all fisheries",
       "18d-all-selectivity-form-relaxed",
-      "All 16 active fishery flag-16 controls change from 2 to 0; every other Step 17b input and control is unchanged. This is a boundary sensitivity, not a preferred model."
+      "All 14 active fishery flag-16 controls change from 2 to 0; every other Step 16c input and control is unchanged. This is a boundary sensitivity, not a preferred model."
     )
   )
 )

@@ -629,6 +629,94 @@ apply_step15_selectivity_bundle <- function(lines) {
   lines
 }
 
+normalise_exact_doitall_control <- function(line) {
+  body <- sub("[[:space:]]+#.*$", "", line)
+  paste(read_words(body), collapse = " ")
+}
+
+remove_exact_doitall_controls <- function(lines, expected_controls) {
+  expected <- vapply(
+    expected_controls,
+    normalise_exact_doitall_control,
+    character(1)
+  )
+  if (any(!nzchar(expected)) || anyDuplicated(expected)) {
+    stop("Exact doitall controls must be non-empty and unique", call. = FALSE)
+  }
+  expected_words <- strsplit(expected, " ", fixed = TRUE)
+  if (any(lengths(expected_words) != 3L)) {
+    stop("Exact doitall controls must each contain one triplet", call. = FALSE)
+  }
+
+  line_words <- lapply(
+    lines,
+    function(line) read_words(sub("[[:space:]]+#.*$", "", line))
+  )
+  line_triplets <- lapply(line_words, function(words) {
+    if (length(words) < 3L || length(words) %% 3L != 0L) return(character())
+    starts <- seq.int(1L, length(words) - 2L, by = 3L)
+    vapply(
+      starts,
+      function(start) paste(words[start:(start + 2L)], collapse = " "),
+      character(1)
+    )
+  })
+  hits <- lapply(expected, function(control) {
+    which(vapply(line_triplets, function(x) sum(x == control), integer(1)) > 0L)
+  })
+  counts <- lengths(hits)
+  counts <- vapply(
+    expected,
+    function(control) sum(vapply(line_triplets, function(x) sum(x == control), integer(1))),
+    integer(1)
+  )
+  if (any(counts != 1L)) {
+    details <- paste0(
+      "`", expected[counts != 1L], "` (found ", counts[counts != 1L], ")"
+    )
+    stop(
+      "Expected exactly one line for each doitall control to remove: ",
+      paste(details, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  target_lines <- sort(unique(unlist(hits, use.names = FALSE)))
+  remove_lines <- integer()
+  for (line_index in target_lines) {
+    words <- line_words[[line_index]]
+    triplets <- line_triplets[[line_index]]
+    keep <- !triplets %in% expected
+    if (!any(keep)) {
+      remove_lines <- c(remove_lines, line_index)
+      next
+    }
+    comment <- regmatches(
+      lines[[line_index]],
+      regexpr("[[:space:]]+#.*$", lines[[line_index]])
+    )
+    kept_words <- unlist(
+      lapply(which(keep), function(i) words[((i - 1L) * 3L + 1L):(i * 3L)]),
+      use.names = FALSE
+    )
+    lines[[line_index]] <- paste0(
+      "  ", paste(kept_words, collapse = " "),
+      if (length(comment)) comment else ""
+    )
+  }
+  if (length(remove_lines)) lines <- lines[-remove_lines]
+  lines
+}
+
+step15_legacy_selectivity_controls <- c(
+  "-5 16 1",
+  "-14 75 5",
+  "-20 16 2",
+  "-20 3 30",
+  "-28 16 2",
+  "-28 3 30"
+)
+
 apply_dom_lf_divisors <- function(lines, fisheries = 21:23, divisor = 200L) {
   for (fishery in fisheries) {
     lines <- set_or_add_control_flag(
@@ -795,6 +883,10 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
   }
   if (isTRUE(step15_selectivity_bundle)) {
     lines <- apply_step15_selectivity_bundle(lines)
+    lines <- remove_exact_doitall_controls(
+      lines,
+      step15_legacy_selectivity_controls
+    )
   }
   if (isTRUE(index_selectivity)) lines <- apply_index_selectivity_separation(lines)
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)

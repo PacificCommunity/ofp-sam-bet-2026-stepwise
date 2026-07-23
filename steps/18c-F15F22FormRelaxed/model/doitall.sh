@@ -209,7 +209,6 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -32 24 29  # F32 staged-run-1 selectivity group
   -33 24 29  # F33 staged-run-1 selectivity group
 # Non-decreasing selectivity for the old6-derived longline fishery.
-   -5 16 1
 # Selected old-derived longline fisheries set to zero for first two age classes.
   -2 75 2  # F2 youngest age classes fixed at zero selectivity
   -4 75 2  # F4 youngest age classes fixed at zero selectivity
@@ -219,15 +218,12 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -9 75 2  # F9 youngest age classes fixed at zero selectivity
   -10 75 2  # F10 youngest age classes fixed at zero selectivity
 # Old18 split into HL.ID.2 and HL.PH.2.
-  -14 75 5
   -15 75 5  # F15 youngest age classes fixed at zero selectivity
 # Age-based spline constraints mapped from old fishery recipes.
   -19 16 2 -19 3 25  # F19 terminal spline age and start age for the older-age dome penalty
   -25 16 2 -25 3 25  # F25 terminal spline age and start age for the older-age dome penalty
   -26 16 2 -26 3 25  # F26 terminal spline age and start age for the older-age dome penalty
-  -20 16 2  -20 3 30  # PS.UNA.2, old31
   -27 16 2 -27 3 30  # F27 terminal spline age and start age for the older-age dome penalty
-  -28 16 2  -28 3 30  # PS.UNA.EAST.3, old16
   -17 16 2 -17 3 25  # F17 terminal spline age and start age for the older-age dome penalty
   -18 16 2 -18 3 25  # F18 terminal spline age and start age for the older-age dome penalty
   -12 16 2 -12 3 25  # F12 terminal spline age and start age for the older-age dome penalty
@@ -269,9 +265,6 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -31 75 2  # Index R3 youngest age classes fixed at zero selectivity
   -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
   -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
-  -21 49 200  # DOM F21 LF divisor; all non-DOM 40/20 controls retained
-  -22 49 200  # DOM F22 LF divisor; all non-DOM 40/20 controls retained
-  -23 49 200  # DOM F23 LF divisor; all non-DOM 40/20 controls retained
   1 320 5  # use tail-compressed DM when the first-to-last-positive observed span contains at least five bins
   1 342 25  # DM effective-sample-size upper asymptote Nmax=25
   -1 68 1  # G8PSSET DM group for F1

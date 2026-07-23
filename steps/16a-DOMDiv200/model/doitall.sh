@@ -108,7 +108,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   2 94 1 2 128 100  # initial Z = 1.0*M, i.e. initial F = 0
 # Likelihood component settings
   1 111 4     # set likelihood function for tags to negative binomial
-  1 141 11  # length-frequency likelihood: Dirichlet-multinomial without random effects
+  1 141 3     # set likelihood function for LF data to normal
   1 139 3     # set likelihood function for WF data to normal
   -999 49 20  # divide LF sample sizes by 20
   -999 50 20  # divide WF sample sizes by 20
@@ -209,7 +209,6 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -32 24 29  # F32 staged-run-1 selectivity group
   -33 24 29  # F33 staged-run-1 selectivity group
 # Non-decreasing selectivity for the old6-derived longline fishery.
-   -5 16 1
 # Selected old-derived longline fisheries set to zero for first two age classes.
   -2 75 2  # F2 youngest age classes fixed at zero selectivity
   -4 75 2  # F4 youngest age classes fixed at zero selectivity
@@ -219,15 +218,12 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -9 75 2  # F9 youngest age classes fixed at zero selectivity
   -10 75 2  # F10 youngest age classes fixed at zero selectivity
 # Old18 split into HL.ID.2 and HL.PH.2.
-  -14 75 5
   -15 75 5  # F15 youngest age classes fixed at zero selectivity
 # Age-based spline constraints mapped from old fishery recipes.
   -19 16 2 -19 3 25  # F19 terminal spline age and start age for the older-age dome penalty
   -25 16 2 -25 3 25  # F25 terminal spline age and start age for the older-age dome penalty
   -26 16 2 -26 3 25  # F26 terminal spline age and start age for the older-age dome penalty
-  -20 16 2  -20 3 30  # PS.UNA.2, old31
   -27 16 2 -27 3 30  # F27 terminal spline age and start age for the older-age dome penalty
-  -28 16 2  -28 3 30  # PS.UNA.EAST.3, old16
   -17 16 2 -17 3 25  # F17 terminal spline age and start age for the older-age dome penalty
   -18 16 2 -18 3 25  # F18 terminal spline age and start age for the older-age dome penalty
   -12 16 2 -12 3 25  # F12 terminal spline age and start age for the older-age dome penalty
@@ -244,7 +240,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   2 109 3  # select Lorenzen curve
   1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 # Filter out comps with input samples less than 50
-  1 311 1  # enable tail-compressed observed and predicted length-frequency arrays
+  1 311 1   # set tail compression for LF data
   1 301 1   # set tail compression for WF data
   1 313 0   # proportions in compressed tails for LF data
   1 303 0   # proportions in compressed tails for WF data
@@ -272,43 +268,6 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -21 49 200  # DOM F21 LF divisor; all non-DOM 40/20 controls retained
   -22 49 200  # DOM F22 LF divisor; all non-DOM 40/20 controls retained
   -23 49 200  # DOM F23 LF divisor; all non-DOM 40/20 controls retained
-  1 320 5  # use tail-compressed DM when the first-to-last-positive observed span contains at least five bins
-  1 342 25  # DM effective-sample-size upper asymptote Nmax=25
-  -1 68 1  # G8PSSET DM group for F1
-  -2 68 1  # G8PSSET DM group for F2
-  -3 68 1  # G8PSSET DM group for F3
-  -4 68 1  # G8PSSET DM group for F4
-  -5 68 2  # G8PSSET DM group for F5
-  -6 68 1  # G8PSSET DM group for F6
-  -7 68 1  # G8PSSET DM group for F7
-  -8 68 1  # G8PSSET DM group for F8
-  -9 68 2  # G8PSSET DM group for F9
-  -10 68 1  # G8PSSET DM group for F10
-  -11 68 1  # G8PSSET DM group for F11
-  -12 68 3  # G8PSSET DM group for F12
-  -13 68 7  # G8PSSET DM group for F13
-  -14 68 6  # G8PSSET DM group for F14
-  -15 68 6  # G8PSSET DM group for F15
-  -16 68 7  # G8PSSET DM group for F16
-  -17 68 3  # G8PSSET DM group for F17
-  -18 68 3  # G8PSSET DM group for F18
-  -19 68 4  # G8PSSET DM group for F19
-  -20 68 5  # G8PSSET DM group for F20
-  -21 68 7  # G8PSSET DM group for F21
-  -22 68 7  # G8PSSET DM group for F22
-  -23 68 7  # G8PSSET DM group for F23
-  -24 68 7  # G8PSSET DM group for F24
-  -25 68 4  # G8PSSET DM group for F25
-  -26 68 4  # G8PSSET DM group for F26
-  -27 68 5  # G8PSSET DM group for F27
-  -28 68 5  # G8PSSET DM group for F28
-  -29 68 8  # G8PSSET DM group for F29
-  -30 68 8  # G8PSSET DM group for F30
-  -31 68 8  # G8PSSET DM group for F31
-  -32 68 8  # G8PSSET DM group for F32
-  -33 68 8  # G8PSSET DM group for F33
-  -999 69 1  # estimate group-specific DM scalar exponent
-  -999 89 0  # stage relative sample-size exponent fixed at zero
 PHASE1
 
 # ---------
@@ -320,7 +279,6 @@ $program_path bet.frq 01.par 02.par -file - <<PHASE2
   1 50 0   # set convergence criterion to 1
   2 113 0  # scaling init pop - turned off
   1 190 1  # write plot-xxx.par.rep
-  -999 89 1  # estimate group-specific DM relative sample-size exponent (CEST)
 PHASE2
 
 # ---------

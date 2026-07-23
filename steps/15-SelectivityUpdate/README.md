@@ -1,22 +1,24 @@
-# 15 Fleet-specific selectivity update
+# 15 Selectivity update
 
-Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specific terminal/dome controls, set F25/F26 seven-node and tail controls, and separate F29-F33.
+Apply the fleet-specific selectivity bundle and remove six superseded legacy controls so all weighting comparisons start from the same selectivity configuration.
 
 ## Snapshot
 
 | Field | Value |
 | --- | --- |
 | Step folder | `steps/15-SelectivityUpdate/model` |
-| Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
+| Status | Prepared input snapshot; model fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specific terminal/dome controls, set F25/F26 seven-node and tail controls, and separate F29-F33. |
-| 2 | F25/F26 each use terminal age 25, dome flag 2, seven spline nodes, and youngest-tail flag 0; F29-F33 separate in staged MFCL run 5. |
-| 3 | Scientific parent: '14-CPUESigma'. |
-| 4 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
+| 1 | Apply the fleet-specific selectivity bundle and remove six superseded legacy controls so all weighting comparisons start from the same selectivity configuration. |
+| 2 | Scientific rationale: represent fleet-specific size availability before comparing composition weighting. |
+| 3 | Held constant: data, fixed natural mortality, CPUE settings, tag reporting-rate mapping, and all other pre-Step-15 controls. |
+| 4 | Status: carried forward to all Step 16 weighting comparisons. |
+| 5 | Scientific parent: '14-CPUESigma'. |
+| 6 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 
@@ -36,14 +38,14 @@ Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specif
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Apply the intended broad selectivity bundle: unshare F15-F28, apply fleet-specific terminal/dome controls, set F25/F26 seven-node and tail controls, and separate F29-F33. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Apply the fleet-specific selectivity bundle and remove six superseded legacy controls so all weighting comparisons start from the same selectivity configuration. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `386d169` | Correct RR init values |
+| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
 | `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |

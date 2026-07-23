@@ -748,7 +748,7 @@ write_readme(
 
 
 
-## Self-contained public 22-row / 17-group sequence --------------------------
+## Self-contained public 22-row / 16-stage sequence --------------------------
 
 stepwise_5_region_template_step_id <- "04-NewStructure"
 
@@ -879,7 +879,8 @@ write_sequence_step <- function(
     francis_source = "",
     francis_source_note = "",
     dm_grouping = "",
-    dm_nmax = NA_integer_) {
+    dm_nmax = NA_integer_,
+    status = "Ready for Kflow smoke runs; full MFCL fit not run here.") {
   controls <- list2env(
     list(
       regional_cpue = regional_cpue,
@@ -940,7 +941,7 @@ write_sequence_step <- function(
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
       if (length(francis_divisors)) paste0(
-        "Francis divisors replace all Step 16 LF flag-49 values, including ",
+        "Francis divisors replace all DOM-branch LF flag-49 values, including ",
         "F21-F23 = ", paste(francis_divisors[21:23], collapse = "/"), "."
       ),
       if (fixed_cpue_sigma) paste0(
@@ -979,7 +980,8 @@ write_sequence_step <- function(
       "No preliminary parameter file or scientific-parent model folder is read at runtime.",
       if (fixed_cpue_sigma) "cpue_mle_sigma_audit.csv records the archived source commit/path/SHA256, CPUE MLE sigma values, and executed flag-92 values."
     ),
-    outstanding = character()
+    outstanding = character(),
+    status = status
   )
 }
 
@@ -1056,7 +1058,8 @@ write_selected_path_step <- function(
     fixed_cpue_sigma = FALSE,
     index_selectivity = FALSE, step15_selectivity_bundle = FALSE,
     dom = FALSE, francis = numeric(),
-    dm_grouping = "", dm_nmax = NA_integer_) {
+    dm_grouping = "", dm_nmax = NA_integer_,
+    status = "Ready for Kflow smoke runs; full MFCL fit not run here.") {
   write_sequence_step(
     step_id, title, parent, change,
     audit_notes = audit_notes,
@@ -1080,7 +1083,8 @@ write_selected_path_step <- function(
     francis_source = if (length(francis)) francis_ta18_path else "",
     francis_source_note = if (length(francis)) francis_ta18_source_note else "",
     dm_grouping = dm_grouping,
-    dm_nmax = dm_nmax
+    dm_nmax = dm_nmax,
+    status = status
   )
 }
 
@@ -1112,67 +1116,97 @@ write_selected_path_step(
   effort_creep = TRUE, fixed_cpue_sigma = TRUE
 )
 write_selected_path_step(
-  "15-SelectivityUpdate", "15 Fleet-specific selectivity update", "14-CPUESigma",
+  "15-SelectivityUpdate", "15 Selectivity update", "14-CPUESigma",
   paste0(
-    "Apply the intended broad selectivity bundle: unshare F15-F28, apply ",
-    "fleet-specific terminal/dome controls, set F25/F26 seven-node and tail ",
-    "controls, and separate F29-F33."
+    "Apply the fleet-specific selectivity bundle and remove six superseded ",
+    "legacy controls so all weighting comparisons start from the same ",
+    "selectivity configuration."
   ),
-  audit_notes = paste0(
-    "F25/F26 each use terminal age 25, dome flag 2, seven spline nodes, and ",
-    "youngest-tail flag 0; F29-F33 separate in staged MFCL run 5."
+  audit_notes = c(
+    "Scientific rationale: represent fleet-specific size availability before comparing composition weighting.",
+    "Held constant: data, fixed natural mortality, CPUE settings, tag reporting-rate mapping, and all other pre-Step-15 controls.",
+    "Status: carried forward to all Step 16 weighting comparisons."
   ),
-  tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
-  effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, step15_selectivity_bundle = TRUE
-)
-write_selected_path_step(
-  "16-DOMDiv200", "16 F21-F23 length-composition downweighting", "15-SelectivityUpdate",
-  "Apply the assessment-specific DOM divisor 200 only to F21-F23.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
   index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
-  dom = TRUE
+  status = "Prepared input snapshot; model fit not run here."
+)
+write_selected_path_step(
+  "16a-DOMDiv200", "16a DOM downweighting", "15-SelectivityUpdate",
+  "Apply divisor 200 only to the low-quality, previously unreweighted DOM F21-F23 length compositions.",
+  audit_notes = c(
+    "Scientific rationale: test whether reducing the influence of these three composition series improves balance with other data.",
+    "Held constant: the Step 15 data, biology, selectivity, CPUE, tag, and all non-DOM composition settings.",
+    "Status: alternative comparison; carried only as the parent of 16b."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
+  effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
+  dom = TRUE,
+  status = "Prepared alternative-comparison snapshot; model fit not run here."
 )
 
-# The only final composition-likelihood siblings share 16-DOMDiv200 directly.
 write_selected_path_step(
-  "17a-Francis", "17a Francis length-composition weighting", "16-DOMDiv200",
-  "Replace all Step 16 LF divisors with locked Francis TA1.8 values, including F21-F23 = 114/398/705.",
+  "16b-Francis", "16b Francis weighting", "16a-DOMDiv200",
+  "Build on 16a and replace every length-composition divisor with a fishery-specific Francis divisor.",
+  audit_notes = c(
+    "Scientific rationale: compare fishery-specific composition weighting based on preliminary residual diagnostics.",
+    "Held constant: all Step 15 settings and the standard composition likelihood; the 16a divisors are replaced, not added.",
+    "Status: alternative comparison; not carried forward."
+  ),
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
   index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
-  francis = francis_lf_divisors
+  dom = TRUE,
+  francis = francis_lf_divisors,
+  status = "Prepared alternative-comparison snapshot; model fit not run here."
 )
 write_selected_path_step(
-  "17b-DMG8Nmax25", "17b DM length-composition likelihood", "16-DOMDiv200",
-  "Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25.",
+  "16c-DMG8Nmax25", "16c Dirichlet-multinomial", "15-SelectivityUpdate",
+  paste0(
+    "Branch directly from Step 15 and use a Dirichlet-multinomial length-",
+    "composition likelihood with G8 grouping and Nmax 25, ",
+    "without DOM divisor 200 or Francis weighting."
+  ),
+  audit_notes = c(
+    "Scientific rationale: estimate composition information internally while capping it at 25 to avoid excessive dominance over CPUE; the cap reflects preliminary effective-sample-size behavior.",
+    "Held constant: all Step 15 data, biology, selectivity, CPUE, and tag settings; neither the 16a divisor nor 16b Francis weights are inherited.",
+    "Status: selected weighting treatment; carried forward to the Step 18 sensitivities."
+  ),
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
   index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
-  dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared selected-model snapshot; model fit not run here."
 )
 
 write_selectivity_form_sensitivity <- function(step_id, title, fisheries = integer(), all_active = FALSE) {
   if (isTRUE(all_active)) {
     summary <- paste0(
-      "Retain the Step 17b model and remove every active fishery-specific ",
+      "Retain the Step 16c model and remove every active fishery-specific ",
       "dome/old-age-tail selectivity-form penalty. This is an all-fisheries ",
       "boundary sensitivity, not a preferred model."
     )
   } else {
     summary <- paste0(
-      "Retain the Step 17b model and remove the dome/old-age-tail selectivity-form penalty for ",
+      "Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for ",
       paste0("F", fisheries, collapse = " and "),
       " only."
     )
   }
   write_selected_path_step(
-    step_id, title, "17b-DMG8Nmax25", summary,
+    step_id, title, "16c-DMG8Nmax25", summary,
+    audit_notes = c(
+      "Scientific rationale: test sensitivity to the specified selectivity-form constraint.",
+      "Held constant: every Step 16c input and control except the named fishery flag-16 relaxation.",
+      "Status: alternative sensitivity comparison; not carried forward."
+    ),
     tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
     effort_creep = TRUE, fixed_cpue_sigma = TRUE,
     index_selectivity = TRUE, step15_selectivity_bundle = TRUE,
-    dom = TRUE, dm_grouping = "G8PSSET", dm_nmax = 25L
+    dm_grouping = "G8PSSET", dm_nmax = 25L,
+    status = "Prepared sensitivity snapshot; model fit not run here."
   )
 
   step_dir <- file.path(root, "steps", step_id)
@@ -1187,8 +1221,10 @@ write_selectivity_form_sensitivity <- function(step_id, title, fisheries = integ
       lines[active_lines],
       perl = TRUE
     ))
-    expected_fisheries <- c(12L, 13L, 15L, 16L, 17L, 18L, 19L, 20L,
-                            21L, 22L, 23L, 24L, 25L, 26L, 27L, 28L)
+    expected_fisheries <- c(
+      12L, 13L, 15L, 16L, 17L, 18L, 19L,
+      21L, 22L, 23L, 24L, 25L, 26L, 27L
+    )
     if (!identical(sort(unique(active_fisheries)), expected_fisheries)) {
       stop(
         "Unexpected active flag-16 fishery set in ", doitall_path, ": ",
@@ -1259,31 +1295,33 @@ write_selectivity_form_sensitivity <- function(step_id, title, fisheries = integ
 
 write_selectivity_form_sensitivity(
   "18a-F22FormRelaxed",
-  "18a F22 selectivity-form penalty sensitivity",
+  "18a F22 form relaxed",
   22L
 )
 write_selectivity_form_sensitivity(
   "18b-F15FormRelaxed",
-  "18b F15 selectivity-form penalty sensitivity",
+  "18b F15 form relaxed",
   15L
 )
 write_selectivity_form_sensitivity(
   "18c-F15F22FormRelaxed",
-  "18c F15 and F22 selectivity-form penalty sensitivity",
+  "18c F15/F22 forms relaxed",
   c(15L, 22L)
 )
 write_selectivity_form_sensitivity(
   "18d-AllSelectivityFormRelaxed",
-  "18d All-fisheries selectivity-form boundary sensitivity",
+  "18d All forms relaxed",
   all_active = TRUE
 )
 
-# Remove only folders that are no longer configured. The existing
-# 04-NewStructure control files are intentionally retained as the rerunnable
-# five-region template until their replacement has been generated.
+# Remove only the three superseded weighting folders after their replacements
+# have been generated. Unrelated configured or unconfigured steps are retained.
 config_env <- new.env(parent = baseenv())
 sys.source(file.path(root, "job-config.R"), envir = config_env)
 configured_steps <- as.character(config_env$stepwise_models$step_id)
-step_dirs <- list.dirs(file.path(root, "steps"), recursive = FALSE, full.names = TRUE)
-stale_dirs <- step_dirs[!basename(step_dirs) %in% configured_steps]
-if (length(stale_dirs)) unlink(stale_dirs, recursive = TRUE, force = TRUE)
+obsolete_step_ids <- c("16-DOMDiv200", "17a-Francis", "17b-DMG8Nmax25")
+if (length(intersect(obsolete_step_ids, configured_steps))) {
+  stop("Obsolete weighting step IDs remain configured", call. = FALSE)
+}
+obsolete_step_dirs <- file.path(root, "steps", obsolete_step_ids)
+unlink(obsolete_step_dirs[dir.exists(obsolete_step_dirs)], recursive = TRUE, force = TRUE)
