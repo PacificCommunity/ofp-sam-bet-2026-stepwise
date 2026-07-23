@@ -76,8 +76,14 @@ bias_corrected_length_weight_note <- paste(
 
 fixm_age_par_value <- "-2.54930339768360e+00"
 fixm_age_par_source <- "the 01-Diag2023 mgc=-5 diagnostic final par"
-fixm_age_par_note <- paste("Fixed log-scale Lorenzen natural-mortality coefficient applied from", fixm_age_par_source)
-fixm_age_par_display <- paste("Fixed Lorenzen M scaling from", fixm_age_par_source)
+fixm_age_par_note <- paste(
+  "Lorenzen natural-mortality scaling fixed to the 2023 diagnostic-model estimate from",
+  fixm_age_par_source
+)
+fixm_age_par_display <- paste(
+  "Diagnostic natural-mortality estimate fixed from",
+  fixm_age_par_source
+)
 
 diagnostic_root_env <- Sys.getenv("BET_2023_DIAGNOSTIC_ROOT", "")
 diagnostic_root_candidates <- if (nzchar(diagnostic_root_env)) {
@@ -422,7 +428,13 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
   }
   if (isTRUE(fixm)) {
     apply_fixm_m(file.path(paths$model_dir, "bet.ini"))
-    ini_notes <- c(ini_notes, paste("Fixed log-scale Lorenzen natural-mortality coefficient applied from", fixm_age_par_source))
+    ini_notes <- c(
+      ini_notes,
+      paste(
+        "Lorenzen natural-mortality scaling fixed to the 2023 diagnostic-model estimate from",
+        fixm_age_par_source
+      )
+    )
   }
   write_generated_tag_rep_map(paths$model_dir)
   write_2023_newexe_doitall(
@@ -461,7 +473,7 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
   } else if (isTRUE(fixm)) {
     input_change_table(
       c(".ini", ".frq/.tag/.age_length"),
-      c("Sets the log-scale Lorenzen natural-mortality coefficient to `-2.54930339768360` and retains the length exponent `-1`; both are fixed in later fits.", "No generated edit."),
+      c("Uses the 2023 diagnostic-model estimate for Lorenzen natural-mortality scaling and retains the length exponent `-1`; both are fixed in later fits.", "No generated edit."),
       c(paste0("All other `", source_step, "` ini controls."), paste0("Inherited from `", source_step, "`."))
     )
   } else {
@@ -526,10 +538,10 @@ write_diagnostic_substep(
 )
 write_diagnostic_substep(
   "04-FixM",
-  "04 Fixed Lorenzen M scaling",
+  "04 Diagnostic natural-mortality estimate fixed",
   paste0(
-    "Step 03 1007 ini baseline with the log-scale Lorenzen natural-mortality ",
-    "coefficient fixed at ", fixm_age_par_value, "."
+    "Step 03 1007 INI baseline with Lorenzen natural-mortality scaling fixed ",
+    "to the 2023 diagnostic-model estimate."
   ),
   source_step = "03-Ini1007",
   fixm = TRUE
@@ -537,7 +549,7 @@ write_diagnostic_substep(
 write_diagnostic_substep(
   "05-LengthWeight",
   "05 Length-weight update",
-  "Step 04 fixed-M baseline with BET bias-corrected 2026 length-weight parameters.",
+  "Step 04 fixed natural-mortality baseline with BET 2026 bias-corrected length-weight parameters.",
   source_step = "04-FixM",
   length_weight_parameters = bias_corrected_length_weight_parameters,
   fixm = TRUE
@@ -821,8 +833,12 @@ francis_ta18_source_path <- paste0(
   "REGW100-RRPTTP26/model/francis_weights.csv"
 )
 francis_ta18_source_note <- paste0(
-  "Exact audited TA1.8 CSV from PacificCommunity/ofp-sam-bet-2026-exploration@",
-  francis_ta18_source_commit, "/", francis_ta18_source_path
+  "Exact audited TA1.8 CSV archived at PacificCommunity/",
+  "ofp-sam-bet-2026-exploration@", francis_ta18_source_commit, "/",
+  francis_ta18_source_path, ". The divisors were calculated from standardized ",
+  "mean-length residuals for 2,399 retained compositions in the robust-normal ",
+  "S022 fit (Kflow Job 12306; regional-scaling weight 11; F21-F23 stage-1 ",
+  "divisors 200)."
 )
 expected_francis_ta18_divisors <- c(
   115L, 147L, 42L, 110L, 63L, 23L, 77L, 43L, 85L, 117L, 48L,
@@ -847,7 +863,7 @@ read_francis_ta18_audit <- function(path) {
         as.integer(audit$recommended_divisor),
         expected_francis_ta18_divisors
       )) {
-    stop("Francis TA1.8 audit does not contain the locked F1-F33 vector", call. = FALSE)
+    stop("Francis TA1.8 audit does not contain the validated F1-F33 vector", call. = FALSE)
   }
   audit
 }
@@ -1252,7 +1268,8 @@ write_selected_path_step(
   "20b-Francis", "20b Francis reweighting", "19-EffortCreep",
   "Apply fishery-specific Francis length-composition divisors as an independent Step 19 comparison branch.",
   audit_notes = c(
-    "Scientific rationale: compare fishery-specific composition weighting based on preliminary residual diagnostics.",
+    "Rationale: compare fishery-specific composition weighting using method TA1.8 of Francis (2011).",
+    "The applied divisors were calculated from standardized mean-length residuals for 2,399 retained compositions in the robust-normal S022 fit (Kflow Job 12306; regional-scaling weight 11; F21-F23 stage-1 divisors 200) and transferred unchanged to this branch.",
     "Held constant: all Step 19 settings and the standard composition likelihood; the 20a divisor-200 treatment is not inherited.",
     "Status: alternative comparison; not carried forward."
   ),

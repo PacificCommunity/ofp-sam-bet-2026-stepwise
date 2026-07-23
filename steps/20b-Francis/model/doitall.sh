@@ -114,18 +114,18 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 50 20  # divide WF sample sizes by 20
 # Additional LF/WF sample-size reductions retained from the inherited setup.
 # Index fisheries 29-33 are included; extraction labels use the five-region fishery map.
-  -1 49 115 -1 50 40  # Francis TA1.8 locked LF divisor for F1
-  -2 49 147 -2 50 40  # Francis TA1.8 locked LF divisor for F2
-  -4 49 110 -4 50 40  # Francis TA1.8 locked LF divisor for F4
-  -6 49 23 -6 50 40  # Francis TA1.8 locked LF divisor for F6
-  -7 49 77 -7 50 40  # Francis TA1.8 locked LF divisor for F7
-  -8 49 43 -8 50 40  # Francis TA1.8 locked LF divisor for F8
-  -10 49 117 -10 50 40  # Francis TA1.8 locked LF divisor for F10
-  -29 49 115 -29 50 40  # Francis TA1.8 locked LF divisor for F29
-  -30 49 57 -30 50 40  # Francis TA1.8 locked LF divisor for F30
-  -31 49 51 -31 50 40  # Francis TA1.8 locked LF divisor for F31
-  -32 49 56 -32 50 40  # Francis TA1.8 locked LF divisor for F32
-  -33 49 38 -33 50 40  # Francis TA1.8 locked LF divisor for F33
+  -1 49 115 -1 50 40  # Francis TA1.8 LF divisor for F1
+  -2 49 147 -2 50 40  # Francis TA1.8 LF divisor for F2
+  -4 49 110 -4 50 40  # Francis TA1.8 LF divisor for F4
+  -6 49 23 -6 50 40  # Francis TA1.8 LF divisor for F6
+  -7 49 77 -7 50 40  # Francis TA1.8 LF divisor for F7
+  -8 49 43 -8 50 40  # Francis TA1.8 LF divisor for F8
+  -10 49 117 -10 50 40  # Francis TA1.8 LF divisor for F10
+  -29 49 115 -29 50 40  # Francis TA1.8 LF divisor for F29
+  -30 49 57 -30 50 40  # Francis TA1.8 LF divisor for F30
+  -31 49 51 -31 50 40  # Francis TA1.8 LF divisor for F31
+  -32 49 56 -32 50 40  # Francis TA1.8 LF divisor for F32
+  -33 49 38 -33 50 40  # Francis TA1.8 LF divisor for F33
 # Tag dynamics settings
   1 33 99    # maximum tag reporting rate for all fisheries is 0.99
   2 96 30    # pool tags after 30 quarters at liberty
@@ -265,27 +265,27 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -31 75 2  # Index R3 youngest age classes fixed at zero selectivity
   -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
   -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
-  -3 49 42  # Francis TA1.8 locked LF divisor for F3
-  -5 49 63  # Francis TA1.8 locked LF divisor for F5
-  -9 49 85  # Francis TA1.8 locked LF divisor for F9
-  -11 49 48  # Francis TA1.8 locked LF divisor for F11
-  -12 49 209  # Francis TA1.8 locked LF divisor for F12
-  -13 49 357  # Francis TA1.8 locked LF divisor for F13
-  -14 49 16  # Francis TA1.8 locked LF divisor for F14
-  -15 49 142  # Francis TA1.8 locked LF divisor for F15
-  -16 49 296  # Francis TA1.8 locked LF divisor for F16
-  -17 49 88  # Francis TA1.8 locked LF divisor for F17
-  -18 49 151  # Francis TA1.8 locked LF divisor for F18
-  -19 49 141  # Francis TA1.8 locked LF divisor for F19
-  -20 49 258  # Francis TA1.8 locked LF divisor for F20
-  -21 49 114  # Francis TA1.8 locked LF divisor for F21
-  -22 49 398  # Francis TA1.8 locked LF divisor for F22
-  -23 49 705  # Francis TA1.8 locked LF divisor for F23
-  -24 49 39  # Francis TA1.8 locked LF divisor for F24
-  -25 49 27  # Francis TA1.8 locked LF divisor for F25
-  -26 49 37  # Francis TA1.8 locked LF divisor for F26
-  -27 49 18  # Francis TA1.8 locked LF divisor for F27
-  -28 49 50  # Francis TA1.8 locked LF divisor for F28
+  -3 49 42  # Francis TA1.8 LF divisor for F3
+  -5 49 63  # Francis TA1.8 LF divisor for F5
+  -9 49 85  # Francis TA1.8 LF divisor for F9
+  -11 49 48  # Francis TA1.8 LF divisor for F11
+  -12 49 209  # Francis TA1.8 LF divisor for F12
+  -13 49 357  # Francis TA1.8 LF divisor for F13
+  -14 49 16  # Francis TA1.8 LF divisor for F14
+  -15 49 142  # Francis TA1.8 LF divisor for F15
+  -16 49 296  # Francis TA1.8 LF divisor for F16
+  -17 49 88  # Francis TA1.8 LF divisor for F17
+  -18 49 151  # Francis TA1.8 LF divisor for F18
+  -19 49 141  # Francis TA1.8 LF divisor for F19
+  -20 49 258  # Francis TA1.8 LF divisor for F20
+  -21 49 114  # Francis TA1.8 LF divisor for F21
+  -22 49 398  # Francis TA1.8 LF divisor for F22
+  -23 49 705  # Francis TA1.8 LF divisor for F23
+  -24 49 39  # Francis TA1.8 LF divisor for F24
+  -25 49 27  # Francis TA1.8 LF divisor for F25
+  -26 49 37  # Francis TA1.8 LF divisor for F26
+  -27 49 18  # Francis TA1.8 LF divisor for F27
+  -28 49 50  # Francis TA1.8 LF divisor for F28
 PHASE1
 
 # ---------

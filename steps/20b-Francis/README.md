@@ -14,11 +14,12 @@ Apply fishery-specific Francis length-composition divisors as an independent Ste
 | # | Change |
 | --- | --- |
 | 1 | Apply fishery-specific Francis length-composition divisors as an independent Step 19 comparison branch. |
-| 2 | Scientific rationale: compare fishery-specific composition weighting based on preliminary residual diagnostics. |
-| 3 | Held constant: all Step 19 settings and the standard composition likelihood; the 20a divisor-200 treatment is not inherited. |
-| 4 | Status: alternative comparison; not carried forward. |
-| 5 | Scientific parent: '19-EffortCreep'. |
-| 6 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
+| 2 | Rationale: compare fishery-specific composition weighting using method TA1.8 of Francis (2011). |
+| 3 | The applied divisors were calculated from standardized mean-length residuals for 2,399 retained compositions in the robust-normal S022 fit (Kflow Job 12306; regional-scaling weight 11; F21-F23 stage-1 divisors 200) and transferred unchanged to this branch. |
+| 4 | Held constant: all Step 19 settings and the standard composition likelihood; the 20a divisor-200 treatment is not inherited. |
+| 5 | Status: alternative comparison; not carried forward. |
+| 6 | Scientific parent: '19-EffortCreep'. |
+| 7 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 

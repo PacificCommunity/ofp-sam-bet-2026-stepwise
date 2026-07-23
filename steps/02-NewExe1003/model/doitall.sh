@@ -273,7 +273,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   2 188 2
 # Set Lorenzen M
   2 109 3  # select Lorenzen curve
-  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope
+  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen natural mortality, estimate the intercept and fix the length slope
 # Filter out comps with input samples less than 50
   1 311 1   # set tail compression for LF data
   1 301 1   # set tail compression for WF data
@@ -403,7 +403,7 @@ PHASE9
 $program_path bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
   1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)
-  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope
+  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen natural mortality, estimate the intercept and fix the length slope
 PHASE10
 
 # ----------

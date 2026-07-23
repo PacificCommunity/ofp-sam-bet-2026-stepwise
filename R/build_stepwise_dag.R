@@ -75,7 +75,7 @@ build_stepwise_dag <- function(
     "01-Diag2023" = "2023 diagnostic\nrerun",
     "02-NewExe1003" = "Updated\nexecutable",
     "03-Ini1007" = "Updated INI\nformat",
-    "04-FixM" = "Lorenzen M\nscaling fixed",
+    "04-FixM" = "Diagnostic natural-mortality\nestimate fixed",
     "05-LengthWeight" = "Length-weight\nupdate",
     "06-NewStructure" = "Five-region\nstructure",
     "07-ConvertToLength" = "Weight-as-length\nLF input",

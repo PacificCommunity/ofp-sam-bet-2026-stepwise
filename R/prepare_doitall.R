@@ -77,7 +77,7 @@ normalize_lorenzen_mortality_control <- function(lines, fixm = FALSE) {
     lines[mortality_flag_lines] <- if (isTRUE(fixm)) {
       "  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values"
     } else {
-      "  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope"
+      "  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen natural mortality, estimate the intercept and fix the length slope"
     }
   } else if (isTRUE(fixm)) {
     stop("Expected a natural-mortality flag 121 control in the fixed-M doitall", call. = FALSE)
@@ -785,12 +785,12 @@ apply_fixed_common_cpue_sigma <- function(lines, flag92,
 apply_francis_lf_divisors <- function(lines, divisors) {
   divisors <- as.numeric(divisors)
   if (length(divisors) != 33L || any(!is.finite(divisors)) || any(divisors <= 0)) {
-    stop("Francis weighting requires a locked positive 33-fishery divisor vector", call. = FALSE)
+    stop("Francis weighting requires a validated positive 33-fishery divisor vector", call. = FALSE)
   }
   for (fishery in seq_len(33L)) {
     lines <- set_or_add_control_flag(
       lines, paste0("-", fishery), 49L, format(divisors[[fishery]], trim = TRUE), 1L,
-      paste0("Francis TA1.8 locked LF divisor for F", fishery)
+      paste0("Francis TA1.8 LF divisor for F", fishery)
     )
   }
   lines

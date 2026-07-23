@@ -55,6 +55,11 @@ stepwise_references <- c(
     "central Pacific Ocean: 2023. WCPFC-SC19-2023/SA-WP-05, Rev. 2."
   ),
   paste0(
+    "Scutt Phillips, J., Senina, I. and Bonin, L. (2026). Estimation of tag ",
+    "mixing periods for the 2026 WCPO tuna stock assessments. ",
+    "WCPFC-SC22-2026-SA-IP10."
+  ),
+  paste0(
     "Lorenzen, K. (1996). The relationship between body weight and natural ",
     "mortality in juvenile and adult fish: a comparison of natural ecosystems ",
     "and aquaculture. Journal of Fish Biology, 49, 627-642. ",
@@ -81,6 +86,7 @@ stepwise_references <- c(
 stepwise_reference_urls <- c(
   "https://meetings.wcpfc.int/node/32346",
   "https://meetings.wcpfc.int/node/19353",
+  "https://meetings.wcpfc.int/node/32243",
   "https://doi.org/10.1111/j.1095-8649.1996.tb00060.x",
   "https://doi.org/10.1139/F2011-025",
   "https://doi.org/10.1016/j.fishres.2016.06.005",
@@ -110,6 +116,14 @@ stepwise_references_bibtex <- paste0(
   "  number = {WCPFC-SC19-2023/SA-WP-05, Rev. 2},\n",
   "  url = {https://meetings.wcpfc.int/node/19353},\n",
   "  year = {2023}\n",
+  "}\n\n",
+  "@techreport{ScuttPhillipsEtAl2026TagMixing,\n",
+  "  author = {Scutt Phillips, J. and Senina, I. and Bonin, L.},\n",
+  "  title = {Estimation of tag mixing periods for the 2026 WCPO tuna stock assessments},\n",
+  "  institution = {Western and Central Pacific Fisheries Commission},\n",
+  "  number = {WCPFC-SC22-2026-SA-IP10},\n",
+  "  url = {https://meetings.wcpfc.int/node/32243},\n",
+  "  year = {2026}\n",
   "}\n\n",
   "@article{Lorenzen1996NaturalMortality,\n",
   "  author = {Lorenzen, Kai},\n",
@@ -597,7 +611,7 @@ build_stepwise_report <- function(
     "model component or data treatment was modified, while all other settings were held ",
     "constant where practicable (Figure XX; Table XX). Configurations retained after evaluation ",
     "defined the main development pathway; side branches document alternatives that were tested ",
-    "but not carried forward. The final model used a Dirichlet-multinomial (DM) likelihood for ",
+    "but not carried forward. The diagnostic model used a Dirichlet-multinomial (DM) likelihood for ",
     "length-composition data. The DM configuration and its eight fishery groupings are ",
     "summarised in Tables XX and XX, respectively."
   )
@@ -715,8 +729,8 @@ build_stepwise_report <- function(
     "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
     "<p>Assessment pathway and rationale</p></header><main>",
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
-    "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy analysis for Word</button>",
-    "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy analysis for LaTeX</button></div>",
+    "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy methods text for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy methods text for LaTeX</button></div>",
     "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\">",
     "</div><figcaption id=\"figure-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
     stepwise_html_escape(figure_caption), "</figcaption></figure>",

@@ -92,8 +92,9 @@ stepwise_models <- do.call(
     ),
     model_row(
       "04-FixM", "04-FixM", "03-Ini1007",
-      TRUE, "carry", "fix the log-scale Lorenzen natural-mortality coefficient at -2.54930339768360",
-      "Fixed Lorenzen M scaling", "04 Fixed Lorenzen M scaling", "04-fixm",
+      TRUE, "carry", "fix Lorenzen natural-mortality scaling to the 2023 diagnostic-model estimate",
+      "Diagnostic natural-mortality estimate fixed",
+      "04 Fix natural mortality to diagnostic estimate", "04-fixm",
       region_count = 9L
     ),
     model_row(
@@ -232,7 +233,7 @@ stepwise_report_change <- c(
   "01-Diag2023" = "2023 diagnostic-model refit",
   "02-NewExe1003" = "MFCL executable updated from archived 2.2.2.0 to the campaign 2.2.7.9-based build",
   "03-Ini1007" = "MFCL INI file updated from format 1003 to 1007",
-  "04-FixM" = "Lorenzen natural-mortality scaling fixed (log c = -2.549)",
+  "04-FixM" = "Lorenzen natural-mortality scaling fixed to the 2023 diagnostic-model estimate",
   "05-LengthWeight" = "BET 2026 bias-corrected length-weight parameters",
   "06-NewStructure" = "Five-region, 33-fishery structure",
   "07-ConvertToLength" = "Size-composition input replaced by the reweighted weight-as-length LF dataset",
@@ -257,7 +258,7 @@ stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
   "02-NewExe1003" = "Isolate the executable effect while retaining the 1003-format INI and scientific inputs and controls.",
   "03-Ini1007" = "Use INI 1007, the latest format supported by the pinned campaign executable.",
-  "04-FixM" = "Use the 2023 diagnostic-model estimate for Lorenzen scaling (Lorenzen, 1996) to improve model stability, as agreed at the pre-assessment workshop.",
+  "04-FixM" = "Improve model stability, as agreed at the pre-assessment workshop (Lorenzen, 1996).",
   "05-LengthWeight" = "Update biomass conversion for the 2026 assessment.",
   "06-NewStructure" = "Represent revised spatial and fishery heterogeneity.",
   "07-ConvertToLength" = "Evaluate the selected weight-as-length LF dataset, in which all retained size compositions are length frequencies.",
@@ -266,16 +267,16 @@ stepwise_report_purpose <- c(
   "10-DataTo2024" = "Extend the temporal coverage of the assessment.",
   "11-RegionalCPUE" = "Represent spatial variation in relative abundance.",
   "12-TimeVaryingCV" = "Account for temporal variation in the relative precision of the CPUE indices.",
-  "13-CPUEErrorCalibration" = "Use rounded residual-based maximum-likelihood estimates (0.354, 0.237, 0.212, 0.239 and 0.225).",
+  "13-CPUEErrorCalibration" = "Set the five regional log-scale observation-error standard deviations to values obtained by maximum-likelihood estimation and retain them in subsequent steps.",
   "14-NewAgeData" = "Use the 2023 BET assessment weighting as the reference treatment for the new age data (Day et al., 2023).",
   "15a-REG075" = "Test region-level spatial weighting.",
   "15b-SUB075" = "Represent finer sub-basin variation in age-data information.",
   "16-SelectivityUpdate" = "Align selectivity specifications with the revised 33-fishery structure.",
-  "17-MIX015" = "Allow mixing duration to vary among release groups.",
+  "17-MIX015" = "Assign release-group-specific mixing periods using a Kolmogorov-dissimilarity cut-off of K = 0.15 (Scutt Phillips et al., 2026).",
   "18-TagReportingExclusion" = "Avoid applying poorly determined or assumed reporting rates within the pre-mixing windows, as recommended in the MULTIFAN-CL manual; post-mixing reporting-rate treatment is unchanged.",
   "19-EffortCreep" = "Account for gradual changes in fishing efficiency.",
   "20a-DOMDiv200" = "Test strong downweighting of length compositions from the Indonesian, Philippine and Vietnamese domestic fisheries.",
-  "20b-Francis" = "Apply locked fishery-specific divisors derived from the residual-based TA1.8 effective-sample-size diagnostic (Francis, 2011).",
+  "20b-Francis" = "Apply fishery-specific length-composition divisors calculated from standardized mean-length residuals using method TA1.8 of Francis (2011).",
   "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25."
 )
 stepwise_models$report_change <- unname(

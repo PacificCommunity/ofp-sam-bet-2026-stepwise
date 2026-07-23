@@ -1,6 +1,6 @@
-# 04 Fixed Lorenzen M scaling
+# 04 Diagnostic natural-mortality estimate fixed
 
-Step 03 1007 ini baseline with the log-scale Lorenzen natural-mortality coefficient fixed at -2.54930339768360e+00.
+Step 03 1007 INI baseline with Lorenzen natural-mortality scaling fixed to the 2023 diagnostic-model estimate.
 
 ## Snapshot
 
@@ -21,7 +21,7 @@ Step 03 1007 ini baseline with the log-scale Lorenzen natural-mortality coeffici
 | File | Source / note |
 | --- | --- |
 | `.frq` | `steps/03-Ini1007/model/bet.frq` |
-| `.ini` | `steps/03-Ini1007/model/bet.ini`; Fixed log-scale Lorenzen natural-mortality coefficient applied from the 01-Diag2023 mgc=-5 diagnostic final par |
+| `.ini` | `steps/03-Ini1007/model/bet.ini`; Lorenzen natural-mortality scaling fixed to the 2023 diagnostic-model estimate from the 01-Diag2023 mgc=-5 diagnostic final par |
 | `.tag` | `steps/03-Ini1007/model/bet.tag` |
 | `.age_length` | `steps/03-Ini1007/model/bet.age_length` |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
@@ -30,7 +30,7 @@ Step 03 1007 ini baseline with the log-scale Lorenzen natural-mortality coeffici
 
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
-| `.ini` | Sets the log-scale Lorenzen natural-mortality coefficient to `-2.54930339768360` and retains the length exponent `-1`; both are fixed in later fits. | All other `03-Ini1007` ini controls. |
+| `.ini` | Uses the 2023 diagnostic-model estimate for Lorenzen natural-mortality scaling and retains the length exponent `-1`; both are fixed in later fits. | All other `03-Ini1007` ini controls. |
 | `.frq/.tag/.age_length` | No generated edit. | Inherited from `03-Ini1007`. |
 
 ## Source Revisions

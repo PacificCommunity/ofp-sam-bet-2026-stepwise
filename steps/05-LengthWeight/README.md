@@ -1,6 +1,6 @@
 # 05 Length-weight update
 
-Step 04 fixed-M baseline with BET bias-corrected 2026 length-weight parameters.
+Step 04 fixed natural-mortality baseline with BET 2026 bias-corrected length-weight parameters.
 
 ## Snapshot
 
@@ -22,7 +22,7 @@ Step 04 fixed-M baseline with BET bias-corrected 2026 length-weight parameters.
 | File | Source / note |
 | --- | --- |
 | `.frq` | `steps/04-FixM/model/bet.frq` |
-| `.ini` | `steps/04-FixM/model/bet.ini`; set Length-weight parameters from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; Fixed log-scale Lorenzen natural-mortality coefficient applied from the 01-Diag2023 mgc=-5 diagnostic final par |
+| `.ini` | `steps/04-FixM/model/bet.ini`; set Length-weight parameters from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; Lorenzen natural-mortality scaling fixed to the 2023 diagnostic-model estimate from the 01-Diag2023 mgc=-5 diagnostic final par |
 | `.tag` | `steps/04-FixM/model/bet.tag` |
 | `.age_length` | `steps/04-FixM/model/bet.age_length` |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
