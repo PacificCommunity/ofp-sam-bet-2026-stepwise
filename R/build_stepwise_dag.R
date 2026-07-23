@@ -21,9 +21,7 @@ build_stepwise_dag <- function(
     "07-DataTo2024", "08-RegionalCPUE", "09a-BASE075", "09b-REG075",
     "09c-SUB075", "10-MIX015", "11-TAGF2ON", "12-TimeVaryingCV",
     "13-EffortCreep", "14-CPUESigma", "15-SelectivityUpdate",
-    "16a-DOMDiv200", "16b-Francis", "16c-DMG8Nmax25",
-    "17a-F15FormRelaxed", "17b-F22FormRelaxed",
-    "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed"
+    "16a-DOMDiv200", "16b-Francis", "16c-DMG8Nmax25"
   )
   missing <- setdiff(ids, names(labels))
   if (length(missing)) {
@@ -62,20 +60,11 @@ build_stepwise_dag <- function(
     ),
     data.frame(
       id = c("09a-BASE075", "09b-REG075"),
-      x = 5.5, y = c(5.78, 3.92), category = "alternative"
+      x = 5.5, y = c(6.08, 3.62), category = "alternative"
     ),
     data.frame(
       id = c("16a-DOMDiv200", "16b-Francis"),
       x = c(10.7, 13.25), y = 1.05, category = "alternative"
-    ),
-    data.frame(
-      id = c(
-        "17a-F15FormRelaxed", "17b-F22FormRelaxed", "17c-F15F22FormRelaxed",
-        "17d-AllSelectivityFormRelaxed"
-      ),
-      x = c(5.1, 8.55, 12, 15.45),
-      y = -0.55,
-      category = "alternative"
     ),
     stringsAsFactors = FALSE
   )
@@ -85,6 +74,9 @@ build_stepwise_dag <- function(
     seq_len(nrow(nodes)),
     function(i) {
       node_name <- nodes$name[[i]]
+      if (identical(nodes$id[[i]], "16c-DMG8Nmax25")) {
+        node_name <- "Dirichlet-multinomial\nweighting"
+      }
       wrapped <- paste(strwrap(node_name, width = 16L), collapse = "\n")
       paste(nodes$step[[i]], wrapped, sep = "\n")
     },
@@ -126,18 +118,6 @@ build_stepwise_dag <- function(
   add_edge("16a-DOMDiv200", "16b-Francis", "alternative")
   edges <- do.call(rbind, edge_rows)
 
-  sensitivity_bus <- data.frame(
-    x = c(15.55, 15.55, 5.1),
-    y = c(1.93, 0.18, 0.18),
-    group = "sensitivity-bus"
-  )
-  sensitivity_branches <- data.frame(
-    x = c(5.1, 8.55, 12, 15.45),
-    y = 0.18,
-    xend = c(5.1, 8.55, 12, 15.45),
-    yend = -0.02
-  )
-
   palette <- c(
     source = "#53636D",
     carried = "#176B70",
@@ -152,8 +132,8 @@ build_stepwise_dag <- function(
   )
   caption <- paste(
     "BET 2026 model-development pathway. Solid arrows show the selected",
-    "sequence; dashed arrows identify alternative weighting and selectivity-form",
-    "sensitivity models. All sensitivity models branch from Step 16c."
+    "sequence; dashed arrows identify alternative age-composition and",
+    "length-composition weighting models."
   )
 
   plot <- ggplot2::ggplot() +
@@ -166,22 +146,6 @@ build_stepwise_dag <- function(
       linewidth = 0.9,
       lineend = "round",
       arrow = grid::arrow(length = grid::unit(2.1, "mm"), type = "closed")
-    ) +
-    ggplot2::geom_path(
-      data = sensitivity_bus,
-      ggplot2::aes(x = x, y = y, group = group),
-      colour = palette[["alternative"]],
-      linewidth = 0.8,
-      linetype = "22",
-      lineend = "round"
-    ) +
-    ggplot2::geom_segment(
-      data = sensitivity_branches,
-      ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
-      colour = palette[["alternative"]],
-      linewidth = 0.8,
-      linetype = "22",
-      arrow = grid::arrow(length = grid::unit(2.3, "mm"), type = "closed")
     ) +
     ggplot2::geom_rect(
       data = nodes,
@@ -203,11 +167,10 @@ build_stepwise_dag <- function(
       size = 3.75
     ) +
     ggplot2::annotate(
-      "text", x = 0.22, y = c(8.04, 1.55, 0.18),
+      "text", x = 0.22, y = c(8.04, 1.62),
       label = c(
-        "SELECTED DEVELOPMENT PATHWAY",
-        "COMPOSITION-LIKELIHOOD ALTERNATIVES",
-        "SELECTIVITY-FORM SENSITIVITIES"
+        "SELECTED MODEL-DEVELOPMENT PATHWAY",
+        "COMPOSITION-WEIGHTING ALTERNATIVES"
       ),
       hjust = 0,
       colour = "#44515A",
@@ -217,23 +180,17 @@ build_stepwise_dag <- function(
     ggplot2::scale_fill_manual(values = fills, guide = "none") +
     ggplot2::scale_colour_manual(
       values = c(palette, light = "#FFFFFF", dark = "#183036"),
-      breaks = c("source", "carried", "alternative", "final"),
-      labels = c("Source", "Carried pathway", "Alternative", "Selected final")
+      guide = "none"
     ) +
     ggplot2::scale_linetype_manual(
       values = c(carried = "solid", alternative = "22"),
       guide = "none"
     ) +
-    ggplot2::coord_cartesian(xlim = c(0.05, 16.65), ylim = c(-1.18, 8.25), clip = "off") +
+    ggplot2::coord_cartesian(xlim = c(0.05, 16.65), ylim = c(0.35, 8.25), clip = "off") +
     ggplot2::labs(colour = NULL) +
     ggplot2::theme_void(base_family = "sans") +
     ggplot2::theme(
       plot.background = ggplot2::element_rect(fill = "#FFFFFF", colour = NA),
-      legend.position = "bottom",
-      legend.justification = "center",
-      legend.direction = "horizontal",
-      legend.text = ggplot2::element_text(size = 10),
-      legend.key.width = grid::unit(8, "mm"),
       plot.margin = ggplot2::margin(8, 8, 4, 8)
     )
 
@@ -245,7 +202,7 @@ build_stepwise_dag <- function(
     plot = plot,
     device = ragg::agg_png,
     width = 14,
-    height = 8.5,
+    height = 7,
     units = "in",
     dpi = 300,
     background = "#FFFFFF"
