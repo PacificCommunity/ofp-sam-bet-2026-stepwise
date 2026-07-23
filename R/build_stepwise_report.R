@@ -170,7 +170,11 @@ stepwise_dm_configuration <- data.frame(
     "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
     "Pool fisheries with similar gear and data roles while retaining major differences.",
     "Allow composition information to vary among groups and with relative sample size.",
-    "Set just above the Francis ESS 95th-percentile range (22.22-23.81 across 2,399 compositions), limiting composition influence relative to CPUE.",
+    paste0(
+      "Set using composition-level effective sample sizes from the Francis ",
+      "reweighting as an empirical reference; 25 lies just above their ",
+      "95th-percentile range (22.22-23.81 across 2,399 compositions)."
+    ),
     "Apply the DM support rule; the robust-normal 1% tail control is not used."
   ),
   stringsAsFactors = FALSE
@@ -616,7 +620,10 @@ build_stepwise_report <- function(
     "<section class=\"model-card\"><h2>Diagnostic-model Dirichlet-multinomial configuration</h2>",
     "<p>The diagnostic model used a Dirichlet-multinomial likelihood for length compositions. ",
     "The 33 fisheries were pooled into eight groups, with dispersion estimated by group. ",
-    "An effective-sample-size upper bound of 25 was selected from the Francis diagnostics.</p>",
+    paste0(
+      "An effective-sample-size upper bound of 25 was set using composition-level ",
+      "effective sample sizes from the Francis reweighting as an empirical reference.</p>"
+    ),
     "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ",
     stepwise_html_escape(dm_configuration_caption), "</p>",
