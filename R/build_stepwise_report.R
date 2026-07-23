@@ -168,30 +168,33 @@ stepwise_references_bibtex <- paste0(
 
 stepwise_dm_configuration <- data.frame(
   setting = c(
-    "Composition likelihood",
-    "Fishery grouping",
-    "Group-specific dispersion",
-    "Effective sample-size bound",
-    "Selected upper bound",
+    "Likelihood",
+    "Fishery groups",
+    "Group parameters",
+    "ESS upper bound",
     "Length-bin support"
   ),
   implementation = c(
-    "Dirichlet-multinomial likelihood for length compositions, without random effects (flag 141 = 11).",
-    "The 33 fisheries were assigned to eight assessment-specific groups (flag 68; groups listed below).",
-    "For each group, MFCL estimated a baseline log-concentration parameter d (flag 69) and an exponent c relating concentration to relative observed sample size (flag 89, estimated from phase 2): lambda_i = exp(d_g) r_i^(c_g).",
-    "Effective sample size (ESS) is N_eff = Nmax(1 + lambda)/(Nmax + lambda), where Nmax is the asymptotic upper bound as lambda increases.",
-    "Nmax was fixed at 25 (flag 342); the MFCL default is 1,000.",
-    "The DM likelihood used compositions spanning at least five bins between the first and last positive observations (flag 320 = 5). Flag 313 = 0 because its 1% tail threshold applies to the robust-normal likelihood."
+    "Dirichlet-multinomial without random effects (flag 141 = 11).",
+    "Eight groups covering all 33 fisheries (flag 68; Table XX).",
+    "Group-specific baseline concentration (flag 69) and relative-sample-size exponent (flag 89; estimated from phase 2).",
+    "Nmax = 25 (flag 342; MFCL default = 1,000).",
+    "Minimum span of five observed bins (flag 320 = 5); flag 313 = 0."
   ),
   basis = c(
-    "Accounts for extra-multinomial variation and estimates the information content of the composition data within the assessment (Thorson et al., 2017).",
-    "Pools fisheries with similar gear and data roles while retaining separate parameters for distinct composition processes.",
-    "Allows baseline overdispersion and its scaling with relative sample size to vary among groups, without estimating separate parameters for all 33 fisheries.",
-    "Bounds the influence of individual compositions; Nmax is a cap, not a mean or fixed sample size (Davies et al., 2026).",
-    "Across 2,399 positive length-frequency compositions in matched robust-normal fits, the 95th percentile of Francis ESS was 22.22-23.81. A value of 25 retained this empirical upper range while limiting composition influence relative to CPUE.",
-    "Requires adequate length-bin support and leaves the robust-normal tail-compression control inactive for the DM likelihood."
+    "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
+    "Pool fisheries with similar gear and data roles while retaining major differences.",
+    "Allow dispersion and its scaling with relative sample size to vary among groups.",
+    "Match the upper range of Francis ESS estimates (95th percentile 22.22-23.81; n = 2,399) while limiting composition influence relative to CPUE.",
+    "Apply the DM support rule; the robust-normal 1% tail control is not used."
   ),
   stringsAsFactors = FALSE
+)
+
+stepwise_dm_configuration_note <- paste0(
+  "For composition i, lambda_i = exp(d_g) r_i^(c_g), and ",
+  "N_eff = Nmax(1 + lambda)/(Nmax + lambda). Nmax is the asymptotic upper ",
+  "bound on effective sample size, not a fixed sample size (Davies et al., 2026)."
 )
 
 stepwise_dm_groups <- data.frame(
@@ -430,7 +433,7 @@ stepwise_table_latex <- function(table, include_jobs = FALSE) {
 }
 
 stepwise_named_table_html <- function(table, id, headers, widths,
-                                      first_column_class = "") {
+                                      first_column_class = "", note = "") {
   stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
   colgroup <- paste0(
     "<col style=\"width:", widths, "%\">",
@@ -455,15 +458,24 @@ stepwise_named_table_html <- function(table, id, headers, widths,
     }, character(1))
     paste0("<tr>", paste(cells, collapse = ""), "</tr>")
   }, character(1))
+  footer <- if (nzchar(note)) {
+    paste0(
+      "<tfoot><tr class=\"table-note-row\"><td colspan=\"", ncol(table),
+      "\"><strong>Note.</strong> ", stepwise_scientific_html(note),
+      "</td></tr></tfoot>"
+    )
+  } else {
+    ""
+  }
   paste0(
     "<table id=\"", id, "\"><colgroup>", colgroup, "</colgroup>",
     "<thead><tr>", header, "</tr></thead><tbody>",
-    paste(rows, collapse = ""), "</tbody></table>"
+    paste(rows, collapse = ""), "</tbody>", footer, "</table>"
   )
 }
 
 stepwise_named_table_latex <- function(table, headers, widths, caption, label,
-                                       first_column_bold = FALSE) {
+                                       first_column_bold = FALSE, note = "") {
   stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
   columns <- paste0(
     "@{}",
@@ -481,6 +493,14 @@ stepwise_named_table_latex <- function(table, headers, widths, caption, label,
     paste0(paste(values, collapse = " & "), " \\\\")
   }, character(1))
   header <- paste(stepwise_latex_escape(headers), collapse = " & ")
+  note_block <- if (nzchar(note)) {
+    paste0(
+      "\\par\\vspace{-0.45em}\\noindent\\footnotesize\\textit{Note:} ",
+      stepwise_latex_escape(note), "\\par\n"
+    )
+  } else {
+    ""
+  }
   paste0(
     "% Requires \\usepackage{booktabs,longtable,array}\n",
     "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n",
@@ -492,7 +512,7 @@ stepwise_named_table_latex <- function(table, headers, widths, caption, label,
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endfirsthead\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endhead\n",
     paste(rows, collapse = "\n"),
-    "\n\\bottomrule\n\\end{longtable}\n\\endgroup\n"
+    "\n\\bottomrule\n\\end{longtable}\n", note_block, "\\endgroup\n"
   )
 }
 
@@ -563,7 +583,7 @@ build_stepwise_report <- function(
   table_latex <- stepwise_table_latex(table, include_jobs)
   dm_configuration_caption <- paste0(
     "Dirichlet-multinomial configuration used for length-composition weighting ",
-    "in the selected BET 2026 model."
+    "in the final BET 2026 model."
   )
   dm_groups_caption <- paste0(
     "Eight fishery groups used to estimate group-specific Dirichlet-multinomial ",
@@ -573,9 +593,10 @@ build_stepwise_report <- function(
   dm_configuration_html <- stepwise_named_table_html(
     stepwise_dm_configuration,
     id = "dm-configuration-table",
-    headers = c("Component", "Selected specification", "Rationale"),
-    widths = c(19, 39, 42),
-    first_column_class = "row-label"
+    headers = c("Component", "Final specification", "Rationale"),
+    widths = c(18, 37, 45),
+    first_column_class = "row-label",
+    note = stepwise_dm_configuration_note
   )
   dm_groups_html <- stepwise_named_table_html(
     stepwise_dm_groups,
@@ -586,11 +607,12 @@ build_stepwise_report <- function(
   )
   dm_configuration_latex <- stepwise_named_table_latex(
     stepwise_dm_configuration,
-    headers = c("Component", "Selected specification", "Rationale"),
-    widths = c(0.18, 0.38, 0.39),
+    headers = c("Component", "Final specification", "Rationale"),
+    widths = c(0.17, 0.36, 0.42),
     caption = dm_configuration_caption,
     label = "tab:bet-dm-configuration",
-    first_column_bold = TRUE
+    first_column_bold = TRUE,
+    note = stepwise_dm_configuration_note
   )
   dm_groups_latex <- stepwise_named_table_latex(
     stepwise_dm_groups,
@@ -631,13 +653,13 @@ build_stepwise_report <- function(
   result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
 
   method_text <- paste0(
-    "Model development followed a stepwise pathway in which a defined model component or data ",
-    "treatment was modified at each stage, while other inputs and controls were held constant ",
-    "wherever possible (Figure XX; Table XX). Configurations retained after evaluation defined ",
-    "the main pathway, whereas sibling branches represented alternatives that were evaluated ",
-    "but not carried forward. The selected model used a Dirichlet-multinomial (DM) likelihood ",
-    "for length-composition data. The DM specification and eight fishery groups are summarised ",
-    "in Tables XX and XX, respectively."
+    "Development of the BET 2026 assessment model proceeded sequentially. At each step, one ",
+    "model component or data treatment was modified, while all other settings were held ",
+    "constant where practicable (Figure XX; Table XX). Configurations retained after evaluation ",
+    "defined the main development pathway; side branches document alternatives that were tested ",
+    "but not carried forward. The final model used a Dirichlet-multinomial (DM) likelihood for ",
+    "length-composition data. The DM configuration and its eight fishery groupings are ",
+    "summarised in Tables XX and XX, respectively."
   )
   method_latex <- gsub(
     "Figure XX; Table XX", "Figure~XX; Table~XX", method_text, fixed = TRUE
@@ -648,20 +670,17 @@ build_stepwise_report <- function(
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Solid teal arrows ",
     "show configurations carried forward; dashed orange arrows show comparison branches. ",
-    "The dark-teal node marks the selected final model."
+    "The dark-teal node marks the final model."
   )
   table_caption <- paste0(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
     "rationale. Step numbers correspond to the pathway in Figure XX."
   )
   dm_section <- paste0(
-    "<section class=\"model-card\"><h2>Selected Dirichlet-multinomial configuration</h2>",
-    "<p>The 33 fisheries were assigned to eight assessment-specific groups, with a baseline ",
-    "concentration term and a relative-sample-size exponent estimated for each group. This shares information among ",
-    "similar fishery and data-role strata while retaining separate parameters for the ",
-    "major composition processes. The effective sample size (ESS) limit was calibrated ",
-    "from the Francis diagnostic distribution and evaluated as part of the integrated ",
-    "balance between length compositions and CPUE.</p>",
+    "<section class=\"model-card\"><h2>Final-model Dirichlet-multinomial configuration</h2>",
+    "<p>The final model used a Dirichlet-multinomial likelihood for length compositions. ",
+    "The 33 fisheries were pooled into eight groups, with dispersion estimated by group. ",
+    "An effective-sample-size upper bound of 25 was selected from the Francis diagnostics.</p>",
     "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ",
     stepwise_html_escape(dm_configuration_caption), "</p>",
@@ -670,7 +689,7 @@ build_stepwise_report <- function(
     "Copy table + caption for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('dm-configuration-latex',this)\">",
     "Copy table + caption for LaTeX</button></div></div>",
-    "<div class=\"format-block\"><p class=\"caption\" id=\"dm-groups-caption\"><strong>Table ",
+    "<div class=\"format-block dm-groups-block\"><p class=\"caption\" id=\"dm-groups-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ",
     stepwise_html_escape(dm_groups_caption), "</p>",
     "<div class=\"table-shell\">", dm_groups_html, "</div>",
@@ -735,7 +754,8 @@ build_stepwise_report <- function(
     "table{width:100%;border-collapse:collapse;font-size:.89rem;table-layout:fixed}th{position:sticky;top:0;z-index:1;background:var(--ink);color:#fff;text-align:left;",
     "padding:10px 12px;line-height:1.25}td{vertical-align:top;padding:11px 12px;border-bottom:1px solid #dce7ea;",
     "overflow-wrap:anywhere;word-break:normal;hyphens:auto}.step-number{font-weight:800;color:var(--ink);text-align:center;white-space:nowrap}",
-    ".job{font-weight:700;white-space:nowrap}.table-reference{max-width:none;margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}",
+    ".job{font-weight:700;white-space:nowrap}.table-note-row td{padding:10px 12px;background:#f3f7f7;color:#425b67;font-size:.82rem;line-height:1.4}",
+    ".table-reference{max-width:none;margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}",
     ".row-label{font-weight:750;color:var(--ink)}",
     ".table-reference ol{margin:.6rem 0 0;padding-left:1.35rem}.table-reference li{margin:.45rem 0}",
     ".table-reference a{color:var(--ink);text-decoration-color:var(--sea);text-underline-offset:2px}",
@@ -747,7 +767,7 @@ build_stepwise_report <- function(
     "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:700px}}@page{size:A4;margin:14mm}@media print{body{background:#fff}",
     "header{padding:0 0 20px;background:#fff;color:var(--ink)}header p{color:var(--muted)}main{max-width:none;padding:0}.overview,.model-card{border:0;padding:0;margin:0}",
     "button,.actions,.action-status{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
-    "tr{break-inside:avoid}.table-shell{overflow:visible;max-height:none}.model-card{break-before:page}",
+    "tr{break-inside:avoid}.table-shell{overflow:visible;max-height:none}.model-card{break-before:page}.dm-groups-block{break-before:page}",
     "#dm-groups-table{font-size:.78rem}#dm-groups-table th,#dm-groups-table td{padding:6px 8px;line-height:1.25}}",
     "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
     "<p>Assessment pathway and rationale</p></header><main>",

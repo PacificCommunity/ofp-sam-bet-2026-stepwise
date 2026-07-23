@@ -101,7 +101,7 @@ build_stepwise_dag <- function(
     nodes$category == "alternative", "COMPARISON",
     ifelse(
       nodes$category == "selected", "SELECTED",
-      ifelse(nodes$category == "final", "SELECTED FINAL", "")
+      ifelse(nodes$category == "final", "FINAL MODEL", "")
     )
   )
   nodes$branch <- nzchar(nodes$status)
