@@ -75,7 +75,7 @@ build_stepwise_dag <- function(
     function(i) {
       node_name <- nodes$name[[i]]
       if (identical(nodes$id[[i]], "16c-DMG8Nmax25")) {
-        node_name <- "Dirichlet-multinomial\nweighting"
+        node_name <- "Dirichlet-\nmultinomial"
       }
       wrapped <- paste(strwrap(node_name, width = 16L), collapse = "\n")
       paste(nodes$step[[i]], wrapped, sep = "\n")
@@ -93,11 +93,13 @@ build_stepwise_dag <- function(
     distance <- sqrt(dx^2 + dy^2)
     ux <- dx / distance
     uy <- dy / distance
+    boundary_distance <- 1 / max(abs(ux) / 0.92, abs(uy) / 0.48)
+    edge_offset <- boundary_distance + 0.08
     edge_rows[[length(edge_rows) + 1L]] <<- data.frame(
-      x = a$x + 0.92 * ux,
-      y = a$y + 0.48 * uy,
-      xend = b$x - 0.92 * ux,
-      yend = b$y - 0.48 * uy,
+      x = a$x + edge_offset * ux,
+      y = a$y + edge_offset * uy,
+      xend = b$x - edge_offset * ux,
+      yend = b$y - edge_offset * uy,
       kind = kind,
       bend = bend
     )
