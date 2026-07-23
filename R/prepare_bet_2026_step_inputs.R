@@ -793,10 +793,10 @@ cpue_sigma_calibration <- list(
 )
 
 francis_ta18_path <- file.path(root, "config", "francis-ta18-divisors.csv")
-francis_ta18_source_commit <- "b22002ba461f3c752432ddec76baa1049edd6c8a"
+francis_ta18_source_commit <- "a9d63b3111fb036b23fbe2803fcddf818420d09d"
 francis_ta18_source_path <- paste0(
-  "sensitivity/S001-TC1-NOCUT-FRANCIS-CPUEMLE-SUB075-MIX015-TAGF2ON-",
-  "REGW11-RRPTTP26/model/francis_weights.csv"
+  "sensitivity/S009-TC1-NOCUT-FRANCIS-CPUEMLE-SUB075-MIX015-TAGF2ON-",
+  "REGW100-RRPTTP26/model/francis_weights.csv"
 )
 francis_ta18_source_note <- paste0(
   "Exact audited TA1.8 CSV from PacificCommunity/ofp-sam-bet-2026-exploration@",
