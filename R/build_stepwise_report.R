@@ -11,48 +11,7 @@ stepwise_html_escape <- function(x) {
 
 stepwise_scientific_html <- function(x) {
   x <- stepwise_html_escape(x)
-  x <- gsub(
-    "r_i = epsilon + n_i/(epsilon + nbar_g)",
-    "<i>r</i><sub>i</sub> = <i>&epsilon;</i> + <i>n</i><sub>i</sub>/(<i>&epsilon;</i> + <i>n&#772;</i><sub>g</sub>)",
-    x,
-    fixed = TRUE
-  )
-  x <- gsub(
-    "lambda_i = exp(d_g) r_i^(c_g)",
-    "<i>&lambda;</i><sub>i</sub> = exp(<i>d</i><sub>g</sub>) <i>r</i><sub>i</sub><sup><i>c</i><sub>g</sub></sup>",
-    x,
-    fixed = TRUE
-  )
-  x <- gsub(
-    "N_eff = Nmax(1 + lambda)/(Nmax + lambda)",
-    "<i>N</i><sub>eff</sub> = <i>N</i><sub>max</sub>(1 + <i>&lambda;</i>)/(<i>N</i><sub>max</sub> + <i>&lambda;</i>)",
-    x,
-    fixed = TRUE
-  )
-  x <- gsub(
-    "N_eff_i = Nmax(1 + lambda_i)/(Nmax + lambda_i)",
-    "<i>N</i><sub>eff,i</sub> = <i>N</i><sub>max</sub>(1 + <i>&lambda;</i><sub>i</sub>)/(<i>N</i><sub>max</sub> + <i>&lambda;</i><sub>i</sub>)",
-    x,
-    fixed = TRUE
-  )
   x <- gsub("Nmax", "<i>N</i><sub>max</sub>", x, fixed = TRUE)
-  x <- gsub("as lambda increases", "as <i>&lambda;</i> increases", x, fixed = TRUE)
-  x <- gsub("parameter d (flag", "parameter <i>d</i> (flag", x, fixed = TRUE)
-  x <- gsub("exponent c relating", "exponent <i>c</i> relating", x, fixed = TRUE)
-  x <- gsub(
-    "For composition i", "For composition <i>i</i>", x, fixed = TRUE
-  )
-  x <- gsub(
-    "for composition i as", "for composition <i>i</i> as", x, fixed = TRUE
-  )
-  x <- gsub(
-    "fishery group g", "fishery group <i>g</i>", x, fixed = TRUE
-  )
-  x <- gsub("n_i is", "<i>n</i><sub>i</sub> is", x, fixed = TRUE)
-  x <- gsub("nbar_g is", "<i>n&#772;</i><sub>g</sub> is", x, fixed = TRUE)
-  x <- gsub("epsilon = 0.001", "<i>&epsilon;</i> = 0.001", x, fixed = TRUE)
-  x <- gsub("d_g is", "<i>d</i><sub>g</sub> is", x, fixed = TRUE)
-  x <- gsub("c_g is", "<i>c</i><sub>g</sub> is", x, fixed = TRUE)
   x
 }
 
@@ -203,29 +162,18 @@ stepwise_dm_configuration <- data.frame(
   implementation = c(
     "Dirichlet-multinomial without random effects (flag 141 = 11).",
     "Eight groups covering all 33 fisheries (flag 68; Table XX).",
-    "Group-specific baseline log-concentration (flag 69) and relative-sample-size exponent (flag 89; estimated from phase 2).",
+    "Group-specific log-concentration and relative-sample-size exponent, estimated within the model (flags 69 and 89; from phase 2).",
     "Nmax = 25 (flag 342; MFCL default = 1,000).",
     "Minimum span of five observed bins (flag 320 = 5); flag 313 = 0."
   ),
   basis = c(
     "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
     "Pool fisheries with similar gear and data roles while retaining major differences.",
-    "Allow dispersion and its scaling with relative sample size to vary among groups.",
+    "Allow composition information to vary among groups and with relative sample size.",
     "Set just above the Francis ESS 95th-percentile range (22.22-23.81 across 2,399 compositions), limiting composition influence relative to CPUE.",
     "Apply the DM support rule; the robust-normal 1% tail control is not used."
   ),
   stringsAsFactors = FALSE
-)
-
-stepwise_dm_configuration_note <- paste0(
-  "For composition i in fishery group g, the relative sample-size covariate is ",
-  "r_i = epsilon + n_i/(epsilon + nbar_g), and the Dirichlet-multinomial ",
-  "concentration is lambda_i = exp(d_g) r_i^(c_g). Here n_i is the observed ",
-  "sample size, nbar_g is the group mean, epsilon = 0.001 is a stabilizing ",
-  "constant, d_g is the group-specific baseline log-concentration, and c_g is ",
-  "the group-specific sample-size exponent. MFCL calculates the effective sample ",
-  "size for composition i as N_eff_i = Nmax(1 + lambda_i)/(Nmax + lambda_i), ",
-  "where Nmax is the asymptotic upper bound (Davies et al., 2026)."
 )
 
 stepwise_dm_groups <- data.frame(
@@ -464,7 +412,7 @@ stepwise_table_latex <- function(table, include_jobs = FALSE) {
 }
 
 stepwise_named_table_html <- function(table, id, headers, widths,
-                                      first_column_class = "", note = "") {
+                                      first_column_class = "") {
   stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
   colgroup <- paste0(
     "<col style=\"width:", widths, "%\">",
@@ -489,24 +437,15 @@ stepwise_named_table_html <- function(table, id, headers, widths,
     }, character(1))
     paste0("<tr>", paste(cells, collapse = ""), "</tr>")
   }, character(1))
-  footer <- if (nzchar(note)) {
-    paste0(
-      "<tfoot><tr class=\"table-note-row\"><td colspan=\"", ncol(table),
-      "\"><strong>Note.</strong> ", stepwise_scientific_html(note),
-      "</td></tr></tfoot>"
-    )
-  } else {
-    ""
-  }
   paste0(
     "<table id=\"", id, "\"><colgroup>", colgroup, "</colgroup>",
     "<thead><tr>", header, "</tr></thead><tbody>",
-    paste(rows, collapse = ""), "</tbody>", footer, "</table>"
+    paste(rows, collapse = ""), "</tbody></table>"
   )
 }
 
 stepwise_named_table_latex <- function(table, headers, widths, caption, label,
-                                       first_column_bold = FALSE, note = "") {
+                                       first_column_bold = FALSE) {
   stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
   columns <- paste0(
     "@{}",
@@ -524,14 +463,6 @@ stepwise_named_table_latex <- function(table, headers, widths, caption, label,
     paste0(paste(values, collapse = " & "), " \\\\")
   }, character(1))
   header <- paste(stepwise_latex_escape(headers), collapse = " & ")
-  note_block <- if (nzchar(note)) {
-    paste0(
-      "\\par\\vspace{-0.45em}\\noindent\\footnotesize\\textit{Note:} ",
-      stepwise_latex_escape(note), "\\par\n"
-    )
-  } else {
-    ""
-  }
   paste0(
     "% Requires \\usepackage{booktabs,longtable,array}\n",
     "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n",
@@ -543,7 +474,7 @@ stepwise_named_table_latex <- function(table, headers, widths, caption, label,
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endfirsthead\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endhead\n",
     paste(rows, collapse = "\n"),
-    "\n\\bottomrule\n\\end{longtable}\n", note_block, "\\endgroup\n"
+    "\n\\bottomrule\n\\end{longtable}\n\\endgroup\n"
   )
 }
 
@@ -626,8 +557,7 @@ build_stepwise_report <- function(
     id = "dm-configuration-table",
     headers = c("Component", "Diagnostic-model setting", "Rationale"),
     widths = c(18, 37, 45),
-    first_column_class = "row-label",
-    note = stepwise_dm_configuration_note
+    first_column_class = "row-label"
   )
   dm_groups_html <- stepwise_named_table_html(
     stepwise_dm_groups,
@@ -642,8 +572,7 @@ build_stepwise_report <- function(
     widths = c(0.17, 0.36, 0.42),
     caption = dm_configuration_caption,
     label = "tab:bet-dm-configuration",
-    first_column_bold = TRUE,
-    note = stepwise_dm_configuration_note
+    first_column_bold = TRUE
   )
   dm_groups_latex <- stepwise_named_table_latex(
     stepwise_dm_groups,
@@ -654,73 +583,7 @@ build_stepwise_report <- function(
     first_column_bold = TRUE
   )
   dm_configuration_latex <- gsub(
-    "N\\_eff = Nmax(1 + lambda)/(Nmax + lambda)",
-    "$N_{\\mathrm{eff}} = N_{\\max}(1 + \\lambda)/(N_{\\max} + \\lambda)$",
-    dm_configuration_latex,
-    fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "lambda\\_i = exp(d\\_g) r\\_i\\textasciicircum{}(c\\_g)",
-    "$\\lambda_i = \\exp(d_g) r_i^{c_g}$",
-    dm_configuration_latex,
-    fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "r\\_i = epsilon + n\\_i/(epsilon + nbar\\_g)",
-    "$r_i = \\varepsilon + n_i/(\\varepsilon + \\bar{n}_g)$",
-    dm_configuration_latex,
-    fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "N\\_eff\\_i = Nmax(1 + lambda\\_i)/(Nmax + lambda\\_i)",
-    "$N_{\\mathrm{eff},i} = N_{\\max}(1 + \\lambda_i)/(N_{\\max} + \\lambda_i)$",
-    dm_configuration_latex,
-    fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
     "Nmax", "$N_{\\max}$", dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "as lambda increases", "as $\\lambda$ increases",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "parameter d (flag", "parameter $d$ (flag",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "exponent c relating", "exponent $c$ relating",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "For composition i", "For composition $i$",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "for composition i as", "for composition $i$ as",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "fishery group g", "fishery group $g$",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "n\\_i is", "$n_i$ is",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "nbar\\_g is", "$\\bar{n}_g$ is",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "epsilon = 0.001", "$\\varepsilon = 0.001$",
-    dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "d\\_g is", "$d_g$ is", dm_configuration_latex, fixed = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "c\\_g is", "$c_g$ is", dm_configuration_latex, fixed = TRUE
   )
   discovered <- stepwise_discover_results(job_map, input_dir)
   result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
@@ -827,7 +690,7 @@ build_stepwise_report <- function(
     "table{width:100%;border-collapse:collapse;font-size:.89rem;table-layout:fixed}th{position:sticky;top:0;z-index:1;background:var(--ink);color:#fff;text-align:left;",
     "padding:10px 12px;line-height:1.25}td{vertical-align:top;padding:11px 12px;border-bottom:1px solid #dce7ea;",
     "overflow-wrap:anywhere;word-break:normal;hyphens:auto}.step-number{font-weight:800;color:var(--ink);text-align:center;white-space:nowrap}",
-    ".job{font-weight:700;white-space:nowrap}.table-note-row td{padding:10px 12px;background:#f3f7f7;color:#425b67;font-size:.82rem;line-height:1.4}",
+    ".job{font-weight:700;white-space:nowrap}",
     ".table-reference{max-width:none;margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}",
     ".row-label{font-weight:750;color:var(--ink)}",
     ".table-reference ol{margin:.6rem 0 0;padding-left:1.35rem}.table-reference li{margin:.45rem 0}",
