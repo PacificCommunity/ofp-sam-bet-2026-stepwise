@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/ofp-sam-bet-2026-stepwise
-name: bet-2026-stepwise-2307-corrected-v2
-description: Fit the complete corrected BET 2026 stepwise campaign and four selectivity-form sensitivities, with one Hessian follow-up per model.
+#   /api/job/bet-2026-stepwise-pathway-v2
+name: bet-2026-stepwise-pathway-v2
+description: Fit the reordered 23-model BET 2026 pathway with separate time-varying CPUE uncertainty and CPUE observation-error calibration steps, 1% LF tail compression on the normal-likelihood pathway, the Job 14363 fleet-specific selectivity choice with form penalties off, an isolated reporting-rate exclusion step, and a final DM model with flag 313 reset to 0 and DM support controlled by flag 320.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -42,12 +42,12 @@ env:
   # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
   STEP_SELECT: 01-Diag2023
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "BET 2026 stepwise | 01 Diagnostic rerun"
+  JOB_TITLE: "BET 2026 stepwise | 01 2023 diagnostic rerun"
   JOB_DESCRIPTION: "Run one independently frozen BET 2026 stepwise model from the corrected public campaign."
-  MODEL_LABEL: Diagnostic rerun
+  MODEL_LABEL: 2023 diagnostic rerun
   JOB_KEY: 01-diag2023
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-stepwise-2307-corrected
+  FLOW_GROUP: bet-2026-stepwise-pathway
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"

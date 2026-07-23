@@ -542,7 +542,7 @@ apply_index_selectivity_separation <- function(lines, index_fisheries = 29:33) {
   append_phase_controls(lines, 5L, block)
 }
 
-apply_step15_selectivity_bundle <- function(lines) {
+apply_selectivity_update_bundle <- function(lines) {
   phase1_groups <- c(seq_len(28L), rep(29L, 5L))
   old_group_comment <- grep(
     "^# The old 29 groups become 25 groups here: 24 extraction groups [+] 1 index group[.]$",
@@ -629,6 +629,31 @@ apply_step15_selectivity_bundle <- function(lines) {
   lines
 }
 
+apply_one_percent_lf_tail_compression <- function(lines) {
+  lines <- set_or_add_control_flag(
+    lines, "1", 313L, 1L, 1L,
+    "aggregate length-frequency tails below 1%; introduced after all compositions are converted to length"
+  )
+  lines
+}
+
+apply_all_selectivity_form_relaxation <- function(lines) {
+  active_form_fisheries <- c(
+    12L, 13L, 15L, 16L, 17L, 18L, 19L,
+    21L, 22L, 23L, 24L, 25L, 26L, 27L
+  )
+  for (fishery in active_form_fisheries) {
+    lines <- set_or_add_control_flag(
+      lines, paste0("-", fishery), 16L, 0L, 1L,
+      paste0(
+        "F", fishery,
+        " selected fleet-specific configuration: selectivity-form penalty off"
+      )
+    )
+  }
+  lines
+}
+
 normalise_exact_doitall_control <- function(line) {
   body <- sub("[[:space:]]+#.*$", "", line)
   paste(read_words(body), collapse = " ")
@@ -708,7 +733,7 @@ remove_exact_doitall_controls <- function(lines, expected_controls) {
   lines
 }
 
-step15_legacy_selectivity_controls <- c(
+legacy_selectivity_controls_to_remove <- c(
   "-5 16 1",
   "-14 75 5",
   "-20 16 2",
@@ -732,12 +757,12 @@ apply_fixed_common_cpue_sigma <- function(lines, flag92,
                                           index_fisheries = 29:33) {
   flag92 <- as.integer(flag92)
   if (length(flag92) != length(index_fisheries) || any(flag92 <= 0L)) {
-    stop("Fixed CPUE sigma controls must provide one positive flag-92 value per index", call. = FALSE)
+    stop("Fixed CPUE observation-error controls must provide one positive flag-92 value per index", call. = FALSE)
   }
   if (length(cpue_mle_sigma) &&
       (length(cpue_mle_sigma) != length(index_fisheries) ||
        any(!is.finite(cpue_mle_sigma)) || any(cpue_mle_sigma <= 0))) {
-    stop("CPUE MLE sigma values must match the five index fisheries", call. = FALSE)
+    stop("CPUE maximum-likelihood observation-error values must match the five index fisheries", call. = FALSE)
   }
   for (i in seq_along(index_fisheries)) {
     fishery <- index_fisheries[[i]]
@@ -745,7 +770,7 @@ apply_fixed_common_cpue_sigma <- function(lines, flag92,
       lines, paste0("-", fishery), 92L, flag92[[i]], 1L,
       paste0(
         if (length(cpue_mle_sigma)) {
-          paste0("Preliminary CPUE R", i, " MLE sigma=", sprintf("%.3f", cpue_mle_sigma[[i]]), "; ")
+          paste0("Preliminary CPUE R", i, " maximum-likelihood observation-error estimate=", sprintf("%.3f", cpue_mle_sigma[[i]]), "; ")
         } else {
           paste0("CPUE R", i, "; ")
         },
@@ -798,6 +823,10 @@ apply_dm_likelihood <- function(lines, grouping, nmax) {
     "enable tail-compressed observed and predicted length-frequency arrays"
   )
   lines <- set_or_add_control_flag(
+    lines, "1", 313L, 0L, 1L,
+    "not read by the DM likelihood; reset to avoid percentage-tail preprocessing, while flag 320 controls DM support"
+  )
+  lines <- set_or_add_control_flag(
     lines, "1", 320L, 5L, 1L,
     "use tail-compressed DM when the first-to-last-positive observed span contains at least five bins"
   )
@@ -838,7 +867,7 @@ apply_regional_index_selectivity_map <- function(path) {
   }
   block <- c(
     "",
-    "# Step 15 uses one documented selectivity group per final fishery.",
+    "# Step 16 uses one documented selectivity group per final fishery.",
     "fishery_map$selectivity_group <- seq_len(nrow(fishery_map))",
     "fishery_map$selectivity_name <- fishery_map$fishery_name"
   )
@@ -847,7 +876,7 @@ apply_regional_index_selectivity_map <- function(path) {
   invisible(TRUE)
 }
 
-# Supersedes the legacy broad sensitivity writer above. The 22-row public
+# Supersedes the legacy broad sensitivity writer above. The 23-row public
 # sequence deliberately excludes OPR and length-bin selectivity controls.
 write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_cpue = FALSE,
@@ -856,7 +885,9 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_scaling_start_period = reg_scaling_active_start_period,
                           regional_scaling_end_period = reg_scaling_active_end_period,
                           index_selectivity = FALSE,
-                          step15_selectivity_bundle = FALSE,
+                          selectivity_update_bundle = FALSE,
+                          all_selectivity_forms_relaxed = FALSE,
+                          tail_compression_1pct = FALSE,
                           time_varying_cv = FALSE,
                           effort_creep = FALSE,
                           dom_divisor200 = FALSE,
@@ -866,10 +897,19 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           dm_grouping = "",
                           dm_nmax = NA_integer_) {
   lines <- readLines(from, warn = FALSE)
+  lines <- sub(
+    "extraction labels need the 03 fishery map",
+    "extraction labels use the five-region fishery map",
+    lines,
+    fixed = TRUE
+  )
   if (!any(grepl("^set -eu$", lines))) lines <- append(lines, "set -eu", after = 1L)
   lines <- normalize_lorenzen_mortality_control(lines, fixm = TRUE)
   lines <- apply_phase10_11_convergence_switch(lines)
   if (isTRUE(mix_from_ini)) lines <- remove_tag_mixing_override(lines)
+  if (isTRUE(tail_compression_1pct)) {
+    lines <- apply_one_percent_lf_tail_compression(lines)
+  }
   if (isTRUE(regional_cpue)) lines <- apply_regional_cpue_likelihood(lines)
   if (!is.na(regional_scaling_weight)) {
     lines <- apply_regional_scaling_phase5(
@@ -881,11 +921,19 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       end_period = regional_scaling_end_period
     )
   }
-  if (isTRUE(step15_selectivity_bundle)) {
-    lines <- apply_step15_selectivity_bundle(lines)
+  if (isTRUE(selectivity_update_bundle)) {
+    lines <- apply_selectivity_update_bundle(lines)
     lines <- remove_exact_doitall_controls(
       lines,
-      step15_legacy_selectivity_controls
+      legacy_selectivity_controls_to_remove
+    )
+    if (isTRUE(all_selectivity_forms_relaxed)) {
+      lines <- apply_all_selectivity_form_relaxation(lines)
+    }
+  } else if (isTRUE(all_selectivity_forms_relaxed)) {
+    stop(
+      "All selectivity-form relaxation requires the fleet-specific selectivity bundle",
+      call. = FALSE
     )
   }
   if (isTRUE(index_selectivity)) lines <- apply_index_selectivity_separation(lines)

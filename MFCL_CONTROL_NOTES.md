@@ -13,7 +13,7 @@ the authority if a future MFCL revision changes a control.
 
 | Control | Value | Operational meaning |
 | --- | ---: | --- |
-| `age_pars(5,1:2)` | `-2.54930339768360, -1` | Fixed Lorenzen natural-mortality intercept and length slope carried from Step 03 onward. |
+| `age_pars(5,1:2)` | `-2.54930339768360, -1` | Fixed Lorenzen natural-mortality intercept and length slope carried from Step 04 onward. |
 | `parest 121` | `0` | Estimate no natural-mortality `age_pars(5)` coefficients in that staged run; Lorenzen mortality remains active using the incoming parameter values. |
 
 Flag 121 is the number of estimated natural-mortality `age_pars(5)`
@@ -31,10 +31,12 @@ or off.
 | Fish flag 66 | `1` | Use normalized time-varying relative-variance multipliers supplied in the frequency data. |
 | Parest 77-81 | assessment settings | Configure the assessment-specific regional-scaling penalty comparing CPUE-derived regional shares with model relative vulnerable abundance. This is separate from the ordinary CPUE likelihood. |
 
-The fixed CPUE error scales were selected from stable preliminary
-fishery-specific MLE calibrations and held constant across later stepwise
-comparisons. The archived unrounded estimates were `0.354`, `0.237`, `0.212`,
-`0.239`, and `0.225`; MFCL executes their flag-92 representations shown above.
+Step 12 introduces the time-varying relative-variance multipliers. Step 13
+separately fixes the CPUE observation-error scales selected from stable
+preliminary fishery-specific maximum-likelihood calibrations and carries them
+across later comparisons. The archived unrounded estimates were `0.354`,
+`0.237`, `0.212`, `0.239`, and `0.225`; MFCL executes their flag-92
+representations shown above.
 
 ## Tag reporting rates
 
@@ -50,6 +52,7 @@ comparisons. The archived unrounded estimates were `0.354`, `0.237`, `0.212`,
 | ---: | --- |
 | 3 | Terminal spline age and the age from which the older-age dome penalty is applied. |
 | 16 = `2` | Apply the older-age dome penalty from the flag-3 age onward. With cubic-spline flag 57 = 3, the penalty weight is 100. |
+| 16 = `0` | Switch off the dome/old-age-tail form penalty. Step 15b has 15 active flag-16 controls; Step 16 reconfigures the applicable fleet set for the revised structure and uses `0` for all 14 resulting fisheries. |
 | 24 | Selectivity coefficient-sharing group. Fisheries in the same group must have compatible selectivity controls. |
 | 26 = `2` | Evaluate selectivity against scaled mean length-at-age. |
 | 57 = `3` | Cubic-spline selectivity. |
@@ -68,8 +71,19 @@ staged run 5; the carried parameter file preserves those controls thereafter.
 | Fish flag 49, Francis step | fishery-specific | Apply external Francis divisors while retaining the normal length-frequency likelihood. This is weighting, not a Francis likelihood family. |
 | Parest 141 | `11` | Dirichlet-multinomial length-frequency likelihood without random effects. |
 | Parest 311 | `1` | Enable tail-compressed observed and predicted length-frequency arrays. |
+| Parest 313 | `1` from Step 09 through Step 20b; `0` in Step 20c | Aggregate length-frequency tails below 1% for the normal-likelihood pathway and comparisons. Reset it to zero in the selected DM model because this percentage threshold is inactive there. |
+| Parest 303 | `0` | Keep weight-frequency percentage tail aggregation off after the assessment converts all compositions to length. |
 | Parest 320 | `5` | Use the tail-compressed DM path when the first-to-last-positive observed span contains at least five bins. |
 | Parest 342 | `25` | Upper asymptote of the transformed DM effective sample size, `Nmax = 25`. |
+
+For Step 20c, `parest 141=11` selects `len_dm_nore()`, and `parest 320=5`
+constructs its support from the first to last positive observed length bin.
+That function reads the original length frequencies, not the percentage-tail
+array constructed with flag 313. Step 20c therefore explicitly resets
+`313=0`, with an inline note that the DM likelihood does not read this
+percentage threshold. Resetting it also avoids any unrelated percentage-tail
+preprocessing and avoids implying that 1% aggregation defines the selected
+model; `320=5` is the active DM support control.
 
 `Nmax` is not a hard cap applied directly to Francis effective sample sizes.
 MFCL estimates the DM parameter internally and maps it to an effective sample

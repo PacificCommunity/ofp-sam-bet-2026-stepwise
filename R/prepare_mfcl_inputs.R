@@ -1832,7 +1832,7 @@ derive_cpue_sigma_calibration <- function(mle_estimates = NULL,
       stop("CPUE MLE source labels must match the estimate rows", call. = FALSE)
     }
     median_sigma <- apply(estimates, 2L, stats::median)
-    basis <- "median of actual preliminary MLE sigma estimates"
+    basis <- "median of actual preliminary maximum-likelihood observation-error estimates"
   } else {
     median_sigma <- as.numeric(locked_vector)
     if (length(median_sigma) != 5L || any(!is.finite(median_sigma)) ||

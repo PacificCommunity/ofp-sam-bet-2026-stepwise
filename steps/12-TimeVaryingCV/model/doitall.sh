@@ -113,7 +113,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 49 20  # divide LF sample sizes by 20
   -999 50 20  # divide WF sample sizes by 20
 # Additional LF/WF sample-size reductions retained from the inherited setup.
-# Index fisheries 29-33 are included; extraction labels need the 03 fishery map.
+# Index fisheries 29-33 are included; extraction labels use the five-region fishery map.
    -1 49 40   -1 50 40
    -2 49 40   -2 50 40
    -4 49 40   -4 50 40
@@ -246,7 +246,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # Filter out comps with input samples less than 50
   1 311 1   # set tail compression for LF data
   1 301 1   # set tail compression for WF data
-  1 313 0   # proportions in compressed tails for LF data
+  1 313 1  # aggregate length-frequency tails below 1%; introduced after all compositions are converted to length
   1 303 0   # proportions in compressed tails for WF data
   1 312 50  # set minimum obs sample size for LF data
   1 302 50  # set minimum obs sample size for WF data

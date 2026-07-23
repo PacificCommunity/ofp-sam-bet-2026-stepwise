@@ -87,6 +87,11 @@ locked_provenance_for_source <- function(path, provenance = read_public_run_prov
   matched <- vapply(repository_path, function(candidate) {
     nzchar(candidate) && (identical(norm, candidate) || endsWith(norm, paste0("/", candidate)))
   }, logical(1))
+  if (sum(matched) != 1L && file.exists(path) && "source_sha256" %in% names(provenance)) {
+    source_sha <- stepwise_sha256_file(path)
+    matched <- nzchar(as.character(provenance$source_sha256)) &
+      as.character(provenance$source_sha256) == source_sha
+  }
   if (sum(matched) != 1L) return(NULL)
   provenance[which(matched), , drop = FALSE]
 }

@@ -1,4 +1,4 @@
-# Build a compact, publication-ready BET 2026 model-development diagram.
+# Build a publication-ready BET 2026 model-development pathway.
 
 build_stepwise_dag <- function(
     config_path = "job-config.R",
@@ -13,79 +13,139 @@ build_stepwise_dag <- function(
   config <- new.env(parent = baseenv())
   sys.source(normalizePath(config_path, mustWork = TRUE), envir = config)
   models <- get("stepwise_models", envir = config, inherits = FALSE)
-  labels <- setNames(as.character(models$model_label), as.character(models$step_id))
+  configured_ids <- as.character(models$step_id)
 
-  ids <- c(
-    "01-Diag2023", "02a-NewExe1003", "02b-Ini1007", "02c-LengthWeight",
-    "03-FixM", "04-NewStructure", "05-ConvertToLength", "06-AddLengthData",
-    "07-DataTo2024", "08-RegionalCPUE", "09a-BASE075", "09b-REG075",
-    "09c-SUB075", "10-MIX015", "11-TAGF2ON", "12-TimeVaryingCV",
-    "13-EffortCreep", "14-CPUESigma", "15-SelectivityUpdate",
-    "16a-DOMDiv200", "16b-Francis", "16c-DMG8Nmax25"
+  selected_path <- c(
+    "01-Diag2023", "02-NewExe1003", "03-Ini1007", "04-FixM",
+    "05-LengthWeight", "06-NewStructure", "07-ConvertToLength",
+    "08-AddLengthData", "09-TailCompression1Pct", "10-DataTo2024",
+    "11-RegionalCPUE", "12-TimeVaryingCV", "13-CPUEErrorCalibration",
+    "14-NewAgeData", "15b-SUB075", "16-SelectivityUpdate",
+    "17-MIX015", "18-TagReportingExclusion", "19-EffortCreep",
+    "20c-DMG8Nmax25"
   )
-  missing <- setdiff(ids, names(labels))
+  comparison_ids <- c("15a-REG075", "20a-DOMDiv200", "20b-Francis")
+  missing <- setdiff(c(selected_path, comparison_ids), configured_ids)
   if (length(missing)) {
-    stop("The DAG layout is missing configured labels for: ", paste(missing, collapse = ", "))
+    stop("The DAG layout is missing configured rows for: ", paste(missing, collapse = ", "))
   }
 
-  selected_rows <- list(
-    c(
-      "source", "01-Diag2023", "02a-NewExe1003", "02b-Ini1007",
-      "02c-LengthWeight", "03-FixM", "04-NewStructure"
-    ),
-    c(
-      "05-ConvertToLength", "06-AddLengthData", "07-DataTo2024",
-      "08-RegionalCPUE", "09c-SUB075", "10-MIX015"
-    ),
-    c(
-      "11-TAGF2ON", "12-TimeVaryingCV", "13-EffortCreep",
-      "14-CPUESigma", "15-SelectivityUpdate", "16c-DMG8Nmax25"
-    )
-  )
-  row1_x <- seq(1.15, 15.55, length.out = length(selected_rows[[1L]]))
-  row2_x <- rev(seq(1.15, 15.55, length.out = length(selected_rows[[2L]])))
-  row3_x <- seq(1.15, 15.55, length.out = length(selected_rows[[3L]]))
   nodes <- rbind(
     data.frame(
-      id = selected_rows[[1L]], x = row1_x, y = 7.25,
-      category = c("source", rep("carried", 6L))
+      id = selected_path[1:5],
+      x = 1.45, y = c(5.65, 4.55, 3.45, 2.35, 1.25),
+      half_w = 1.00, half_h = 0.27, category = "carried"
     ),
     data.frame(
-      id = selected_rows[[2L]], x = row2_x, y = 4.85,
-      category = "carried"
+      id = selected_path[6:10],
+      x = 4.00, y = c(1.25, 2.35, 3.45, 4.55, 5.65),
+      half_w = 1.00, half_h = 0.27, category = "carried"
     ),
     data.frame(
-      id = selected_rows[[3L]], x = row3_x, y = 2.45,
-      category = c(rep("carried", 5L), "final")
+      id = selected_path[11:14],
+      x = 6.90, y = c(5.65, 4.75, 3.85, 2.95),
+      half_w = 1.25, half_h = 0.27, category = "carried"
     ),
     data.frame(
-      id = c("09a-BASE075", "09b-REG075"),
-      x = 5.5, y = c(6.08, 3.62), category = "alternative"
+      id = c("15b-SUB075", "15a-REG075"),
+      x = c(6.15, 7.65), y = 1.85,
+      half_w = 0.70, half_h = 0.40,
+      category = c("selected", "alternative")
     ),
     data.frame(
-      id = c("16a-DOMDiv200", "16b-Francis"),
-      x = c(10.7, 13.25), y = 1.05, category = "alternative"
+      id = "16-SelectivityUpdate",
+      x = 6.90, y = 0.80,
+      half_w = 1.25, half_h = 0.27, category = "carried"
+    ),
+    data.frame(
+      id = selected_path[17:19],
+      x = 10.02, y = c(0.80, 2.00, 3.20),
+      half_w = 1.18, half_h = 0.27, category = "carried"
+    ),
+    data.frame(
+      id = c("20c-DMG8Nmax25", "20a-DOMDiv200", "20b-Francis"),
+      x = c(10.02, 9.22, 10.82), y = c(5.48, 4.35, 4.35),
+      half_w = c(0.92, 0.65, 0.65), half_h = 0.40,
+      category = c("final", "alternative", "alternative")
     ),
     stringsAsFactors = FALSE
   )
-  nodes$step <- ifelse(nodes$id == "source", "Source", sub("-.*$", "", nodes$id))
-  nodes$name <- ifelse(nodes$id == "source", "2023 diagnostic model", labels[nodes$id])
-  nodes$display <- vapply(
-    seq_len(nrow(nodes)),
-    function(i) {
-      node_name <- nodes$name[[i]]
-      if (identical(nodes$id[[i]], "16c-DMG8Nmax25")) {
-        node_name <- "Dirichlet-\nmultinomial"
-      }
-      wrapped <- paste(strwrap(node_name, width = 16L), collapse = "\n")
-      paste(nodes$step[[i]], wrapped, sep = "\n")
-    },
-    character(1)
+  nodes$step <- sub("-.*$", "", nodes$id)
+  short_names <- c(
+    "01-Diag2023" = "2023 diagnostic\nrerun",
+    "02-NewExe1003" = "Updated\nexecutable",
+    "03-Ini1007" = "Updated model-\ninput format",
+    "04-FixM" = "Fixed natural\nmortality",
+    "05-LengthWeight" = "Length-weight\nupdate",
+    "06-NewStructure" = "Five-region\nstructure",
+    "07-ConvertToLength" = "Weight-to-length\nconversion",
+    "08-AddLengthData" = "Add length\ndata",
+    "09-TailCompression1Pct" = "1% LF tail\ncompression",
+    "10-DataTo2024" = "Data through\n2024",
+    "11-RegionalCPUE" = "Regional CPUE",
+    "12-TimeVaryingCV" = "Time-varying CPUE\nuncertainty",
+    "13-CPUEErrorCalibration" = "CPUE observation-error\ncalibration",
+    "14-NewAgeData" = "New age data",
+    "15a-REG075" = "Regional age\nweighting",
+    "15b-SUB075" = "Sub-basin age\nweighting",
+    "16-SelectivityUpdate" = "Fleet-specific\nselectivity",
+    "17-MIX015" = "Release-group tag\nmixing periods",
+    "18-TagReportingExclusion" = "Reporting-rate\nexclusion",
+    "19-EffortCreep" = "Effort creep",
+    "20a-DOMDiv200" = "DOM\ndownweighting",
+    "20b-Francis" = "Francis\nreweighting",
+    "20c-DMG8Nmax25" = "DM\nweighting"
   )
+  nodes$name <- unname(short_names[nodes$id])
+  nodes$status <- ifelse(
+    nodes$category == "alternative", "COMPARISON",
+    ifelse(
+      nodes$category == "selected", "SELECTED",
+      ifelse(nodes$category == "final", "SELECTED FINAL", "")
+    )
+  )
+  nodes$branch <- nzchar(nodes$status)
+  nodes$step_band <- ifelse(
+    nodes$id %in% c("20a-DOMDiv200", "20b-Francis"), 0.34,
+    ifelse(nodes$branch, 0.36, 0.42)
+  )
+  nodes$step_category <- paste0("step_", nodes$category)
+  content_left <- nodes$x - nodes$half_w + nodes$step_band
+  content_width <- 2 * nodes$half_w - nodes$step_band
+  nodes$text_x <- ifelse(
+    nodes$branch,
+    content_left + content_width / 2,
+    content_left + 0.10
+  )
+  nodes$text_y <- nodes$y + ifelse(nodes$branch, 0.09, 0)
+  nodes$text_hjust <- ifelse(nodes$branch, 0.5, 0)
+  nodes$text_size <- ifelse(
+    nodes$id %in% c("20a-DOMDiv200", "20b-Francis"), 2.25,
+    ifelse(nodes$branch, 2.55, 3.00)
+  )
+  nodes$number_size <- ifelse(
+    nodes$id %in% c("20a-DOMDiv200", "20b-Francis"), 2.75, 3.10
+  )
+  nodes$status_x <- content_left + content_width / 2
+  nodes$status_y <- nodes$y - 0.24
+
+  panels <- data.frame(
+    xmin = c(0.22, 2.77, 5.32, 8.57),
+    xmax = c(2.68, 5.23, 8.48, 11.47),
+    title = c(
+      "I  MODEL FOUNDATION  ↓\n01–05",
+      "II  STRUCTURE & DATA  ↑\n06–10",
+      "III  CPUE, AGE & SELECTIVITY  ↓\n11–16",
+      "IV  TAGS, EFFORT & WEIGHTING  ↑\n17–20"
+    ),
+    panel_key = c("panel_a", "panel_b", "panel_a", "panel_b"),
+    stringsAsFactors = FALSE
+  )
+  panels$x <- (panels$xmin + panels$xmax) / 2
 
   node_lookup <- split(nodes, nodes$id)
   edge_rows <- list()
-  add_edge <- function(from, to, kind = "carried", bend = 0) {
+  add_edge <- function(from, to, kind = "carried", curvature = 0) {
     a <- node_lookup[[from]]
     b <- node_lookup[[to]]
     dx <- b$x - a$x
@@ -93,91 +153,210 @@ build_stepwise_dag <- function(
     distance <- sqrt(dx^2 + dy^2)
     ux <- dx / distance
     uy <- dy / distance
-    boundary_distance <- 1 / max(abs(ux) / 0.92, abs(uy) / 0.48)
-    edge_offset <- boundary_distance + 0.08
+    from_boundary <- 1 / max(abs(ux) / a$half_w, abs(uy) / a$half_h)
+    to_boundary <- 1 / max(abs(ux) / b$half_w, abs(uy) / b$half_h)
+    gap <- 0.025
     edge_rows[[length(edge_rows) + 1L]] <<- data.frame(
-      x = a$x + edge_offset * ux,
-      y = a$y + edge_offset * uy,
-      xend = b$x - edge_offset * ux,
-      yend = b$y - edge_offset * uy,
+      x = a$x + (from_boundary + gap) * ux,
+      y = a$y + (from_boundary + gap) * uy,
+      xend = b$x - (to_boundary + gap) * ux,
+      yend = b$y - (to_boundary + gap) * uy,
       kind = kind,
-      bend = bend
+      curvature = curvature
     )
   }
-
-  for (selected_row in selected_rows) {
-    for (i in seq_len(length(selected_row) - 1L)) {
-      add_edge(selected_row[[i]], selected_row[[i + 1L]])
-    }
+  for (i in seq_len(length(selected_path) - 1L)) {
+    add_edge(selected_path[[i]], selected_path[[i + 1L]])
   }
-  add_edge("04-NewStructure", "05-ConvertToLength")
-  add_edge("10-MIX015", "11-TAGF2ON")
-  add_edge("08-RegionalCPUE", "09a-BASE075", "alternative", 0.18)
-  add_edge("08-RegionalCPUE", "09b-REG075", "alternative", -0.18)
-  add_edge("09a-BASE075", "09c-SUB075", "alternative", -0.18)
-  add_edge("09b-REG075", "09c-SUB075", "alternative", 0.18)
-  add_edge("15-SelectivityUpdate", "16a-DOMDiv200", "alternative")
-  add_edge("16a-DOMDiv200", "16b-Francis", "alternative")
+  add_edge("14-NewAgeData", "15a-REG075", "alternative")
+  add_edge("19-EffortCreep", "20a-DOMDiv200", "alternative")
+  add_edge("19-EffortCreep", "20b-Francis", "alternative")
   edges <- do.call(rbind, edge_rows)
 
   palette <- c(
-    source = "#53636D",
-    carried = "#176B70",
-    alternative = "#B85C18",
-    final = "#004D52"
+    carried = "#4F8589",
+    selected = "#126E73",
+    alternative = "#C86616",
+    final = "#123F48"
   )
   fills <- c(
-    source = "#53636D",
-    carried = "#E7F1F0",
-    alternative = "#FFF1DF",
-    final = "#006B70"
+    carried = "#FFFFFF",
+    selected = "#FFFFFF",
+    alternative = "#FFFFFF",
+    final = "#FFFFFF",
+    step_carried = "#315F68",
+    step_selected = "#0B555A",
+    step_alternative = "#B8560F",
+    step_final = "#0A333B",
+    panel_a = "#F3F7F7",
+    panel_b = "#FAFBFB"
   )
   caption <- paste(
-    "BET 2026 model-development pathway. Solid arrows show the selected",
-    "sequence; dashed arrows identify alternative age-composition and",
-    "length-composition weighting models."
+    "BET 2026 stepwise development pathway. Solid teal arrows show the selected",
+    "carry-forward sequence; dashed orange arrows identify alternative age-data",
+    "and composition-data weighting models."
   )
 
   plot <- ggplot2::ggplot() +
+    ggplot2::geom_rect(
+      data = panels,
+      ggplot2::aes(
+        xmin = xmin, xmax = xmax, ymin = 0.33, ymax = 6.35,
+        fill = panel_key
+      ),
+      colour = "#DCE5E5",
+      linewidth = 0.48
+    ) +
+    ggplot2::geom_rect(
+      data = panels,
+      ggplot2::aes(xmin = xmin, xmax = xmax, ymin = 6.29, ymax = 6.35),
+      inherit.aes = FALSE,
+      fill = "#315F68",
+      colour = NA
+    ) +
     ggplot2::geom_segment(
-      data = edges,
+      data = panels,
+      ggplot2::aes(x = xmin + 0.15, xend = xmax - 0.15, y = 5.96, yend = 5.96),
+      inherit.aes = FALSE,
+      colour = "#D5E0E0",
+      linewidth = 0.45
+    ) +
+    ggplot2::geom_text(
+      data = panels,
+      ggplot2::aes(x = x, y = 6.13, label = title),
+      inherit.aes = FALSE,
+      colour = "#315F68",
+      fontface = "bold",
+      lineheight = 0.92,
+      size = 2.28
+    ) +
+    ggplot2::geom_segment(
+      data = edges[edges$curvature == 0, , drop = FALSE],
       ggplot2::aes(
         x = x, y = y, xend = xend, yend = yend,
         colour = kind, linetype = kind
       ),
-      linewidth = 0.9,
+      linewidth = 0.76,
       lineend = "round",
-      arrow = grid::arrow(length = grid::unit(2.1, "mm"), type = "closed")
+      arrow = grid::arrow(length = grid::unit(1.7, "mm"), type = "closed")
+    ) +
+    ggplot2::geom_curve(
+      data = edges[edges$curvature > 0, , drop = FALSE],
+      ggplot2::aes(
+        x = x, y = y, xend = xend, yend = yend,
+        colour = kind, linetype = kind
+      ),
+      curvature = 0.32,
+      linewidth = 0.76,
+      lineend = "round",
+      arrow = grid::arrow(length = grid::unit(1.7, "mm"), type = "closed")
+    ) +
+    ggplot2::geom_curve(
+      data = edges[edges$curvature < 0, , drop = FALSE],
+      ggplot2::aes(
+        x = x, y = y, xend = xend, yend = yend,
+        colour = kind, linetype = kind
+      ),
+      curvature = -0.32,
+      linewidth = 0.76,
+      lineend = "round",
+      arrow = grid::arrow(length = grid::unit(1.7, "mm"), type = "closed")
     ) +
     ggplot2::geom_rect(
       data = nodes,
       ggplot2::aes(
-        xmin = x - 0.92, xmax = x + 0.92,
-        ymin = y - 0.48, ymax = y + 0.48,
+        xmin = x - half_w, xmax = x + half_w,
+        ymin = y - half_h, ymax = y + half_h,
         fill = category, colour = category
       ),
-      linewidth = 1
+      linewidth = 0.66
+    ) +
+    ggplot2::geom_rect(
+      data = nodes,
+      ggplot2::aes(
+        xmin = x - half_w, xmax = x - half_w + step_band,
+        ymin = y - half_h, ymax = y + half_h,
+        fill = step_category
+      ),
+      colour = NA
     ) +
     ggplot2::geom_text(
       data = nodes,
       ggplot2::aes(
-        x = x, y = y, label = display,
-        colour = ifelse(category %in% c("source", "final"), "light", "dark")
+        x = x - half_w + step_band / 2,
+        y = y, label = step, size = number_size
       ),
-      lineheight = 0.93,
+      colour = "#FFFFFF",
+      fontface = "bold"
+    ) +
+    ggplot2::geom_text(
+      data = nodes,
+      ggplot2::aes(
+        x = text_x, y = text_y, label = name, hjust = text_hjust,
+        colour = "dark",
+        size = text_size
+      ),
+      lineheight = 0.92,
+      fontface = "bold"
+    ) +
+    ggplot2::geom_label(
+      data = nodes[nodes$category == "alternative", , drop = FALSE],
+      ggplot2::aes(x = status_x, y = status_y, label = status),
+      inherit.aes = FALSE,
+      fill = "#C86616",
+      colour = "#FFFFFF",
+      label.padding = grid::unit(0.055, "lines"),
+      label.r = grid::unit(0.05, "lines"),
+      linewidth = 0,
       fontface = "bold",
-      size = 3.75
+      size = 1.75
+    ) +
+    ggplot2::geom_label(
+      data = nodes[nodes$category %in% c("selected", "final"), , drop = FALSE],
+      ggplot2::aes(x = status_x, y = status_y, label = status),
+      inherit.aes = FALSE,
+      fill = "#126E73",
+      colour = "#FFFFFF",
+      label.padding = grid::unit(0.055, "lines"),
+      label.r = grid::unit(0.05, "lines"),
+      linewidth = 0,
+      fontface = "bold",
+      size = 1.75
     ) +
     ggplot2::annotate(
-      "text", x = 0.22, y = c(8.04, 1.62),
-      label = c(
-        "SELECTED MODEL-DEVELOPMENT PATHWAY",
-        "COMPOSITION-WEIGHTING ALTERNATIVES"
-      ),
+      "text", x = 0.25, y = 7.08,
+      label = "BET 2026 STEPWISE DEVELOPMENT PATHWAY",
       hjust = 0,
-      colour = "#44515A",
+      colour = "#253E45",
       fontface = "bold",
-      size = 3.4
+      size = 4.15
+    ) +
+    ggplot2::annotate(
+      "segment", x = 0.28, xend = 0.72, y = 6.72, yend = 6.72,
+      colour = "#4F8589", linewidth = 0.9,
+      arrow = grid::arrow(length = grid::unit(1.5, "mm"), type = "closed")
+    ) +
+    ggplot2::annotate(
+      "text", x = 0.80, y = 6.72, label = "selected carry-forward",
+      hjust = 0, colour = "#5C7075", size = 2.35
+    ) +
+    ggplot2::annotate(
+      "segment", x = 2.42, xend = 2.76, y = 6.72, yend = 6.72,
+      colour = "#C86616", linewidth = 0.9, linetype = "22"
+    ) +
+    ggplot2::annotate(
+      "segment", x = 2.76, xend = 2.88, y = 6.72, yend = 6.72,
+      colour = "#C86616", linewidth = 0.9,
+      arrow = grid::arrow(length = grid::unit(1.5, "mm"), type = "closed")
+    ) +
+    ggplot2::annotate(
+      "text", x = 2.98, y = 6.72, label = "comparison branch",
+      hjust = 0, colour = "#5C7075", size = 2.35
+    ) +
+    ggplot2::annotate(
+      "text", x = 5.00, y = 6.72,
+      label = "Follow the arrows; numbered groups preserve development order",
+      hjust = 0, colour = "#7A8A8E", size = 2.20
     ) +
     ggplot2::scale_fill_manual(values = fills, guide = "none") +
     ggplot2::scale_colour_manual(
@@ -188,12 +367,14 @@ build_stepwise_dag <- function(
       values = c(carried = "solid", alternative = "22"),
       guide = "none"
     ) +
-    ggplot2::coord_cartesian(xlim = c(0.05, 16.65), ylim = c(0.35, 8.25), clip = "off") +
-    ggplot2::labs(colour = NULL) +
+    ggplot2::scale_size_identity() +
+    ggplot2::coord_cartesian(
+      xlim = c(0.08, 11.62), ylim = c(0.20, 7.25), clip = "off"
+    ) +
     ggplot2::theme_void(base_family = "sans") +
     ggplot2::theme(
       plot.background = ggplot2::element_rect(fill = "#FFFFFF", colour = NA),
-      plot.margin = ggplot2::margin(8, 8, 4, 8)
+      plot.margin = ggplot2::margin(7, 7, 7, 7)
     )
 
   figure_dir <- file.path(output_dir, "figures")
@@ -203,8 +384,8 @@ build_stepwise_dag <- function(
     filename = png_path,
     plot = plot,
     device = ragg::agg_png,
-    width = 14,
-    height = 7,
+    width = 11.69,
+    height = 7.35,
     units = "in",
     dpi = 300,
     background = "#FFFFFF"

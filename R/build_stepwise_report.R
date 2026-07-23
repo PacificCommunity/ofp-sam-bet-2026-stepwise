@@ -46,7 +46,7 @@ stepwise_parse_job_map <- function(value) {
   if (!all(valid)) {
     stop(
       "STEPWISE_MODEL_JOBS must use step=job pairs, for example ",
-      "01-Diag2023=14047,02a-NewExe1003=14046.",
+      "01-Diag2023=14047,02-NewExe1003=14046.",
       call. = FALSE
     )
   }
@@ -150,13 +150,19 @@ stepwise_settings <- function(row) {
   paste(values[nzchar(values)], collapse = "; ")
 }
 
-stepwise_status_label <- function(selected, carry_status) {
-  if (identical(tolower(carry_status), "final")) return("Final step")
+stepwise_status_label <- function(selected, carry_status, selected_branch = FALSE) {
+  if (identical(tolower(carry_status), "final")) return("Selected final")
   if (!isTRUE(selected)) return("Comparison")
+  if (isTRUE(selected_branch)) return("Selected")
   "Carried forward"
 }
 
 stepwise_stage_table <- function(nodes, job_map) {
+  sibling_count <- ave(
+    as.character(nodes$scientific_parent_id),
+    as.character(nodes$scientific_parent_id),
+    FUN = length
+  )
   table <- data.frame(
     step_id = nodes$step_id,
     model = nodes$model_label,
@@ -165,6 +171,7 @@ stepwise_stage_table <- function(nodes, job_map) {
       stepwise_status_label,
       as.logical(nodes$selected),
       as.character(nodes$carry_status),
+      as.logical(nodes$selected) & sibling_count > 1L,
       USE.NAMES = FALSE
     ),
     notes = stepwise_sentence(
@@ -356,23 +363,22 @@ build_stepwise_report <- function(
   endpoint <- nodes$model_label[tolower(nodes$carry_status) == "final"]
   endpoint <- if (length(endpoint)) endpoint[[1L]] else nodes$model_label[[nrow(nodes)]]
   method_text <- paste0(
-    "Model development proceeded stepwise. Each configuration changed one defined component ",
-    "relative to its scientific parent, allowing the effect of that change to be evaluated ",
-    "while the remaining settings were retained. Configurations supported for continued ",
-    "development formed the main pathway; alternative branches recorded comparisons that ",
-    "were examined but not carried forward. The table documents what changed at every step, ",
-    "why the change was evaluated and the key implementation settings. The final step in this ",
-    "pathway is ", endpoint, "."
+    "Model development followed a stepwise pathway. Each configuration altered a defined ",
+    "component relative to its scientific parent, while other inputs and controls were held ",
+    "constant wherever possible. Models retained after evaluation formed the main pathway; ",
+    "sibling branches document alternatives that were evaluated but not carried forward. ",
+    "The accompanying table records the change, scientific purpose, key implementation ",
+    "settings and decision for each configuration. The selected endpoint is ", endpoint, "."
   )
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Solid teal arrows ",
-    "show configurations carried forward; dashed grey arrows show comparison branches. ",
-    "The coral node marks the final step in this pathway."
+    "show configurations carried forward; dashed orange arrows show comparison branches. ",
+    "The dark-teal node marks the selected final model."
   )
   table_caption <- paste0(
-    "Model-development steps evaluated for the BET 2026 assessment. Each row identifies the ",
-    "change introduced relative to its scientific parent, its purpose and implementation, ",
-    "and whether it was carried forward."
+    "Stepwise model configurations evaluated during development of the BET 2026 assessment. ",
+    "Each row identifies the change relative to its scientific parent, the scientific purpose ",
+    "and key implementation settings, and whether the configuration was carried forward."
   )
 
   result_section <- ""
@@ -391,7 +397,7 @@ build_stepwise_report <- function(
       "<p class=\"note\">Fitted-model figures will appear when mapped job outputs contain model payloads.</p>"
     }
     result_section <- paste0(
-      "<section><h2>Fitted-model results</h2>",
+      "<section class=\"model-card\"><h2>Fitted-model results</h2>",
       "<p>Results are included only for explicitly mapped completed jobs.</p>",
       "<table class=\"compact\"><thead><tr><th>Step</th><th>Job</th><th>Status</th></tr></thead><tbody>",
       result_rows, "</tbody></table>", iframe, "</section>"
@@ -400,7 +406,7 @@ build_stepwise_report <- function(
 
   latex_figure <- paste0(
     "\\begin{figure}[htbp]\n\\centering\n",
-    "\\includegraphics[width=\\linewidth]{pathway/figures/bet-2026-stepwise-pathway.png}\n",
+    "\\includegraphics[width=\\linewidth,height=0.80\\textheight,keepaspectratio]{pathway/figures/bet-2026-stepwise-pathway.png}\n",
     "\\caption{", stepwise_latex_escape(figure_caption), "}\n",
     "\\label{fig:bet-stepwise-pathway}\n\\end{figure}\n"
   )
@@ -410,53 +416,64 @@ build_stepwise_report <- function(
     "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">",
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">",
     "<title>BET 2026 model development</title><style>",
-    ":root{--ink:#173042;--muted:#587080;--teal:#0d666d;--paper:#fbfaf7;--line:#d7e0e3;--coral:#c5422b}",
-    "*{box-sizing:border-box}body{margin:0;background:#e9f0f0;color:var(--ink);font-family:Cambria,Georgia,serif;",
-    "font-size:17px;line-height:1.52}.page{max-width:1540px;margin:28px auto;background:var(--paper);padding:48px 52px;",
-    "box-shadow:0 18px 55px rgba(23,48,66,.13)}h1{font-size:2.25rem;margin:0 0 8px}h2{margin:42px 0 12px;",
-    "font-size:1.55rem;border-bottom:2px solid var(--teal);padding-bottom:7px}p{max-width:1000px}.lede{font-size:1.08rem;",
-    "color:var(--muted);margin-top:0}.summary{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0}.pill{border:1px solid #bdd0d4;",
-    "background:#eff6f5;border-radius:999px;padding:7px 14px;font-weight:700}.figure-shell{overflow-x:auto;border:1px solid var(--line);",
-    "background:#fff;padding:10px}.dag-figure{display:block;width:100%;height:auto;min-width:1080px}figcaption,.caption{margin-top:12px;",
-    "font-size:1rem;color:#294451}.actions{display:flex;gap:9px;flex-wrap:wrap;margin:13px 0 5px}button,a.button{border:0;",
-    "background:var(--teal);color:#fff;padding:10px 14px;border-radius:6px;font:700 .93rem Georgia,serif;cursor:pointer;text-decoration:none}",
-    "button.secondary{background:#fff;color:var(--teal);border:1px solid var(--teal)}.table-shell{width:100%;overflow-x:auto;margin:14px 0 18px}",
-    "table{width:100%;border-collapse:collapse;font-size:.92rem;table-layout:fixed}th{background:#e8f1f1;text-align:left;border-top:2px solid var(--ink);",
-    "border-bottom:1px solid var(--ink);padding:11px 13px;line-height:1.25}td{vertical-align:top;padding:12px 13px;border-bottom:1px solid var(--line);",
+    ":root{--ink:#123b5d;--muted:#526979;--sea:#087f8c;--paper:#f5f1e8;--card:#fff;--line:#c8d9df;--orange:#d97904}",
+    "*{box-sizing:border-box}body{margin:0;background:#eef2f3;color:#1d2f3a;font-family:\"Aptos\",\"Source Sans 3\",sans-serif;",
+    "font-size:16px;line-height:1.55}header{padding:32px max(5vw,24px) 28px;background:var(--ink);color:#fff}",
+    "header .eyebrow{font-size:.72rem;letter-spacing:.18em;font-weight:800;text-transform:uppercase}header h1{font-family:Georgia,\"Times New Roman\",serif;",
+    "font-size:clamp(2rem,4vw,3.35rem);line-height:1.08;margin:.35rem 0 .7rem}header p{max-width:850px;margin:0;color:#d6edf1;font-size:1.02rem}",
+    "main{max-width:1420px;margin:auto;padding:28px max(3vw,18px) 70px}.overview,.model-card{background:var(--card);border:1px solid var(--line);",
+    "padding:clamp(20px,3vw,38px);margin-bottom:28px}.overview{border-top:5px solid var(--orange)}.model-card{border-top:5px solid var(--sea)}",
+    "h2{font-family:Georgia,\"Times New Roman\",serif;color:var(--ink);font-size:clamp(1.5rem,2.5vw,2.15rem);margin:.2rem 0 1rem}",
+    "p{max-width:1080px}.format-block{margin-top:32px;padding-top:25px;border-top:1px solid var(--line)}.figure-shell{overflow:auto;border:1px solid var(--line);",
+    "background:#fff;padding:10px}.dag-figure{display:block;width:auto;height:auto;max-width:100%;max-height:calc(100vh - 190px);margin:0 auto}",
+    "figcaption,.caption{margin-top:12px;padding:12px 15px;background:#f1f6f7;border-left:3px solid var(--sea);color:#29495b;",
+    "font-family:Georgia,\"Times New Roman\",serif;font-size:.95rem;line-height:1.55}figcaption::before{content:\"Caption\";display:block;",
+    "margin-bottom:4px;color:var(--ink);font-family:\"Aptos\",\"Source Sans 3\",sans-serif;font-size:.7rem;font-weight:800;",
+    "letter-spacing:.12em;text-transform:uppercase}.actions{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0 8px}button,a.button{border:0;",
+    "background:var(--sea);color:#fff;padding:9px 14px;font-weight:700;cursor:pointer;transition:background .16s ease;text-decoration:none}",
+    "button:hover,a.button:hover{background:var(--ink)}button.secondary{background:#fff;color:var(--sea);border:1px solid var(--sea)}",
+    "button.done{background:#24784f}.table-shell{width:100%;overflow:auto;max-height:950px;border:1px solid var(--line);margin:14px 0 18px}",
+    "table{width:100%;border-collapse:collapse;font-size:.89rem;table-layout:fixed}th{position:sticky;top:0;z-index:1;background:var(--ink);color:#fff;text-align:left;",
+    "padding:10px 12px;line-height:1.25}td{vertical-align:top;padding:11px 12px;border-bottom:1px solid #dce7ea;",
     "overflow-wrap:anywhere;word-break:normal;hyphens:auto}.stage-title{font-weight:700;line-height:1.28}.stage-id{display:block;margin-top:4px;",
     "font:600 .76rem/1.25 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);letter-spacing:.01em}.setting-line{line-height:1.38}",
-    ".setting-label{display:block;font:700 .72rem/1.2 ui-sans-serif,sans-serif;text-transform:uppercase;letter-spacing:.055em;color:var(--teal);",
+    ".setting-label{display:block;font:700 .72rem/1.2 ui-sans-serif,sans-serif;text-transform:uppercase;letter-spacing:.055em;color:var(--sea);",
     "margin-bottom:3px}.row-note{font-size:.86rem;line-height:1.38;color:var(--muted);margin-top:7px}.job{font-weight:700;white-space:nowrap}",
     ".decision{display:inline-block;",
     "padding:3px 8px;border-radius:999px;background:#e5f1ef;color:#07545a;font-weight:700;white-space:nowrap}.decision.comparison{background:#fff4dc;",
-    "color:#8a5b00}.decision.final-step{background:#fbe7e2;color:#9c2d1c}.note{padding:13px 16px;border-left:4px solid var(--teal);",
+    "color:#8a5b00}.decision.selected,.decision.selected-final{background:#006b70;color:#fff}.note{padding:13px 16px;border-left:4px solid var(--sea);",
     "background:#eff5f5;color:#3a5967}.hidden-copy{position:absolute;left:-100000px;white-space:pre-wrap}.results-frame{width:100%;height:1100px;",
-    "border:1px solid var(--line);background:#fff}.compact{max-width:700px}@media(max-width:760px){.page{margin:0;padding:28px 18px}",
-    "body{font-size:16px}table{font-size:.84rem;min-width:900px}.dag-figure{min-width:980px}}@media print{body{background:#fff}.page{box-shadow:none;",
-    "margin:0;max-width:none;padding:0}button,.actions{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
+    "border:1px solid var(--line);background:#fff}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
+    "background:var(--ink);color:#fff;padding:10px 15px;box-shadow:0 8px 24px rgba(18,59,93,.2);opacity:0;transform:translateY(8px);",
+    "pointer-events:none;transition:opacity .16s ease,transform .16s ease}.action-status.show{opacity:1;transform:translateY(0)}",
+    "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:940px}}@media print{body{background:#fff}",
+    "header{padding:0 0 20px;background:#fff;color:var(--ink)}header p{color:var(--muted)}main{max-width:none;padding:0}.overview,.model-card{border:0;padding:0;margin:0}",
+    "button,.actions,.action-status{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
     "tr{break-inside:avoid}.table-shell{overflow:visible}}",
-    "</style></head><body><main class=\"page\"><header><h1>BET 2026 model development</h1>",
-    "<p class=\"lede\">Stepwise assessment pathway and configuration record</p></header>",
-    "<section><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
+    "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
+    "<p>Assessment pathway, scientific rationale and reproducible configuration record</p></header><main>",
+    "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
     "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy analysis for Word</button>",
-    "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy analysis for LaTeX</button></div></section>",
-    "<section><h2>Model pathway</h2><figure><div class=\"figure-shell\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\">",
+    "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy analysis for LaTeX</button></div>",
+    "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\">",
     "</div><figcaption id=\"figure-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
     stepwise_html_escape(figure_caption), "</figcaption></figure>",
-    "<div class=\"actions\"><button onclick=\"copyFigure(this)\">Copy figure for Word</button>",
+    "<div class=\"actions\"><button onclick=\"copyFigure(this)\">Copy figure + caption for Word</button>",
     "<a class=\"button\" download href=\"data:image/png;base64,", png_data, "\">Save PNG</a>",
-    "<button class=\"secondary\" onclick=\"copyText('figure-latex',this)\">Copy LaTeX figure</button></div></section>",
-    "<section><h2>Model-development steps</h2><p class=\"caption\" id=\"table-caption\"><strong>Table ",
+    "<button class=\"secondary\" onclick=\"copyText('figure-latex',this)\">Copy figure + caption for LaTeX</button></div></div>",
+    "<div class=\"format-block\"><h2>Model-development configurations</h2><p class=\"caption\" id=\"table-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ", stepwise_html_escape(table_caption), "</p>",
-    "<div class=\"table-shell\">", table_html, "</div><div class=\"actions\"><button onclick=\"copyTable(this)\">Copy table for Word</button>",
-    "<button class=\"secondary\" onclick=\"copyText('table-latex',this)\">Copy table for LaTeX</button></div></section>",
+    "<div class=\"table-shell\">", table_html, "</div><div class=\"actions\"><button onclick=\"copyTable(this)\">Copy table + caption for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('table-latex',this)\">Copy table + caption for LaTeX</button></div></div></section>",
     result_section,
     "<pre id=\"method-latex\" class=\"hidden-copy\">", stepwise_html_escape(method_text), "</pre>",
     "<pre id=\"figure-latex\" class=\"hidden-copy\">", stepwise_html_escape(latex_figure), "</pre>",
     "<pre id=\"table-latex\" class=\"hidden-copy\">", stepwise_html_escape(table_latex), "</pre>",
     "<img id=\"dag-png\" hidden src=\"data:image/png;base64,", png_data, "\">",
+    "<div id=\"action-status\" class=\"action-status\" role=\"status\" aria-live=\"polite\"></div>",
     "<script>",
-    "function feedback(b,t){const x=b.textContent;b.textContent=t;setTimeout(()=>b.textContent=x,1400)}",
+    "function feedback(b,t){const s=document.getElementById('action-status');s.textContent=t;s.classList.add('show');",
+    "if(b){b.classList.add('done')}setTimeout(()=>{s.classList.remove('show');if(b){b.classList.remove('done')}},1400)}",
     "async function copyText(id,b){try{await navigator.clipboard.writeText(document.getElementById(id).textContent);feedback(b,'Copied')}",
     "catch(e){feedback(b,'Copy failed')}}",
     "async function writeClipboard(html,text,b){try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),",

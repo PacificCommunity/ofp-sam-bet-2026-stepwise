@@ -7,66 +7,71 @@ copied as-is and what is intentionally changed in the generated model folders?
 
 | Input | Source-exact? | Intentional generated change |
 | --- | --- | --- |
-| `.frq` | Yes for steps 01-13. | Step 08 uses the authoritative regional CPUE replacement as supplied; it has two fewer F32 1952 quarterly records than Step 07 and no transform. Steps 14-15 change only index-fishery effort values for effort creep. |
+| `.frq` | Yes for steps 01-18. | Step 11 uses the authoritative regional CPUE replacement as supplied; it has two fewer F32 1952 quarterly records than Step 10 and no transform. Steps 19-20 change only index-fishery effort values for effort creep. |
 | `.tag` | Yes for all steps. | None. `tag_rep_map.R` is an MFCLShiny display/audit sidecar, not an MFCL input. |
-| `.age_length` | Records are copied from source. | Steps 04-15 set effective sample size from `1` to `0.75`. |
-| `.ini` | 01 and 02a are unchanged from source. Later steps are generated from source baselines. | MFCL 1007 conversion, BET 2026 L-W, `LN(R0)` from 04 onward, FixM, tag/RR alignment, and current-reader compatibility edits. |
-| `bet.reg_scaling` | Steps 08-15 contain source rows 53-72 by default. | This exact 20x5 compact matrix is streamed into the flag-defined prior window. |
-| `bet.reg_scaling.full` | The full 292x5 source is copied for steps 08-15. | Preserved for alternative-period sensitivities; MFCL does not read this filename. |
+| `.age_length` | Records are copied from source. | Steps 06-13 retain the pre-update age input. Step 14 adds the new age data with common BASE075 weighting; Step 15 compares spatial weighting, and SUB075 is carried from 15b onward. |
+| `.ini` | Steps 01 and 02 are unchanged from their respective source inputs. Later steps are generated from source baselines. | MFCL 1007 conversion at Step 03, FixM at Step 04, BET 2026 L-W at Step 05, the five-region `LN(R0)` setting from Step 06, tag/RR alignment, and current-reader compatibility edits. |
+| `bet.reg_scaling` | Steps 11-20 contain source rows 53-72 by default. | This exact 20x5 compact matrix is streamed into the flag-defined prior window. |
+| `bet.reg_scaling.full` | The full 292x5 source is copied for steps 11-20. | Preserved for alternative-period sensitivities; MFCL does not read this filename. |
 
 ## Source Repos Checked
 
 | Repo | Current source commit | BET-side note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Latest pulled changes affect YFT files only; BET `.frq` sources used here are unchanged. |
-| `ofp-sam-2026-BET-YFT-build-ini` | `f8faf7c` | BET base and mix-period INIs contain the updated RR group IDs and initial values. |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `e0b427d` | Current source. BET grouping changes were introduced in `3dad64e`; `e0b427d` changes YFT only and leaves the BET files identical to `3dad64e`. |
+| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | BET base and mix-period INIs contain the updated RR group IDs and reject conflicting reporting-rate priors. |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | Current low-recapture-filtered BET tag source with the audited reporting-rate grouping update. |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | Source CAAL records are used; generated files only change effective sample size. |
 
 ## By File Type
 
 | File type | Steps | Source file | Generated difference |
 | --- | --- | --- | --- |
-| `.frq` | 01-07 | Selected source in `frq-build`, diagnostic repo, or archived 2023 replication inputs. | None found in byte-for-byte source checks. |
-| `.frq` | 08-13 | `BET/bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq` | Authoritative regional CPUE replacement; two fewer F32 1952 quarterly records than Step 07, copied without transformation. |
-| `.frq` | 14-15 | `BET/bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq` | Effort values for index fisheries 29-33 are multiplied by the agreed effort-creep schedule. |
-| `.tag` | 01-15 | Selected source `.tag` for each step family. | None. |
-| `.age_length` | 01-03 | Diagnostic or archived 2023 replication source. | None. |
-| `.age_length` | 04-08 | `BET/bet.2023.new-structure.age_length` | 112 effective-sample-size values change from `1` to `0.75`. |
-| `.age_length` | 09-15 | `BET/bet.2026.age_length` | 181 effective-sample-size values change from `1` to `0.75`. |
-| `bet.reg_scaling` | 08-15 | `BET/bet.2026.reg_scaling` | Extracts rows 53-72 and all 5 region columns as the MFCL input. |
-| `bet.reg_scaling.full` | 08-15 | `BET/bet.2026.reg_scaling` | Copies all 292 rows and 5 region columns for sensitivity regeneration. |
+| `.frq` | 01-10 | Selected source in `frq-build`, diagnostic repo, or archived 2023 replication inputs. | None found in byte-for-byte source checks. |
+| `.frq` | 11-18 | `BET/bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq` | Authoritative regional CPUE replacement; two fewer F32 1952 quarterly records than Step 10, copied without transformation. |
+| `.frq` | 19-20 | `BET/bet.2026.new-strucure.regional-cpue.wt-as-len-plus-len.frq` | Effort values for index fisheries 29-33 are multiplied by the agreed effort-creep schedule. |
+| `.tag` | 01-20 | Selected source `.tag` for each step family. | None. |
+| `.age_length` | 01-05 | Diagnostic or archived 2023 replication source. | None. |
+| `.age_length` | 06-13 | `BET/bet.2023.new-structure.age_length` | 112 effective-sample-size values change from `1` to `0.75`. |
+| `.age_length` | 14 | New 2026 age source with common BASE075 weighting | Establishes the common new-age-data reference state. |
+| `.age_length` | 15a-15b | REG075 or SUB075 source | Compares the two spatial age-weighting treatments against Step 14. |
+| `.age_length` | 16-20 | SUB075 source | Carries the selected Step 15b treatment unchanged. |
+| `bet.reg_scaling` | 11-20 | `BET/bet.2026.reg_scaling` | Extracts rows 53-72 and all 5 region columns as the MFCL input. |
+| `bet.reg_scaling.full` | 11-20 | `BET/bet.2026.reg_scaling` | Copies all 292 rows and 5 region columns for sensitivity regeneration. |
 
 ## INI Edits
 
 | Steps | Source baseline | Generated `.ini` edits | Why |
 | --- | --- | --- | --- |
 | 01 | 2023 diagnostic `bet.ini` | No edit. | Keeps the historical diagnostic input exactly as run in 2023. |
-| 02a | Archived 2023 replication `bet.ini` | No edit. The ini remains MFCL 1003 format. | Isolates the current executable effect before changing the ini layout. |
-| 02b | 02a generated input | Sets ini version to `1007`; inserts 118 `# tag flags` rows with two-quarter mixing and `tag_flags(it,2)=0`; inserts a zero tag-shed vector; inserts MFCL 1007 defaults for `LN(R0)=25` and Richards growth parameter `0`. | Converts the 2023 replication ini into a current-reader layout without changing the assessment data. |
-| 02c | 02b generated input | Changes `# Length-weight parameters` from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`. `LN(R0)` remains `25`. | Isolates the BET 2026 bias-corrected L-W update before later structural changes. |
-| 03 | 02c generated input | Replaces the `# age_pars` natural-mortality row with the fixed-M row from the 01 diagnostic `mgc=-5` final par. | Carries the chosen diagnostic M estimate and 02c L-W update into later current-executable runs. |
-| 04-06 | `BET/bet.2023.new.structure.ini` from `ofp-sam-2026-BET-YFT-build-ini@f8faf7c`, with `config/rrpttp26-reporting-rates.csv` | Applies FixM, `LN(R0)=17`, BET 2026 L-W, and tag/RR alignment. The 96-release-group tag source is `ofp-sam-2026-BET-YFT-tag-prep@e0b427d`; SC22 BET means and penalties are mapped by tag programme and fishery, with West and East groups kept separate. | Introduces the final reporting-rate specification with the 33-fishery structure instead of retaining a pooled West/East group. |
-| 07-09 | Primary base `BET/bet.2026.ini` plus `config/rrpttp26-reporting-rates.csv` | Keeps two-quarter mixing from the base, maps the carried SC22 BET reporting-rate specification to the expanded 2026 tag rows, sets `tag_flags(it,2)=0`, and validates positive recaptures. | Extends the tag-release rows without changing the reporting-rate means, penalties, or West/East grouping. |
-| 10-15 | `BET/ini.mix-period/bet.2026.mix-0.2.ini` from `ofp-sam-2026-BET-YFT-build-ini@f8faf7c` | Uses release-specific KS mixing and updated RR group IDs from one primary INI; sets `tag_flags(it,2)=0`, raises two zero mixing periods to `1`, and validates positive recaptures. | Preserves KS mixing without reverting the refreshed reporting-rate grouping. |
+| 02 | Archived 2023 replication `bet.ini` | No edit. The ini remains MFCL 1003 format. | Isolates the current executable effect before changing the ini layout. |
+| 03 | Step 02 generated input | Sets ini version to `1007`; inserts 118 `# tag flags` rows with two-quarter mixing and `tag_flags(it,2)=0`; inserts a zero tag-shed vector; inserts MFCL 1007 defaults for `LN(R0)=25` and Richards growth parameter `0`. | Converts the 2023 replication ini into a current-reader layout without changing the assessment data. |
+| 04 | Step 03 generated input | Replaces the `# age_pars` natural-mortality row with the fixed-M row from the 01 diagnostic `mgc=-5` final par. | Establishes fixed M before updating the length-weight conversion. |
+| 05 | Step 04 generated input | Changes `# Length-weight parameters` from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; the fixed-M row is unchanged. | Isolates the BET 2026 bias-corrected L-W update after fixed M. |
+| 06-08 | `BET/bet.2023.new.structure.ini` from `ofp-sam-2026-BET-YFT-build-ini@d48e396`, with `config/rrpttp26-reporting-rates.csv` | Applies FixM, `LN(R0)=17`, BET 2026 L-W, and tag/RR alignment. The 96-release-group tag source is `ofp-sam-2026-BET-YFT-tag-prep@6d66dc3`; SC22 BET means and penalties are mapped by tag programme and fishery, with West and East groups kept separate. | Introduces the final reporting-rate specification with the 33-fishery structure instead of retaining a pooled West/East group. |
+| 09 | Same 2021 five-region inputs as Step 08 | No `.ini` edit; only doitall parest flag 313 changes from `0` to `1`. | Introduces LF tail aggregation only after length conversion and data addition. |
+| 10-16 | Primary base `BET/bet.2026.ini` plus `config/rrpttp26-reporting-rates.csv` | Keeps two-quarter mixing from the base, maps the carried SC22 BET reporting-rate specification to the expanded 2026 tag rows, sets `tag_flags(it,2)=0`, and validates positive recaptures. | Extends the tag-release rows without changing the reporting-rate means, penalties, or West/East grouping. |
+| 17 | Primary base plus the selected MIX015 column and audited RR source | Applies release-group-specific mixing while retaining `tag_flags(it,2)=0`. | Isolates the mixing-period change before testing reporting-rate exclusion. |
+| 18-20 | Generated Step 17 state | Keeps the Step 17 release-group-specific mixing periods and changes only `tag_flags(it,2)` from `0` to `1`. Step 20c additionally resets parest flag 313 from `1` to `0` when selecting the DM likelihood; flag 320=5 controls DM length-bin support. | Isolates reporting-rate exclusion without changing numeric reporting-rate values, groups, targets, or penalties, and avoids carrying an inactive normal-likelihood threshold into the final DM input. |
 
 Current tag-flag check:
 
 | File | Release rows | Mixing-period column | `tag_flags(it,2)` column |
 | --- | ---: | --- | --- |
 | Source `bet.2023.new.structure.ini` | 98 tag-control rows for a 96-release-group tag file | all `2` | all `1` |
-| Generated step 04 ini | 96 | all `2` | all `0` |
+| Generated step 06 ini | 96 | all `2` | all `0` |
 | Source `bet.2026.ini` | 98 | all `2` | all `1` |
-| Generated step 07 ini | 98 | all `2` | all `0` |
-| Source `bet.2026.mix-0.2.ini` | 98 | `0`, `1`, `2`, `3`, `4` release-specific values | all `1` |
-| Generated step 10 ini | 98 | source `0` values raised to `1`; other values retained | all `0` |
+| Generated step 10 ini | 98 | all `2` | all `0` |
+| Source `bet.2026.mix-0.2.ini` | 98 | `0`, `1`, `2`, `3`, `4` release-group-specific values | all `1` |
+| Generated step 17 ini | 98 | selected MIX015 release-group-specific values | all `0` |
+| Generated step 18 ini | 98 | selected MIX015 release-group-specific values | all `1` |
 
-Generated steps 04-15 harmonize starting values within one reporting-rate
+Generated steps 06-20 harmonize starting values within one reporting-rate
 group where native MFCL requires a common grouped start. Every positive tag
 recapture is then validated against nonzero RR, active, target, and penalty
 cells. This harmonization does not change reporting-rate group flags.
-Starting at step 04, PTTP West and East are separate groups 17 and 18 and use
-the final SC22 BET means and penalties. Step 07 maps that same specification
+Starting at step 06, PTTP West and East are separate groups 17 and 18 and use
+the final SC22 BET means and penalties. Step 10 maps that same specification
 to the expanded 2026 tag rows. The reporting-rate source is machine-readable
 in each `input_manifest.csv`. The older fishery
 19 fallback repair remains in the generator only for older source
@@ -81,7 +86,7 @@ filename and updates flags 79-80 against the unchanged 292-period timeline.
 
 | Steps | Fisheries | Records changed | Rule |
 | --- | ---: | ---: | --- |
-| 14-15 | 29-33 | 1,440 per step | 1%/yr for 1952-1976, then 0.5%/yr for 1977-2024. |
+| 19-20 | 29-33 | 1,440 per step | 1%/yr for 1952-1976, then 0.5%/yr for 1977-2024. |
 
 Only positive effort values are changed. Catch, size compositions, tag inputs,
 and regional-scaling inputs are not changed by the effort-creep step.

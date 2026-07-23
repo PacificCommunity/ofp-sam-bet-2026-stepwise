@@ -27,6 +27,13 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   model_dir <- file.path(step_dir, "model")
   dir.create(model_dir, recursive = TRUE, showWarnings = FALSE)
   remove_model_par_files(model_dir)
+  # Optional audit sidecars must be regenerated only by steps that introduce
+  # them. Removing them first prevents a renamed/reordered campaign from
+  # inheriting stale evidence from an earlier occupant of the folder.
+  unlink(
+    file.path(model_dir, c("cpue_mle_sigma_audit.csv", "francis_weights.csv")),
+    force = TRUE
+  )
 
   frq_out <- file.path(model_dir, "bet.frq")
   if (identical(frq_transform, "effort_creep")) {
@@ -150,7 +157,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     )
   }
 
-  template_step <- get0("stepwise_5_region_template_step_id", ifnotfound = "04-NewStructure")
+  template_step <- get0("stepwise_5_region_template_step_id", ifnotfound = "06-NewStructure")
   template_model <- file.path(root, "steps", template_step, "model")
   copy_one(file.path(template_model, "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
   fishery_map_out <- file.path(model_dir, "fishery_map.R")
@@ -175,7 +182,13 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     regional_scaling_start_period = reg_scaling_active_start_period,
     regional_scaling_end_period = reg_scaling_active_end_period,
     index_selectivity = isTRUE(doitall_edits$index_selectivity),
-    step15_selectivity_bundle = isTRUE(doitall_edits$step15_selectivity_bundle),
+    selectivity_update_bundle = isTRUE(
+      doitall_edits$selectivity_update_bundle
+    ),
+    all_selectivity_forms_relaxed = isTRUE(
+      doitall_edits$all_selectivity_forms_relaxed
+    ),
+    tail_compression_1pct = isTRUE(doitall_edits$tail_compression_1pct),
     time_varying_cv = isTRUE(doitall_edits$time_varying_cv),
     effort_creep = identical(frq_transform, "effort_creep"),
     dom_divisor200 = isTRUE(doitall_edits$dom_divisor200),

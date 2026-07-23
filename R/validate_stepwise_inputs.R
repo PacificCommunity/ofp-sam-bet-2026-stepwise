@@ -344,13 +344,9 @@ visit_parent <- function(id, trail = character()) {
 for (id in models$step_id) visit_parent(id)
 
 expected_weighting_parents <- c(
-  "16a-DOMDiv200" = "15-SelectivityUpdate",
-  "16b-Francis" = "16a-DOMDiv200",
-  "16c-DMG8Nmax25" = "15-SelectivityUpdate",
-  "17a-F15FormRelaxed" = "16c-DMG8Nmax25",
-  "17b-F22FormRelaxed" = "16c-DMG8Nmax25",
-  "17c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
-  "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25"
+  "20a-DOMDiv200" = "19-EffortCreep",
+  "20b-Francis" = "19-EffortCreep",
+  "20c-DMG8Nmax25" = "19-EffortCreep"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -430,15 +426,12 @@ job_record <- function(role, job_id) {
   hit <- lock$role == role & trim_character(lock$job_id) == as.character(job_id)
   if (sum(hit) == 1L) lock[hit, , drop = FALSE] else NULL
 }
-fitted_lock <- job_record("fitted_source", 13328L)
-hessian_lock <- job_record("hessian_merge", 13432L)
-if (!is.null(fitted_lock) && !is.null(hessian_lock) &&
-    identical(tolower(trim_character(fitted_lock$status)), "locked") &&
-    identical(tolower(trim_character(hessian_lock$status)), "locked") &&
-    identical(trim_character(fitted_lock$repository_commit), trim_character(hessian_lock$repository_commit)) &&
-    identical(trim_character(fitted_lock$repository_path), trim_character(hessian_lock$repository_path)) &&
-    identical(trim_character(fitted_lock$source_sha256), trim_character(hessian_lock$source_sha256))) {
-  add_failure("provenance", "Job13328 fitted source and Job13432 Hessian merge resolve to the same artifact; the roles must remain distinct.")
+fitted_lock <- job_record("fitted_source", 14363L)
+if (is.null(fitted_lock)) {
+  add_failure(
+    "provenance",
+    "the selected all-relaxed/DM fitted reference must identify Job14363."
+  )
 }
 
 lock_by_role_name <- function(role, name = NULL) {
@@ -451,7 +444,13 @@ lock_by_role_name <- function(role, name = NULL) {
 age_column <- first_column(models, c("age_length_variant", "age_variant", "caal_variant"))
 if (!nzchar(age_column)) add_failure("job-config", "age variants require an `age_length_variant` (or alias) column.")
 
-semantic_columns <- c("tag_flag2", "dm_grouping", "dm_nmax", "regional_scaling_weight", "reporting_rate_prior")
+semantic_columns <- c(
+  "tag_flag2", "dm_grouping", "dm_nmax", "regional_scaling_weight",
+  "reporting_rate_prior", "fixed_natural_mortality",
+  "length_weight_updated", "tail_compression_percent", "fixed_cpue_sigma",
+  "selectivity_update",
+  "all_selectivity_forms_relaxed"
+)
 for (column in semantic_columns) {
   if (!column %in% names(models)) add_failure("job-config", paste0("missing semantic validation column `", column, "`."))
 }
@@ -675,6 +674,7 @@ for (i in seq_len(nrow(models))) {
   row <- models[i, , drop = FALSE]
   model_id <- row$step_id[[1L]]
   major_number <- suppressWarnings(as.integer(sub("[^0-9].*$", "", model_id)))
+  path_stage <- suppressWarnings(as.integer(row_value(row, "path_stage")))
   model_dir <- configured_dirs[[i]]
   step_dir <- dirname(model_dir)
   label <- paste(trim_character(unlist(row, use.names = FALSE)), collapse = " ")
@@ -709,46 +709,88 @@ for (i in seq_len(nrow(models))) {
   flags <- parse_control_flags(doitall)
   check_placeholders(c(doitall, if (file.exists(manifest_path)) read_text(manifest_path) else character()), model_id)
 
-  if (is.finite(major_number) && major_number >= 15L) {
-    forbid_exact_controls(
-      doitall, legacy_selectivity_controls, model_id,
-      "Step 15 Job13328-compatible selectivity cleanup"
+  tail_percent <- suppressWarnings(as.numeric(
+    row_value(row, "tail_compression_percent")
+  ))
+  if (is.finite(tail_percent)) {
+    check_flag(
+      flags, 1L, 313L, tail_percent, model_id,
+      "length-frequency tail aggregation percentage"
+    )
+    check_flag(flags, 1L, 311L, 1L, model_id, "length-frequency tail arrays enabled")
+    check_flag(flags, 1L, 301L, 1L, model_id, "weight-frequency tail arrays retained")
+    check_flag(flags, 1L, 303L, 0L, model_id, "weight-frequency tail aggregation remains off")
+  }
+
+  selectivity_expected <- truthy(row_value(row, "selectivity_update"))
+  all_forms_relaxed <- truthy(
+    row_value(row, "all_selectivity_forms_relaxed")
+  )
+  if (!identical(selectivity_expected, all_forms_relaxed)) {
+    add_failure(
+      model_id,
+      paste0(
+        "the fleet-specific selectivity configuration and all-relaxed form choice ",
+        "must start together at Step 16 and remain paired thereafter."
+      )
     )
   }
-  if (identical(model_id, "15-SelectivityUpdate")) {
+  all_relaxed_fisheries <- c(
+    12L, 13L, 15L, 16L, 17L, 18L, 19L,
+    21L, 22L, 23L, 24L, 25L, 26L, 27L
+  )
+  if (!selectivity_expected) {
+    premature_relaxation <- all_relaxed_fisheries[vapply(
+      all_relaxed_fisheries,
+      function(fishery) identical(effective_flag(flags, -fishery, 16L), 0),
+      logical(1)
+    )]
+    if (length(premature_relaxation)) {
+      add_failure(
+        model_id,
+        paste0(
+          "all-relaxed flag 16=0 must not appear before Step 16; found F",
+          paste(premature_relaxation, collapse = ", F"), "."
+        )
+      )
+    }
+  }
+  if (selectivity_expected) {
+    forbid_exact_controls(
+      doitall, legacy_selectivity_controls, model_id,
+      "selected fleet-specific selectivity cleanup"
+    )
+  }
+  if (identical(model_id, "16-SelectivityUpdate")) {
     forbid_exact_controls(
       doitall,
       c(dom_divisor_controls, francis_dom_controls, dm_branch_only_controls),
       model_id,
-      "Step 15 pre-weighting state"
+      "Step 16 pre-weighting state"
     )
   }
-  if (identical(model_id, "16a-DOMDiv200")) {
-    require_exact_controls(doitall, dom_divisor_controls, model_id, "16a DOM weighting")
+  if (identical(model_id, "20a-DOMDiv200")) {
+    require_exact_controls(doitall, dom_divisor_controls, model_id, "20a DOM weighting")
     forbid_exact_controls(
       doitall, c(francis_dom_controls, dm_branch_only_controls), model_id,
-      "16a DOM-only weighting"
+      "20a DOM-only weighting"
     )
   }
-  if (identical(model_id, "16b-Francis")) {
-    require_exact_controls(doitall, francis_dom_controls, model_id, "16b Francis weighting")
+  if (identical(model_id, "20b-Francis")) {
+    require_exact_controls(doitall, francis_dom_controls, model_id, "20b Francis weighting")
     forbid_exact_controls(
       doitall, c(dom_divisor_controls, dm_branch_only_controls), model_id,
-      "16b Francis replacement weighting"
+      "20b Francis replacement weighting"
     )
   }
-  if (model_id %in% c(
-    "16c-DMG8Nmax25",
-    "17a-F15FormRelaxed", "17b-F22FormRelaxed",
-    "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed"
-  )) {
+  if (identical(model_id, "20c-DMG8Nmax25")) {
     require_exact_controls(
       doitall, job13328_dm_controls, model_id,
       "Job 13328 S011 DM/G8/Nmax25 state"
     )
     forbid_exact_controls(
       doitall, c(dom_divisor_controls, francis_dom_controls), model_id,
-      "direct Step 15 DM branch"
+      "direct Step 19 DM branch"
     )
     if (sum(trimws(doitall) == "phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}") != 1L) {
       add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE10_11_CONVERGENCE=-4`).")
@@ -760,11 +802,11 @@ for (i in seq_len(nrow(models))) {
 
   if (length(ini)) {
     first_value <- suppressWarnings(as.integer(trimws(ini[which(nzchar(trimws(ini)) & !grepl("^#", trimws(ini)))[[1L]]])))
-    expected_version <- if (model_id %in% c("01-Diag2023", "02a-NewExe1003")) 1003L else 1007L
+    expected_version <- if (model_id %in% c("01-Diag2023", "02-NewExe1003")) 1003L else 1007L
     if (!is.finite(first_value) || first_value != expected_version) {
       add_failure(model_id, paste0("bet.ini must be MFCL ", expected_version, "; found ", if (is.finite(first_value)) first_value else "unreadable", "."))
     }
-    if (is.finite(major_number) && major_number >= 3L) {
+    if (truthy(row_value(row, "fixed_natural_mortality"))) {
       age_pars <- numeric_section(ini, "age_pars")
       expected_m <- -2.54930339768360
       m_rows <- if (!is.null(age_pars) && ncol(age_pars) >= 2L) {
@@ -777,7 +819,33 @@ for (i in seq_len(nrow(models))) {
           model_id,
           paste0(
             "fixed natural mortality must remain ", format(expected_m, digits = 16L),
-            " from step 03 onward; found ", found, "."
+            " from Step 04 onward; found ", found, "."
+          )
+        )
+      }
+    }
+    if (truthy(row_value(row, "length_weight_updated"))) {
+      length_weight <- numeric_section(ini, "Length-weight parameters")
+      expected_length_weight <- c(3.073533e-05, 2.932410)
+      actual_length_weight <- if (!is.null(length_weight) &&
+                                  length(length_weight) == 2L) {
+        as.numeric(length_weight)
+      } else {
+        numeric()
+      }
+      if (!isTRUE(all.equal(
+        actual_length_weight,
+        expected_length_weight,
+        tolerance = 1e-12,
+        check.attributes = FALSE
+      ))) {
+        add_failure(
+          model_id,
+          paste0(
+            "updated length-weight parameters must remain `",
+            paste(expected_length_weight, collapse = " "),
+            "` from Step 05 onward; found `",
+            paste(actual_length_weight, collapse = " "), "`."
           )
         )
       }
@@ -785,7 +853,8 @@ for (i in seq_len(nrow(models))) {
   }
 
   tag_lock <- lock_by_role_name("tag_source", "LOW_RECAPS_REMOVED")
-  if (is.finite(major_number) && major_number >= 7L && !is.null(tag_lock) && file.exists(tag_path)) {
+  if (is.finite(path_stage) && path_stage >= 10L &&
+      !is.null(tag_lock) && file.exists(tag_path)) {
     expected <- trim_character(tag_lock$prepared_sha256[[1L]])
     actual <- sha256_file(tag_path)
     if (nzchar(expected) && !identical(expected, actual)) add_failure(model_id, paste0("bet.tag rollback/drift: expected SHA256 ", expected, ", got ", actual, "."))
@@ -810,10 +879,15 @@ for (i in seq_len(nrow(models))) {
       add_failure(model_id, paste0("TAGF2", if (expected_tag_flag2 == 1L) "ON" else "OFF", " is not isolated: every tag_flags(:,2) value must be ", expected_tag_flag2, "."))
     }
   }
-  if (grepl("MIX015", token)) {
+  mixing_expected <- is.finite(path_stage) && path_stage >= 17L
+  if (mixing_expected) {
     if (!length(tag_flags) || length(unique(tag_flags[, 1L])) < 2L) add_failure(model_id, "MIX015 requires release-specific mixing periods in bet.ini.")
     override <- flags$scope == -9999L & flags$flag == 1L
     if (any(override)) add_failure(model_id, "MIX015 rollback: doitall.sh overrides release-specific INI mixing periods with -9999 flag 1.")
+  }
+  if (is.finite(path_stage) && path_stage >= 10L && path_stage < 17L &&
+      length(tag_flags) && length(unique(tag_flags[, 1L])) != 1L) {
+    add_failure(model_id, "release-group-specific mixing periods must not appear before Step 17.")
   }
 
   rr_labels <- c("tag fish rep", "tag fish rep group flags", "tag_fish_rep active flags", "tag_fish_rep target", "tag_fish_rep penalty")
@@ -868,7 +942,7 @@ for (i in seq_len(nrow(models))) {
       if (!all(required_targets %in% as.numeric(target))) add_failure(model_id, "PTTP RR matrices are missing exact targets 49.62, 51.21, and 52.82.")
     }
 
-    if (is.finite(major_number) && major_number >= 4L) {
+    if (is.finite(major_number) && major_number >= 6L) {
       release_programs <- tag_release_programs(read_text(tag_path), tag_path)
       program_rows <- c(release_programs, "PTTP")
       expected_matrices <- expected_rr_matrices(
@@ -1029,7 +1103,7 @@ for (i in seq_len(nrow(models))) {
     }
   }
 
-  dom_expected <- identical(model_id, "16a-DOMDiv200") ||
+  dom_expected <- identical(model_id, "20a-DOMDiv200") ||
     grepl("DW10|DOM200", token) ||
     identical(row_value(row, "lf_size_divisor"), "200") ||
     identical(row_value(row, "dom_lf_divisor"), "200")
@@ -1051,16 +1125,16 @@ for (i in seq_len(nrow(models))) {
     for (fishery in 21:23) check_flag(flags, -fishery, 49L, 200, model_id, "DOM F21-F23 only")
   }
 
-  sigma_expected <- is.finite(major_number) && major_number >= 14L
+  sigma_expected <- truthy(row_value(row, "fixed_cpue_sigma"))
   if (sigma_expected) {
     sigma_lock <- lock_by_role_name("cpue_mle_sigma", "JOB13328_R1_R5")
     sigma_values <- if (!is.null(sigma_lock)) suppressWarnings(as.numeric(strsplit(sigma_lock$expected_values[[1L]], ";", fixed = TRUE)[[1L]])) else numeric()
     if (length(sigma_values) != 5L || any(!is.finite(sigma_values))) {
-      add_failure(model_id, "CPUE MLE sigma lock must provide five R1-R5 expected_values.")
+      add_failure(model_id, "CPUE observation-error lock must provide five R1-R5 expected_values.")
     } else {
-      for (j in seq_len(5L)) check_flag(flags, -(28L + j), 92L, sigma_values[[j]], model_id, paste0("CPUE MLE sigma R", j))
+      for (j in seq_len(5L)) check_flag(flags, -(28L + j), 92L, sigma_values[[j]], model_id, paste0("CPUE observation-error scale R", j))
     }
-    if (is.null(sigma_lock) || !identical(trim_character(sigma_lock$job_id[[1L]]), "13328")) add_failure(model_id, "CPUE MLE sigma provenance must identify Job 13328.")
+    if (is.null(sigma_lock) || !identical(trim_character(sigma_lock$job_id[[1L]]), "13328")) add_failure(model_id, "CPUE observation-error provenance must identify Job 13328.")
   }
 
   grouping <- toupper(row_value(row, "dm_grouping"))
@@ -1071,7 +1145,7 @@ for (i in seq_len(nrow(models))) {
     }
   }
 
-  n7_expected <- is.finite(major_number) && major_number >= 15L
+  n7_expected <- selectivity_expected
   if (n7_expected) {
     phase1_groups <- vapply(
       1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 1L),
@@ -1105,18 +1179,8 @@ for (i in seq_len(nrow(models))) {
       "age-based selectivity evaluated against scaled mean length-at-age"
     )
     check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
-    all_form_boundary <- identical(model_id, "17d-AllSelectivityFormRelaxed")
-    expected_active_form_fisheries <- c(
-      12L, 13L, 15L, 16L, 17L, 18L, 19L,
-      21L, 22L, 23L, 24L, 25L, 26L, 27L
-    )
-    if (identical(model_id, "17a-F15FormRelaxed")) {
-      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 15L)
-    } else if (identical(model_id, "17b-F22FormRelaxed")) {
-      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 22L)
-    } else if (identical(model_id, "17c-F15F22FormRelaxed")) {
-      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, c(15L, 22L))
-    } else if (all_form_boundary) {
+    expected_active_form_fisheries <- all_relaxed_fisheries
+    if (all_forms_relaxed) {
       expected_active_form_fisheries <- integer()
     }
     actual_active_form_fisheries <- which(vapply(
@@ -1140,20 +1204,16 @@ for (i in seq_len(nrow(models))) {
         paste0("F", fishery, " last age class with non-zero dome selectivity")
       )
       check_flag(flags, -fishery, 24L, fishery, model_id, paste0("F", fishery, " independent selectivity group"))
-      expected_form_flag <- if (all_form_boundary) 0L else 2L
+      expected_form_flag <- if (all_forms_relaxed) 0L else 2L
       for (pair in list(c(61, 7), c(16, expected_form_flag), c(75, 0))) {
         check_flag(flags, -fishery, pair[[1L]], pair[[2L]], model_id, paste0("F", fishery, " N7 selectivity"))
       }
     }
-    if (all_form_boundary) {
-      active_form_fisheries <- c(
-        12L, 13L, 15L, 16L, 17L, 18L, 19L,
-        21L, 22L, 23L, 24L, 25L, 26L, 27L
-      )
-      for (fishery in active_form_fisheries) {
+    if (all_forms_relaxed) {
+      for (fishery in all_relaxed_fisheries) {
         check_flag(
           flags, -fishery, 16L, 0L, model_id,
-          paste0("F", fishery, " all-fisheries selectivity-form boundary sensitivity")
+          paste0("F", fishery, " selected all-relaxed selectivity form")
         )
       }
     }
@@ -1210,11 +1270,11 @@ for (i in seq_len(nrow(models))) {
   )
 }
 
-## Step 02a is executable-only: its source inputs and scientific controls must
-## match Step 01. Steps 02b-03 inherit the Step 01 CPUE and initial-Z controls.
+## Step 02 is executable-only: its source inputs and scientific controls must
+## match Step 01. Steps 03-05 inherit the Step 01 CPUE and initial-Z controls.
 early_control_ids <- c(
-  "01-Diag2023", "02a-NewExe1003", "02b-Ini1007",
-  "02c-LengthWeight", "03-FixM"
+  "01-Diag2023", "02-NewExe1003", "03-Ini1007",
+  "04-FixM", "05-LengthWeight"
 )
 available_early_ids <- early_control_ids[early_control_ids %in% names(model_cache)]
 if ("01-Diag2023" %in% available_early_ids) {
@@ -1262,12 +1322,12 @@ if ("01-Diag2023" %in% available_early_ids) {
       )
     }
   }
-  if ("02a-NewExe1003" %in% available_early_ids) {
-    executable_step <- model_cache[["02a-NewExe1003"]]
+  if ("02-NewExe1003" %in% available_early_ids) {
+    executable_step <- model_cache[["02-NewExe1003"]]
     for (file in c("bet.frq", "bet.ini", "bet.tag", "bet.age_length", "mfcl.cfg")) {
       if (!identical(anchor$hashes[[file]], executable_step$hashes[[file]])) {
         add_failure(
-          "02a-NewExe1003",
+          "02-NewExe1003",
           paste0("executable-only isolation changed ", file, " relative to Step 01.")
         )
       }
@@ -1277,12 +1337,231 @@ if ("01-Diag2023" %in% available_early_ids) {
       scientific_flag_table(executable_step$flags)
     )) {
       add_failure(
-        "02a-NewExe1003",
+        "02-NewExe1003",
         "scientific controls differ from Step 01 outside allowed reporting-only flag 1/246."
       )
     }
   }
 }
+
+compare_model_hashes_except <- function(parent_id, child_id, except = character()) {
+  parent <- model_cache[[parent_id]]
+  child <- model_cache[[child_id]]
+  if (is.null(parent) || is.null(child)) return(invisible(NULL))
+  files <- setdiff(intersect(names(parent$hashes), names(child$hashes)), except)
+  changed <- files[parent$hashes[files] != child$hashes[files]]
+  if (length(changed)) {
+    add_failure(
+      child_id,
+      paste0(
+        "unexpected file drift from scientific parent ", parent_id, ": ",
+        paste(changed, collapse = ", "), "."
+      )
+    )
+  }
+  invisible(NULL)
+}
+
+sorted_scientific_flags <- function(flags) {
+  flags <- scientific_flag_table(flags)
+  flags <- flags[order(flags$phase, flags$scope, flags$flag, flags$value), , drop = FALSE]
+  rownames(flags) <- NULL
+  flags
+}
+
+compare_flags_after_filter <- function(parent_id, child_id, remove) {
+  parent <- model_cache[[parent_id]]
+  child <- model_cache[[child_id]]
+  if (is.null(parent) || is.null(child)) return(invisible(NULL))
+  parent_flags <- parent$flags[!remove(parent$flags), , drop = FALSE]
+  child_flags <- child$flags[!remove(child$flags), , drop = FALSE]
+  if (!identical(
+    sorted_scientific_flags(parent_flags),
+    sorted_scientific_flags(child_flags)
+  )) {
+    add_failure(
+      child_id,
+      paste0(
+        "scientific controls differ from parent ", parent_id,
+        " outside the declared isolated change."
+      )
+    )
+  }
+  invisible(NULL)
+}
+
+without_numeric_section <- function(lines, label) {
+  marker <- which(tolower(trimws(lines)) == paste0("# ", tolower(label)))
+  if (length(marker) != 1L) return(lines)
+  next_marker <- which(seq_along(lines) > marker & grepl("^#", trimws(lines)))
+  end <- if (length(next_marker)) next_marker[[1L]] - 1L else length(lines)
+  c(
+    lines[seq_len(marker)],
+    paste0("<validated ", label, " section>"),
+    if (end < length(lines)) lines[(end + 1L):length(lines)] else character()
+  )
+}
+
+compare_ini_outside_section <- function(parent_id, child_id, label) {
+  parent <- model_cache[[parent_id]]
+  child <- model_cache[[child_id]]
+  if (is.null(parent) || is.null(child)) return(invisible(NULL))
+  if (!identical(
+    without_numeric_section(parent$ini, label),
+    without_numeric_section(child$ini, label)
+  )) {
+    add_failure(
+      child_id,
+      paste0(
+        "bet.ini differs from parent ", parent_id,
+        " outside the declared `", label, "` section."
+      )
+    )
+  }
+  invisible(NULL)
+}
+
+# Step 04 changes M only; Step 05 changes length-weight only while carrying M.
+compare_model_hashes_except("03-Ini1007", "04-FixM", c("bet.ini", "doitall.sh"))
+compare_ini_outside_section("03-Ini1007", "04-FixM", "age_pars")
+compare_flags_after_filter(
+  "03-Ini1007", "04-FixM",
+  function(flags) flags$scope == 1L & flags$flag == 121L
+)
+compare_model_hashes_except("04-FixM", "05-LengthWeight", "bet.ini")
+compare_ini_outside_section(
+  "04-FixM", "05-LengthWeight", "Length-weight parameters"
+)
+
+# Step 09 changes only LF tail percentage 313 from 0 to 1.
+compare_model_hashes_except(
+  "08-AddLengthData", "09-TailCompression1Pct", "doitall.sh"
+)
+compare_flags_after_filter(
+  "08-AddLengthData", "09-TailCompression1Pct",
+  function(flags) flags$scope == 1L & flags$flag == 313L
+)
+
+# Step 12 changes only the time-varying CPUE relative-variance controls.
+compare_model_hashes_except(
+  "11-RegionalCPUE", "12-TimeVaryingCV", "doitall.sh"
+)
+compare_flags_after_filter(
+  "11-RegionalCPUE", "12-TimeVaryingCV",
+  function(flags) {
+    (flags$scope %in% -(29:33) & flags$flag == 66L) |
+      (flags$scope == 1L & flags$flag == 66L)
+  }
+)
+
+# Step 13 changes only the five CPUE observation-error scales and adds their
+# preliminary maximum-likelihood audit record.
+compare_model_hashes_except(
+  "12-TimeVaryingCV", "13-CPUEErrorCalibration",
+  c("doitall.sh", "cpue_mle_sigma_audit.csv")
+)
+compare_flags_after_filter(
+  "12-TimeVaryingCV", "13-CPUEErrorCalibration",
+  function(flags) flags$scope %in% -(29:33) & flags$flag == 92L
+)
+
+# Step 14 changes only the age-data input, using BASE075 as the common
+# reference state. Step 15 siblings then change only that same input.
+compare_model_hashes_except(
+  "13-CPUEErrorCalibration", "14-NewAgeData", "bet.age_length"
+)
+compare_model_hashes_except(
+  "14-NewAgeData", "15a-REG075", "bet.age_length"
+)
+compare_model_hashes_except(
+  "14-NewAgeData", "15b-SUB075", "bet.age_length"
+)
+
+# Step 16 changes only the executable selectivity controls and their
+# human-readable fishery grouping sidecar; every other carried input is exact.
+compare_model_hashes_except(
+  "15b-SUB075", "16-SelectivityUpdate",
+  c("doitall.sh", "fishery_map.R")
+)
+
+# Step 17 changes only release-group mixing periods in tag-flag column 1.
+compare_model_hashes_except(
+  "16-SelectivityUpdate", "17-MIX015", "bet.ini"
+)
+compare_ini_outside_section(
+  "16-SelectivityUpdate", "17-MIX015", "tag flags"
+)
+
+# Step 18 changes only the reporting-rate exclusion flag while retaining the
+# Step 17 mixing periods. Step 19 then applies effort creep only to the
+# frequency file. Step 20 branches change only their declared weighting controls.
+compare_model_hashes_except(
+  "17-MIX015", "18-TagReportingExclusion", "bet.ini"
+)
+compare_model_hashes_except(
+  "18-TagReportingExclusion", "19-EffortCreep", "bet.frq"
+)
+compare_ini_outside_section(
+  "17-MIX015", "18-TagReportingExclusion", "tag flags"
+)
+
+compare_tag_flag_boundary <- function(
+    parent_id, child_id, changed_column, description) {
+  parent <- model_cache[[parent_id]]
+  child <- model_cache[[child_id]]
+  if (is.null(parent) || is.null(child)) return(invisible(NULL))
+  parent_flags <- parent$tag_flags
+  child_flags <- child$tag_flags
+  if (is.null(parent_flags) || is.null(child_flags) ||
+      !identical(dim(parent_flags), dim(child_flags))) {
+    add_failure(child_id, paste0(description, " changed the tag-flag matrix shape."))
+    return(invisible(NULL))
+  }
+  parent_flags[, changed_column] <- 0
+  child_flags[, changed_column] <- 0
+  if (!identical(parent_flags, child_flags)) {
+    add_failure(
+      child_id,
+      paste0(description, " differs from ", parent_id,
+             " outside tag_flags(:,", changed_column, ").")
+    )
+  }
+  invisible(NULL)
+}
+compare_tag_flag_boundary(
+  "16-SelectivityUpdate", "17-MIX015", 1L,
+  "Step 17 release-group-specific mixing-period change"
+)
+compare_tag_flag_boundary(
+  "17-MIX015", "18-TagReportingExclusion", 2L,
+  "Step 18 reporting-rate exclusion change"
+)
+
+compare_model_hashes_except(
+  "19-EffortCreep", "20a-DOMDiv200", "doitall.sh"
+)
+compare_flags_after_filter(
+  "19-EffortCreep", "20a-DOMDiv200",
+  function(flags) flags$scope %in% -(21:23) & flags$flag == 49L
+)
+compare_model_hashes_except(
+  "19-EffortCreep", "20b-Francis", "doitall.sh"
+)
+compare_flags_after_filter(
+  "19-EffortCreep", "20b-Francis",
+  function(flags) flags$scope <= -1L & flags$scope >= -33L & flags$flag == 49L
+)
+compare_model_hashes_except(
+  "19-EffortCreep", "20c-DMG8Nmax25", "doitall.sh"
+)
+compare_flags_after_filter(
+  "19-EffortCreep", "20c-DMG8Nmax25",
+  function(flags) {
+    (flags$scope == 1L & flags$flag %in% c(141L, 313L, 320L, 342L)) |
+      (flags$scope <= -1L & flags$scope >= -33L & flags$flag == 68L) |
+      (flags$scope == -999L & flags$flag %in% c(69L, 89L))
+  }
+)
 
 ## Isolation checks for matched TAGF2 and mixing-period pairs, when configured.
 normalise_pair_id <- function(id, dimension) {

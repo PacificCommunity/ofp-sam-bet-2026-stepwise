@@ -6,8 +6,8 @@
 | --- | --- | --- |
 | Why use DM? | The Dirichlet-multinomial likelihood estimates overdispersion within the model, allowing the effective information in length-frequency data to differ from the nominal sample size. | Use DM for the selected composition likelihood. |
 | Why retain an upper asymptote? | Preliminary fits showed that large `Nmax` values gave the length-frequency component greater influence and worsened CPUE fit. A finite asymptote helps preserve balance among likelihood components in the integrated model. | Treat `Nmax` as an upper asymptote, not as a target effective sample size or a hard clipping rule. |
-| Why 25? | `Nmax=25` is a rounded scale informed by the fishery-level Francis effective sample-size diagnostics underlying the Step 17a comparison. MFCL still estimates the DM parameter internally and approaches `Nmax` smoothly. | Apply `Nmax=25` in `17b-DMG8Nmax25`; Steps 17a and 17b remain sibling alternatives from Step 16. |
-| How was it assessed? | No single component was used as the decision criterion. Length-frequency fit, CPUE fit, convergence, parameter bounds, and Hessian stability were considered jointly. | Carry `17b-DMG8Nmax25` as the final selected stepwise model. |
+| Why 25? | `Nmax=25` is a rounded scale informed by the fishery-level Francis effective sample-size diagnostics underlying the Step 20b comparison. MFCL still estimates the DM parameter internally and approaches `Nmax` smoothly. | Apply `Nmax=25` in `20c-DMG8Nmax25`; Steps 20a, 20b, and 20c are independent sibling alternatives from Step 19. |
+| How was it assessed? | No single component was used as the decision criterion. Length-frequency fit, CPUE fit, convergence, parameter bounds, and Hessian stability were considered jointly. | Carry `20c-DMG8Nmax25` as the final selected stepwise model. |
 
 ## Report-ready text
 
@@ -18,12 +18,17 @@ maximum effective sample sizes increased the influence of the
 length-frequency component and reduced the fit to CPUE indices. The upper
 asymptote was therefore set to 25 to maintain balance among likelihood
 components. This rounded value was calibrated against the fishery-level
-Francis effective sample-size diagnostics underlying the sibling Step 17a
+Francis effective sample-size diagnostics underlying the sibling Step 20b
 comparison. These
 diagnostics supplied an external scale only: MFCL estimated the DM parameter
 internally and mapped it to an effective sample size that approached 25
 smoothly. The selected value was evaluated using composition and CPUE fits,
 convergence, parameter bounds, and Hessian stability.
+
+The Step 09 value `parest 313=1` is retained through the normal-likelihood
+pathway and its comparison branches, then explicitly reset to `0` in Step 20c
+because the DM likelihood does not use that percentage threshold. Its
+length-bin support is controlled by `parest 320=5`.
 
 ## Interpretation limits
 
