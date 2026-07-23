@@ -1,4 +1,4 @@
-# 10 MIX015
+# 10 Tag-mixing periods
 
 Copy only MIX015 tag mixing periods into column 1 while retaining tag_flags(:,2)=0.
 
@@ -52,7 +52,7 @@ Copy only MIX015 tag mixing periods into column 1 while retaining tag_flags(:,2)
 
 | # | Control |
 | --- | --- |
-| 1 | Regional CPUE likelihood controls are active. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
 | 3 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 4 | No OPR or length-bin selectivity controls are generated. |

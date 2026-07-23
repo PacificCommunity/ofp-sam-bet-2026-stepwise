@@ -46,14 +46,14 @@ selected model.
 | 09b | `09b-REG075` | `08-RegionalCPUE` | alternative / stop | Apply REG075 composition weighting. |
 | 09c | `09c-SUB075` | `08-RegionalCPUE` | selected / carry | Apply the selected SUB075 composition weighting. |
 | 10 | `10-MIX015` | `09c-SUB075` | selected / carry | Apply the MIX015 tag-mixing setting. |
-| 11 | `11-TAGF2ON` | `10-MIX015` | selected / carry | Turn on tag flag column 2 only. |
-| 12 | `12-TimeVaryingCV` | `11-TAGF2ON` | selected / carry | Apply time-varying CPUE CVs. |
+| 11 | `11-TAGF2ON` | `10-MIX015` | selected / carry | Exclude reporting-rate effects during each release group's configured mixing periods. |
+| 12 | `12-TimeVaryingCV` | `11-TAGF2ON` | selected / carry | Apply normalized time-varying CPUE relative-variance multipliers. |
 | 13 | `13-EffortCreep` | `12-TimeVaryingCV` | selected / carry | Apply the BET 2026 effort-creep series. |
 | 14 | `14-CPUESigma` | `13-EffortCreep` | selected / carry | Apply common index-specific CPUE MLE sigma values. |
 | 15 | `15-SelectivityUpdate` | `14-CPUESigma` | selected / carry | Address persistent structured F25/F26 length-frequency misfit with independent seven-node cubic-spline selectivities, and separate F29-F33 regional-index selectivities. |
 | 16 | `16-DOMDiv200` | `15-SelectivityUpdate` | selected / carry | Apply DOM divisor 200 to F21-F23. |
 | 17a | `17a-Francis` | `16-DOMDiv200` | alternative / stop | Apply the Francis composition-data weighting comparison. |
-| 17b | `17b-DMG8Nmax25` | `16-DOMDiv200` | selected / final | Apply the DM likelihood and G8 PSSET grouping with a rounded Nmax 25 cap selected just above the preliminary Francis ESS 95th percentile. |
+| 17b | `17b-DMG8Nmax25` | `16-DOMDiv200` | selected / final | Apply the DM likelihood and G8 PSSET grouping with `Nmax=25`, calibrated from the fishery-level Francis ESS diagnostics underlying Step 17a. Steps 17a and 17b are sibling likelihood alternatives, not sequential fits. |
 
 The latest RRPTTP26 reporting-rate penalties are part of
 `07-DataTo2024`; there is no standalone reporting-rate model row. Because
@@ -104,9 +104,9 @@ bound on composition information, not as a target effective sample size.
 | Consideration | Evidence from preliminary fits | Stepwise decision |
 | --- | --- | --- |
 | Composition weighting | DM estimated overdispersion and effective composition information internally, avoiding direct use of large nominal sample sizes. | Retain DM as the selected composition likelihood. |
-| Integrated-model balance | Larger `Nmax` values increased the influence of length-frequency data and degraded CPUE fit. | Cap the maximum effective composition information rather than allowing the LF component to dominate the joint objective function. |
-| Empirical scale | The upper tail of preliminary fishery-level Francis ESS estimates provided an independent scale for a plausible cap. | Use the rounded value `Nmax=25`, selected just above the preliminary Francis ESS 95th percentile. |
-| Interpretation | The 95th percentile describes the empirical location of the cap, not a 95% data weight. | State explicitly that `Nmax=25` is a pragmatic upper bound assessed using LF fit, CPUE fit, convergence, and model stability together. |
+| Integrated-model balance | Larger `Nmax` values increased the influence of length-frequency data and degraded CPUE fit. | Use a finite upper asymptote for DM effective composition information rather than allowing the LF component to dominate the joint objective function. |
+| Empirical scale | The upper range of preliminary fishery-level Francis ESS diagnostics provided an independent calibration scale. | Use the rounded value `Nmax=25` as the DM effective-sample-size upper asymptote. |
+| Interpretation | Francis diagnostics calibrate the scale but are not clipped by the DM implementation. | State explicitly that MFCL estimates the DM parameter internally and approaches `Nmax=25` smoothly. |
 
 This choice preserves the main advantage of DM weighting while limiting the
 ability of a small number of highly informative composition series to dominate
@@ -137,7 +137,7 @@ branch selection remain BET 2026 decisions.
 | 14 | Index-specific observation error controls the relative influence of CPUE series in the integrated fit. | Preliminary fits across alternative configurations gave similar MLE sigma estimates. Fix these common values for all later stepwise comparisons so CPUE weighting remains consistent. |
 | 15 | Fleet-specific selectivity avoids forcing unlike fisheries to share one curve, and flexible splines retain smoothness while representing size availability. | Address persistent structured F25/F26 LF misfit with independent seven-node splines while retaining both fisheries in associated-purse-seine G8; separate F29-F33 regional-index selectivities while retaining their common index-oriented DM group. These exact choices are assessment-specific and evaluated stepwise. |
 | 16 | Data weighting can alter a likelihood component's influence. | The DOM treatment for F21-F23 and divisor `200` are assessment-specific. No literature-derived claim is made for that divisor. |
-| 17 | Francis weighting accounts for composition residual behavior; the Dirichlet-multinomial (DM) models overdispersion and estimates effective composition information. | Compare Francis with one bundled final DM configuration using G8 PSSET and a rounded `Nmax=25` cap just above the preliminary fishery-level Francis ESS 95th percentile. This limits extreme DM ESS while leaving about 95% of that empirical distribution uncapped; it is not "95% weighting." |
+| 17 | Francis weighting adjusts fishery-specific composition weights while retaining the normal likelihood; the Dirichlet-multinomial (DM) instead models overdispersion and estimates effective composition information internally. | Compare Francis weighting with one bundled DM configuration using G8 PSSET and `Nmax=25` as the effective-sample-size upper asymptote. Preliminary Francis diagnostics calibrate the scale but are not directly clipped by the DM implementation. |
 
 Useful method references:
 

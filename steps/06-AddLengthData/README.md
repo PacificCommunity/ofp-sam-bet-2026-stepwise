@@ -1,4 +1,4 @@
-# 06 AddLengthData
+# 06 Add length-composition data
 
 Add the additional length-composition data.
 

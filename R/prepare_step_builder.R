@@ -80,7 +80,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   apply_fixm_m(ini_out)
   ini_notes <- c(
     ini_notes,
-    paste("FixM M row applied from", get0("fixm_age_par_source", ifnotfound = "locked diagnostic")),
+    paste(
+      "Fixed Lorenzen natural-mortality intercept applied from",
+      get0("fixm_age_par_source", ifnotfound = "locked diagnostic")
+    ),
     set_total_population_scalar(
       ini_out,
       get0("five_region_total_population_scalar", ifnotfound = 17L)

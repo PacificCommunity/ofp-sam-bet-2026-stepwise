@@ -275,7 +275,7 @@ apply_fixm_m <- function(path) {
         identical(x[[2]], "-1")
     }, logical(1)))
     if (!length(already)) {
-      stop("Could not find FixM M row in ", path, call. = FALSE)
+      stop("Could not find the Lorenzen natural-mortality coefficient row in ", path, call. = FALSE)
     }
     return(invisible(FALSE))
   }

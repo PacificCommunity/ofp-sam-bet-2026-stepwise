@@ -1,6 +1,6 @@
-# 12 TimeVaryingCV
+# 12 Time-varying CPUE uncertainty
 
-Apply time-varying CPUE CVs to F29-F33.
+Apply normalized time-varying CPUE relative-variance multipliers to F29-F33.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Apply time-varying CPUE CVs to F29-F33.
 
 | # | Change |
 | --- | --- |
-| 1 | Apply time-varying CPUE CVs to F29-F33. |
+| 1 | Apply normalized time-varying CPUE relative-variance multipliers to F29-F33. |
 | 2 | Scientific parent: '11-TAGF2ON'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Apply time-varying CPUE CVs to F29-F33.
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Apply time-varying CPUE CVs to F29-F33. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Apply normalized time-varying CPUE relative-variance multipliers to F29-F33. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -52,9 +52,9 @@ Apply time-varying CPUE CVs to F29-F33.
 
 | # | Control |
 | --- | --- |
-| 1 | Regional CPUE likelihood controls are active. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | F29-F33 time-varying CPUE CV controls are active. |
+| 3 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 | 4 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 5 | No OPR or length-bin selectivity controls are generated. |
 | 6 | INI and TAG inputs are never rolled back to an earlier selected row. |

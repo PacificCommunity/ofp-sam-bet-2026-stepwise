@@ -122,10 +122,9 @@ selectivity_names <- c(
 )
 fishery_map$selectivity_name <- selectivity_names[fishery_map$selectivity_group]
 
-# Step 11 separates only final regional-index selectivity groups.
-fishery_map$selectivity_group[29:33] <- 29:33
-selectivity_names[29:33] <- paste0("Index R", 1:5)
-fishery_map$selectivity_name <- selectivity_names[fishery_map$selectivity_group]
+# Step 15 uses one documented selectivity group per final fishery.
+fishery_map$selectivity_group <- seq_len(nrow(fishery_map))
+fishery_map$selectivity_name <- fishery_map$fishery_name
 
 make_fishery_group_map <- function(group_col, name_col) {
   groups <- sort(unique(fishery_map[[group_col]]))

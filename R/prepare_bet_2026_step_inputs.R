@@ -76,8 +76,8 @@ bias_corrected_length_weight_note <- paste(
 
 fixm_age_par_value <- "-2.54930339768360e+00"
 fixm_age_par_source <- "the 01-Diag2023 mgc=-5 diagnostic final par"
-fixm_age_par_note <- paste("FixM M row applied from", fixm_age_par_source)
-fixm_age_par_display <- paste("FixM M row from", fixm_age_par_source)
+fixm_age_par_note <- paste("Fixed Lorenzen natural-mortality intercept applied from", fixm_age_par_source)
+fixm_age_par_display <- paste("Fixed Lorenzen natural-mortality intercept from", fixm_age_par_source)
 
 diagnostic_root_env <- Sys.getenv("BET_2023_DIAGNOSTIC_ROOT", "")
 diagnostic_root_candidates <- if (nzchar(diagnostic_root_env)) {
@@ -419,7 +419,7 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
   }
   if (isTRUE(fixm)) {
     apply_fixm_m(file.path(paths$model_dir, "bet.ini"))
-    ini_notes <- c(ini_notes, paste("FixM M row applied from", fixm_age_par_source))
+    ini_notes <- c(ini_notes, paste("Fixed Lorenzen natural-mortality intercept applied from", fixm_age_par_source))
   }
   write_generated_tag_rep_map(paths$model_dir)
   write_2023_newexe_doitall(
@@ -458,7 +458,7 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
   } else if (isTRUE(fixm)) {
     input_change_table(
       c(".ini", ".frq/.tag/.age_length"),
-      c("Applies the fixed-M row from the 01 diagnostic `mgc=-5` final par.", "No generated edit."),
+      c("Sets the Lorenzen natural-mortality intercept to `-2.54930339768360` and retains the length slope `-1`; both are fixed in later fits.", "No generated edit."),
       c(paste0("All other `", source_step, "` ini controls."), paste0("Inherited from `", source_step, "`."))
     )
   } else {
@@ -530,8 +530,11 @@ write_diagnostic_substep(
 )
 write_diagnostic_substep(
   "03-FixM",
-  "03 FixM",
-  "02c length-weight baseline with the FixM M-scale row applied from the 01-Diag2023 mgc=-5 final run.",
+  "03 Fixed natural mortality",
+  paste0(
+    "02c length-weight baseline with natural mortality fixed at ",
+    fixm_age_par_value, "."
+  ),
   source_step = "02c-LengthWeight",
   fixm = TRUE
 )
@@ -708,7 +711,7 @@ write_readme(
     c(
       "No generated edit beyond source validation.",
       paste(
-        "Applies the fixed-M row, normalizes the tag-flags marker, and uses",
+        "Applies the fixed Lorenzen natural-mortality coefficients, normalizes the tag-flags marker, and uses",
         paste0(bias_corrected_length_weight_note, "."),
         "Grouped tag reporting-rate initial values are harmonized for native MFCL without changing group flags, targets, or penalties."
       ),
@@ -905,17 +908,19 @@ write_sequence_step <- function(
       "bet.age_length" = basename(age_source)
     ),
     control_notes = c(
-      if (regional_cpue) "Regional CPUE likelihood controls are active.",
+      if (regional_cpue) "Regional CPUE indices use the configured stationary-catchability/likelihood groups.",
       if (!is.na(regional_scaling_weight)) paste0("Regional-scaling weight is ", regional_scaling_weight, "."),
-      if (index_selectivity) "F29-F33 final selectivity groups are independent.",
+      if (index_selectivity) "F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5.",
       if (f25_f26_spline7) "F25 and F26 use independent groups 25/26 and seven-node cubic splines.",
-      if (time_varying_cv) "F29-F33 time-varying CPUE CV controls are active.",
+      if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
       if (fixed_cpue_sigma) paste0(
-        "Fixed common CPUE MLE sigma flag-92 vector: ",
+        "Fixed CPUE observation-error scales (flag 92 integer percentages): ",
         paste(cpue_sigma_calibration$flag92, collapse = ", "), "."
       ),
-      if (nzchar(dm_grouping)) paste0(dm_grouping, " DM likelihood with Nmax=", dm_nmax, ".")
+      if (nzchar(dm_grouping)) paste0(
+        dm_grouping, " DM likelihood with effective-sample-size upper asymptote Nmax=", dm_nmax, "."
+      )
     ),
     input_changes = input_change_table(
       c(".frq", ".ini", ".tag", ".age_length", "doitall.sh"),
@@ -950,7 +955,7 @@ write_sequence_step <- function(
 }
 
 write_sequence_step(
-  "05-ConvertToLength", "05 ConvertToLength", "04-NewStructure",
+  "05-ConvertToLength", "05 Convert weight to length compositions", "04-NewStructure",
   "Convert the existing weight compositions to length.",
   frq_source = frq_convert_length_2021,
   ini_source = regfish_ini_source,
@@ -958,7 +963,7 @@ write_sequence_step(
 )
 
 write_sequence_step(
-  "06-AddLengthData", "06 AddLengthData", "05-ConvertToLength",
+  "06-AddLengthData", "06 Add length-composition data", "05-ConvertToLength",
   "Add the additional length-composition data.",
   frq_source = frq_length_plus_length_2021,
   ini_source = regfish_ini_source,
@@ -967,7 +972,7 @@ write_sequence_step(
 
 # RRPTTP26 is integrated in step 07 and inherited by every descendant.
 write_sequence_step(
-  "07-DataTo2024", "07 DataTo2024 with RRPTTP26", "06-AddLengthData",
+  "07-DataTo2024", "07 Data through 2024 and updated tag reporting rates", "06-AddLengthData",
   "Extend data through 2024 and integrate the latest RRPTTP26 penalties.",
   reporting_rate_variant = "rrpttp26",
   tag_reporting_source = peatman_rr_ini
@@ -975,7 +980,7 @@ write_sequence_step(
 
 # Regional CPUE and REGW100 are one scientific group; selectivity is unchanged.
 write_sequence_step(
-  "08-RegionalCPUE", "08 Regional CPUE and REGW100", "07-DataTo2024",
+  "08-RegionalCPUE", "08 Regional CPUE likelihood and weighting", "07-DataTo2024",
   "Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty.",
   frq_source = frq_regional_2024,
   reporting_rate_variant = "rrpttp26",
@@ -1041,41 +1046,41 @@ write_selected_path_step <- function(
 }
 
 write_selected_path_step(
-  "10-MIX015", "10 MIX015", "09c-SUB075",
+  "10-MIX015", "10 Tag-mixing periods", "09c-SUB075",
   "Copy only MIX015 tag mixing periods into column 1 while retaining tag_flags(:,2)=0.",
   tag_mixing = TRUE
 )
 write_selected_path_step(
-  "11-TAGF2ON", "11 TAGF2ON column 2", "10-MIX015",
+  "11-TAGF2ON", "11 Enable tag flag 2", "10-MIX015",
   "Change only tag_flags(:,2) from 0 to 1.",
   tag_mixing = TRUE, tag_flag2 = 1L
 )
 write_selected_path_step(
-  "12-TimeVaryingCV", "12 TimeVaryingCV", "11-TAGF2ON",
-  "Apply time-varying CPUE CVs to F29-F33.",
+  "12-TimeVaryingCV", "12 Time-varying CPUE uncertainty", "11-TAGF2ON",
+  "Apply normalized time-varying CPUE relative-variance multipliers to F29-F33.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE
 )
 write_selected_path_step(
-  "13-EffortCreep", "13 EffortCreep", "12-TimeVaryingCV",
+  "13-EffortCreep", "13 Effort-creep adjustment", "12-TimeVaryingCV",
   "Apply the BET 2026 effort-creep series only to positive F29-F33 effort.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE
 )
 write_selected_path_step(
-  "14-CPUESigma", "14 CPUE observation-error calibration", "13-EffortCreep",
-  "Carry the common CPUE MLE sigma controls selected from the preliminary model fits.",
+  "14-CPUESigma", "14 Fixed CPUE observation-error calibration", "13-EffortCreep",
+  "Fix the common index-specific CPUE sigma vector empirically calibrated from preliminary MLE fits.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE
 )
 write_selected_path_step(
-  "15-SelectivityUpdate", "15 Consolidated selectivity update", "14-CPUESigma",
+  "15-SelectivityUpdate", "15 Fleet-specific selectivity update", "14-CPUESigma",
   "Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index selectivities.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
   index_selectivity = TRUE, f25_f26_spline7 = TRUE
 )
 write_selected_path_step(
-  "16-DOMDiv200", "16 DOM F21-F23 divisor 200", "15-SelectivityUpdate",
+  "16-DOMDiv200", "16 F21-F23 length-composition downweighting", "15-SelectivityUpdate",
   "Apply the assessment-specific DOM divisor 200 only to F21-F23.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
@@ -1085,7 +1090,7 @@ write_selected_path_step(
 
 # The only final composition-likelihood siblings share 16-DOMDiv200 directly.
 write_selected_path_step(
-  "17a-Francis", "17a Francis comparison", "16-DOMDiv200",
+  "17a-Francis", "17a Francis length-composition weighting", "16-DOMDiv200",
   "Apply the locked Francis TA1.8 composition-data weighting comparison.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
@@ -1093,8 +1098,8 @@ write_selected_path_step(
   dom = TRUE, francis = francis_lf_divisors
 )
 write_selected_path_step(
-  "17b-DMG8Nmax25", "17b DM-G8PSSET-Nmax25 final", "16-DOMDiv200",
-  "Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final configuration.",
+  "17b-DMG8Nmax25", "17b DM length-composition likelihood", "16-DOMDiv200",
+  "Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25.",
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
   index_selectivity = TRUE, f25_f26_spline7 = TRUE,

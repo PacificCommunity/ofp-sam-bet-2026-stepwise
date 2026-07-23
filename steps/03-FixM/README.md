@@ -1,6 +1,6 @@
-# 03 FixM
+# 03 Fixed natural mortality
 
-02c length-weight baseline with the FixM M-scale row applied from the 01-Diag2023 mgc=-5 final run.
+02c length-weight baseline with natural mortality fixed at -2.54930339768360e+00.
 
 ## Snapshot
 
@@ -21,7 +21,7 @@
 | File | Source / note |
 | --- | --- |
 | `.frq` | `steps/02c-LengthWeight/model/bet.frq` |
-| `.ini` | `steps/02c-LengthWeight/model/bet.ini`; FixM M row applied from the 01-Diag2023 mgc=-5 diagnostic final par |
+| `.ini` | `steps/02c-LengthWeight/model/bet.ini`; Fixed Lorenzen natural-mortality intercept applied from the 01-Diag2023 mgc=-5 diagnostic final par |
 | `.tag` | `steps/02c-LengthWeight/model/bet.tag` |
 | `.age_length` | `steps/02c-LengthWeight/model/bet.age_length` |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
@@ -30,7 +30,7 @@
 
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
-| `.ini` | Applies the fixed-M row from the 01 diagnostic `mgc=-5` final par. | All other `02c-LengthWeight` ini controls. |
+| `.ini` | Sets the Lorenzen natural-mortality intercept to `-2.54930339768360` and retains the length slope `-1`; both are fixed in later fits. | All other `02c-LengthWeight` ini controls. |
 | `.frq/.tag/.age_length` | No generated edit. | Inherited from `02c-LengthWeight`. |
 
 ## Source Revisions

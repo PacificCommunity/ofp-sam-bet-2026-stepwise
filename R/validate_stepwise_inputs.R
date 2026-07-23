@@ -93,8 +93,19 @@ section_text <- function(lines, label) {
 parse_control_flags <- function(lines) {
   rows <- list()
   n <- 0L
+  phase <- 0L
   for (line_number in seq_along(lines)) {
-    clean <- trimws(sub("#.*$", "", lines[[line_number]]))
+    raw <- trimws(lines[[line_number]])
+    phase_start <- regmatches(raw, regexec("<<PHASE([0-9]+)$", raw))[[1L]]
+    if (length(phase_start) == 2L) {
+      phase <- as.integer(phase_start[[2L]])
+      next
+    }
+    if (grepl("^PHASE[0-9]+$", raw)) {
+      phase <- 0L
+      next
+    }
+    clean <- trimws(sub("#.*$", "", raw))
     if (!nzchar(clean)) next
     words <- strsplit(clean, "[[:space:]]+")[[1L]]
     values <- suppressWarnings(as.numeric(words))
@@ -107,12 +118,16 @@ parse_control_flags <- function(lines) {
         flag = as.integer(values[[start + 1L]]),
         value = values[[start + 2L]],
         line = line_number,
+        phase = phase,
         stringsAsFactors = FALSE
       )
     }
   }
   if (!length(rows)) {
-    return(data.frame(scope = integer(), flag = integer(), value = numeric(), line = integer()))
+    return(data.frame(
+      scope = integer(), flag = integer(), value = numeric(),
+      line = integer(), phase = integer()
+    ))
   }
   do.call(rbind, rows)
 }
@@ -126,6 +141,11 @@ effective_flag <- function(flags, scope, flag) {
   if (length(specific)) return(tail(specific, 1L))
   global <- flag_values(flags, -999L, flag)
   if (length(global)) tail(global, 1L) else NA_real_
+}
+
+effective_flag_at_phase <- function(flags, scope, flag, phase) {
+  eligible <- flags$phase == 0L | flags$phase <= as.integer(phase)
+  effective_flag(flags[eligible, , drop = FALSE], scope, flag)
 }
 
 check_flag <- function(flags, scope, flag, expected, model_id, description = "") {
@@ -430,6 +450,24 @@ for (i in seq_len(nrow(models))) {
     if (!is.finite(first_value) || first_value != expected_version) {
       add_failure(model_id, paste0("bet.ini must be MFCL ", expected_version, "; found ", if (is.finite(first_value)) first_value else "unreadable", "."))
     }
+    if (is.finite(major_number) && major_number >= 3L) {
+      age_pars <- numeric_section(ini, "age_pars")
+      expected_m <- -2.54930339768360
+      m_rows <- if (!is.null(age_pars) && ncol(age_pars) >= 2L) {
+        which(age_pars[, 2L] == -1 & age_pars[, 1L] > -3 & age_pars[, 1L] < -2)
+      } else integer()
+      if (length(m_rows) != 1L ||
+          !isTRUE(all.equal(age_pars[m_rows, 1L], expected_m, tolerance = 1e-12))) {
+        found <- if (length(m_rows)) paste(age_pars[m_rows, 1L], collapse = ", ") else "missing"
+        add_failure(
+          model_id,
+          paste0(
+            "fixed natural mortality must remain ", format(expected_m, digits = 16L),
+            " from step 03 onward; found ", found, "."
+          )
+        )
+      }
+    }
   }
 
   tag_lock <- lock_by_role_name("tag_source", "LOW_RECAPS_REMOVED")
@@ -512,6 +550,39 @@ for (i in seq_len(nrow(models))) {
     regw <- suppressWarnings(as.numeric(row_value(row, "regional_scaling_weight", sub(".*REGW([0-9]+).*", "\\1", token))))
     if (is.finite(regw)) check_flag(flags, 1L, 77L, regw, model_id, "regional-scaling weight")
     for (pair in list(c(78, 1), c(79, 240), c(80, 220), c(81, 1))) check_flag(flags, 1L, pair[[1L]], pair[[2L]], model_id, "regional-scaling window/control")
+    phase1_cpue <- vapply(
+      29:33, function(fishery) effective_flag_at_phase(flags, -fishery, 99L, 1L),
+      numeric(1)
+    )
+    phase5_cpue <- vapply(
+      29:33, function(fishery) effective_flag_at_phase(flags, -fishery, 99L, 5L),
+      numeric(1)
+    )
+    phase1_sigma_groups <- vapply(
+      29:33, function(fishery) effective_flag_at_phase(flags, -fishery, 94L, 1L),
+      numeric(1)
+    )
+    phase5_sigma_groups <- vapply(
+      29:33, function(fishery) effective_flag_at_phase(flags, -fishery, 94L, 5L),
+      numeric(1)
+    )
+    if (!identical(as.numeric(phase1_cpue), rep(29, 5L))) {
+      add_failure(model_id, paste0("phase-1 regional CPUE groups must all be 29; found ", paste(phase1_cpue, collapse = " "), "."))
+    }
+    if (!identical(as.numeric(phase5_cpue), as.numeric(29:33))) {
+      add_failure(model_id, paste0("phase-5 regional CPUE groups must be 29:33; found ", paste(phase5_cpue, collapse = " "), "."))
+    }
+    if (!identical(as.numeric(phase1_sigma_groups), rep(1, 5L)) ||
+        !identical(as.numeric(phase5_sigma_groups), rep(0, 5L))) {
+      add_failure(
+        model_id,
+        paste0(
+          "regional CPUE flag 94 must use fishery-specific flag-92 scales in the shared staged-run-1 group and revert after separate flag-99 groups are introduced in staged run 5; found ",
+          paste(phase1_sigma_groups, collapse = " "), " -> ",
+          paste(phase5_sigma_groups, collapse = " "), "."
+        )
+      )
+    }
   }
 
   dom_expected <- grepl("DW10|DOM200", token) || identical(row_value(row, "lf_size_divisor"), "200") || identical(row_value(row, "dom_lf_divisor"), "200")
@@ -553,13 +624,47 @@ for (i in seq_len(nrow(models))) {
     }
   }
 
-  n7_expected <- grepl("F25/F26.*N7|F25-F26.*N7|G8PSSET", toupper(label))
+  n7_expected <- is.finite(major_number) && major_number >= 15L
   if (n7_expected) {
-    check_flag(flags, -25L, 24L, 25L, model_id, "independent F25 selectivity group")
-    check_flag(flags, -26L, 24L, 26L, model_id, "independent F26 selectivity group")
+    phase1_groups <- vapply(
+      1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 1L),
+      numeric(1)
+    )
+    phase5_groups <- vapply(
+      1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 5L),
+      numeric(1)
+    )
+    expected_phase1 <- c(1:28, rep(29, 5L))
+    if (!identical(as.numeric(phase1_groups), as.numeric(expected_phase1))) {
+      add_failure(
+        model_id,
+        paste0(
+          "phase-1 selectivity grouping must be `", paste(expected_phase1, collapse = " "),
+          "`; found `", paste(phase1_groups, collapse = " "), "`."
+        )
+      )
+    }
+    if (!identical(as.numeric(phase5_groups), as.numeric(1:33))) {
+      add_failure(
+        model_id,
+        paste0(
+          "phase-5 effective selectivity grouping must be contiguous 1:33; found `",
+          paste(phase5_groups, collapse = " "), "`."
+        )
+      )
+    }
+    check_flag(
+      flags, -999L, 26L, 2L, model_id,
+      "age-based selectivity evaluated against scaled mean length-at-age"
+    )
+    check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
     for (fishery in 25:26) {
-      check_flag(flags, -fishery, 3L, fishery, model_id, paste0("F", fishery, " independent selectivity index"))
-      for (pair in list(c(57, 3), c(61, 7), c(16, 2), c(26, 2), c(75, 0))) {
+      check_flag(
+        flags, -fishery, 3L, 25L, model_id,
+        paste0("F", fishery, " last age class with non-zero dome selectivity")
+      )
+      check_flag(flags, -fishery, 24L, fishery, model_id, paste0("F", fishery, " independent selectivity group"))
+      for (pair in list(c(61, 7), c(16, 2), c(75, 0))) {
         check_flag(flags, -fishery, pair[[1L]], pair[[2L]], model_id, paste0("F", fishery, " N7 selectivity"))
       }
     }

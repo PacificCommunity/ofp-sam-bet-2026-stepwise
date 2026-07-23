@@ -1,4 +1,4 @@
-# 16 DOM F21-F23 divisor 200
+# 16 F21-F23 length-composition downweighting
 
 Apply the assessment-specific DOM divisor 200 only to F21-F23.
 
@@ -52,13 +52,13 @@ Apply the assessment-specific DOM divisor 200 only to F21-F23.
 
 | # | Control |
 | --- | --- |
-|  1 | Regional CPUE likelihood controls are active. |
+|  1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 |  2 | Regional-scaling weight is 100. |
-|  3 | F29-F33 final selectivity groups are independent. |
+|  3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
 |  4 | F25 and F26 use independent groups 25/26 and seven-node cubic splines. |
-|  5 | F29-F33 time-varying CPUE CV controls are active. |
+|  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  6 | Only F21-F23 receive the DOM LF divisor 200. |
-|  7 | Fixed common CPUE MLE sigma flag-92 vector: 35, 24, 21, 24, 23. |
+|  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 |  8 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 |  9 | No OPR or length-bin selectivity controls are generated. |
 | 10 | INI and TAG inputs are never rolled back to an earlier selected row. |

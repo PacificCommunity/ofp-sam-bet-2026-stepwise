@@ -1,4 +1,4 @@
-# 15 Consolidated selectivity update
+# 15 Fleet-specific selectivity update
 
 Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index selectivities.
 
@@ -52,12 +52,12 @@ Apply independent seven-node F25/F26 splines and separate F29-F33 regional-index
 
 | # | Control |
 | --- | --- |
-| 1 | Regional CPUE likelihood controls are active. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | F29-F33 final selectivity groups are independent. |
+| 3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
 | 4 | F25 and F26 use independent groups 25/26 and seven-node cubic splines. |
-| 5 | F29-F33 time-varying CPUE CV controls are active. |
-| 6 | Fixed common CPUE MLE sigma flag-92 vector: 35, 24, 21, 24, 23. |
+| 5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
+| 6 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 7 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 8 | No OPR or length-bin selectivity controls are generated. |
 | 9 | INI and TAG inputs are never rolled back to an earlier selected row. |

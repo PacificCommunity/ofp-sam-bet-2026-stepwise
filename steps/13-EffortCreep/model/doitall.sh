@@ -55,13 +55,13 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 13 0
 # Survey fisheries defined
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
-# fish flag 66 = 0. The freq file supplies the temporal sigma pattern.
+# fish flag 66 = 1: use normalized time-varying relative-variance multipliers from the frequency data.
 # 2026 index-fishery sigma settings.
-  -29 94 0 -29 92 28 -29 66 1  # no grouped-sigma override at the regional-CPUE introduction
-  -30 94 0 -30 92 20 -30 66 1  # no grouped-sigma override at the regional-CPUE introduction
-  -31 94 0 -31 92 22 -31 66 1  # no grouped-sigma override at the regional-CPUE introduction
-  -32 94 0 -32 92 21 -32 66 1  # no grouped-sigma override at the regional-CPUE introduction
-  -33 94 0 -33 92 24 -33 66 1  # no grouped-sigma override at the regional-CPUE introduction
+  -29 94 1 -29 92 28 -29 66 1  # use this fishery's flag-92 error scale within the shared flag-99 CPUE group
+  -30 94 1 -30 92 20 -30 66 1  # use this fishery's flag-92 error scale within the shared flag-99 CPUE group
+  -31 94 1 -31 92 22 -31 66 1  # use this fishery's flag-92 error scale within the shared flag-99 CPUE group
+  -32 94 1 -32 92 21 -32 66 1  # use this fishery's flag-92 error scale within the shared flag-99 CPUE group
+  -33 94 1 -33 92 24 -33 66 1  # use this fishery's flag-92 error scale within the shared flag-99 CPUE group
 # Grouping flags for survey CPUE
    -1 99 1
    -2 99 2
@@ -91,11 +91,11 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -26 99 26
   -27 99 27
   -28 99 28
-  -29 99 29  # Index R1; independent regional CPUE likelihood
-  -30 99 30  # Index R2; independent regional CPUE likelihood
-  -31 99 31  # Index R3; independent regional CPUE likelihood
-  -32 99 32  # Index R4; independent regional CPUE likelihood
-  -33 99 33  # Index R5; independent regional CPUE likelihood
+  -29 99 29  # Index R1; shared initial stationary-catchability/likelihood group
+  -30 99 29  # Index R2; shared initial stationary-catchability/likelihood group
+  -31 99 29  # Index R3; shared initial stationary-catchability/likelihood group
+  -32 99 29  # Index R4; shared initial stationary-catchability/likelihood group
+  -33 99 29  # Index R5; shared initial stationary-catchability/likelihood group
 # Recruitment and initial population settings
   1 149 100        # recruitment deviation penalty
   1 400 6          # final six recruitment deviates set to zero
@@ -242,7 +242,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   2 188 2
 # Set Lorenzen M
   2 109 3  # select Lorenzen curve
-  1 121 0  # do not estimate Lorenzen scaling parameter yet
+  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 # Filter out comps with input samples less than 50
   1 311 1   # set tail compression for LF data
   1 301 1   # set tail compression for WF data
@@ -296,12 +296,23 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -100000 3 1  # distribution
   -100000 4 1  # of
   -100000 5 1  # recruitment
-# BET 2026 regional-scaling penalty only; CPUE likelihood was introduced in step 09.
-  1 77 100  # MVN regional-scaling penalty weight
+# STAGED MFCL RUN 5: introduce REGW regional scaling and separate regional CPUE groups.
+# These controls persist in subsequent runs through the carried parameter file.
+  1 77 100  # REGW regional-scaling penalty weight
   1 78 1  # use mean regional-scaling target
-  1 79 240  # start at source period 53
-  1 80 220  # end at source period 72
-  1 81 1  # use multivariate-normal penalty
+  1 79 240  # start bound: 240 periods back from model end, mapping to source period 53
+  1 80 220  # end bound: 220 periods back from model end, mapping to source period 72
+  1 81 1  # enable the multivariate-normal regional-scaling penalty
+  -29 99 29  # Index R1; separate stationary-catchability/likelihood group from staged run 5
+  -30 99 30  # Index R2; separate stationary-catchability/likelihood group from staged run 5
+  -31 99 31  # Index R3; separate stationary-catchability/likelihood group from staged run 5
+  -32 99 32  # Index R4; separate stationary-catchability/likelihood group from staged run 5
+  -33 99 33  # Index R5; separate stationary-catchability/likelihood group from staged run 5
+  -29 94 0  # Index R1; separate flag-99 group now supplies its own flag-92 error scale
+  -30 94 0  # Index R2; separate flag-99 group now supplies its own flag-92 error scale
+  -31 94 0  # Index R3; separate flag-99 group now supplies its own flag-92 error scale
+  -32 94 0  # Index R4; separate flag-99 group now supplies its own flag-92 error scale
+  -33 94 0  # Index R5; separate flag-99 group now supplies its own flag-92 error scale
 PHASE5
 
 # ---------
@@ -374,7 +385,7 @@ PHASE9
 $program_path bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
   1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
-  1 121 0    # estimate scaling parameter for Lorenzen (age_pars(5,1)); off
+  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 PHASE10
 
 # ----------

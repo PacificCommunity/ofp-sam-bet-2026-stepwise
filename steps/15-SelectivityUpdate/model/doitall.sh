@@ -55,13 +55,13 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 13 0
 # Survey fisheries defined
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
-# fish flag 66 = 0. The freq file supplies the temporal sigma pattern.
+# fish flag 66 = 1: use normalized time-varying relative-variance multipliers from the frequency data.
 # 2026 index-fishery sigma settings.
-  -29 94 1 -29 92 35 -29 66 1  # retain index-specific fixed sigma within the common calibration
-  -30 94 1 -30 92 24 -30 66 1  # retain index-specific fixed sigma within the common calibration
-  -31 94 1 -31 92 21 -31 66 1  # retain index-specific fixed sigma within the common calibration
-  -32 94 1 -32 92 24 -32 66 1  # retain index-specific fixed sigma within the common calibration
-  -33 94 1 -33 92 23 -33 66 1  # retain index-specific fixed sigma within the common calibration
+  -29 94 1 -29 92 35 -29 66 1  # Preliminary CPUE R1 MLE sigma=0.354; fixed executed error scale=0.35 (flag 92=35)
+  -30 94 1 -30 92 24 -30 66 1  # Preliminary CPUE R2 MLE sigma=0.237; fixed executed error scale=0.24 (flag 92=24)
+  -31 94 1 -31 92 21 -31 66 1  # Preliminary CPUE R3 MLE sigma=0.212; fixed executed error scale=0.21 (flag 92=21)
+  -32 94 1 -32 92 24 -32 66 1  # Preliminary CPUE R4 MLE sigma=0.239; fixed executed error scale=0.24 (flag 92=24)
+  -33 94 1 -33 92 23 -33 66 1  # Preliminary CPUE R5 MLE sigma=0.225; fixed executed error scale=0.23 (flag 92=23)
 # Grouping flags for survey CPUE
    -1 99 1
    -2 99 2
@@ -91,11 +91,11 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -26 99 26
   -27 99 27
   -28 99 28
-  -29 99 29  # Index R1; independent regional CPUE likelihood
-  -30 99 30  # Index R2; independent regional CPUE likelihood
-  -31 99 31  # Index R3; independent regional CPUE likelihood
-  -32 99 32  # Index R4; independent regional CPUE likelihood
-  -33 99 33  # Index R5; independent regional CPUE likelihood
+  -29 99 29  # Index R1; shared initial stationary-catchability/likelihood group
+  -30 99 29  # Index R2; shared initial stationary-catchability/likelihood group
+  -31 99 29  # Index R3; shared initial stationary-catchability/likelihood group
+  -32 99 29  # Index R4; shared initial stationary-catchability/likelihood group
+  -33 99 29  # Index R5; shared initial stationary-catchability/likelihood group
 # Recruitment and initial population settings
   1 149 100        # recruitment deviation penalty
   1 400 6          # final six recruitment deviates set to zero
@@ -170,79 +170,79 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -33 32 21  # Index R5
 # Selectivity settings
   -999 3 37  # all selectivities equal for age class 37 and older
-  -999 26 2  # set length-dependent selectivity option
-  -999 57 3  # uses cubic spline selectivity
-  -999 61 5  # with 5 nodes for cubic spline
+  -999 26 2  # evaluate age-based selectivity against scaled mean length-at-age
+  -999 57 3  # cubic-spline selectivity
+  -999 61 5  # five cubic-spline coefficients by default
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.
-# The old 29 groups become 25 groups here: 24 extraction groups + 1 index group.
-   -1 24 1   # LL.WEST.1, old1
-   -2 24 2   # LL.EAST.1, old2
-   -3 24 3   # LL.US.1, old3
-   -4 24 4   # LL.ALL.2, old7
-   -5 24 5   # LL.OS.2, old6
-   -6 24 6   # LL.ARCH.3, old8
-   -7 24 7   # LL.WEST.3, old4
-   -8 24 8   # LL.EAST.3, old9
-   -9 24 9   # LL.OS.3, old5
-  -10 24 10  # LL.ALL.5, old11 + old12 + old29
-  -11 24 11  # LL.AU.5, old10 + old27
-  -12 24 12  # PS.JP.1, old19
-  -13 24 13  # PL.JP.1, old20
-  -14 24 14  # HL.ID.2, part of old18
-  -15 24 14  # HL.PH.2, part of old18
-  -16 24 15  # PL.ALL.2, old28
-  -17 24 16  # PS.ID.2, split old24
-  -18 24 16  # PS.PH.2, split old24
-  -19 24 17  # PS.ASS.2, old30; share with PS.ASS.WEST.3
-  -20 24 18  # PS.UNA.2, old31; share with PS.UNA.WEST.3
-  -21 24 19  # DOM.ID.2, old23
-  -22 24 20  # DOM.PH.2, old17
-  -23 24 21  # DOM.VN.2, old32
-  -24 24 22  # PL.ALL.WEST.3, old21 + old22
-  -25 24 25  # F25 independent seven-node cubic-spline selectivity
-  -26 24 26  # F26 independent seven-node cubic-spline selectivity
-  -27 24 18  # PS.UNA.WEST.3, old14 + old26
-  -28 24 24  # PS.UNA.EAST.3, old16
-  -29 24 25  # Index R1
-  -30 24 25  # Index R2
-  -31 24 25  # Index R3
-  -32 24 25  # Index R4
-  -33 24 25  # Index R5
+# Staged run 1 uses 29 contiguous groups: F1-F28 use groups 1-28; F29-F33 initially share group 29.
+  -1 24 1  # F1 staged-run-1 selectivity group
+  -2 24 2  # F2 staged-run-1 selectivity group
+  -3 24 3  # F3 staged-run-1 selectivity group
+  -4 24 4  # F4 staged-run-1 selectivity group
+  -5 24 5  # F5 staged-run-1 selectivity group
+  -6 24 6  # F6 staged-run-1 selectivity group
+  -7 24 7  # F7 staged-run-1 selectivity group
+  -8 24 8  # F8 staged-run-1 selectivity group
+  -9 24 9  # F9 staged-run-1 selectivity group
+  -10 24 10  # F10 staged-run-1 selectivity group
+  -11 24 11  # F11 staged-run-1 selectivity group
+  -12 24 12  # F12 staged-run-1 selectivity group
+  -13 24 13  # F13 staged-run-1 selectivity group
+  -14 24 14  # F14 staged-run-1 selectivity group
+  -15 24 15  # F15 staged-run-1 selectivity group
+  -16 24 16  # F16 staged-run-1 selectivity group
+  -17 24 17  # F17 staged-run-1 selectivity group
+  -18 24 18  # F18 staged-run-1 selectivity group
+  -19 24 19  # F19 staged-run-1 selectivity group
+  -20 24 20  # F20 staged-run-1 selectivity group
+  -21 24 21  # F21 staged-run-1 selectivity group
+  -22 24 22  # F22 staged-run-1 selectivity group
+  -23 24 23  # F23 staged-run-1 selectivity group
+  -24 24 24  # F24 staged-run-1 selectivity group
+  -25 24 25  # F25 staged-run-1 selectivity group
+  -26 24 26  # F26 staged-run-1 selectivity group
+  -27 24 27  # F27 staged-run-1 selectivity group
+  -28 24 28  # F28 staged-run-1 selectivity group
+  -29 24 29  # F29 staged-run-1 selectivity group
+  -30 24 29  # F30 staged-run-1 selectivity group
+  -31 24 29  # F31 staged-run-1 selectivity group
+  -32 24 29  # F32 staged-run-1 selectivity group
+  -33 24 29  # F33 staged-run-1 selectivity group
 # Non-decreasing selectivity for the old6-derived longline fishery.
    -5 16 1
 # Selected old-derived longline fisheries set to zero for first two age classes.
-   -2 75 2
-   -4 75 2
-   -5 75 2
-   -7 75 2
-   -8 75 2
-   -9 75 2
-  -10 75 2
+  -2 75 2  # F2 youngest age classes fixed at zero selectivity
+  -4 75 2  # F4 youngest age classes fixed at zero selectivity
+  -5 75 2  # F5 youngest age classes fixed at zero selectivity
+  -7 75 2  # F7 youngest age classes fixed at zero selectivity
+  -8 75 2  # F8 youngest age classes fixed at zero selectivity
+  -9 75 2  # F9 youngest age classes fixed at zero selectivity
+  -10 75 2  # F10 youngest age classes fixed at zero selectivity
 # Old18 split into HL.ID.2 and HL.PH.2.
   -14 75 5
-  -15 75 5
+  -15 75 5  # F15 youngest age classes fixed at zero selectivity
 # Age-based spline constraints mapped from old fishery recipes.
-  -19 16 2  -19 3 25  # PS.ASS.2, old30
-  -25 16 2 -25 3 25  # F25 independent seven-node cubic-spline selectivity
-  -26 16 2 -26 3 26  # F26 independent seven-node cubic-spline selectivity
+  -19 16 2 -19 3 25  # F19 terminal spline age and start age for the older-age dome penalty
+  -25 16 2 -25 3 25  # F25 terminal spline age and start age for the older-age dome penalty
+  -26 16 2 -26 3 25  # F26 terminal spline age and start age for the older-age dome penalty
   -20 16 2  -20 3 30  # PS.UNA.2, old31
-  -27 16 2  -27 3 30  # PS.UNA.WEST.3, old14 + old26
+  -27 16 2 -27 3 30  # F27 terminal spline age and start age for the older-age dome penalty
   -28 16 2  -28 3 30  # PS.UNA.EAST.3, old16
-  -17 16 2  -17 3 12  # PS.ID.2, split old24
-  -18 16 2  -18 3 12  # PS.PH.2, split old24
-  -12 16 2  -12 3 25  # PS.JP.1, old19
-  -13 16 2  -13 3 25  # PL.JP.1, old20
+  -17 16 2 -17 3 25  # F17 terminal spline age and start age for the older-age dome penalty
+  -18 16 2 -18 3 25  # F18 terminal spline age and start age for the older-age dome penalty
+  -12 16 2 -12 3 25  # F12 terminal spline age and start age for the older-age dome penalty
+  -13 16 2 -13 3 30  # F13 terminal spline age and start age for the older-age dome penalty
 # Upper-age selectivity constraints mapped from old fishery recipes.
-  -22 16 2  -22 3 9   # DOM.PH.2, old17
-  -24 16 2  -24 3 10  # PL.ALL.WEST.3, old21 + old22
-  -21 16 2  -21 3 6   # DOM.ID.2, old23
-  -16 16 2  -16 3 7   # PL.ALL.2, old28
-  -23 16 2  -23 3 9   # DOM.VN.2, old32
+  -22 16 2 -22 3 7  # F22 terminal spline age and start age for the older-age dome penalty
+  -24 16 2 -24 3 25  # F24 terminal spline age and start age for the older-age dome penalty
+  -21 16 2 -21 3 10  # F21 terminal spline age and start age for the older-age dome penalty
+  -16 16 2 -16 3 25  # F16 terminal spline age and start age for the older-age dome penalty
+  -23 16 2 -23 3 6  # F23 terminal spline age and start age for the older-age dome penalty
 # Turn on weighted spline for calculating maturity at age
   2 188 2
 # Set Lorenzen M
   2 109 3  # select Lorenzen curve
-  1 121 0  # do not estimate Lorenzen scaling parameter yet
+  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 # Filter out comps with input samples less than 50
   1 311 1   # set tail compression for LF data
   1 301 1   # set tail compression for WF data
@@ -252,14 +252,23 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   1 302 50  # set minimum obs sample size for WF data
 # MFCL 2.2.2.0 growth variance fix
   1 34 0    # set to 1 34 1 for backwards compatibility
-  -25 26 2  # F25 independent seven-node cubic-spline selectivity
-  -25 57 3  # F25 independent seven-node cubic-spline selectivity
-  -25 61 7  # F25 independent seven-node cubic-spline selectivity
-  -25 75 0  # F25 independent seven-node cubic-spline selectivity
-  -26 26 2  # F26 independent seven-node cubic-spline selectivity
-  -26 57 3  # F26 independent seven-node cubic-spline selectivity
-  -26 61 7  # F26 independent seven-node cubic-spline selectivity
-  -26 75 0  # F26 independent seven-node cubic-spline selectivity
+  -15 16 2  # F15 older-age dome penalty from the flag-3 age onward
+  -15 3 25  # F15 terminal spline age and start age for the older-age dome penalty
+  -25 61 7  # F25 seven estimated cubic-spline nodes
+  -25 75 0  # F25 no youngest age classes forced to near-zero selectivity
+  -26 61 7  # F26 seven estimated cubic-spline nodes
+  -26 75 0  # F26 no youngest age classes forced to near-zero selectivity
+  -1 75 2  # F1 youngest age classes fixed at zero selectivity
+  -3 75 2  # F3 youngest age classes fixed at zero selectivity
+  -6 75 2  # F6 youngest age classes fixed at zero selectivity
+  -11 75 2  # F11 youngest age classes fixed at zero selectivity
+  -12 75 2  # F12 youngest age classes fixed at zero selectivity
+  -13 75 1  # F13 youngest age classes fixed at zero selectivity
+  -29 75 2  # Index R1 youngest age classes fixed at zero selectivity
+  -30 75 2  # Index R2 youngest age classes fixed at zero selectivity
+  -31 75 2  # Index R3 youngest age classes fixed at zero selectivity
+  -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
+  -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
 PHASE1
 
 # ---------
@@ -304,18 +313,29 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -100000 3 1  # distribution
   -100000 4 1  # of
   -100000 5 1  # recruitment
-# BET 2026 regional-scaling penalty only; CPUE likelihood was introduced in step 09.
-  1 77 100  # MVN regional-scaling penalty weight
+# STAGED MFCL RUN 5: introduce REGW regional scaling and separate regional CPUE groups.
+# These controls persist in subsequent runs through the carried parameter file.
+  1 77 100  # REGW regional-scaling penalty weight
   1 78 1  # use mean regional-scaling target
-  1 79 240  # start at source period 53
-  1 80 220  # end at source period 72
-  1 81 1  # use multivariate-normal penalty
-# Step 11: separate only the five regional-index selectivity groups.
-  -29 24 29  # Index R1; independent selectivity from PHASE5
-  -30 24 30  # Index R2; independent selectivity from PHASE5
-  -31 24 31  # Index R3; independent selectivity from PHASE5
-  -32 24 32  # Index R4; independent selectivity from PHASE5
-  -33 24 33  # Index R5; independent selectivity from PHASE5
+  1 79 240  # start bound: 240 periods back from model end, mapping to source period 53
+  1 80 220  # end bound: 220 periods back from model end, mapping to source period 72
+  1 81 1  # enable the multivariate-normal regional-scaling penalty
+  -29 99 29  # Index R1; separate stationary-catchability/likelihood group from staged run 5
+  -30 99 30  # Index R2; separate stationary-catchability/likelihood group from staged run 5
+  -31 99 31  # Index R3; separate stationary-catchability/likelihood group from staged run 5
+  -32 99 32  # Index R4; separate stationary-catchability/likelihood group from staged run 5
+  -33 99 33  # Index R5; separate stationary-catchability/likelihood group from staged run 5
+  -29 94 0  # Index R1; separate flag-99 group now supplies its own flag-92 error scale
+  -30 94 0  # Index R2; separate flag-99 group now supplies its own flag-92 error scale
+  -31 94 0  # Index R3; separate flag-99 group now supplies its own flag-92 error scale
+  -32 94 0  # Index R4; separate flag-99 group now supplies its own flag-92 error scale
+  -33 94 0  # Index R5; separate flag-99 group now supplies its own flag-92 error scale
+# STAGED MFCL RUN 5: separate the five regional-index selectivity-sharing groups.
+  -29 24 29  # Index R1; separate selectivity coefficient-sharing group from staged run 5
+  -30 24 30  # Index R2; separate selectivity coefficient-sharing group from staged run 5
+  -31 24 31  # Index R3; separate selectivity coefficient-sharing group from staged run 5
+  -32 24 32  # Index R4; separate selectivity coefficient-sharing group from staged run 5
+  -33 24 33  # Index R5; separate selectivity coefficient-sharing group from staged run 5
 PHASE5
 
 # ---------
@@ -388,7 +408,7 @@ PHASE9
 $program_path bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
   1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
-  1 121 0    # estimate scaling parameter for Lorenzen (age_pars(5,1)); off
+  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 PHASE10
 
 # ----------

@@ -1,4 +1,4 @@
-# 08 Regional CPUE and REGW100
+# 08 Regional CPUE likelihood and weighting
 
 Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty.
 
@@ -52,7 +52,7 @@ Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty.
 
 | # | Control |
 | --- | --- |
-| 1 | Regional CPUE likelihood controls are active. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
 | 3 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 4 | No OPR or length-bin selectivity controls are generated. |

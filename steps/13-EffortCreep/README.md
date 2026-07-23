@@ -1,4 +1,4 @@
-# 13 EffortCreep
+# 13 Effort-creep adjustment
 
 Apply the BET 2026 effort-creep series only to positive F29-F33 effort.
 
@@ -52,9 +52,9 @@ Apply the BET 2026 effort-creep series only to positive F29-F33 effort.
 
 | # | Control |
 | --- | --- |
-| 1 | Regional CPUE likelihood controls are active. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | F29-F33 time-varying CPUE CV controls are active. |
+| 3 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 | 4 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 5 | No OPR or length-bin selectivity controls are generated. |
 | 6 | INI and TAG inputs are never rolled back to an earlier selected row. |

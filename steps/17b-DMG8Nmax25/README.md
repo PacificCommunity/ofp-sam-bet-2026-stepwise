@@ -1,6 +1,6 @@
-# 17b DM-G8PSSET-Nmax25 final
+# 17b DM length-composition likelihood
 
-Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final configuration.
+Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final conf
 
 | # | Change |
 | --- | --- |
-| 1 | Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final configuration. |
+| 1 | Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25. |
 | 2 | Scientific parent: '16-DOMDiv200'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final conf
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final configuration. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Use a Dirichlet-multinomial length-composition likelihood with G8 PSSET grouping and Nmax 25. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -52,14 +52,14 @@ Apply DM-noRE, the exact G8 PSSET mapping, and Nmax=25 as one bundled final conf
 
 | # | Control |
 | --- | --- |
-|  1 | Regional CPUE likelihood controls are active. |
+|  1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 |  2 | Regional-scaling weight is 100. |
-|  3 | F29-F33 final selectivity groups are independent. |
+|  3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
 |  4 | F25 and F26 use independent groups 25/26 and seven-node cubic splines. |
-|  5 | F29-F33 time-varying CPUE CV controls are active. |
+|  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  6 | Only F21-F23 receive the DOM LF divisor 200. |
-|  7 | Fixed common CPUE MLE sigma flag-92 vector: 35, 24, 21, 24, 23. |
-|  8 | G8PSSET DM likelihood with Nmax=25. |
+|  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
+|  8 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25. |
 |  9 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 10 | No OPR or length-bin selectivity controls are generated. |
 | 11 | INI and TAG inputs are never rolled back to an earlier selected row. |

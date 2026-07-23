@@ -265,7 +265,7 @@ mfclo64 bet.frq 00.par 01.par -file - <<PHASE1
   2 188 2
 # Set Lorenzen M
   2 109 3  # select Lorenzen curve
-  1 121 0  # do not estimate Lorenzen scaling parameter yet
+  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope
 # Filter out comps with input samples less than 50
   1 311 1   # set tail compression for LF data
   1 301 1   # set tail compression for WF data
@@ -395,7 +395,7 @@ PHASE9
 mfclo64 bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
   1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
-  1 121 1    # estimate scaling parameter for Lorenzen (age_pars(5,1))
+  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope
 PHASE10
 
 # ----------

@@ -1,6 +1,6 @@
-# 14 CPUE observation-error calibration
+# 14 Fixed CPUE observation-error calibration
 
-Carry the common CPUE MLE sigma controls selected from the preliminary model fits.
+Fix the common index-specific CPUE sigma vector empirically calibrated from preliminary MLE fits.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Carry the common CPUE MLE sigma controls selected from the preliminary model fit
 
 | # | Change |
 | --- | --- |
-| 1 | Carry the common CPUE MLE sigma controls selected from the preliminary model fits. |
+| 1 | Fix the common index-specific CPUE sigma vector empirically calibrated from preliminary MLE fits. |
 | 2 | Scientific parent: '13-EffortCreep'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Carry the common CPUE MLE sigma controls selected from the preliminary model fit
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Carry the common CPUE MLE sigma controls selected from the preliminary model fits. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Fix the common index-specific CPUE sigma vector empirically calibrated from preliminary MLE fits. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -52,10 +52,10 @@ Carry the common CPUE MLE sigma controls selected from the preliminary model fit
 
 | # | Control |
 | --- | --- |
-| 1 | Regional CPUE likelihood controls are active. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | F29-F33 time-varying CPUE CV controls are active. |
-| 4 | Fixed common CPUE MLE sigma flag-92 vector: 35, 24, 21, 24, 23. |
+| 3 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
+| 4 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 5 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
 | 6 | No OPR or length-bin selectivity controls are generated. |
 | 7 | INI and TAG inputs are never rolled back to an earlier selected row. |

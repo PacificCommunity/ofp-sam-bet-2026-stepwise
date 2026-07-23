@@ -1,4 +1,4 @@
-# 05 ConvertToLength
+# 05 Convert weight to length compositions
 
 Convert the existing weight compositions to length.
 

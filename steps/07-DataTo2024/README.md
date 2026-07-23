@@ -1,4 +1,4 @@
-# 07 DataTo2024 with RRPTTP26
+# 07 Data through 2024 and updated tag reporting rates
 
 Extend data through 2024 and integrate the latest RRPTTP26 penalties.
 

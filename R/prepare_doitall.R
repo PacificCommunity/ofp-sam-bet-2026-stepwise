@@ -104,14 +104,23 @@ apply_2023_newexe_controls <- function(lines) {
   lines
 }
 
-apply_2023_current_baseline_tail_controls <- function(lines, fixm = FALSE) {
-  if (isTRUE(fixm)) {
-    lines <- replace_one_line(
-      lines,
-      "^[[:space:]]*1[[:space:]]+121[[:space:]]+1([[:space:]]|$)",
-      "  1 121 0    # estimate scaling parameter for Lorenzen (age_pars(5,1)); off"
-    )
+normalize_lorenzen_mortality_control <- function(lines, fixm = FALSE) {
+  mortality_flag_pattern <- "^[[:space:]]*1[[:space:]]+121[[:space:]]+[01]([[:space:]]|$)"
+  mortality_flag_lines <- grep(mortality_flag_pattern, lines)
+  if (length(mortality_flag_lines)) {
+    lines[mortality_flag_lines] <- if (isTRUE(fixm)) {
+      "  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values"
+    } else {
+      "  1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope"
+    }
+  } else if (isTRUE(fixm)) {
+    stop("Expected a natural-mortality flag 121 control in the fixed-M doitall", call. = FALSE)
   }
+  lines
+}
+
+apply_2023_current_baseline_tail_controls <- function(lines, fixm = FALSE) {
+  lines <- normalize_lorenzen_mortality_control(lines, fixm = fixm)
   phase11_start <- grep("<<PHASE11$", lines)
   phase11_end <- grep("^PHASE11$", lines)
   if (length(phase11_start) != 1L || length(phase11_end) != 1L || phase11_start >= phase11_end) {
@@ -149,6 +158,7 @@ write_2023_newexe_doitall <- function(from, to, fixm = FALSE, mix_from_ini = TRU
 
 write_2023_historical_doitall <- function(from, to) {
   lines <- readLines(from, warn = FALSE)
+  lines <- normalize_lorenzen_mortality_control(lines, fixm = FALSE)
   lines <- apply_historical_phase10_11_convergence_switch(lines)
   writeLines(lines, to, useBytes = TRUE)
   Sys.chmod(to, mode = "0755")
@@ -166,6 +176,14 @@ apply_size_based_selectivity <- function(lines) {
 apply_time_varying_cpue_cv <- function(lines, index_fisheries = 29:33) {
   for (fishery in index_fisheries) {
     lines <- set_doitall_fishery_flag(lines, fishery = fishery, flag = 66L, value = 1L)
+  }
+  variance_comment <- grep(
+    "^# fish flag 66 = 0[.] The freq file supplies the temporal sigma pattern[.]$",
+    lines
+  )
+  if (length(variance_comment) == 1L) {
+    lines[[variance_comment]] <-
+      "# fish flag 66 = 1: use normalized time-varying relative-variance multipliers from the frequency data."
   }
   lines
 }
@@ -497,12 +515,12 @@ set_or_add_control_flag <- function(lines, actor, flag, value, phase = 1L,
 apply_regional_cpue_likelihood <- function(lines, index_fisheries = 29:33) {
   for (fishery in index_fisheries) {
     lines <- set_or_add_control_flag(
-      lines, paste0("-", fishery), 99L, fishery, 1L,
-      paste0("Index R", fishery - 28L, "; independent regional CPUE likelihood")
+      lines, paste0("-", fishery), 99L, 29L, 1L,
+      paste0("Index R", fishery - 28L, "; shared initial stationary-catchability/likelihood group")
     )
     lines <- set_or_add_control_flag(
-      lines, paste0("-", fishery), 94L, 0L, 1L,
-      "no grouped-sigma override at the regional-CPUE introduction"
+      lines, paste0("-", fishery), 94L, 1L, 1L,
+      "use this fishery's flag-92 error scale within the shared flag-99 CPUE group"
     )
   }
   lines
@@ -519,21 +537,30 @@ apply_regional_scaling_phase5 <- function(lines, weight = 100L,
     return(lines)
   }
   block <- c(
-    "# BET 2026 regional-scaling penalty only; CPUE likelihood was introduced in step 09.",
-    sprintf("  1 77 %d  # MVN regional-scaling penalty weight", as.integer(weight)),
+    "# STAGED MFCL RUN 5: introduce REGW regional scaling and separate regional CPUE groups.",
+    "# These controls persist in subsequent runs through the carried parameter file.",
+    sprintf("  1 77 %d  # REGW regional-scaling penalty weight", as.integer(weight)),
     sprintf("  1 78 %d  # use mean regional-scaling target", as.integer(isTRUE(use_mean))),
-    sprintf("  1 79 %d  # start at source period %d", as.integer(periods_from_end), as.integer(start_period)),
-    sprintf("  1 80 %d  # end at source period %d", as.integer(end_periods_from_end), as.integer(end_period)),
-    sprintf("  1 81 %d  # use multivariate-normal penalty", as.integer(isTRUE(use_mvn)))
+    sprintf("  1 79 %d  # start bound: %d periods back from model end, mapping to source period %d", as.integer(periods_from_end), as.integer(periods_from_end), as.integer(start_period)),
+    sprintf("  1 80 %d  # end bound: %d periods back from model end, mapping to source period %d", as.integer(end_periods_from_end), as.integer(end_periods_from_end), as.integer(end_period)),
+    sprintf("  1 81 %d  # enable the multivariate-normal regional-scaling penalty", as.integer(isTRUE(use_mvn))),
+    sprintf(
+      "  -%d 99 %d  # Index R%d; separate stationary-catchability/likelihood group from staged run 5",
+      29:33, 29:33, 1:5
+    ),
+    sprintf(
+      "  -%d 94 0  # Index R%d; separate flag-99 group now supplies its own flag-92 error scale",
+      29:33, 1:5
+    )
   )
   append_phase_controls(lines, 5L, block)
 }
 
 apply_index_selectivity_separation <- function(lines, index_fisheries = 29:33) {
   block <- c(
-    "# Step 11: separate only the five regional-index selectivity groups.",
+    "# STAGED MFCL RUN 5: separate the five regional-index selectivity-sharing groups.",
     sprintf(
-      "  -%d 24 %d  # Index R%d; independent selectivity from PHASE5",
+      "  -%d 24 %d  # Index R%d; separate selectivity coefficient-sharing group from staged run 5",
       index_fisheries, index_fisheries, index_fisheries - 28L
     )
   )
@@ -541,17 +568,88 @@ apply_index_selectivity_separation <- function(lines, index_fisheries = 29:33) {
 }
 
 apply_f25_f26_spline7 <- function(lines) {
-  settings <- list(
-    `25` = c(`16` = 2L, `3` = 25L, `24` = 25L, `26` = 2L, `57` = 3L, `61` = 7L, `75` = 0L),
-    `26` = c(`16` = 2L, `3` = 26L, `24` = 26L, `26` = 2L, `57` = 3L, `61` = 7L, `75` = 0L)
+  phase1_groups <- c(seq_len(28L), rep(29L, 5L))
+  old_group_comment <- grep(
+    "^# The old 29 groups become 25 groups here: 24 extraction groups [+] 1 index group[.]$",
+    lines
   )
-  for (fishery in names(settings)) {
-    for (flag in names(settings[[fishery]])) {
+  if (length(old_group_comment) == 1L) {
+    lines[[old_group_comment]] <-
+      "# Staged run 1 uses 29 contiguous groups: F1-F28 use groups 1-28; F29-F33 initially share group 29."
+  }
+  for (fishery in seq_len(33L)) {
+    lines <- set_or_add_control_flag(
+      lines, paste0("-", fishery), 24L, phase1_groups[[fishery]], 1L,
+      paste0("F", fishery, " staged-run-1 selectivity group")
+    )
+  }
+
+  common_settings <- list(
+    `26` = list(
+      value = 2L,
+      comment = "evaluate age-based selectivity against scaled mean length-at-age"
+    ),
+    `57` = list(value = 3L, comment = "cubic-spline selectivity"),
+    `61` = list(value = 5L, comment = "five cubic-spline coefficients by default")
+  )
+  for (flag in names(common_settings)) {
+    lines <- set_or_add_control_flag(
+      lines, "-999", as.integer(flag), common_settings[[flag]]$value, 1L,
+      common_settings[[flag]]$comment
+    )
+  }
+
+  spline_settings <- list(
+    `12` = c(`16` = 2L, `3` = 25L),
+    `13` = c(`16` = 2L, `3` = 30L),
+    `15` = c(`16` = 2L, `3` = 25L),
+    `16` = c(`16` = 2L, `3` = 25L),
+    `17` = c(`16` = 2L, `3` = 25L),
+    `18` = c(`16` = 2L, `3` = 25L),
+    `19` = c(`16` = 2L, `3` = 25L),
+    `21` = c(`16` = 2L, `3` = 10L),
+    `22` = c(`16` = 2L, `3` = 7L),
+    `23` = c(`16` = 2L, `3` = 6L),
+    `24` = c(`16` = 2L, `3` = 25L),
+    `25` = c(`16` = 2L, `3` = 25L, `61` = 7L, `75` = 0L),
+    `26` = c(`16` = 2L, `3` = 25L, `61` = 7L, `75` = 0L),
+    `27` = c(`16` = 2L, `3` = 30L)
+  )
+  for (fishery in names(spline_settings)) {
+    for (flag in names(spline_settings[[fishery]])) {
       lines <- set_or_add_control_flag(
-        lines, paste0("-", fishery), as.integer(flag), settings[[fishery]][[flag]], 1L,
-        paste0("F", fishery, " independent seven-node cubic-spline selectivity")
+        lines, paste0("-", fishery), as.integer(flag),
+        spline_settings[[fishery]][[flag]], 1L,
+        if (as.integer(flag) == 3L) {
+          paste0("F", fishery, " terminal spline age and start age for the older-age dome penalty")
+        } else if (as.integer(flag) == 16L) {
+          paste0("F", fishery, " older-age dome penalty from the flag-3 age onward")
+        } else if (as.integer(flag) == 61L) {
+          paste0("F", fishery, " seven estimated cubic-spline nodes")
+        } else if (as.integer(flag) == 75L) {
+          paste0("F", fishery, " no youngest age classes forced to near-zero selectivity")
+        } else {
+          paste0("F", fishery, " selectivity control")
+        }
       )
     }
+  }
+
+  tail_settings <- c(rep(2L, 12L), 1L)
+  for (fishery in seq_along(tail_settings)) {
+    lines <- set_or_add_control_flag(
+      lines, paste0("-", fishery), 75L, tail_settings[[fishery]], 1L,
+      paste0("F", fishery, " youngest age classes fixed at zero selectivity")
+    )
+  }
+  lines <- set_or_add_control_flag(
+    lines, "-15", 75L, 5L, 1L, "F15 youngest age classes fixed at zero selectivity"
+  )
+  for (fishery in 29:33) {
+    lines <- set_or_add_control_flag(
+      lines, paste0("-", fishery), 75L, 2L, 1L,
+      paste0("Index R", fishery - 28L, " youngest age classes fixed at zero selectivity")
+    )
   }
   lines
 }
@@ -583,14 +681,14 @@ apply_fixed_common_cpue_sigma <- function(lines, flag92,
     lines <- set_or_add_control_flag(
       lines, paste0("-", fishery), 92L, flag92[[i]], 1L,
       paste0(
-        "Job13328 CPUE MLE R", i, " sigma = ",
-        if (length(cpue_mle_sigma)) sprintf("%.3f", cpue_mle_sigma[[i]]) else
-          format(flag92[[i]] / 100, nsmall = 2L)
+        if (length(cpue_mle_sigma)) {
+          paste0("Preliminary CPUE R", i, " MLE sigma=", sprintf("%.3f", cpue_mle_sigma[[i]]), "; ")
+        } else {
+          paste0("CPUE R", i, "; ")
+        },
+        "fixed executed error scale=", sprintf("%.2f", flag92[[i]] / 100),
+        " (flag 92=", flag92[[i]], ")"
       )
-    )
-    lines <- set_or_add_control_flag(
-      lines, paste0("-", fishery), 94L, 1L, 1L,
-      "retain index-specific fixed sigma within the common calibration"
     )
   }
   lines
@@ -630,19 +728,19 @@ apply_dm_likelihood <- function(lines, grouping, nmax) {
   }
   lines <- set_or_add_control_flag(
     lines, "1", 141L, 11L, 1L,
-    "Dirichlet-multinomial LF likelihood without random effects"
+    "length-frequency likelihood: Dirichlet-multinomial without random effects"
   )
   lines <- set_or_add_control_flag(
     lines, "1", 311L, 1L, 1L,
-    "retain LF preprocessing gate"
+    "enable tail-compressed observed and predicted length-frequency arrays"
   )
   lines <- set_or_add_control_flag(
     lines, "1", 320L, 5L, 1L,
-    "DM LF tail compression retains at least five class intervals"
+    "use tail-compressed DM when the first-to-last-positive observed span contains at least five bins"
   )
   lines <- set_or_add_control_flag(
     lines, "1", 342L, nmax, 1L,
-    paste0("final DM Nmax", nmax)
+    paste0("DM effective-sample-size upper asymptote Nmax=", nmax)
   )
   for (fishery in seq_len(33L)) {
     lines <- set_or_add_control_flag(
@@ -677,10 +775,9 @@ apply_regional_index_selectivity_map <- function(path) {
   }
   block <- c(
     "",
-    "# Step 11 separates only final regional-index selectivity groups.",
-    "fishery_map$selectivity_group[29:33] <- 29:33",
-    "selectivity_names[29:33] <- paste0(\"Index R\", 1:5)",
-    "fishery_map$selectivity_name <- selectivity_names[fishery_map$selectivity_group]"
+    "# Step 15 uses one documented selectivity group per final fishery.",
+    "fishery_map$selectivity_group <- seq_len(nrow(fishery_map))",
+    "fishery_map$selectivity_name <- fishery_map$fishery_name"
   )
   lines <- c(lines[seq_len(marker)], block, lines[(marker + 1L):length(lines)])
   writeLines(lines, path, sep = eol, useBytes = TRUE)
@@ -707,6 +804,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           dm_nmax = NA_integer_) {
   lines <- readLines(from, warn = FALSE)
   if (!any(grepl("^set -eu$", lines))) lines <- append(lines, "set -eu", after = 1L)
+  lines <- normalize_lorenzen_mortality_control(lines, fixm = TRUE)
   lines <- apply_phase10_11_convergence_switch(lines)
   if (isTRUE(mix_from_ini)) lines <- remove_tag_mixing_override(lines)
   if (isTRUE(regional_cpue)) lines <- apply_regional_cpue_likelihood(lines)
@@ -720,8 +818,8 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       end_period = regional_scaling_end_period
     )
   }
-  if (isTRUE(index_selectivity)) lines <- apply_index_selectivity_separation(lines)
   if (isTRUE(f25_f26_spline7)) lines <- apply_f25_f26_spline7(lines)
+  if (isTRUE(index_selectivity)) lines <- apply_index_selectivity_separation(lines)
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)
   if (isTRUE(dom_divisor200)) lines <- apply_dom_lf_divisors(lines)
   if (length(cpue_sigma_flag92)) {
