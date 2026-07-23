@@ -46,7 +46,7 @@ Apply fishery-specific Francis length-composition divisors as an independent Ste
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
@@ -59,8 +59,8 @@ Apply fishery-specific Francis length-composition divisors as an independent Ste
 |  2 | Regional-scaling weight is 100. |
 |  3 | Length-frequency parest flag 313 is 1, activating 1% tail aggregation; flags 311/301 remain 1 and weight-frequency flag 303 remains 0. |
 |  4 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  5 | The intended selectivity bundle unshares F15-F28 and applies fleet-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
-|  6 | The selected Job 14363 fleet-specific configuration sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
+|  5 | The intended selectivity bundle unshares F15-F28 and applies fishery-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
+|  6 | The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
 |  7 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  8 | Francis divisors are applied directly to all LF flag-49 values, including F21-F23 = 114/398/705. |
 |  9 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |

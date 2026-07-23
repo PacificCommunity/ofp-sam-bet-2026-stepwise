@@ -74,27 +74,27 @@ build_stepwise_dag <- function(
   short_names <- c(
     "01-Diag2023" = "2023 diagnostic\nrerun",
     "02-NewExe1003" = "Updated\nexecutable",
-    "03-Ini1007" = "Updated model-\ninput format",
-    "04-FixM" = "Fixed natural\nmortality",
+    "03-Ini1007" = "Updated INI\nformat",
+    "04-FixM" = "Lorenzen M\nscaling fixed",
     "05-LengthWeight" = "Length-weight\nupdate",
     "06-NewStructure" = "Five-region\nstructure",
-    "07-ConvertToLength" = "Weight-to-length\nconversion",
-    "08-AddLengthData" = "Add length\ndata",
+    "07-ConvertToLength" = "Weight-as-length\nLF input",
+    "08-AddLengthData" = "Observed-length\nsupplementation",
     "09-TailCompression1Pct" = "1% LF tail\ncompression",
     "10-DataTo2024" = "Data through\n2024",
     "11-RegionalCPUE" = "Regional CPUE",
     "12-TimeVaryingCV" = "Time-varying CPUE\nuncertainty",
     "13-CPUEErrorCalibration" = "CPUE observation-error\ncalibration",
-    "14-NewAgeData" = "New age data",
+    "14-NewAgeData" = "New age-at-length\ndata (weight 0.75)",
     "15a-REG075" = "Regional age\nweighting",
     "15b-SUB075" = "Sub-basin age\nweighting",
-    "16-SelectivityUpdate" = "Fleet-specific\nselectivity",
+    "16-SelectivityUpdate" = "Revised fishery-specific\nselectivity",
     "17-MIX015" = "Release-group tag\nmixing periods",
-    "18-TagReportingExclusion" = "Reporting-rate\nexclusion",
+    "18-TagReportingExclusion" = "Reporting rates omitted\nin pre-mixing window",
     "19-EffortCreep" = "Effort creep",
-    "20a-DOMDiv200" = "DOM\ndownweighting",
+    "20a-DOMDiv200" = "Three domestic\nfisheries\ndownweighted",
     "20b-Francis" = "Francis\nreweighting",
-    "20c-DMG8Nmax25" = "DM\nweighting"
+    "20c-DMG8Nmax25" = "Dirichlet-multinomial\nweighting"
   )
   nodes$name <- unname(short_names[nodes$id])
   nodes$status <- ifelse(

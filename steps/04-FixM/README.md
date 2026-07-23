@@ -1,6 +1,6 @@
-# 04 Fixed natural mortality
+# 04 Fixed Lorenzen M scaling
 
-Step 03 1007 ini baseline with natural mortality fixed at -2.54930339768360e+00.
+Step 03 1007 ini baseline with the log-scale Lorenzen natural-mortality coefficient fixed at -2.54930339768360e+00.
 
 ## Snapshot
 
@@ -21,7 +21,7 @@ Step 03 1007 ini baseline with natural mortality fixed at -2.54930339768360e+00.
 | File | Source / note |
 | --- | --- |
 | `.frq` | `steps/03-Ini1007/model/bet.frq` |
-| `.ini` | `steps/03-Ini1007/model/bet.ini`; Fixed Lorenzen natural-mortality intercept applied from the 01-Diag2023 mgc=-5 diagnostic final par |
+| `.ini` | `steps/03-Ini1007/model/bet.ini`; Fixed log-scale Lorenzen natural-mortality coefficient applied from the 01-Diag2023 mgc=-5 diagnostic final par |
 | `.tag` | `steps/03-Ini1007/model/bet.tag` |
 | `.age_length` | `steps/03-Ini1007/model/bet.age_length` |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
@@ -30,7 +30,7 @@ Step 03 1007 ini baseline with natural mortality fixed at -2.54930339768360e+00.
 
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
-| `.ini` | Sets the Lorenzen natural-mortality intercept to `-2.54930339768360` and retains the length slope `-1`; both are fixed in later fits. | All other `03-Ini1007` ini controls. |
+| `.ini` | Sets the log-scale Lorenzen natural-mortality coefficient to `-2.54930339768360` and retains the length exponent `-1`; both are fixed in later fits. | All other `03-Ini1007` ini controls. |
 | `.frq/.tag/.age_length` | No generated edit. | Inherited from `03-Ini1007`. |
 
 ## Source Revisions
@@ -39,7 +39,7 @@ Step 03 1007 ini baseline with natural mortality fixed at -2.54930339768360e+00.
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |

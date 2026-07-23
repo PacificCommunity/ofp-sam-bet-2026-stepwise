@@ -57,11 +57,11 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
 # fish flag 66 = 1: use normalized time-varying relative-variance multipliers from the frequency data.
 # 2026 index-fishery sigma settings.
-  -29 94 1 -29 92 35 -29 66 1  # Preliminary CPUE R1 maximum-likelihood observation-error estimate=0.354; fixed executed error scale=0.35 (flag 92=35)
-  -30 94 1 -30 92 24 -30 66 1  # Preliminary CPUE R2 maximum-likelihood observation-error estimate=0.237; fixed executed error scale=0.24 (flag 92=24)
-  -31 94 1 -31 92 21 -31 66 1  # Preliminary CPUE R3 maximum-likelihood observation-error estimate=0.212; fixed executed error scale=0.21 (flag 92=21)
-  -32 94 1 -32 92 24 -32 66 1  # Preliminary CPUE R4 maximum-likelihood observation-error estimate=0.239; fixed executed error scale=0.24 (flag 92=24)
-  -33 94 1 -33 92 23 -33 66 1  # Preliminary CPUE R5 maximum-likelihood observation-error estimate=0.225; fixed executed error scale=0.23 (flag 92=23)
+  -29 94 1 -29 92 35 -29 66 1  # Residual-based CPUE R1 maximum-likelihood observation-error estimate=0.354; fixed executed error scale=0.35 (flag 92=35)
+  -30 94 1 -30 92 24 -30 66 1  # Residual-based CPUE R2 maximum-likelihood observation-error estimate=0.237; fixed executed error scale=0.24 (flag 92=24)
+  -31 94 1 -31 92 21 -31 66 1  # Residual-based CPUE R3 maximum-likelihood observation-error estimate=0.212; fixed executed error scale=0.21 (flag 92=21)
+  -32 94 1 -32 92 24 -32 66 1  # Residual-based CPUE R4 maximum-likelihood observation-error estimate=0.239; fixed executed error scale=0.24 (flag 92=24)
+  -33 94 1 -33 92 23 -33 66 1  # Residual-based CPUE R5 maximum-likelihood observation-error estimate=0.225; fixed executed error scale=0.23 (flag 92=23)
 # Grouping flags for survey CPUE
    -1 99 1
    -2 99 2

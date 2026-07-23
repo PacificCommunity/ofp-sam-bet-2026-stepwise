@@ -31,7 +31,7 @@ expected reporting-rate rows = tag release groups + 1 pooled row
 | `03-Ini1007` through `05-LengthWeight` | 41 | 118 | 119 | MFCL 1007 layout without changing the diagnostic tag grouping. |
 | `06-NewStructure` through `09-TailCompression1Pct` | 33 | 96 | 97 | Five-region 2023 tag grouping; Step 09 changes only the LF tail control. |
 | `10-DataTo2024` through `16-SelectivityUpdate` | 33 | 98 | 99 | 2026 tag build with aligned reporting-rate matrices and the base mixing periods. |
-| `17-MIX015` through `20c-DMG8Nmax25` | 33 | 98 | 99 | Release-group-specific mixing periods are read from the mix-period `.ini`; reporting-rate exclusion begins at Step 18. |
+| `17-MIX015` through `20c-DMG8Nmax25` | 33 | 98 | 99 | Release-group-specific mixing periods are read from the mix-period `.ini`; from Step 18, reporting rates are excluded only within those pre-mixing windows. |
 
 ## Alignment Checks
 

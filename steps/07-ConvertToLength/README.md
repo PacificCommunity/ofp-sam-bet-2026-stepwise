@@ -1,6 +1,6 @@
 # 07 Convert weight to length compositions
 
-Convert the existing weight compositions to length.
+Convert the existing weight-frequency compositions to length-frequency to evaluate the conversion effect.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Convert the existing weight compositions to length.
 
 | # | Change |
 | --- | --- |
-| 1 | Convert the existing weight compositions to length. |
+| 1 | Convert the existing weight-frequency compositions to length-frequency to evaluate the conversion effect. |
 | 2 | Scientific parent: '06-NewStructure'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Convert the existing weight compositions to length.
 | `.ini` | tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Sets only the effective-sample-size row to 0.75. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Convert the existing weight compositions to length. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Convert the existing weight-frequency compositions to length-frequency to evaluate the conversion effect. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -43,7 +43,7 @@ Convert the existing weight compositions to length.
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |

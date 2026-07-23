@@ -1,6 +1,6 @@
-# 18 Reporting-rate exclusion
+# 18 Tag reporting rates omitted in pre-mixing window
 
-Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting-rate effects are excluded during each configured period; do not change reporting-rate values, groups, targets, or priors.
+Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting rates are not applied to predicted recaptures within each release group's pre-mixing window; post-mixing treatment and all reporting-rate values, groups, targets, and priors remain unchanged.
 
 ## Snapshot
 
@@ -13,10 +13,10 @@ Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so repor
 
 | # | Change |
 | --- | --- |
-| 1 | Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting-rate effects are excluded during each configured period; do not change reporting-rate values, groups, targets, or priors. |
-| 2 | Scientific rationale: isolate the reporting-rate exclusion treatment from the Step 17 release-group-specific mixing-period change. |
-| 3 | Held constant: all Step 17 data, biology, fleet-specific selectivity with form penalties off, CPUE, tag-mixing periods, and numeric reporting-rate settings. |
-| 4 | Only tag-flag column 2 changes from 0 to 1. |
+| 1 | Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting rates are not applied to predicted recaptures within each release group's pre-mixing window; post-mixing treatment and all reporting-rate values, groups, targets, and priors remain unchanged. |
+| 2 | Scientific rationale: avoid applying poorly determined or assumed reporting rates during the pre-mixing reconstruction, as recommended in the MULTIFAN-CL manual. |
+| 3 | Held constant: all Step 17 data, biology, revised fishery-specific selectivity with form penalties off, CPUE, tag-mixing periods, and numeric reporting-rate settings. |
+| 4 | Only tag-flag column 2 changes from 0 to 1; reporting rates continue to apply after the mixing period. |
 | 5 | Scientific parent: '17-MIX015'. |
 | 6 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -38,7 +38,7 @@ Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so repor
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting-rate effects are excluded during each configured period; do not change reporting-rate values, groups, targets, or priors. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting rates are not applied to predicted recaptures within each release group's pre-mixing window; post-mixing treatment and all reporting-rate values, groups, targets, and priors remain unchanged. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -46,7 +46,7 @@ Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so repor
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
@@ -59,8 +59,8 @@ Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so repor
 |  2 | Regional-scaling weight is 100. |
 |  3 | Length-frequency parest flag 313 is 1, activating 1% tail aggregation; flags 311/301 remain 1 and weight-frequency flag 303 remains 0. |
 |  4 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  5 | The intended selectivity bundle unshares F15-F28 and applies fleet-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
-|  6 | The selected Job 14363 fleet-specific configuration sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
+|  5 | The intended selectivity bundle unshares F15-F28 and applies fishery-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
+|  6 | The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
 |  7 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  8 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 |  9 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |

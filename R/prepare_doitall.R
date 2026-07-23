@@ -647,7 +647,7 @@ apply_all_selectivity_form_relaxation <- function(lines) {
       lines, paste0("-", fishery), 16L, 0L, 1L,
       paste0(
         "F", fishery,
-        " selected fleet-specific configuration: selectivity-form penalty off"
+        " selected revised fishery-specific specification: selectivity-form penalty off"
       )
     )
   }
@@ -770,7 +770,7 @@ apply_fixed_common_cpue_sigma <- function(lines, flag92,
       lines, paste0("-", fishery), 92L, flag92[[i]], 1L,
       paste0(
         if (length(cpue_mle_sigma)) {
-          paste0("Preliminary CPUE R", i, " maximum-likelihood observation-error estimate=", sprintf("%.3f", cpue_mle_sigma[[i]]), "; ")
+          paste0("Residual-based CPUE R", i, " maximum-likelihood observation-error estimate=", sprintf("%.3f", cpue_mle_sigma[[i]]), "; ")
         } else {
           paste0("CPUE R", i, "; ")
         },
@@ -932,7 +932,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     }
   } else if (isTRUE(all_selectivity_forms_relaxed)) {
     stop(
-      "All selectivity-form relaxation requires the fleet-specific selectivity bundle",
+      "All selectivity-form relaxation requires the revised fishery-specific selectivity bundle",
       call. = FALSE
     )
   }

@@ -1,6 +1,6 @@
 # 17 Release-group-specific tag-mixing periods
 
-Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so reporting-rate exclusion is tested separately in Step 18; do not change reporting-rate values or priors.
+Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately in Step 18; do not change reporting-rate values or priors.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping
 
 | # | Change |
 | --- | --- |
-| 1 | Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so reporting-rate exclusion is tested separately in Step 18; do not change reporting-rate values or priors. |
+| 1 | Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately in Step 18; do not change reporting-rate values or priors. |
 | 2 | Scientific parent: '16-SelectivityUpdate'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so reporting-rate exclusion is tested separately in Step 18; do not change reporting-rate values or priors. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately in Step 18; do not change reporting-rate values or priors. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -43,7 +43,7 @@ Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
@@ -56,8 +56,8 @@ Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping
 |  2 | Regional-scaling weight is 100. |
 |  3 | Length-frequency parest flag 313 is 1, activating 1% tail aggregation; flags 311/301 remain 1 and weight-frequency flag 303 remains 0. |
 |  4 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  5 | The intended selectivity bundle unshares F15-F28 and applies fleet-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
-|  6 | The selected Job 14363 fleet-specific configuration sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
+|  5 | The intended selectivity bundle unshares F15-F28 and applies fishery-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
+|  6 | The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
 |  7 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 |  8 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 |  9 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |

@@ -92,8 +92,8 @@ stepwise_models <- do.call(
     ),
     model_row(
       "04-FixM", "04-FixM", "03-Ini1007",
-      TRUE, "carry", "fix natural mortality at -2.54930339768360 on the M scale",
-      "Fixed natural mortality", "04 Fixed natural mortality", "04-fixm",
+      TRUE, "carry", "fix the log-scale Lorenzen natural-mortality coefficient at -2.54930339768360",
+      "Fixed Lorenzen M scaling", "04 Fixed Lorenzen M scaling", "04-fixm",
       region_count = 9L
     ),
     model_row(
@@ -109,13 +109,14 @@ stepwise_models <- do.call(
     ),
     model_row(
       "07-ConvertToLength", "07-ConvertToLength", "06-NewStructure",
-      TRUE, "carry", "convert the existing weight compositions to length",
-      "Length conversion", "07 Convert weight to length compositions", "07-converttolength"
+      TRUE, "carry", "replace the mixed size-composition input with the reweighted weight-as-length length-frequency dataset",
+      "Weight-as-length LF input", "07 Reweighted weight-as-length LF input", "07-converttolength"
     ),
     model_row(
       "08-AddLengthData", "08-AddLengthData", "07-ConvertToLength",
-      TRUE, "carry", "add the additional length-composition data",
-      "Additional length data", "08 Add length-composition data", "08-addlengthdata"
+      TRUE, "carry", "use observed length compositions where their catch coverage exceeds that of weight samples",
+      "Observed-length supplementation",
+      "08 Weight-as-length plus observed-length compositions", "08-addlengthdata"
     ),
     model_row(
       "09-TailCompression1Pct", "09-TailCompression", "08-AddLengthData",
@@ -149,15 +150,16 @@ stepwise_models <- do.call(
     model_row(
       "13-CPUEErrorCalibration", "13-CPUEErrorCalibration", "12-TimeVaryingCV",
       TRUE, "carry",
-      "calibrate the five regional CPUE observation-error scales using stable preliminary maximum-likelihood fits",
+      "set the five regional CPUE observation-error scales to maximum-likelihood estimates",
       "CPUE observation-error calibration",
       "13 CPUE observation-error calibration", "13-cpue-observation-error-calibration",
-      "Across multiple preliminary settings, the index-specific maximum-likelihood estimates changed little and converged near 0.354, 0.237, 0.212, 0.239, and 0.225. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 and carry them through every later step."
+      "Across multiple exploratory settings, the index-specific maximum-likelihood estimates changed little and converged near 0.354, 0.237, 0.212, 0.239, and 0.225. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 and carry them through every later step."
     ),
     model_row(
       "14-NewAgeData", "14-AgeData", "13-CPUEErrorCalibration",
-      TRUE, "carry", "add the new age data using the common BASE075 weighting",
-      "New age data", "14 New age data with common weighting", "14-new-age-data-base075"
+      TRUE, "carry", "add the new conditional age-at-length data with a weighting factor of 0.75 from the 2023 BET assessment",
+      "New conditional age-at-length data",
+      "14 New conditional age-at-length data (weight 0.75)", "14-new-age-data-base075"
     ),
     model_row(
       "15a-REG075", "15-AgeLengthWeighting", "14-NewAgeData",
@@ -172,9 +174,9 @@ stepwise_models <- do.call(
     model_row(
       "16-SelectivityUpdate", "16-SelectivityUpdate", "15b-SUB075",
       TRUE, "carry",
-      "configure fleet-specific selectivity for the revised fishery structure with dome/old-age-tail form penalties off for all 14 applicable fisheries",
-      "Fleet-specific selectivity", "16 Fleet-specific selectivity configuration", "16-selectivity-update",
-      "Apply the Job 14363 selectivity choice: unshare F15-F28, retain fleet-specific terminal ages and F25/F26 seven-node/youngest-tail settings, separate F29-F33 in staged run 5, and set fishery flag 16 from 2 to 0 for F12, F13, F15-F19, and F21-F27."
+      "revise fishery-specific selectivity for the 33-fishery structure with dome/old-age-tail form penalties off for all 14 applicable fisheries",
+      "Revised fishery-specific selectivity", "16 Revised fishery-specific selectivity", "16-selectivity-update",
+      "Apply the Job 14363 selectivity choice: unshare F15-F28, retain fishery-specific terminal ages and F25/F26 seven-node/youngest-tail settings, separate F29-F33 in staged run 5, and set fishery flag 16 from 2 to 0 for F12, F13, F15-F19, and F21-F27."
     ),
     model_row(
       "17-MIX015", "17-TagMixing", "16-SelectivityUpdate",
@@ -182,15 +184,15 @@ stepwise_models <- do.call(
       "apply release-group-specific MIX015 tag-mixing periods",
       "Release-group-specific tag mixing periods",
       "17 Release-group-specific tag-mixing periods", "17-mix015",
-      "Replace tag_flags(:,1) with the release-group-specific MIX015 periods. Keep tag_flags(:,2)=0 so the reporting-rate exclusion effect is isolated separately in Step 18."
+      "Replace tag_flags(:,1) with the release-group-specific MIX015 periods. Keep tag_flags(:,2)=0 so the treatment of reporting rates during those periods is evaluated separately in Step 18."
     ),
     model_row(
       "18-TagReportingExclusion", "18-TagReportingExclusion", "17-MIX015",
       TRUE, "carry",
-      "exclude reporting-rate effects during each configured release-group mixing period",
-      "Reporting-rate exclusion",
-      "18 Reporting-rate exclusion during tag mixing", "18-tag-reporting-exclusion",
-      "Keep the Step 17 release-group-specific periods and change only tag_flags(:,2) from 0 to 1. Reporting-rate values, groups, targets, and penalties remain unchanged."
+      "exclude reporting rates only during each release group's configured tag-mixing period",
+      "Tag reporting rates omitted in pre-mixing window",
+      "18 Tag reporting rates omitted in pre-mixing window", "18-tag-reporting-exclusion",
+      "Keep the Step 17 release-group-specific periods and change only tag_flags(:,2) from 0 to 1. This removes reporting rates from predicted recaptures within the pre-mixing windows; post-mixing treatment and all reporting-rate values, groups, targets, and penalties remain unchanged."
     ),
     model_row(
       "19-EffortCreep", "19-EffortCreep", "18-TagReportingExclusion",
@@ -199,9 +201,10 @@ stepwise_models <- do.call(
     ),
     model_row(
       "20a-DOMDiv200", "20-CompositionWeighting", "19-EffortCreep",
-      FALSE, "stop", "apply the assessment-specific DOM divisor 200 to F21-F23",
-      "DOM downweighting", "20a F21-F23 length-composition downweighting", "20a-dom-f21-f23-div200",
-      "Alternative length-composition weighting branch from Step 19. Only F21-F23 receive flag-49 divisor 200; the selected Step 16 fleet-specific, form-penalties-off setting is retained."
+      FALSE, "stop", "apply divisor 200 to length compositions from the three domestic fisheries F21-F23",
+      "Three domestic fisheries downweighted",
+      "20a F21-F23 length-composition downweighting", "20a-dom-f21-f23-div200",
+      "Alternative length-composition weighting branch from Step 19. Only F21-F23 receive flag-49 divisor 200; the selected Step 16 revised fishery-specific, form-penalties-off setting is retained."
     ),
     model_row(
       "20b-Francis", "20-CompositionWeighting", "19-EffortCreep",
@@ -214,7 +217,7 @@ stepwise_models <- do.call(
       TRUE, "final",
       "branch directly from Step 19 and use a Dirichlet-multinomial likelihood with G8 grouping and Nmax 25",
       "DM weighting", "20c Final DM weighting model (Job 14363 settings)", "20c-dm-length-composition-weighting",
-      "Selected final weighting treatment. This branch does not inherit divisor 200 or Francis controls. It retains the Job 14363 fleet-specific selectivity setting with form penalties off, plus the selected tag settings. Flag 313 is reset to 0 because the DM likelihood does not read that percentage threshold and to avoid unrelated percentage-tail preprocessing; flag 320=5 controls DM support, matching the Job 14363 numeric controls.",
+      "Selected final weighting treatment. This branch does not inherit divisor 200 or Francis controls. It retains the Job 14363 revised fishery-specific selectivity setting with form penalties off, plus the selected tag settings. Nmax=25 is the asymptotic effective-sample-size upper bound and lies just above the 22.22-23.81 range of 95th-percentile composition-level Francis ESS across 2,399 positive LF compositions in matched robust-normal fits. Flag 313 is reset to 0 because the DM likelihood does not read that percentage threshold and to avoid unrelated percentage-tail preprocessing; flag 320=5 controls DM support, matching the Job 14363 numeric controls.",
       fitted_job_id = "14363"
     )
   )
@@ -227,53 +230,53 @@ rownames(stepwise_models) <- NULL
 # generated step documentation.
 stepwise_report_change <- c(
   "01-Diag2023" = "2023 diagnostic-model refit",
-  "02-NewExe1003" = "Current MFCL executable with 1003-format INI",
-  "03-Ini1007" = "INI format 1007",
-  "04-FixM" = "Fixed natural mortality at the 2023 diagnostic estimate (M = -2.549)",
+  "02-NewExe1003" = "MFCL executable updated from archived 2.2.2.0 to the campaign 2.2.7.9-based build",
+  "03-Ini1007" = "MFCL INI file updated from format 1003 to 1007",
+  "04-FixM" = "Lorenzen natural-mortality scaling fixed (log c = -2.549)",
   "05-LengthWeight" = "BET 2026 bias-corrected length-weight parameters",
   "06-NewStructure" = "Five-region, 33-fishery structure",
-  "07-ConvertToLength" = "Weight-to-length composition conversion",
-  "08-AddLengthData" = "Additional length-composition data",
+  "07-ConvertToLength" = "Size-composition input replaced by the reweighted weight-as-length LF dataset",
+  "08-AddLengthData" = "Weight-as-length plus observed-length compositions for longline fisheries",
   "09-TailCompression1Pct" = "1% length-frequency tail compression",
   "10-DataTo2024" = "Data through 2024",
   "11-RegionalCPUE" = "Regional CPUE indices and regional scaling",
   "12-TimeVaryingCV" = "Time-varying CPUE uncertainty",
-  "13-CPUEErrorCalibration" = "Calibrated regional CPUE observation-error scales",
-  "14-NewAgeData" = "New age data with common weighting",
+  "13-CPUEErrorCalibration" = "Regional CPUE log-scale observation-error SDs fixed at 0.35, 0.24, 0.21, 0.24 and 0.23",
+  "14-NewAgeData" = "New conditional age-at-length data (weighting factor = 0.75)",
   "15a-REG075" = "Regional age weighting",
   "15b-SUB075" = "Sub-basin age weighting",
-  "16-SelectivityUpdate" = "Fleet-specific selectivity with form penalties off",
+  "16-SelectivityUpdate" = "Revised fishery-specific selectivity with form penalties off",
   "17-MIX015" = "Release-group-specific tag-mixing periods",
-  "18-TagReportingExclusion" = "Reporting-rate exclusion during tag mixing",
+  "18-TagReportingExclusion" = "Tag reporting rates omitted in the pre-mixing window",
   "19-EffortCreep" = "Effort-creep adjustment",
-  "20a-DOMDiv200" = "DOM downweighting (F21-F23; divisor 200)",
+  "20a-DOMDiv200" = "Downweighting of three domestic fisheries (F21-F23; divisor 200)",
   "20b-Francis" = "Francis composition reweighting",
   "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
-  "02-NewExe1003" = "Isolate changes caused by the updated software.",
-  "03-Ini1007" = "Adopt the current input specification.",
-  "04-FixM" = "Carry the diagnostic mortality estimate into model development.",
+  "02-NewExe1003" = "Isolate the executable effect while retaining the 1003-format INI and scientific inputs and controls.",
+  "03-Ini1007" = "Use INI 1007, the latest format supported by the pinned campaign executable.",
+  "04-FixM" = "Use the 2023 diagnostic-model estimate for Lorenzen scaling (Lorenzen, 1996) to improve model stability, as agreed at the pre-assessment workshop.",
   "05-LengthWeight" = "Update biomass conversion for the 2026 assessment.",
   "06-NewStructure" = "Represent revised spatial and fishery heterogeneity.",
-  "07-ConvertToLength" = "Standardize composition data on the length scale.",
-  "08-AddLengthData" = "Incorporate the new length observations.",
+  "07-ConvertToLength" = "Evaluate the selected weight-as-length LF dataset, in which all retained size compositions are length frequencies.",
+  "08-AddLengthData" = "Evaluate the effect of using observed lengths where their catch coverage exceeded that of weight samples (Peatman et al., 2026).",
   "09-TailCompression1Pct" = "Stabilize information in sparsely sampled tail bins.",
   "10-DataTo2024" = "Extend the temporal coverage of the assessment.",
   "11-RegionalCPUE" = "Represent spatial variation in relative abundance.",
-  "12-TimeVaryingCV" = "Account for temporal variation in index precision.",
-  "13-CPUEErrorCalibration" = "Use stable preliminary maximum-likelihood estimates: 0.35, 0.24, 0.21, 0.24 and 0.23.",
-  "14-NewAgeData" = "Provide a common starting weight for spatial comparisons.",
+  "12-TimeVaryingCV" = "Account for temporal variation in the relative precision of the CPUE indices.",
+  "13-CPUEErrorCalibration" = "Use rounded residual-based maximum-likelihood estimates (0.354, 0.237, 0.212, 0.239 and 0.225).",
+  "14-NewAgeData" = "Use the 2023 BET assessment weighting as the reference treatment for the new age data (Day et al., 2023).",
   "15a-REG075" = "Test region-level spatial weighting.",
   "15b-SUB075" = "Represent finer sub-basin variation in age-data information.",
   "16-SelectivityUpdate" = "Match the revised fisheries and avoid unnecessary older-age constraints.",
   "17-MIX015" = "Allow mixing duration to vary among release groups.",
-  "18-TagReportingExclusion" = "Avoid reporting-rate effects before tags are fully mixed.",
+  "18-TagReportingExclusion" = "Avoid applying poorly determined or assumed reporting rates within the pre-mixing windows, as recommended in the MULTIFAN-CL manual; post-mixing reporting-rate treatment is unchanged.",
   "19-EffortCreep" = "Account for gradual changes in fishing efficiency.",
-  "20a-DOMDiv200" = "Test strong downweighting of lower-quality DOM data.",
-  "20b-Francis" = "Test residual-based, fishery-specific weights.",
-  "20c-DMG8Nmax25" = "Estimate overdispersion while limiting composition dominance over CPUE."
+  "20a-DOMDiv200" = "Test strong downweighting of length compositions from the Indonesian, Philippine and Vietnamese domestic fisheries.",
+  "20b-Francis" = "Apply locked fishery-specific divisors derived from the residual-based TA1.8 effective-sample-size diagnostic (Francis, 2011).",
+  "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]

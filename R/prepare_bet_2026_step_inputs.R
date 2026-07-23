@@ -76,8 +76,8 @@ bias_corrected_length_weight_note <- paste(
 
 fixm_age_par_value <- "-2.54930339768360e+00"
 fixm_age_par_source <- "the 01-Diag2023 mgc=-5 diagnostic final par"
-fixm_age_par_note <- paste("Fixed Lorenzen natural-mortality intercept applied from", fixm_age_par_source)
-fixm_age_par_display <- paste("Fixed Lorenzen natural-mortality intercept from", fixm_age_par_source)
+fixm_age_par_note <- paste("Fixed log-scale Lorenzen natural-mortality coefficient applied from", fixm_age_par_source)
+fixm_age_par_display <- paste("Fixed Lorenzen M scaling from", fixm_age_par_source)
 
 diagnostic_root_env <- Sys.getenv("BET_2023_DIAGNOSTIC_ROOT", "")
 diagnostic_root_candidates <- if (nzchar(diagnostic_root_env)) {
@@ -422,7 +422,7 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
   }
   if (isTRUE(fixm)) {
     apply_fixm_m(file.path(paths$model_dir, "bet.ini"))
-    ini_notes <- c(ini_notes, paste("Fixed Lorenzen natural-mortality intercept applied from", fixm_age_par_source))
+    ini_notes <- c(ini_notes, paste("Fixed log-scale Lorenzen natural-mortality coefficient applied from", fixm_age_par_source))
   }
   write_generated_tag_rep_map(paths$model_dir)
   write_2023_newexe_doitall(
@@ -461,7 +461,7 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
   } else if (isTRUE(fixm)) {
     input_change_table(
       c(".ini", ".frq/.tag/.age_length"),
-      c("Sets the Lorenzen natural-mortality intercept to `-2.54930339768360` and retains the length slope `-1`; both are fixed in later fits.", "No generated edit."),
+      c("Sets the log-scale Lorenzen natural-mortality coefficient to `-2.54930339768360` and retains the length exponent `-1`; both are fixed in later fits.", "No generated edit."),
       c(paste0("All other `", source_step, "` ini controls."), paste0("Inherited from `", source_step, "`."))
     )
   } else {
@@ -526,10 +526,10 @@ write_diagnostic_substep(
 )
 write_diagnostic_substep(
   "04-FixM",
-  "04 Fixed natural mortality",
+  "04 Fixed Lorenzen M scaling",
   paste0(
-    "Step 03 1007 ini baseline with natural mortality fixed at ",
-    fixm_age_par_value, "."
+    "Step 03 1007 ini baseline with the log-scale Lorenzen natural-mortality ",
+    "coefficient fixed at ", fixm_age_par_value, "."
   ),
   source_step = "03-Ini1007",
   fixm = TRUE
@@ -942,12 +942,12 @@ write_sequence_step <- function(
       if (nzchar(dm_grouping)) "Length-frequency parest flag 313 is reset to 0 because the DM likelihood does not read the percentage threshold; this also avoids unrelated percentage-tail preprocessing, while parest flag 320 controls DM support.",
       if (index_selectivity) "F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5.",
       if (selectivity_update_bundle) paste0(
-        "The intended selectivity bundle unshares F15-F28 and applies fleet-specific ",
+        "The intended selectivity bundle unshares F15-F28 and applies fishery-specific ",
         "terminal/dome and youngest-age-tail controls; F25/F26 each use seven ",
         "nodes, terminal age 25, dome flag 2, and youngest-tail flag 0."
       ),
       if (all_selectivity_forms_relaxed) paste0(
-        "The selected Job 14363 fleet-specific configuration sets flag 16 to 0 ",
+        "The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 ",
         "for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off."
       ),
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
@@ -999,7 +999,7 @@ write_sequence_step <- function(
 
 write_sequence_step(
   "07-ConvertToLength", "07 Convert weight to length compositions", "06-NewStructure",
-  "Convert the existing weight compositions to length.",
+  "Convert the existing weight-frequency compositions to length-frequency to evaluate the conversion effect.",
   frq_source = frq_convert_length_2021,
   ini_source = regfish_ini_source,
   tag_source = regfish_tag_source,
@@ -1007,16 +1007,16 @@ write_sequence_step(
 )
 
 write_sequence_step(
-  "08-AddLengthData", "08 Add length-composition data", "07-ConvertToLength",
-  "Add the additional length-composition data.",
+  "08-AddLengthData", "08 Weight-as-length plus observed-length compositions", "07-ConvertToLength",
+  "Use observed length compositions where their catch coverage exceeds that of weight samples.",
   frq_source = frq_length_plus_length_2021,
   ini_source = regfish_ini_source,
   tag_source = regfish_tag_source,
   reporting_rate_variant = "rrpttp26"
 )
 
-# Tail aggregation is introduced only after all compositions have been
-# converted to length and the additional length-composition data are present.
+# Tail aggregation is introduced only after weight compositions have been
+# converted to length and observed length compositions have been incorporated.
 write_sequence_step(
   "09-TailCompression1Pct", "09 One-percent LF tail compression", "08-AddLengthData",
   "Activate 1% length-frequency tail aggregation by changing only parest flag 313 from 0 to 1.",
@@ -1079,7 +1079,7 @@ write_sequence_step(
 write_sequence_step(
   "13-CPUEErrorCalibration", "13 CPUE observation-error calibration", "12-TimeVaryingCV",
   paste(
-    "Across multiple preliminary settings, the maximum-likelihood CPUE",
+    "Across multiple exploratory settings, the maximum-likelihood CPUE",
     "observation-error estimates changed little and converged near common values.",
     "Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23",
     "for every later step."
@@ -1096,8 +1096,8 @@ write_sequence_step(
 )
 
 write_sequence_step(
-  "14-NewAgeData", "14 New age data", "13-CPUEErrorCalibration",
-  "Add the new 2026 age data using the common BASE075 weighting as the reference state.",
+  "14-NewAgeData", "14 New conditional age-at-length data", "13-CPUEErrorCalibration",
+  "Add the new conditional age-at-length data with a weighting factor of 0.75 from the 2023 BET assessment.",
   frq_source = frq_regional_2024,
   age_source = new_age,
   age_effective_sample_size = 0.75,
@@ -1176,17 +1176,17 @@ write_selected_path_step <- function(
 }
 
 write_selected_path_step(
-  "16-SelectivityUpdate", "16 Fleet-specific selectivity configuration", "15b-SUB075",
+  "16-SelectivityUpdate", "16 Revised fishery-specific selectivity", "15b-SUB075",
   paste0(
-    "Reconfigure fleet-specific selectivity for the revised fishery structure, ",
+    "Revise fishery-specific selectivity sharing, terminal ages, and F25/F26 shape settings for the 33-fishery structure, ",
     "remove six superseded legacy controls, and set flag 16 to 0 for all 14 ",
     "applicable fisheries so all weighting comparisons use the selected Job 14363 setting."
   ),
   audit_notes = c(
-    "Scientific rationale: represent fleet-specific size availability without imposing unnecessary older-age shape constraints before comparing composition weighting.",
+    "Scientific rationale: represent fishery-specific size availability without imposing unnecessary older-age shape constraints before comparing composition weighting.",
     "Held constant: data, fixed natural mortality, growth, CPUE settings, tag reporting-rate mapping, and every non-selectivity control.",
-    "The Step 15b parent has 15 active flag-16 penalties. The revised structure changes the applicable fleet set: superseded F20/F28 controls are removed and F15 is introduced.",
-    "For the resulting F12, F13, F15-F19, and F21-F27 set, flag 16 is 0 (form penalty off); fleet-specific terminal ages, spline-node counts, and youngest-age tails are retained.",
+    "The Step 15b parent has 15 active flag-16 penalties. The revised structure changes the applicable fishery set: superseded F20/F28 controls are removed and F15 is introduced.",
+    "For the resulting F12, F13, F15-F19, and F21-F27 set, flag 16 is 0 (form penalty off); fishery-specific terminal ages, spline-node counts, and youngest-age tails are retained.",
     "Status: selected Job 14363 selectivity setting, carried forward to all Step 20 weighting comparisons."
   ),
   time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
@@ -1198,7 +1198,7 @@ write_selected_path_step(
   "17-MIX015", "17 Release-group-specific tag-mixing periods", "16-SelectivityUpdate",
   paste0(
     "Apply the release-group-specific MIX015 periods in tag_flags(:,1), while ",
-    "keeping tag_flags(:,2)=0 so reporting-rate exclusion is tested separately ",
+    "keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately ",
     "in Step 18; do not change reporting-rate values or priors."
   ),
   tag_mixing = TRUE, tag_flag2 = 0L, time_varying_cv = TRUE,
@@ -1207,16 +1207,17 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE
 )
 write_selected_path_step(
-  "18-TagReportingExclusion", "18 Reporting-rate exclusion", "17-MIX015",
+  "18-TagReportingExclusion", "18 Tag reporting rates omitted in pre-mixing window", "17-MIX015",
   paste0(
     "Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 ",
-    "so reporting-rate effects are excluded during each configured period; ",
-    "do not change reporting-rate values, groups, targets, or priors."
+    "so reporting rates are not applied to predicted recaptures within each ",
+    "release group's pre-mixing window; post-mixing treatment and all reporting-rate ",
+    "values, groups, targets, and priors remain unchanged."
   ),
   audit_notes = c(
-    "Scientific rationale: isolate the reporting-rate exclusion treatment from the Step 17 release-group-specific mixing-period change.",
-    "Held constant: all Step 17 data, biology, fleet-specific selectivity with form penalties off, CPUE, tag-mixing periods, and numeric reporting-rate settings.",
-    "Only tag-flag column 2 changes from 0 to 1."
+    "Scientific rationale: avoid applying poorly determined or assumed reporting rates during the pre-mixing reconstruction, as recommended in the MULTIFAN-CL manual.",
+    "Held constant: all Step 17 data, biology, revised fishery-specific selectivity with form penalties off, CPUE, tag-mixing periods, and numeric reporting-rate settings.",
+    "Only tag-flag column 2 changes from 0 to 1; reporting rates continue to apply after the mixing period."
   ),
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   fixed_cpue_sigma = TRUE,
@@ -1232,11 +1233,11 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE
 )
 write_selected_path_step(
-  "20a-DOMDiv200", "20a DOM downweighting", "19-EffortCreep",
-  "Apply divisor 200 only to the low-quality, previously unreweighted DOM F21-F23 length compositions.",
+  "20a-DOMDiv200", "20a Three domestic fisheries downweighted", "19-EffortCreep",
+  "Apply divisor 200 to length compositions from the Indonesian, Philippine, and Vietnamese domestic fisheries (F21-F23).",
   audit_notes = c(
     "Scientific rationale: test whether reducing the influence of these three composition series improves balance with other data.",
-    "Held constant: the Step 19 data, biology, fleet-specific selectivity with form penalties off, CPUE, tag, and all non-DOM composition settings.",
+    "Held constant: the Step 19 data, biology, revised fishery-specific selectivity with form penalties off, CPUE, tag, and all other composition settings.",
     "Status: independent alternative comparison; not carried forward."
   ),
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
@@ -1271,8 +1272,8 @@ write_selected_path_step(
     "without DOM divisor 200 or Francis weighting."
   ),
   audit_notes = c(
-    "Scientific rationale: estimate composition information internally while capping it at 25 to avoid excessive dominance over CPUE; the cap reflects preliminary effective-sample-size behavior.",
-    "Held constant: all Step 19 data, biology, Job 14363 fleet-specific selectivity with form penalties off, CPUE, and tag settings; neither the 20a divisor nor 20b Francis weights are inherited. Flag 313 is reset to 0 because the DM likelihood does not read that percentage threshold and to avoid unrelated percentage-tail preprocessing; flag 320=5 controls DM support and the resulting numeric controls match Job 14363.",
+    "Scientific rationale: estimate composition information internally with Nmax=25 as the asymptotic effective-sample-size upper bound. The value lies just above the 22.22-23.81 range of 95th-percentile composition-level Francis effective sample sizes across 2,399 positive LF compositions in matched robust-normal fits.",
+    "Held constant: all Step 19 data, biology, Job 14363 revised fishery-specific selectivity with form penalties off, CPUE, and tag settings; neither the 20a divisor nor 20b Francis weights are inherited. Flag 313 is reset to 0 because the DM likelihood does not read that percentage threshold and to avoid unrelated percentage-tail preprocessing; flag 320=5 controls DM support and the resulting numeric controls match Job 14363.",
     "Status: selected final model."
   ),
   tag_mixing = TRUE, tag_flag2 = 1L, tail_compression_1pct = FALSE,

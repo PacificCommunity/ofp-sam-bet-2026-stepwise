@@ -35,6 +35,195 @@ stepwise_sentence <- function(x) {
   x
 }
 
+stepwise_references <- c(
+  paste0(
+    "Peatman, T., Castillo-Jordán, C., Teears, T., Magnusson, A., Kim, K., ",
+    "Hampton, J. and Hamer, P. (2026). Analysis of size frequency data for the ",
+    "2026 yellowfin and bigeye assessments. WCPFC-SC22-2026-SA-IP06."
+  ),
+  paste0(
+    "Day, J., Magnusson, A., Teears, T., Hampton, J., Davies, N., ",
+    "Castillo-Jordán, C., Peatman, T., Scott, R., Scutt Phillips, J., ",
+    "McKechnie, S., Scott, F., Yao, N., Natadra, R., Pilling, G., Williams, P. ",
+    "and Hamer, P. (2023). Stock assessment of bigeye tuna in the western and ",
+    "central Pacific Ocean: 2023. WCPFC-SC19-2023/SA-WP-05, Rev. 2."
+  ),
+  paste0(
+    "Lorenzen, K. (1996). The relationship between body weight and natural ",
+    "mortality in juvenile and adult fish: a comparison of natural ecosystems ",
+    "and aquaculture. Journal of Fish Biology, 49, 627-642. ",
+    "doi:10.1111/j.1095-8649.1996.tb00060.x."
+  ),
+  paste0(
+    "Francis, R.I.C.C. (2011). Data weighting in statistical fisheries stock ",
+    "assessment models. Canadian Journal of Fisheries and Aquatic Sciences, 68, ",
+    "1124-1138. doi:10.1139/F2011-025."
+  ),
+  paste0(
+    "Thorson, J.T., Johnson, K.F., Methot, R.D. and Taylor, I.G. (2017). ",
+    "Model-based estimates of effective sample size in stock assessment models ",
+    "using the Dirichlet-multinomial distribution. Fisheries Research, 192, ",
+    "84-93. doi:10.1016/j.fishres.2016.06.005."
+  ),
+  paste0(
+    "Davies, N., Fournier, D.A., Hampton, J., Kleiber, P., Bouye, F., Kim, K., ",
+    "Magnusson, A. and Hoyle, S. (2026). MULTIFAN-CL User's Guide, version ",
+    "2.2.7.8. July 13, 2026."
+  ),
+  paste0(
+    "Pacific Community (2026). BET 2026 DM Nmax and F25/F26 selectivity ",
+    "sensitivities: Nmax calibration and G8PSSET grouping. Repository commit ",
+    "c940601."
+  )
+)
+
+stepwise_reference_urls <- c(
+  "https://meetings.wcpfc.int/node/32346",
+  "https://meetings.wcpfc.int/node/19353",
+  "https://doi.org/10.1111/j.1095-8649.1996.tb00060.x",
+  "https://doi.org/10.1139/F2011-025",
+  "https://doi.org/10.1016/j.fishres.2016.06.005",
+  paste0(
+    "https://github.com/PacificCommunity/ofp-sam-mfcl-manual/blob/",
+    "4503c2abd234f3be95ec73e4375cf19df69859e2/MFCL-manual_MASTER.pdf"
+  ),
+  paste0(
+    "https://github.com/PacificCommunity/ofp-sam-bet-2026-exploration/blob/",
+    "c940601bb95797a5cc5b4a2dbc01cfd6daa86a70/README.md#nmax-calibration"
+  )
+)
+
+stepwise_references_bibtex <- paste0(
+  "@techreport{PeatmanEtAl2026SizeFrequency,\n",
+  "  author = {Peatman, Tom and Castillo-Jord{\\'a}n, Claudio and Teears, Thom and ",
+  "Magnusson, Arni and Kim, Kyuhan and Hampton, John and Hamer, Paul},\n",
+  "  title = {Analysis of size frequency data for the 2026 yellowfin and bigeye assessments},\n",
+  "  institution = {Western and Central Pacific Fisheries Commission},\n",
+  "  number = {WCPFC-SC22-2026-SA-IP06},\n",
+  "  url = {https://meetings.wcpfc.int/node/32346},\n",
+  "  year = {2026}\n",
+  "}\n\n",
+  "@techreport{DayEtAl2023BET,\n",
+  "  author = {Day, J. and Magnusson, A. and Teears, T. and Hampton, J. and ",
+  "Davies, N. and Castillo-Jord{\\'a}n, C. and Peatman, T. and Scott, R. and ",
+  "Scutt Phillips, J. and McKechnie, S. and Scott, F. and Yao, N. and ",
+  "Natadra, R. and Pilling, G. and Williams, P. and Hamer, P.},\n",
+  "  title = {Stock assessment of bigeye tuna in the western and central Pacific Ocean: 2023},\n",
+  "  institution = {Western and Central Pacific Fisheries Commission},\n",
+  "  number = {WCPFC-SC19-2023/SA-WP-05, Rev. 2},\n",
+  "  url = {https://meetings.wcpfc.int/node/19353},\n",
+  "  year = {2023}\n",
+  "}\n\n",
+  "@article{Lorenzen1996NaturalMortality,\n",
+  "  author = {Lorenzen, Kai},\n",
+  "  title = {The relationship between body weight and natural mortality in juvenile and adult fish: a comparison of natural ecosystems and aquaculture},\n",
+  "  journal = {Journal of Fish Biology},\n",
+  "  volume = {49},\n",
+  "  number = {4},\n",
+  "  pages = {627--642},\n",
+  "  year = {1996},\n",
+  "  doi = {10.1111/j.1095-8649.1996.tb00060.x}\n",
+  "}\n\n",
+  "@article{Francis2011DataWeighting,\n",
+  "  author = {Francis, R. I. C. C.},\n",
+  "  title = {Data weighting in statistical fisheries stock assessment models},\n",
+  "  journal = {Canadian Journal of Fisheries and Aquatic Sciences},\n",
+  "  volume = {68},\n",
+  "  number = {6},\n",
+  "  pages = {1124--1138},\n",
+  "  year = {2011},\n",
+  "  doi = {10.1139/F2011-025}\n",
+  "}\n\n",
+  "@article{ThorsonEtAl2017DMESS,\n",
+  "  author = {Thorson, James T. and Johnson, Kelli F. and Methot, Richard D. and Taylor, Ian G.},\n",
+  "  title = {Model-based estimates of effective sample size in stock assessment models using the Dirichlet-multinomial distribution},\n",
+  "  journal = {Fisheries Research},\n",
+  "  volume = {192},\n",
+  "  pages = {84--93},\n",
+  "  year = {2017},\n",
+  "  doi = {10.1016/j.fishres.2016.06.005}\n",
+  "}\n\n",
+  "@manual{DaviesEtAl2026MFCLGuide,\n",
+  "  author = {Davies, Nick and Fournier, David A. and Hampton, John and ",
+  "Kleiber, Pierre and Bouye, Fabrice and Kim, Kyuhan and Magnusson, Arni and Hoyle, Simon},\n",
+  "  title = {{MULTIFAN-CL} User's Guide},\n",
+  "  note = {Version 2.2.7.8},\n",
+  "  month = jul,\n",
+  "  url = {https://github.com/PacificCommunity/ofp-sam-mfcl-manual/blob/4503c2abd234f3be95ec73e4375cf19df69859e2/MFCL-manual_MASTER.pdf},\n",
+  "  year = {2026}\n",
+  "}\n\n",
+  "@misc{PacificCommunity2026BETNmaxCalibration,\n",
+  "  author = {{Pacific Community}},\n",
+  "  title = {{BET 2026 DM Nmax and F25/F26 selectivity sensitivities: Nmax calibration and G8PSSET grouping}},\n",
+  "  howpublished = {Repository commit c940601},\n",
+  "  url = {https://github.com/PacificCommunity/ofp-sam-bet-2026-exploration/blob/c940601bb95797a5cc5b4a2dbc01cfd6daa86a70/README.md},\n",
+  "  year = {2026}\n",
+  "}"
+)
+
+stepwise_dm_configuration <- data.frame(
+  setting = c(
+    "Likelihood",
+    "Fishery grouping",
+    "Group-specific estimation",
+    "Meaning of Nmax",
+    "Selected Nmax",
+    "Length-bin support"
+  ),
+  implementation = c(
+    "Dirichlet-multinomial length-composition likelihood without random effects (flag 141 = 11).",
+    "All 33 fisheries assigned to eight assessment-specific groups (flag 68; grouping detailed in the following table).",
+    "Each group shares a fitted baseline concentration exponent d (flag 69) and relative-sample-size exponent c (flag 89, activated from phase 2); for composition i, lambda_i = exp(d_g) r_i^(c_g).",
+    "MFCL calculates effective sample size (ESS) as N_eff = Nmax(1 + lambda)/(Nmax + lambda). Thus, Nmax is the asymptotic upper bound approached as the fitted Dirichlet-multinomial concentration lambda increases; it is not the mean ESS or a fixed weight assigned to every composition.",
+    "Nmax = 25 (flag 342). The MFCL default is 1,000 when flag 342 is zero.",
+    "Use tail-compressed DM support when the span from the first to last positive observed bin contains at least five bins (flag 320 = 5); flag 313 = 0 because its 1% threshold is not read by the DM likelihood."
+  ),
+  basis = c(
+    "Estimate extra-multinomial variation and the resulting composition information within the model (Thorson et al., 2017).",
+    "Share information within broadly similar gear and data-role strata while retaining separate parameters for major composition processes.",
+    "Allow both baseline overdispersion and its relationship with relative observed sample size to differ among the eight strata without estimating separate terms for every fishery.",
+    "The current MFCL manual identifies flag 342 as the assumed maximum ESS for the no-random-effects Dirichlet-multinomial likelihood; the source implements the transformation shown here and uses 1,000 when the flag is zero.",
+    "The 95th percentile of composition-level Francis ESS was 22.22-23.81 across 2,399 positive length-frequency compositions in matched robust-normal fits. A cap of 25 lies just above this upper-tail range and limits composition dominance over CPUE (BET 2026 exploration record, commit c940601).",
+    "Apply the DM-specific support rule and leave the normal-likelihood percentage-tail control inactive."
+  ),
+  stringsAsFactors = FALSE
+)
+
+stepwise_dm_groups <- data.frame(
+  group = paste0("G", 1:8),
+  fisheries = c(
+    "F1-F4, F6-F8, F10-F11",
+    "F5, F9",
+    "F12, F17-F18",
+    "F19, F25-F26",
+    "F20, F27-F28",
+    "F14-F15",
+    "F13, F16, F21-F24",
+    "F29-F33"
+  ),
+  series = c(
+    "LL.WEST.1; LL.EAST.1; LL.US.1; LL.ALL.2; LL.ARCH.3; LL.WEST.3; LL.EAST.3; LL.ALL.5; LL.AU.5",
+    "LL.OS.2; LL.OS.3",
+    "PS.JP.1; PS.ID.2; PS.PH.2",
+    "PS.ASS.2; PS.ASS.WEST.3; PS.ASS.EAST.3",
+    "PS.UNA.2; PS.UNA.WEST.3; PS.UNA.EAST.3",
+    "HL.ID.2; HL.PH.2",
+    "PL.JP.1; PL.ALL.2; DOM.ID.2; DOM.PH.2; DOM.VN.2; PL.ALL.WEST.3",
+    "Index R1; Index R2; Index R3; Index R4; Index R5"
+  ),
+  grouping_basis = c(
+    "Main longline composition process",
+    "Offshore longline series with a distinct sampling history",
+    "Purse-seine series without associated/unassociated set-type separation",
+    "Associated purse-seine series",
+    "Unassociated purse-seine series",
+    "Handline series",
+    "Other extraction fisheries pooled for stable estimation",
+    "Regional indices sharing the relative-abundance reweighting procedure"
+  ),
+  stringsAsFactors = FALSE
+)
+
 stepwise_parse_job_map <- function(value) {
   value <- trimws(as.character(value %||% ""))
   if (!nzchar(value)) {
@@ -221,12 +410,84 @@ stepwise_table_latex <- function(table, include_jobs = FALSE) {
   paste0(
     "% Requires \\usepackage{booktabs,longtable,array}\n",
     "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n\\renewcommand{\\arraystretch}{1.08}\n",
+    "\\setlength{\\LTcapwidth}{\\linewidth}\n",
     "\\begin{longtable}{", columns, "}\n",
     "\\caption{Changes evaluated during stepwise development of the BET 2026 assessment and their rationale.}",
     "\\label{tab:bet-stepwise-development}\\\\\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endfirsthead\n",
     "\\toprule\n", header, " \\\\\n\\midrule\n\\endhead\n",
-    paste(rows, collapse = "\n"), "\n\\bottomrule\n\\end{longtable}\n\\endgroup\n"
+    paste(rows, collapse = "\n"), "\n\\bottomrule\n\\end{longtable}\n\\endgroup\n",
+    "\\begingroup\\footnotesize\\sloppy\\setlength{\\emergencystretch}{2em}",
+    "\\noindent\\textit{References:}\\par\n",
+    paste0(stepwise_latex_escape(stepwise_references), "\\par", collapse = "\n"),
+    "\\endgroup\n"
+  )
+}
+
+stepwise_named_table_html <- function(table, id, headers, widths,
+                                      first_column_class = "") {
+  stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
+  colgroup <- paste0(
+    "<col style=\"width:", widths, "%\">",
+    collapse = ""
+  )
+  header <- paste0(
+    "<th>", stepwise_html_escape(headers), "</th>",
+    collapse = ""
+  )
+  rows <- vapply(seq_len(nrow(table)), function(i) {
+    cells <- vapply(seq_len(ncol(table)), function(j) {
+      class <- if (j == 1L && nzchar(first_column_class)) {
+        paste0(" class=\"", first_column_class, "\"")
+      } else {
+        ""
+      }
+      paste0(
+        "<td", class, ">",
+        stepwise_html_escape(table[[j]][[i]]),
+        "</td>"
+      )
+    }, character(1))
+    paste0("<tr>", paste(cells, collapse = ""), "</tr>")
+  }, character(1))
+  paste0(
+    "<table id=\"", id, "\"><colgroup>", colgroup, "</colgroup>",
+    "<thead><tr>", header, "</tr></thead><tbody>",
+    paste(rows, collapse = ""), "</tbody></table>"
+  )
+}
+
+stepwise_named_table_latex <- function(table, headers, widths, caption, label,
+                                       first_column_bold = FALSE) {
+  stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
+  columns <- paste0(
+    "@{}",
+    paste0(
+      ">{\\raggedright\\arraybackslash}p{", widths, "\\linewidth}",
+      collapse = ""
+    ),
+    "@{}"
+  )
+  rows <- vapply(seq_len(nrow(table)), function(i) {
+    values <- vapply(seq_len(ncol(table)), function(j) {
+      value <- stepwise_latex_escape(table[[j]][[i]])
+      if (j == 1L && first_column_bold) paste0("\\textbf{", value, "}") else value
+    }, character(1))
+    paste0(paste(values, collapse = " & "), " \\\\")
+  }, character(1))
+  header <- paste(stepwise_latex_escape(headers), collapse = " & ")
+  paste0(
+    "% Requires \\usepackage{booktabs,longtable,array}\n",
+    "\\begingroup\n\\small\n\\setlength{\\tabcolsep}{4pt}\n",
+    "\\renewcommand{\\arraystretch}{1.08}\n",
+    "\\setlength{\\LTcapwidth}{\\linewidth}\n",
+    "\\begin{longtable}{", columns, "}\n",
+    "\\caption{", stepwise_latex_escape(caption), "}",
+    "\\label{", label, "}\\\\\n",
+    "\\toprule\n", header, " \\\\\n\\midrule\n\\endfirsthead\n",
+    "\\toprule\n", header, " \\\\\n\\midrule\n\\endhead\n",
+    paste(rows, collapse = "\n"),
+    "\n\\bottomrule\n\\end{longtable}\n\\endgroup\n"
   )
 }
 
@@ -295,6 +556,57 @@ build_stepwise_report <- function(
   include_jobs <- nrow(job_map) > 0L
   table_html <- stepwise_table_html(table, include_jobs)
   table_latex <- stepwise_table_latex(table, include_jobs)
+  dm_configuration_caption <- paste0(
+    "Implementation and selection basis for the Dirichlet-multinomial ",
+    "length-composition likelihood in the selected BET 2026 model."
+  )
+  dm_groups_caption <- paste0(
+    "Eight fishery groups used to estimate group-specific Dirichlet-multinomial ",
+    "overdispersion. Fishery numbers and series names follow the five-region, ",
+    "33-fishery input specification."
+  )
+  dm_configuration_html <- stepwise_named_table_html(
+    stepwise_dm_configuration,
+    id = "dm-configuration-table",
+    headers = c("Setting", "Implementation", "Selection basis"),
+    widths = c(18, 37, 45),
+    first_column_class = "row-label"
+  )
+  dm_groups_html <- stepwise_named_table_html(
+    stepwise_dm_groups,
+    id = "dm-groups-table",
+    headers = c("DM group", "Fishery numbers", "Fishery series", "Grouping basis"),
+    widths = c(9, 19, 45, 27),
+    first_column_class = "step-number"
+  )
+  dm_configuration_latex <- stepwise_named_table_latex(
+    stepwise_dm_configuration,
+    headers = c("Setting", "Implementation", "Selection basis"),
+    widths = c(0.17, 0.36, 0.42),
+    caption = dm_configuration_caption,
+    label = "tab:bet-dm-configuration",
+    first_column_bold = TRUE
+  )
+  dm_groups_latex <- stepwise_named_table_latex(
+    stepwise_dm_groups,
+    headers = c("DM group", "Fishery numbers", "Fishery series", "Grouping basis"),
+    widths = c(0.075, 0.165, 0.445, 0.245),
+    caption = dm_groups_caption,
+    label = "tab:bet-dm-groups",
+    first_column_bold = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "N\\_eff = Nmax(1 + lambda)/(Nmax + lambda)",
+    "$N_{\\mathrm{eff}} = N_{\\max}(1 + \\lambda)/(N_{\\max} + \\lambda)$",
+    dm_configuration_latex,
+    fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "lambda\\_i = exp(d\\_g) r\\_i\\textasciicircum{}(c\\_g)",
+    "$\\lambda_i = \\exp(d_g) r_i^{c_g}$",
+    dm_configuration_latex,
+    fixed = TRUE
+  )
   discovered <- stepwise_discover_results(job_map, input_dir)
   result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
 
@@ -313,6 +625,31 @@ build_stepwise_report <- function(
   table_caption <- paste0(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
     "rationale. Step numbers correspond to the pathway in Figure XX."
+  )
+  dm_section <- paste0(
+    "<section class=\"model-card\"><h2>Selected Dirichlet-multinomial configuration</h2>",
+    "<p>The 33 fisheries were assigned to eight assessment-specific groups, with a baseline ",
+    "concentration term and a relative-sample-size exponent estimated for each group. This shares information among ",
+    "similar fishery and data-role strata while retaining separate parameters for the ",
+    "major composition processes. The effective sample size (ESS) limit was calibrated ",
+    "from the Francis diagnostic distribution and evaluated as part of the integrated ",
+    "balance between length compositions and CPUE.</p>",
+    "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
+    "<span contenteditable=\"true\">XX</span>.</strong> ",
+    stepwise_html_escape(dm_configuration_caption), "</p>",
+    "<div class=\"table-shell\">", dm_configuration_html, "</div>",
+    "<div class=\"actions\"><button onclick=\"copyReportTable('dm-configuration-caption','dm-configuration-table',this)\">",
+    "Copy table + caption for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('dm-configuration-latex',this)\">",
+    "Copy table + caption for LaTeX</button></div></div>",
+    "<div class=\"format-block\"><p class=\"caption\" id=\"dm-groups-caption\"><strong>Table ",
+    "<span contenteditable=\"true\">XX</span>.</strong> ",
+    stepwise_html_escape(dm_groups_caption), "</p>",
+    "<div class=\"table-shell\">", dm_groups_html, "</div>",
+    "<div class=\"actions\"><button onclick=\"copyReportTable('dm-groups-caption','dm-groups-table',this)\">",
+    "Copy table + caption for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('dm-groups-latex',this)\">",
+    "Copy table + caption for LaTeX</button></div></div></section>"
   )
 
   result_section <- ""
@@ -370,16 +707,20 @@ build_stepwise_report <- function(
     "table{width:100%;border-collapse:collapse;font-size:.89rem;table-layout:fixed}th{position:sticky;top:0;z-index:1;background:var(--ink);color:#fff;text-align:left;",
     "padding:10px 12px;line-height:1.25}td{vertical-align:top;padding:11px 12px;border-bottom:1px solid #dce7ea;",
     "overflow-wrap:anywhere;word-break:normal;hyphens:auto}.step-number{font-weight:800;color:var(--ink);text-align:center;white-space:nowrap}",
-    ".job{font-weight:700;white-space:nowrap}",
+    ".job{font-weight:700;white-space:nowrap}.table-reference{max-width:none;margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}",
+    ".row-label{font-weight:750;color:var(--ink)}",
+    ".table-reference ol{margin:.6rem 0 0;padding-left:1.35rem}.table-reference li{margin:.45rem 0}",
+    ".table-reference a{color:var(--ink);text-decoration-color:var(--sea);text-underline-offset:2px}",
     ".note{padding:13px 16px;border-left:4px solid var(--sea);",
-    "background:#eff5f5;color:#3a5967}.hidden-copy{position:absolute;left:-100000px;white-space:pre-wrap}.results-frame{width:100%;height:1100px;",
+    "background:#eff5f5;color:#3a5967}.hidden-copy{display:none}.results-frame{width:100%;height:1100px;",
     "border:1px solid var(--line);background:#fff}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
     "background:var(--ink);color:#fff;padding:10px 15px;box-shadow:0 8px 24px rgba(18,59,93,.2);opacity:0;transform:translateY(8px);",
     "pointer-events:none;transition:opacity .16s ease,transform .16s ease}.action-status.show{opacity:1;transform:translateY(0)}",
-    "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:700px}}@media print{body{background:#fff}",
+    "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:700px}}@page{size:A4;margin:14mm}@media print{body{background:#fff}",
     "header{padding:0 0 20px;background:#fff;color:var(--ink)}header p{color:var(--muted)}main{max-width:none;padding:0}.overview,.model-card{border:0;padding:0;margin:0}",
     "button,.actions,.action-status{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
-    "tr{break-inside:avoid}.table-shell{overflow:visible}}",
+    "tr{break-inside:avoid}.table-shell{overflow:visible;max-height:none}.model-card{break-before:page}",
+    "#dm-groups-table{font-size:.78rem}#dm-groups-table th,#dm-groups-table td{padding:6px 8px;line-height:1.25}}",
     "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
     "<p>Assessment pathway and rationale</p></header><main>",
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
@@ -395,10 +736,23 @@ build_stepwise_report <- function(
     "<span contenteditable=\"true\">XX</span>.</strong> ", stepwise_html_escape(table_caption), "</p>",
     "<div class=\"table-shell\">", table_html, "</div><div class=\"actions\"><button onclick=\"copyTable(this)\">Copy table + caption for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('table-latex',this)\">Copy table + caption for LaTeX</button></div></div></section>",
+    dm_section,
     result_section,
+    "<section class=\"model-card\"><div id=\"references-word\"><h2>References</h2><div class=\"table-reference\" id=\"table-reference\"><ol><li>",
+    paste0(
+      "<a href=\"", stepwise_html_escape(stepwise_reference_urls), "\">",
+      stepwise_html_escape(stepwise_references), "</a>",
+      collapse = "</li><li>"
+    ),
+    "</li></ol></div></div><div class=\"actions\"><button onclick=\"copyHtml('references-word',this)\">Copy references for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('references-bibtex',this)\">Copy BibTeX</button>",
+    "<a class=\"button\" download href=\"stepwise-references.bib\">Download .bib</a></div></section>",
     "<pre id=\"method-latex\" class=\"hidden-copy\">", stepwise_html_escape(method_text), "</pre>",
     "<pre id=\"figure-latex\" class=\"hidden-copy\">", stepwise_html_escape(latex_figure), "</pre>",
     "<pre id=\"table-latex\" class=\"hidden-copy\">", stepwise_html_escape(table_latex), "</pre>",
+    "<pre id=\"dm-configuration-latex\" class=\"hidden-copy\">", stepwise_html_escape(dm_configuration_latex), "</pre>",
+    "<pre id=\"dm-groups-latex\" class=\"hidden-copy\">", stepwise_html_escape(dm_groups_latex), "</pre>",
+    "<pre id=\"references-bibtex\" class=\"hidden-copy\">", stepwise_html_escape(stepwise_references_bibtex), "</pre>",
     "<img id=\"dag-png\" hidden src=\"data:image/png;base64,", png_data, "\">",
     "<div id=\"action-status\" class=\"action-status\" role=\"status\" aria-live=\"polite\"></div>",
     "<script>",
@@ -410,7 +764,13 @@ build_stepwise_report <- function(
     "'text/plain':new Blob([text],{type:'text/plain'})})]);feedback(b,'Copied')}catch(e){try{await navigator.clipboard.writeText(text);",
     "feedback(b,'Copied as text')}catch(x){feedback(b,'Copy failed')}}}",
     "function copyHtml(id,b){const e=document.getElementById(id);writeClipboard(e.outerHTML,e.innerText,b)}",
-    "function copyTable(b){const c=document.getElementById('table-caption'),t=document.getElementById('stage-table'),x=t.cloneNode(true);",
+    "function copyTable(b){const c=document.getElementById('table-caption'),t=document.getElementById('stage-table'),r=document.getElementById('table-reference'),x=t.cloneNode(true);",
+    "x.style.cssText='width:100%;border-collapse:collapse;table-layout:fixed;font-family:Cambria,Georgia,serif;font-size:10pt;line-height:1.25';",
+    "x.querySelectorAll('th').forEach(e=>e.style.cssText='background:#e8f1f1;text-align:left;border-top:1.5pt solid #173042;border-bottom:0.8pt solid #173042;padding:6pt;vertical-align:top');",
+    "x.querySelectorAll('td').forEach(e=>e.style.cssText='border-bottom:0.5pt solid #d7e0e3;padding:6pt;vertical-align:top;overflow-wrap:anywhere');",
+    "const cap='<p style=\"font-family:Cambria,Georgia,serif;font-size:10pt;line-height:1.25;margin:0 0 6pt\">'+c.innerHTML+'</p>';",
+    "writeClipboard(cap+x.outerHTML+r.outerHTML,c.innerText+'\\n'+t.innerText+'\\n'+r.innerText,b)}",
+    "function copyReportTable(captionId,tableId,b){const c=document.getElementById(captionId),t=document.getElementById(tableId),x=t.cloneNode(true);",
     "x.style.cssText='width:100%;border-collapse:collapse;table-layout:fixed;font-family:Cambria,Georgia,serif;font-size:10pt;line-height:1.25';",
     "x.querySelectorAll('th').forEach(e=>e.style.cssText='background:#e8f1f1;text-align:left;border-top:1.5pt solid #173042;border-bottom:0.8pt solid #173042;padding:6pt;vertical-align:top');",
     "x.querySelectorAll('td').forEach(e=>e.style.cssText='border-bottom:0.5pt solid #d7e0e3;padding:6pt;vertical-align:top;overflow-wrap:anywhere');",
@@ -431,13 +791,41 @@ build_stepwise_report <- function(
     row.names = FALSE
   )
   writeLines(table_latex, file.path(output_dir, "stepwise-model-configurations.tex"))
+  write.csv(
+    stepwise_dm_configuration,
+    file.path(output_dir, "stepwise-dm-configuration.csv"),
+    row.names = FALSE
+  )
+  write.csv(
+    stepwise_dm_groups,
+    file.path(output_dir, "stepwise-dm-groups.csv"),
+    row.names = FALSE
+  )
+  writeLines(
+    dm_configuration_latex,
+    file.path(output_dir, "stepwise-dm-configuration.tex")
+  )
+  writeLines(dm_groups_latex, file.path(output_dir, "stepwise-dm-groups.tex"))
+  writeLines(stepwise_references_bibtex, file.path(output_dir, "stepwise-references.bib"))
   writeLines(paste0("Figure XX. ", figure_caption), file.path(output_dir, "stepwise-pathway-caption.txt"))
-  writeLines(paste0("Table XX. ", table_caption), file.path(output_dir, "stepwise-table-caption.txt"))
+  writeLines(
+    c(
+      paste0("Table XX. ", table_caption),
+      paste0("Table XX. ", dm_configuration_caption),
+      paste0("Table XX. ", dm_groups_caption),
+      "References.",
+      stepwise_references
+    ),
+    file.path(output_dir, "stepwise-table-caption.txt")
+  )
 
   invisible(list(
     html = html_file,
     pathway = dag,
     configurations = file.path(output_dir, "stepwise-model-configurations.csv"),
+    dm_configuration = file.path(output_dir, "stepwise-dm-configuration.csv"),
+    dm_groups = file.path(output_dir, "stepwise-dm-groups.csv"),
+    references = file.path(output_dir, "stepwise-references.bib"),
     discovered_results = discovered
   ))
 }

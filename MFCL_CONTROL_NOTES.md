@@ -43,7 +43,7 @@ representations shown above.
 | Input | Operational meaning |
 | --- | --- |
 | Tag flag column 1 | Number of mixing periods for the release group. |
-| Tag flag column 2 = `1` | Exclude reporting-rate effects during those mixing periods. |
+| Tag flag column 2 = `1` | Do not apply reporting rates to predicted recaptures during those pre-mixing periods; post-mixing reporting rates are unchanged. |
 | Reporting-rate setup | Includes initial values, fishery grouping, estimation switches, prior targets, and penalty weights; it is broader than a penalty-only update. |
 
 ## Selectivity

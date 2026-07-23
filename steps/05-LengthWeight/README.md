@@ -22,7 +22,7 @@ Step 04 fixed-M baseline with BET bias-corrected 2026 length-weight parameters.
 | File | Source / note |
 | --- | --- |
 | `.frq` | `steps/04-FixM/model/bet.frq` |
-| `.ini` | `steps/04-FixM/model/bet.ini`; set Length-weight parameters from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; Fixed Lorenzen natural-mortality intercept applied from the 01-Diag2023 mgc=-5 diagnostic final par |
+| `.ini` | `steps/04-FixM/model/bet.ini`; set Length-weight parameters from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; Fixed log-scale Lorenzen natural-mortality coefficient applied from the 01-Diag2023 mgc=-5 diagnostic final par |
 | `.tag` | `steps/04-FixM/model/bet.tag` |
 | `.age_length` | `steps/04-FixM/model/bet.age_length` |
 | `input_manifest.csv` | machine-readable source/input notes with source commits |
@@ -40,7 +40,7 @@ Step 04 fixed-M baseline with BET bias-corrected 2026 length-weight parameters.
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |

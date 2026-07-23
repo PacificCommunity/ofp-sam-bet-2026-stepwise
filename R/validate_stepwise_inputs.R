@@ -730,7 +730,7 @@ for (i in seq_len(nrow(models))) {
     add_failure(
       model_id,
       paste0(
-        "the fleet-specific selectivity configuration and all-relaxed form choice ",
+        "the revised fishery-specific selectivity specification and all-relaxed form choice ",
         "must start together at Step 16 and remain paired thereafter."
       )
     )
@@ -758,7 +758,7 @@ for (i in seq_len(nrow(models))) {
   if (selectivity_expected) {
     forbid_exact_controls(
       doitall, legacy_selectivity_controls, model_id,
-      "selected fleet-specific selectivity cleanup"
+      "selected revised fishery-specific selectivity cleanup"
     )
   }
   if (identical(model_id, "16-SelectivityUpdate")) {
@@ -1492,8 +1492,8 @@ compare_ini_outside_section(
   "16-SelectivityUpdate", "17-MIX015", "tag flags"
 )
 
-# Step 18 changes only the reporting-rate exclusion flag while retaining the
-# Step 17 mixing periods. Step 19 then applies effort creep only to the
+# Step 18 excludes reporting rates only within the pre-mixing windows while
+# retaining the Step 17 mixing periods. Step 19 then applies effort creep only to the
 # frequency file. Step 20 branches change only their declared weighting controls.
 compare_model_hashes_except(
   "17-MIX015", "18-TagReportingExclusion", "bet.ini"
@@ -1534,7 +1534,7 @@ compare_tag_flag_boundary(
 )
 compare_tag_flag_boundary(
   "17-MIX015", "18-TagReportingExclusion", 2L,
-  "Step 18 reporting-rate exclusion change"
+  "Step 18 pre-mixing reporting-rate treatment"
 )
 
 compare_model_hashes_except(

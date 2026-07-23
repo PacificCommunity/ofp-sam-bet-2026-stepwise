@@ -1,6 +1,6 @@
 # 13 CPUE observation-error calibration
 
-Across multiple preliminary settings, the maximum-likelihood CPUE observation-error estimates changed little and converged near common values. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 for every later step.
+Across multiple exploratory settings, the maximum-likelihood CPUE observation-error estimates changed little and converged near common values. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 for every later step.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Across multiple preliminary settings, the maximum-likelihood CPUE observation-er
 
 | # | Change |
 | --- | --- |
-| 1 | Across multiple preliminary settings, the maximum-likelihood CPUE observation-error estimates changed little and converged near common values. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 for every later step. |
+| 1 | Across multiple exploratory settings, the maximum-likelihood CPUE observation-error estimates changed little and converged near common values. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 for every later step. |
 | 2 | Scientific parent: '12-TimeVaryingCV'. |
 | 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
@@ -35,7 +35,7 @@ Across multiple preliminary settings, the maximum-likelihood CPUE observation-er
 | `.ini` | rrpttp26 reporting-rate matrices; tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Sets only the effective-sample-size row to 0.75. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Across multiple preliminary settings, the maximum-likelihood CPUE observation-error estimates changed little and converged near common values. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 for every later step. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Across multiple exploratory settings, the maximum-likelihood CPUE observation-error estimates changed little and converged near common values. Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23 for every later step. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -43,7 +43,7 @@ Across multiple preliminary settings, the maximum-likelihood CPUE observation-er
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |

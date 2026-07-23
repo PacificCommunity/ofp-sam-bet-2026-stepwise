@@ -57,11 +57,11 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # fish flag 92 = round(region sigma * 100), fish flag 94 = allow unequal sigma,
 # fish flag 66 = 1: use normalized time-varying relative-variance multipliers from the frequency data.
 # 2026 index-fishery sigma settings.
-  -29 94 1 -29 92 35 -29 66 1  # Preliminary CPUE R1 maximum-likelihood observation-error estimate=0.354; fixed executed error scale=0.35 (flag 92=35)
-  -30 94 1 -30 92 24 -30 66 1  # Preliminary CPUE R2 maximum-likelihood observation-error estimate=0.237; fixed executed error scale=0.24 (flag 92=24)
-  -31 94 1 -31 92 21 -31 66 1  # Preliminary CPUE R3 maximum-likelihood observation-error estimate=0.212; fixed executed error scale=0.21 (flag 92=21)
-  -32 94 1 -32 92 24 -32 66 1  # Preliminary CPUE R4 maximum-likelihood observation-error estimate=0.239; fixed executed error scale=0.24 (flag 92=24)
-  -33 94 1 -33 92 23 -33 66 1  # Preliminary CPUE R5 maximum-likelihood observation-error estimate=0.225; fixed executed error scale=0.23 (flag 92=23)
+  -29 94 1 -29 92 35 -29 66 1  # Residual-based CPUE R1 maximum-likelihood observation-error estimate=0.354; fixed executed error scale=0.35 (flag 92=35)
+  -30 94 1 -30 92 24 -30 66 1  # Residual-based CPUE R2 maximum-likelihood observation-error estimate=0.237; fixed executed error scale=0.24 (flag 92=24)
+  -31 94 1 -31 92 21 -31 66 1  # Residual-based CPUE R3 maximum-likelihood observation-error estimate=0.212; fixed executed error scale=0.21 (flag 92=21)
+  -32 94 1 -32 92 24 -32 66 1  # Residual-based CPUE R4 maximum-likelihood observation-error estimate=0.239; fixed executed error scale=0.24 (flag 92=24)
+  -33 94 1 -33 92 23 -33 66 1  # Residual-based CPUE R5 maximum-likelihood observation-error estimate=0.225; fixed executed error scale=0.23 (flag 92=23)
 # Grouping flags for survey CPUE
    -1 99 1
    -2 99 2
@@ -220,20 +220,20 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
 # Old18 split into HL.ID.2 and HL.PH.2.
   -15 75 5  # F15 youngest age classes fixed at zero selectivity
 # Age-based spline constraints mapped from old fishery recipes.
-  -19 16 0 -19 3 25  # F19 selected fleet-specific configuration: selectivity-form penalty off
-  -25 16 0 -25 3 25  # F25 selected fleet-specific configuration: selectivity-form penalty off
-  -26 16 0 -26 3 25  # F26 selected fleet-specific configuration: selectivity-form penalty off
-  -27 16 0 -27 3 30  # F27 selected fleet-specific configuration: selectivity-form penalty off
-  -17 16 0 -17 3 25  # F17 selected fleet-specific configuration: selectivity-form penalty off
-  -18 16 0 -18 3 25  # F18 selected fleet-specific configuration: selectivity-form penalty off
-  -12 16 0 -12 3 25  # F12 selected fleet-specific configuration: selectivity-form penalty off
-  -13 16 0 -13 3 30  # F13 selected fleet-specific configuration: selectivity-form penalty off
+  -19 16 0 -19 3 25  # F19 selected revised fishery-specific specification: selectivity-form penalty off
+  -25 16 0 -25 3 25  # F25 selected revised fishery-specific specification: selectivity-form penalty off
+  -26 16 0 -26 3 25  # F26 selected revised fishery-specific specification: selectivity-form penalty off
+  -27 16 0 -27 3 30  # F27 selected revised fishery-specific specification: selectivity-form penalty off
+  -17 16 0 -17 3 25  # F17 selected revised fishery-specific specification: selectivity-form penalty off
+  -18 16 0 -18 3 25  # F18 selected revised fishery-specific specification: selectivity-form penalty off
+  -12 16 0 -12 3 25  # F12 selected revised fishery-specific specification: selectivity-form penalty off
+  -13 16 0 -13 3 30  # F13 selected revised fishery-specific specification: selectivity-form penalty off
 # Upper-age selectivity constraints mapped from old fishery recipes.
-  -22 16 0 -22 3 7  # F22 selected fleet-specific configuration: selectivity-form penalty off
-  -24 16 0 -24 3 25  # F24 selected fleet-specific configuration: selectivity-form penalty off
-  -21 16 0 -21 3 10  # F21 selected fleet-specific configuration: selectivity-form penalty off
-  -16 16 0 -16 3 25  # F16 selected fleet-specific configuration: selectivity-form penalty off
-  -23 16 0 -23 3 6  # F23 selected fleet-specific configuration: selectivity-form penalty off
+  -22 16 0 -22 3 7  # F22 selected revised fishery-specific specification: selectivity-form penalty off
+  -24 16 0 -24 3 25  # F24 selected revised fishery-specific specification: selectivity-form penalty off
+  -21 16 0 -21 3 10  # F21 selected revised fishery-specific specification: selectivity-form penalty off
+  -16 16 0 -16 3 25  # F16 selected revised fishery-specific specification: selectivity-form penalty off
+  -23 16 0 -23 3 6  # F23 selected revised fishery-specific specification: selectivity-form penalty off
 # Turn on weighted spline for calculating maturity at age
   2 188 2
 # Set Lorenzen M
@@ -248,7 +248,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   1 302 50  # set minimum obs sample size for WF data
 # MFCL 2.2.2.0 growth variance fix
   1 34 0    # set to 1 34 1 for backwards compatibility
-  -15 16 0  # F15 selected fleet-specific configuration: selectivity-form penalty off
+  -15 16 0  # F15 selected revised fishery-specific specification: selectivity-form penalty off
   -15 3 25  # F15 terminal spline age and start age for the older-age dome penalty
   -25 61 7  # F25 seven estimated cubic-spline nodes
   -25 75 0  # F25 no youngest age classes forced to near-zero selectivity
