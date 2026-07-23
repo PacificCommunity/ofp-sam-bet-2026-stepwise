@@ -9,6 +9,27 @@ stepwise_html_escape <- function(x) {
   x
 }
 
+stepwise_scientific_html <- function(x) {
+  x <- stepwise_html_escape(x)
+  x <- gsub(
+    "lambda_i = exp(d_g) r_i^(c_g)",
+    "<i>&lambda;</i><sub>i</sub> = exp(<i>d</i><sub>g</sub>) <i>r</i><sub>i</sub><sup><i>c</i><sub>g</sub></sup>",
+    x,
+    fixed = TRUE
+  )
+  x <- gsub(
+    "N_eff = Nmax(1 + lambda)/(Nmax + lambda)",
+    "<i>N</i><sub>eff</sub> = <i>N</i><sub>max</sub>(1 + <i>&lambda;</i>)/(<i>N</i><sub>max</sub> + <i>&lambda;</i>)",
+    x,
+    fixed = TRUE
+  )
+  x <- gsub("Nmax", "<i>N</i><sub>max</sub>", x, fixed = TRUE)
+  x <- gsub("as lambda increases", "as <i>&lambda;</i> increases", x, fixed = TRUE)
+  x <- gsub("parameter d (flag", "parameter <i>d</i> (flag", x, fixed = TRUE)
+  x <- gsub("exponent c relating", "exponent <i>c</i> relating", x, fixed = TRUE)
+  x
+}
+
 stepwise_latex_escape <- function(x) {
   x <- as.character(x)
   replacements <- c(
@@ -69,11 +90,6 @@ stepwise_references <- c(
     "Davies, N., Fournier, D.A., Hampton, J., Kleiber, P., Bouye, F., Kim, K., ",
     "Magnusson, A. and Hoyle, S. (2026). MULTIFAN-CL User's Guide, version ",
     "2.2.7.8. July 13, 2026."
-  ),
-  paste0(
-    "Pacific Community (2026). BET 2026 DM Nmax and F25/F26 selectivity ",
-    "sensitivities: Nmax calibration and G8PSSET grouping. Repository commit ",
-    "c940601."
   )
 )
 
@@ -86,10 +102,6 @@ stepwise_reference_urls <- c(
   paste0(
     "https://github.com/PacificCommunity/ofp-sam-mfcl-manual/blob/",
     "4503c2abd234f3be95ec73e4375cf19df69859e2/MFCL-manual_MASTER.pdf"
-  ),
-  paste0(
-    "https://github.com/PacificCommunity/ofp-sam-bet-2026-exploration/blob/",
-    "c940601bb95797a5cc5b4a2dbc01cfd6daa86a70/README.md#nmax-calibration"
   )
 )
 
@@ -151,40 +163,33 @@ stepwise_references_bibtex <- paste0(
   "  month = jul,\n",
   "  url = {https://github.com/PacificCommunity/ofp-sam-mfcl-manual/blob/4503c2abd234f3be95ec73e4375cf19df69859e2/MFCL-manual_MASTER.pdf},\n",
   "  year = {2026}\n",
-  "}\n\n",
-  "@misc{PacificCommunity2026BETNmaxCalibration,\n",
-  "  author = {{Pacific Community}},\n",
-  "  title = {{BET 2026 DM Nmax and F25/F26 selectivity sensitivities: Nmax calibration and G8PSSET grouping}},\n",
-  "  howpublished = {Repository commit c940601},\n",
-  "  url = {https://github.com/PacificCommunity/ofp-sam-bet-2026-exploration/blob/c940601bb95797a5cc5b4a2dbc01cfd6daa86a70/README.md},\n",
-  "  year = {2026}\n",
   "}"
 )
 
 stepwise_dm_configuration <- data.frame(
   setting = c(
-    "Likelihood",
+    "Composition likelihood",
     "Fishery grouping",
-    "Group-specific estimation",
-    "Meaning of Nmax",
-    "Selected Nmax",
+    "Group-specific dispersion",
+    "Effective sample-size bound",
+    "Selected upper bound",
     "Length-bin support"
   ),
   implementation = c(
-    "Dirichlet-multinomial length-composition likelihood without random effects (flag 141 = 11).",
-    "All 33 fisheries assigned to eight assessment-specific groups (flag 68; grouping detailed in the following table).",
-    "Each group shares a fitted baseline concentration exponent d (flag 69) and relative-sample-size exponent c (flag 89, activated from phase 2); for composition i, lambda_i = exp(d_g) r_i^(c_g).",
-    "MFCL calculates effective sample size (ESS) as N_eff = Nmax(1 + lambda)/(Nmax + lambda). Thus, Nmax is the asymptotic upper bound approached as the fitted Dirichlet-multinomial concentration lambda increases; it is not the mean ESS or a fixed weight assigned to every composition.",
-    "Nmax = 25 (flag 342). The MFCL default is 1,000 when flag 342 is zero.",
-    "Use tail-compressed DM support when the span from the first to last positive observed bin contains at least five bins (flag 320 = 5); flag 313 = 0 because its 1% threshold is not read by the DM likelihood."
+    "Dirichlet-multinomial likelihood for length compositions, without random effects (flag 141 = 11).",
+    "The 33 fisheries were assigned to eight assessment-specific groups (flag 68; groups listed below).",
+    "For each group, MFCL estimated a baseline log-concentration parameter d (flag 69) and an exponent c relating concentration to relative observed sample size (flag 89, estimated from phase 2): lambda_i = exp(d_g) r_i^(c_g).",
+    "Effective sample size (ESS) is N_eff = Nmax(1 + lambda)/(Nmax + lambda), where Nmax is the asymptotic upper bound as lambda increases.",
+    "Nmax was fixed at 25 (flag 342); the MFCL default is 1,000.",
+    "The DM likelihood used compositions spanning at least five bins between the first and last positive observations (flag 320 = 5). Flag 313 = 0 because its 1% tail threshold applies to the robust-normal likelihood."
   ),
   basis = c(
-    "Estimate extra-multinomial variation and the resulting composition information within the model (Thorson et al., 2017).",
-    "Share information within broadly similar gear and data-role strata while retaining separate parameters for major composition processes.",
-    "Allow both baseline overdispersion and its relationship with relative observed sample size to differ among the eight strata without estimating separate terms for every fishery.",
-    "The current MFCL manual identifies flag 342 as the assumed maximum ESS for the no-random-effects Dirichlet-multinomial likelihood; the source implements the transformation shown here and uses 1,000 when the flag is zero.",
-    "The 95th percentile of composition-level Francis ESS was 22.22-23.81 across 2,399 positive length-frequency compositions in matched robust-normal fits. A cap of 25 lies just above this upper-tail range and limits composition dominance over CPUE (BET 2026 exploration record, commit c940601).",
-    "Apply the DM-specific support rule and leave the normal-likelihood percentage-tail control inactive."
+    "Accounts for extra-multinomial variation and estimates the information content of the composition data within the assessment (Thorson et al., 2017).",
+    "Pools fisheries with similar gear and data roles while retaining separate parameters for distinct composition processes.",
+    "Allows baseline overdispersion and its scaling with relative sample size to vary among groups, without estimating separate parameters for all 33 fisheries.",
+    "Bounds the influence of individual compositions; Nmax is a cap, not a mean or fixed sample size (Davies et al., 2026).",
+    "Across 2,399 positive length-frequency compositions in matched robust-normal fits, the 95th percentile of Francis ESS was 22.22-23.81. A value of 25 retained this empirical upper range while limiting composition influence relative to CPUE.",
+    "Requires adequate length-bin support and leaves the robust-normal tail-compression control inactive for the DM likelihood."
   ),
   stringsAsFactors = FALSE
 )
@@ -444,7 +449,7 @@ stepwise_named_table_html <- function(table, id, headers, widths,
       }
       paste0(
         "<td", class, ">",
-        stepwise_html_escape(table[[j]][[i]]),
+        stepwise_scientific_html(table[[j]][[i]]),
         "</td>"
       )
     }, character(1))
@@ -557,8 +562,8 @@ build_stepwise_report <- function(
   table_html <- stepwise_table_html(table, include_jobs)
   table_latex <- stepwise_table_latex(table, include_jobs)
   dm_configuration_caption <- paste0(
-    "Implementation and selection basis for the Dirichlet-multinomial ",
-    "length-composition likelihood in the selected BET 2026 model."
+    "Dirichlet-multinomial configuration used for length-composition weighting ",
+    "in the selected BET 2026 model."
   )
   dm_groups_caption <- paste0(
     "Eight fishery groups used to estimate group-specific Dirichlet-multinomial ",
@@ -568,8 +573,8 @@ build_stepwise_report <- function(
   dm_configuration_html <- stepwise_named_table_html(
     stepwise_dm_configuration,
     id = "dm-configuration-table",
-    headers = c("Setting", "Implementation", "Selection basis"),
-    widths = c(18, 37, 45),
+    headers = c("Component", "Selected specification", "Rationale"),
+    widths = c(19, 39, 42),
     first_column_class = "row-label"
   )
   dm_groups_html <- stepwise_named_table_html(
@@ -581,8 +586,8 @@ build_stepwise_report <- function(
   )
   dm_configuration_latex <- stepwise_named_table_latex(
     stepwise_dm_configuration,
-    headers = c("Setting", "Implementation", "Selection basis"),
-    widths = c(0.17, 0.36, 0.42),
+    headers = c("Component", "Selected specification", "Rationale"),
+    widths = c(0.18, 0.38, 0.39),
     caption = dm_configuration_caption,
     label = "tab:bet-dm-configuration",
     first_column_bold = TRUE
@@ -607,15 +612,38 @@ build_stepwise_report <- function(
     dm_configuration_latex,
     fixed = TRUE
   )
+  dm_configuration_latex <- gsub(
+    "Nmax", "$N_{\\max}$", dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "as lambda increases", "as $\\lambda$ increases",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "parameter d (flag", "parameter $d$ (flag",
+    dm_configuration_latex, fixed = TRUE
+  )
+  dm_configuration_latex <- gsub(
+    "exponent c relating", "exponent $c$ relating",
+    dm_configuration_latex, fixed = TRUE
+  )
   discovered <- stepwise_discover_results(job_map, input_dir)
   result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
 
   method_text <- paste0(
     "Model development followed a stepwise pathway in which a defined model component or data ",
-    "treatment was changed at each stage, while other inputs and controls were retained where ",
-    "possible. Retained configurations formed the main pathway; sibling branches represented ",
-    "alternatives. The final selected configuration used Dirichlet-multinomial (DM) composition ",
-    "weighting."
+    "treatment was modified at each stage, while other inputs and controls were held constant ",
+    "wherever possible (Figure XX; Table XX). Configurations retained after evaluation defined ",
+    "the main pathway, whereas sibling branches represented alternatives that were evaluated ",
+    "but not carried forward. The selected model used a Dirichlet-multinomial (DM) likelihood ",
+    "for length-composition data. The DM specification and eight fishery groups are summarised ",
+    "in Tables XX and XX, respectively."
+  )
+  method_latex <- gsub(
+    "Figure XX; Table XX", "Figure~XX; Table~XX", method_text, fixed = TRUE
+  )
+  method_latex <- gsub(
+    "Tables XX and XX", "Tables~XX and~XX", method_latex, fixed = TRUE
   )
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Solid teal arrows ",
@@ -747,7 +775,7 @@ build_stepwise_report <- function(
     "</li></ol></div></div><div class=\"actions\"><button onclick=\"copyHtml('references-word',this)\">Copy references for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('references-bibtex',this)\">Copy BibTeX</button>",
     "<a class=\"button\" download href=\"stepwise-references.bib\">Download .bib</a></div></section>",
-    "<pre id=\"method-latex\" class=\"hidden-copy\">", stepwise_html_escape(method_text), "</pre>",
+    "<pre id=\"method-latex\" class=\"hidden-copy\">", stepwise_html_escape(method_latex), "</pre>",
     "<pre id=\"figure-latex\" class=\"hidden-copy\">", stepwise_html_escape(latex_figure), "</pre>",
     "<pre id=\"table-latex\" class=\"hidden-copy\">", stepwise_html_escape(table_latex), "</pre>",
     "<pre id=\"dm-configuration-latex\" class=\"hidden-copy\">", stepwise_html_escape(dm_configuration_latex), "</pre>",
