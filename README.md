@@ -1,5 +1,9 @@
 # BET 2026 Stepwise
 
+<p align="right">
+  <a href="kflow.yaml"><img src="kflow-ready.svg" alt="Kflow ready task"></a>
+</p>
+
 Public, reproducible configuration for the 2026 bigeye tuna (BET) MFCL
 stepwise analysis. It contains 17 scientific groups and 22 independently
 runnable model rows. Nineteen models form the selected carry-forward path.
