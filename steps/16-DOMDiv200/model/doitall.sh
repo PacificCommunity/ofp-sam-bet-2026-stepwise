@@ -8,7 +8,7 @@ if [ -z "$program_path" ]; then
   exit 1
 fi
 
-phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--3}
+phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}
 case "$phase10_11_convergence" in
   -[0-9]|-[0-9][0-9]|[0-9]|[0-9][0-9]) ;;
   *)
@@ -410,7 +410,7 @@ PHASE9
 
 $program_path bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
-  1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
+  1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)
   1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 PHASE10
 
@@ -420,6 +420,6 @@ PHASE10
 
 $program_path bet.frq 10.par 11.par -file - <<PHASE11
   1 1 5000
-  1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
+  1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)
   1 246 1   # indepvar.rpt
 PHASE11

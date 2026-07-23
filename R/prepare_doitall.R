@@ -351,14 +351,14 @@ apply_regional_index_selectivity_map <- function(path) {
   invisible(TRUE)
 }
 
-phase10_11_convergence_block <- function(default = "-3") {
+phase10_11_convergence_block <- function(default = "-4") {
   c(
     "",
     sprintf("phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:-%s}", default),
     "case \"$phase10_11_convergence\" in",
     "  -[0-9]|-[0-9][0-9]|[0-9]|[0-9][0-9]) ;;",
     "  *)",
-    "    echo \"BET_PHASE10_11_CONVERGENCE must be numeric, e.g. -3 for quick runs or -5 for strict runs.\" >&2",
+    "    echo \"BET_PHASE10_11_CONVERGENCE must be a numeric exponent, e.g. -4 for an MGC target of 1e-4.\" >&2",
     "    exit 1",
     "    ;;",
     "esac",
@@ -382,7 +382,7 @@ replace_phase10_11_convergence_lines <- function(lines) {
       stop("Expected one convergence line in PHASE", phase, " of doitall.sh", call. = FALSE)
     }
     lines[[hit]] <-
-      "  1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict"
+      "  1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)"
     lines
   }
 
@@ -398,6 +398,11 @@ apply_historical_phase10_11_convergence_switch <- function(lines) {
   if (!any(grepl("^phase10_11_convergence=", lines))) {
     lines <- append(lines, phase10_11_convergence_block(), after = 1L)
   }
+  convergence_assignment <- grep("^phase10_11_convergence=", lines)
+  if (length(convergence_assignment) != 1L) {
+    stop("Expected one PHASE 10/11 convergence assignment in doitall.sh", call. = FALSE)
+  }
+  lines[[convergence_assignment]] <- phase10_11_convergence_block()[[2L]]
   replace_phase10_11_convergence_lines(lines)
 }
 
@@ -414,6 +419,11 @@ apply_phase10_11_convergence_switch <- function(lines) {
     lines <- append(lines, phase10_11_convergence_block(), after = guard_end[[1]])
   }
 
+  convergence_assignment <- grep("^phase10_11_convergence=", lines)
+  if (length(convergence_assignment) != 1L) {
+    stop("Expected one PHASE 10/11 convergence assignment in doitall.sh", call. = FALSE)
+  }
+  lines[[convergence_assignment]] <- phase10_11_convergence_block()[[2L]]
   replace_phase10_11_convergence_lines(lines)
 }
 

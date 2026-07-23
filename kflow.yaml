@@ -75,9 +75,8 @@ env:
   # true streams the full MFCL output to Kflow logs. false keeps logs quieter.
   MFCL_LIVE_LOG: "true"
 
-  # Quick-run default for the final convergence phases. Use "-5" for stricter
-  # production reruns without editing the model folders.
-  BET_PHASE10_11_CONVERGENCE: "-3"
+  # Default convergence criterion for all stepwise model fits.
+  BET_PHASE10_11_CONVERGENCE: "-4"
 
   # Private helper packages are updated at runtime so the public image stays stable.
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"

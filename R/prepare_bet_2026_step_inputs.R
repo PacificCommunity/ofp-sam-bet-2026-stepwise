@@ -308,7 +308,7 @@ write_original_diagnostic_step <- function() {
       "The model files come from `ofp-sam-bet-2023-diagnostic/MFCL`.",
       "`fishery_map.R` is copied from the 2023 assessment replication input set because the diagnostic and replication fisheries match; this only supplies viewer/display labels.",
       "The step-specific executable path is set in `job-config.R`; only this step uses the historical MFCL binary.",
-      "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict archival comparisons can set `-5` without editing model folders.",
+      "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; the default for all stepwise model fits is `-4`.",
       "No FixM, new-executable compatibility edits, new fishery structure, or 2026 input files are applied here."
     ),
     c(
@@ -499,7 +499,7 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
       "The current MFCL executable configured by the runtime is used.",
       "MFCL 1007 `# tag flags` supply tag mixing periods; the inherited `-9999 1 2` doitall override is removed.",
       "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
-      "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders.",
+      "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; the default for all stepwise model fits is `-4`.",
       "The 2023 nine-region GeoJSON asset remains display-only; it does not change MFCL inputs."
     ),
     c(
@@ -699,7 +699,7 @@ write_readme(
     "Generated `.frq` files include region locations for every fishery, including index fisheries.",
     "MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
-    "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; default is quick `-3`, and strict production runs can set `-5` without editing model folders."
+    "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; the default for all stepwise model fits is `-4`."
   ),
   c(
     "After fitting, review the 5-region selectivity/tag grouping inherited from the workbook mapping.",

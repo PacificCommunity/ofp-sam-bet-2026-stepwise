@@ -12,7 +12,7 @@ yml = $(shell Rscript -e 'y <- yaml::read_yaml("kflow.yaml"); v <- $(1); if (is.
 
 STEP_SELECT ?= $(call cfg,default_step_select,all)
 MFCL_LIVE_LOG ?= $(call yml,y$$env$$MFCL_LIVE_LOG,true)
-BET_PHASE10_11_CONVERGENCE ?= $(call yml,y$$env$$BET_PHASE10_11_CONVERGENCE,-3)
+BET_PHASE10_11_CONVERGENCE ?= $(call yml,y$$env$$BET_PHASE10_11_CONVERGENCE,-4)
 OUTPUT_DIR ?= outputs
 PROGRAM_PATH ?= $(call yml,y$$env$$PROGRAM_PATH,/home/mfcl/mfclo64)
 DOCKER_IMAGE ?= $(call yml,y$$docker_image,ghcr.io/pacificcommunity/tuna-flow:v1.8)
@@ -97,7 +97,7 @@ help:
 	  'make kflow TRIGGER_NEXT=false' \
 	  '  Submit only the selected model folder, without launching plot/report afterward.' \
 	  '' \
-	  'BET_PHASE10_11_CONVERGENCE=-3 is the quick default for PHASE 10/11. Set -5 for strict runs.' \
+	  'BET_PHASE10_11_CONVERGENCE=-4 is the default for PHASE 10/11 model convergence.' \
 	  '' \
 	  'After a successful run, final .par files are archived under outputs/models/<step>/final.par.' \
 	  'Use RUN_MODE=job_par with PAR_SOURCE_JOB and KFLOW_INPUT_JOBS set to the previous same-step job number.' \

@@ -1,10 +1,10 @@
 #!/bin/sh
 
-phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--3}
+phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}
 case "$phase10_11_convergence" in
   -[0-9]|-[0-9][0-9]|[0-9]|[0-9][0-9]) ;;
   *)
-    echo "BET_PHASE10_11_CONVERGENCE must be numeric, e.g. -3 for quick runs or -5 for strict runs." >&2
+    echo "BET_PHASE10_11_CONVERGENCE must be a numeric exponent, e.g. -4 for an MGC target of 1e-4." >&2
     exit 1
     ;;
 esac
@@ -394,7 +394,7 @@ PHASE9
 
 mfclo64 bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
-  1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
+  1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)
   1 121 1    # estimate one natural-mortality age_pars(5) coefficient; for Lorenzen M, estimate the intercept and fix the length slope
 PHASE10
 
@@ -404,5 +404,5 @@ PHASE10
 
 mfclo64 bet.frq 10.par 11.par -file - <<PHASE11
   1 1 5000
-  1 50 $phase10_11_convergence  # convergence criteria; default quick -3, set BET_PHASE10_11_CONVERGENCE=-5 for strict
+  1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)
 PHASE11
