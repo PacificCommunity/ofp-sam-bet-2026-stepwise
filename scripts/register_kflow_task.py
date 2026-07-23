@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -81,7 +82,8 @@ def api_json(
 
 def existing_report(base_url: str, token: str, task_name: str) -> dict[str, Any]:
     try:
-        payload = api_json("GET", f"{base_url}/api/report/{task_name}", token)
+        task_path = urllib.parse.quote(task_name, safe="")
+        payload = api_json("GET", f"{base_url}/api/report/{task_path}", token)
     except Exception:
         return {}
     report = payload.get("report", payload)
@@ -384,11 +386,12 @@ def submit_model_rows(
     task_name: str,
     payloads: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
+    task_path = urllib.parse.quote(task_name, safe="")
     results: list[dict[str, Any] | None] = [None] * len(payloads)
     failures: list[str] = []
     with ThreadPoolExecutor(max_workers=len(payloads)) as executor:
         futures = {
-            executor.submit(api_json, "POST", f"{base_url}/api/job/{task_name}", token, payload): index
+            executor.submit(api_json, "POST", f"{base_url}/api/job/{task_path}", token, payload): index
             for index, payload in enumerate(payloads)
         }
         for future in as_completed(futures):
@@ -434,7 +437,8 @@ def main() -> int:
     if not token:
         raise SystemExit("Set KFLOW_API_TOKEN before registering Kflow tasks.")
 
-    response = api_json("POST", f"{base_url}/api/report/{task_name}", token, payload)
+    task_path = urllib.parse.quote(task_name, safe="")
+    response = api_json("POST", f"{base_url}/api/report/{task_path}", token, payload)
     report = response.get("report", response)
     code = report.get("code", task_name) if isinstance(report, dict) else task_name
     repo = payload.get("repo_full_name", "")
