@@ -696,7 +696,7 @@ build_stepwise_report <- function(
     "padding:clamp(20px,3vw,38px);margin-bottom:28px}.overview{border-top:5px solid var(--orange)}.model-card{border-top:5px solid var(--sea)}",
     "h2{font-family:Georgia,\"Times New Roman\",serif;color:var(--ink);font-size:clamp(1.5rem,2.5vw,2.15rem);margin:.2rem 0 1rem}",
     "p{max-width:1080px}.format-block{margin-top:32px;padding-top:25px;border-top:1px solid var(--line)}.figure-shell{overflow:auto;border:1px solid var(--line);",
-    "background:#fff;padding:10px}.dag-figure{display:block;width:auto;height:auto;max-width:100%;max-height:calc(100vh - 190px);margin:0 auto}",
+    "background:#fff;padding:6px}.dag-figure{display:block;width:100%;height:auto;max-width:100%;margin:0 auto}",
     "figcaption,.caption{margin-top:12px;padding:12px 15px;background:#f1f6f7;border-left:3px solid var(--sea);color:#29495b;",
     "font-family:Georgia,\"Times New Roman\",serif;font-size:.95rem;line-height:1.55}figcaption::before{content:\"Caption\";display:block;",
     "margin-bottom:4px;color:var(--ink);font-family:\"Aptos\",\"Source Sans 3\",sans-serif;font-size:.7rem;font-weight:800;",

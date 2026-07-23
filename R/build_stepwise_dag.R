@@ -369,12 +369,13 @@ build_stepwise_dag <- function(
     ) +
     ggplot2::scale_size_identity() +
     ggplot2::coord_cartesian(
-      xlim = c(0.08, 11.62), ylim = c(0.20, 7.25), clip = "off"
+      xlim = c(0.16, 11.53), ylim = c(0.29, 7.20),
+      expand = FALSE, clip = "off"
     ) +
     ggplot2::theme_void(base_family = "sans") +
     ggplot2::theme(
       plot.background = ggplot2::element_rect(fill = "#FFFFFF", colour = NA),
-      plot.margin = ggplot2::margin(7, 7, 7, 7)
+      plot.margin = ggplot2::margin(2, 2, 2, 2)
     )
 
   figure_dir <- file.path(output_dir, "figures")
