@@ -6,8 +6,8 @@
 
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/ofp-sam-bet-2026-stepwise
-name: bet-2026-selectivity-form-f15-f22-sensitivity
-description: Fit four BET 2026 selectivity-form sensitivities, including an all-fisheries boundary case, with profile and Hessian follow-up.
+name: bet-2026-stepwise-2307-corrected-v2
+description: Fit the complete corrected BET 2026 stepwise campaign and four selectivity-form sensitivities, with one Hessian follow-up per model.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -40,14 +40,14 @@ env:
   # A public-task launch is safe by default: exactly one model is selected.
   # Campaign rows override all four identity fields together. Local sequential
   # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
-  STEP_SELECT: 18a-F22FormRelaxed
+  STEP_SELECT: 01-Diag2023
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "BET 2026 selectivity-form sensitivity | F22"
-  JOB_DESCRIPTION: "Refit the Step 17b DM model after removing one specified selectivity-form penalty."
-  MODEL_LABEL: F22 selectivity-form penalty removed
-  JOB_KEY: 18a-f22-selectivity-form-relaxed
+  JOB_TITLE: "BET 2026 stepwise | 01 Diagnostic rerun"
+  JOB_DESCRIPTION: "Run one independently frozen BET 2026 stepwise model from the corrected public campaign."
+  MODEL_LABEL: Diagnostic rerun
+  JOB_KEY: 01-diag2023
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-selectivity-form-f15-f22
+  FLOW_GROUP: bet-2026-stepwise-2307-corrected
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"

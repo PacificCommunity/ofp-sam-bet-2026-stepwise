@@ -347,10 +347,10 @@ expected_weighting_parents <- c(
   "16a-DOMDiv200" = "15-SelectivityUpdate",
   "16b-Francis" = "16a-DOMDiv200",
   "16c-DMG8Nmax25" = "15-SelectivityUpdate",
-  "18a-F22FormRelaxed" = "16c-DMG8Nmax25",
-  "18b-F15FormRelaxed" = "16c-DMG8Nmax25",
-  "18c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
-  "18d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25"
+  "17a-F15FormRelaxed" = "16c-DMG8Nmax25",
+  "17b-F22FormRelaxed" = "16c-DMG8Nmax25",
+  "17c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
+  "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -739,8 +739,8 @@ for (i in seq_len(nrow(models))) {
   }
   if (model_id %in% c(
     "16c-DMG8Nmax25",
-    "18a-F22FormRelaxed", "18b-F15FormRelaxed",
-    "18c-F15F22FormRelaxed", "18d-AllSelectivityFormRelaxed"
+    "17a-F15FormRelaxed", "17b-F22FormRelaxed",
+    "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed"
   )) {
     require_exact_controls(
       doitall, job13328_dm_controls, model_id,
@@ -1105,16 +1105,16 @@ for (i in seq_len(nrow(models))) {
       "age-based selectivity evaluated against scaled mean length-at-age"
     )
     check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
-    all_form_boundary <- identical(model_id, "18d-AllSelectivityFormRelaxed")
+    all_form_boundary <- identical(model_id, "17d-AllSelectivityFormRelaxed")
     expected_active_form_fisheries <- c(
       12L, 13L, 15L, 16L, 17L, 18L, 19L,
       21L, 22L, 23L, 24L, 25L, 26L, 27L
     )
-    if (identical(model_id, "18a-F22FormRelaxed")) {
-      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 22L)
-    } else if (identical(model_id, "18b-F15FormRelaxed")) {
+    if (identical(model_id, "17a-F15FormRelaxed")) {
       expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 15L)
-    } else if (identical(model_id, "18c-F15F22FormRelaxed")) {
+    } else if (identical(model_id, "17b-F22FormRelaxed")) {
+      expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, 22L)
+    } else if (identical(model_id, "17c-F15F22FormRelaxed")) {
       expected_active_form_fisheries <- setdiff(expected_active_form_fisheries, c(15L, 22L))
     } else if (all_form_boundary) {
       expected_active_form_fisheries <- integer()

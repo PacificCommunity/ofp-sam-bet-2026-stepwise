@@ -5,14 +5,14 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 22 independent models unless STEP_SELECT is supplied.
+  # Run all 26 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 16L,
-  model_rows = 22L,
+  numbered_groups = 17L,
+  model_rows = 26L,
   selected_path_models = 19L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
-  flow_group = "bet-2026-selectivity-form-f15-f22",
+  flow_group = "bet-2026-stepwise-2307-corrected",
 
   # TRUE runs downstream plot/report after stepwise succeeds.
   trigger_next = FALSE
@@ -260,47 +260,44 @@ stepwise_models$regional_scaling_weight <- NA_integer_
 stepwise_models$regional_scaling_weight[step_number >= 8L] <- 100L
 stepwise_models$reporting_rate_prior <- ifelse(step_number >= 7L, "RRPTTP26", "")
 
-# Dedicated sensitivity branch: retain the public stepwise rows for provenance,
-# but submit only the four independent Step 16c selectivity-form sensitivities.
-stepwise_models$enabled <- FALSE
-
+# Dedicated sensitivity branch from the corrected Step 16c model.
 sensitivity_models <- do.call(
   rbind,
   list(
     model_row(
-      "18a-F22FormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
-      FALSE, "sensitivity",
-      "remove the F22 DOM.PH.2 dome/old-age-tail selectivity-form penalty",
-      "F22 form relaxed",
-      "BET 2026 selectivity-form sensitivity | F22",
-      "18a-f22-selectivity-form-relaxed",
-      "Fishery flag 16 changes from 2 to 0 for F22 only; all other Step 16c inputs and controls are unchanged."
-    ),
-    model_row(
-      "18b-F15FormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
+      "17a-F15FormRelaxed", "17-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove the F15 HL.PH.2 dome/old-age-tail selectivity-form penalty",
       "F15 form relaxed",
       "BET 2026 selectivity-form sensitivity | F15",
-      "18b-f15-selectivity-form-relaxed",
+      "17a-f15-selectivity-form-relaxed",
       "Fishery flag 16 changes from 2 to 0 for F15 only; all other Step 16c inputs and controls are unchanged."
     ),
     model_row(
-      "18c-F15F22FormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
+      "17b-F22FormRelaxed", "17-SelectivityFormSensitivity", "16c-DMG8Nmax25",
+      FALSE, "sensitivity",
+      "remove the F22 DOM.PH.2 dome/old-age-tail selectivity-form penalty",
+      "F22 form relaxed",
+      "BET 2026 selectivity-form sensitivity | F22",
+      "17b-f22-selectivity-form-relaxed",
+      "Fishery flag 16 changes from 2 to 0 for F22 only; all other Step 16c inputs and controls are unchanged."
+    ),
+    model_row(
+      "17c-F15F22FormRelaxed", "17-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove the F15 HL.PH.2 and F22 DOM.PH.2 dome/old-age-tail selectivity-form penalties",
       "F15/F22 forms relaxed",
       "BET 2026 selectivity-form sensitivity | F15 + F22",
-      "18c-f15-f22-selectivity-form-relaxed",
+      "17c-f15-f22-selectivity-form-relaxed",
       "Fishery flag 16 changes from 2 to 0 for F15 and F22 only; all other Step 16c inputs and controls are unchanged."
     ),
     model_row(
-      "18d-AllSelectivityFormRelaxed", "18-SelectivityFormSensitivity", "16c-DMG8Nmax25",
+      "17d-AllSelectivityFormRelaxed", "17-SelectivityFormSensitivity", "16c-DMG8Nmax25",
       FALSE, "sensitivity",
       "remove every active fishery-specific dome/old-age-tail selectivity-form penalty",
       "All forms relaxed",
       "BET 2026 selectivity-form boundary sensitivity | all fisheries",
-      "18d-all-selectivity-form-relaxed",
+      "17d-all-selectivity-form-relaxed",
       "All 14 active fishery flag-16 controls change from 2 to 0; every other Step 16c input and control is unchanged. This is a boundary sensitivity, not a preferred model."
     )
   )
@@ -320,6 +317,6 @@ sensitivity_models$reporting_rate_prior <- "RRPTTP26"
 sensitivity_models <- sensitivity_models[, names(stepwise_models), drop = FALSE]
 stepwise_models <- rbind(stepwise_models, sensitivity_models)
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 18L
+stepwise_run$numbered_groups <- 17L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

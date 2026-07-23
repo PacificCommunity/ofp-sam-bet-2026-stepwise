@@ -22,8 +22,8 @@ build_stepwise_dag <- function(
     "09c-SUB075", "10-MIX015", "11-TAGF2ON", "12-TimeVaryingCV",
     "13-EffortCreep", "14-CPUESigma", "15-SelectivityUpdate",
     "16a-DOMDiv200", "16b-Francis", "16c-DMG8Nmax25",
-    "18a-F22FormRelaxed", "18b-F15FormRelaxed",
-    "18c-F15F22FormRelaxed", "18d-AllSelectivityFormRelaxed"
+    "17a-F15FormRelaxed", "17b-F22FormRelaxed",
+    "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed"
   )
   missing <- setdiff(ids, names(labels))
   if (length(missing)) {
@@ -50,8 +50,8 @@ build_stepwise_dag <- function(
     data.frame(id = "16c-DMG8Nmax25", x = 2.7, y = 0.55, category = "final"),
     data.frame(
       id = c(
-        "18a-F22FormRelaxed", "18b-F15FormRelaxed",
-        "18c-F15F22FormRelaxed", "18d-AllSelectivityFormRelaxed"
+        "17a-F15FormRelaxed", "17b-F22FormRelaxed",
+        "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed"
       ),
       x = c(8, 10.6, 13.2, 15.8),
       y = 0.55,

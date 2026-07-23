@@ -828,6 +828,13 @@ for (i in seq_len(nrow(step_table))) {
   cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB"))
   step_id <- basename(step_dir)
   if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
+    if (!isTRUE(allow_sequential_all)) {
+      stop(
+        "Selected independent model row is disabled: ", step_id,
+        ". Refusing to return a false-success job without a model fit.",
+        call. = FALSE
+      )
+    }
     message("Skipping disabled step ", step_id)
     next
   }

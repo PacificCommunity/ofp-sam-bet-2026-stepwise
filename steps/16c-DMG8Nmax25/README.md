@@ -16,7 +16,7 @@ Branch directly from Step 15 and use a Dirichlet-multinomial length-composition 
 | 1 | Branch directly from Step 15 and use a Dirichlet-multinomial length-composition likelihood with G8 grouping and Nmax 25, without DOM divisor 200 or Francis weighting. |
 | 2 | Scientific rationale: estimate composition information internally while capping it at 25 to avoid excessive dominance over CPUE; the cap reflects preliminary effective-sample-size behavior. |
 | 3 | Held constant: all Step 15 data, biology, selectivity, CPUE, and tag settings; neither the 16a divisor nor 16b Francis weights are inherited. |
-| 4 | Status: selected weighting treatment; carried forward to the Step 18 sensitivities. |
+| 4 | Status: selected weighting treatment; carried forward to the Step 17 sensitivities. |
 | 5 | Scientific parent: '15-SelectivityUpdate'. |
 | 6 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 

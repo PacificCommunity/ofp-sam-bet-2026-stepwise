@@ -1,19 +1,19 @@
-# 18b F15 form relaxed
+# 17b F22 form relaxed
 
-Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for F15 only.
+Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for F22 only.
 
 ## Snapshot
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/18b-F15FormRelaxed/model` |
+| Step folder | `steps/17b-F22FormRelaxed/model` |
 | Status | Prepared sensitivity snapshot; model fit not run here. |
 
 ## Changes
 
 | # | Change |
 | --- | --- |
-| 1 | Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for F15 only. |
+| 1 | Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for F22 only. |
 | 2 | Scientific rationale: test sensitivity to the specified selectivity-form constraint. |
 | 3 | Held constant: every Step 16c input and control except the named fishery flag-16 relaxation. |
 | 4 | Status: alternative sensitivity comparison; not carried forward. |
@@ -38,7 +38,7 @@ Retain the Step 16c model and remove the dome/old-age-tail selectivity-form pena
 | `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `doitall.sh` | Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for F15 only. | All previously selected controls; no OPR or length-bin selectivity. |
+| `doitall.sh` | Retain the Step 16c model and remove the dome/old-age-tail selectivity-form penalty for F22 only. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 

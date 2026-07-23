@@ -1,4 +1,4 @@
-# 18d All forms relaxed
+# 17d All forms relaxed
 
 Retain the Step 16c model and remove every active fishery-specific dome/old-age-tail selectivity-form penalty. This is an all-fisheries boundary sensitivity, not a preferred model.
 
@@ -6,7 +6,7 @@ Retain the Step 16c model and remove every active fishery-specific dome/old-age-
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/18d-AllSelectivityFormRelaxed/model` |
+| Step folder | `steps/17d-AllSelectivityFormRelaxed/model` |
 | Status | Prepared sensitivity snapshot; model fit not run here. |
 
 ## Changes

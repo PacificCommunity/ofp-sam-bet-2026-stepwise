@@ -1172,7 +1172,7 @@ write_selected_path_step(
   audit_notes = c(
     "Scientific rationale: estimate composition information internally while capping it at 25 to avoid excessive dominance over CPUE; the cap reflects preliminary effective-sample-size behavior.",
     "Held constant: all Step 15 data, biology, selectivity, CPUE, and tag settings; neither the 16a divisor nor 16b Francis weights are inherited.",
-    "Status: selected weighting treatment; carried forward to the Step 18 sensitivities."
+    "Status: selected weighting treatment; carried forward to the Step 17 sensitivities."
   ),
   tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
   effort_creep = TRUE, fixed_cpue_sigma = TRUE,
@@ -1294,32 +1294,36 @@ write_selectivity_form_sensitivity <- function(step_id, title, fisheries = integ
 }
 
 write_selectivity_form_sensitivity(
-  "18a-F22FormRelaxed",
-  "18a F22 form relaxed",
-  22L
-)
-write_selectivity_form_sensitivity(
-  "18b-F15FormRelaxed",
-  "18b F15 form relaxed",
+  "17a-F15FormRelaxed",
+  "17a F15 form relaxed",
   15L
 )
 write_selectivity_form_sensitivity(
-  "18c-F15F22FormRelaxed",
-  "18c F15/F22 forms relaxed",
+  "17b-F22FormRelaxed",
+  "17b F22 form relaxed",
+  22L
+)
+write_selectivity_form_sensitivity(
+  "17c-F15F22FormRelaxed",
+  "17c F15/F22 forms relaxed",
   c(15L, 22L)
 )
 write_selectivity_form_sensitivity(
-  "18d-AllSelectivityFormRelaxed",
-  "18d All forms relaxed",
+  "17d-AllSelectivityFormRelaxed",
+  "17d All forms relaxed",
   all_active = TRUE
 )
 
-# Remove only the three superseded weighting folders after their replacements
+# Remove superseded weighting and sensitivity folders after their replacements
 # have been generated. Unrelated configured or unconfigured steps are retained.
 config_env <- new.env(parent = baseenv())
 sys.source(file.path(root, "job-config.R"), envir = config_env)
 configured_steps <- as.character(config_env$stepwise_models$step_id)
-obsolete_step_ids <- c("16-DOMDiv200", "17a-Francis", "17b-DMG8Nmax25")
+obsolete_step_ids <- c(
+  "16-DOMDiv200", "17a-Francis", "17b-DMG8Nmax25",
+  "18a-F22FormRelaxed", "18b-F15FormRelaxed",
+  "18c-F15F22FormRelaxed", "18d-AllSelectivityFormRelaxed"
+)
 if (length(intersect(obsolete_step_ids, configured_steps))) {
   stop("Obsolete weighting step IDs remain configured", call. = FALSE)
 }

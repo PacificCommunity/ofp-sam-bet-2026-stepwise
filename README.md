@@ -64,10 +64,10 @@ Dirichlet-multinomial is abbreviated DM in technical settings.
 | 16a | DOM downweighting | `16a-DOMDiv200` | `15-SelectivityUpdate` | As a comparison, divide the low-quality, previously unreweighted F21-F23 DOM compositions by 200. | Step 15 settings and all other composition weights. | Alternative; parent of 16b only. |
 | 16b | Francis weighting | `16b-Francis` | `16a-DOMDiv200` | Replace every 16a divisor with a fishery-specific Francis divisor based on preliminary residual behavior. | Step 15 settings and the standard composition likelihood. | Alternative comparison. |
 | 16c | Dirichlet-multinomial | `16c-DMG8Nmax25` | `15-SelectivityUpdate` | Estimate composition information internally using G8 grouping, capped at `Nmax=25` to limit excessive dominance over CPUE. | Step 15 settings; no 16a divisor or 16b Francis weight is inherited. | Selected final weighting treatment. |
-| 18a | F22 form relaxed | `18a-F22FormRelaxed` | `16c-DMG8Nmax25` | Relax the F22 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
-| 18b | F15 form relaxed | `18b-F15FormRelaxed` | `16c-DMG8Nmax25` | Relax the F15 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
-| 18c | F15/F22 forms relaxed | `18c-F15F22FormRelaxed` | `16c-DMG8Nmax25` | Relax F15 and F22 together to test their combined influence. | Every other 16c input and control. | Alternative sensitivity. |
-| 18d | All forms relaxed | `18d-AllSelectivityFormRelaxed` | `16c-DMG8Nmax25` | Remove every active fishery-specific form penalty to bound their overall influence. | Every non-form 16c input and control. | Alternative boundary sensitivity. |
+| 17a | F15 form relaxed | `17a-F15FormRelaxed` | `16c-DMG8Nmax25` | Relax the F15 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
+| 17b | F22 form relaxed | `17b-F22FormRelaxed` | `16c-DMG8Nmax25` | Relax the F22 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
+| 17c | F15/F22 forms relaxed | `17c-F15F22FormRelaxed` | `16c-DMG8Nmax25` | Relax F15 and F22 together to test their combined influence. | Every other 16c input and control. | Alternative sensitivity. |
+| 17d | All forms relaxed | `17d-AllSelectivityFormRelaxed` | `16c-DMG8Nmax25` | Remove every active fishery-specific form penalty to bound their overall influence. | Every non-form 16c input and control. | Alternative boundary sensitivity. |
 
 The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
 structure at `04-NewStructure`. They are carried through steps 05-06 and
