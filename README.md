@@ -68,6 +68,7 @@ Dirichlet-multinomial is abbreviated DM in technical settings.
 | 17b | F22 form relaxed | `17b-F22FormRelaxed` | `16c-DMG8Nmax25` | Relax the F22 selectivity-form penalty to test its influence. | Every other 16c input and control. | Alternative sensitivity. |
 | 17c | F15/F22 forms relaxed | `17c-F15F22FormRelaxed` | `16c-DMG8Nmax25` | Relax F15 and F22 together to test their combined influence. | Every other 16c input and control. | Alternative sensitivity. |
 | 17d | All forms relaxed | `17d-AllSelectivityFormRelaxed` | `16c-DMG8Nmax25` | Remove every active fishery-specific form penalty to bound their overall influence. | Every non-form 16c input and control. | Alternative boundary sensitivity. |
+| 18 | Grouped selectivity robustness | `18-GroupedSelectivityRobustness` | `17d-AllSelectivityFormRelaxed` | Share F29-F32 selectivity with matched extraction fisheries and reduce F1/F3/F5/F33 to four spline nodes. | All other Job 14363 inputs and controls, including independent F29-F33 q groups. | Robustness sensitivity; full native-MFCL `doitall` fit. |
 
 The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
 structure at `04-NewStructure`. They are carried through steps 05-06 and

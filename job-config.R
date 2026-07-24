@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 26 independent models unless STEP_SELECT is supplied.
+  # Run all 27 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
   numbered_groups = 17L,
-  model_rows = 26L,
+  model_rows = 27L,
   selected_path_models = 19L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -299,6 +299,15 @@ sensitivity_models <- do.call(
       "BET 2026 selectivity-form boundary sensitivity | all fisheries",
       "17d-all-selectivity-form-relaxed",
       "All 14 active fishery flag-16 controls change from 2 to 0; every other Step 16c input and control is unchanged. This is a boundary sensitivity, not a preferred model."
+    ),
+    model_row(
+      "18-GroupedSelectivityRobustness", "18-SelectivityRobustness", "17d-AllSelectivityFormRelaxed",
+      FALSE, "sensitivity",
+      "share regional-index selectivity with matched extraction fisheries and reduce selected spline dimensions",
+      "Grouped selectivity robustness",
+      "BET 2026 selectivity robustness sensitivity | grouped regional index selectivity",
+      "18-grouped-selectivity-robustness",
+      "Full native-MFCL doitall fit using the Job 14363 configuration. F29/F30/F31/F32 share selectivity with F2/F4/F7/F8 respectively; F33 remains independent. F1, F3, F5 and F33 use four spline nodes, F15 retains five, F25/F26 retain seven, and F29-F33 retain separate flag-99 catchability groups."
     )
   )
 )
@@ -306,7 +315,8 @@ sensitivity_models$report_purpose <- c(
   "Test sensitivity to the dominant F22 dome/old-age-tail selectivity-form penalty.",
   "Test sensitivity to the dominant F15 dome/old-age-tail selectivity-form penalty.",
   "Test their combined influence on fit, profile curvature and Hessian stability.",
-  "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model."
+  "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model.",
+  "Test whether fishery-informed selectivity sharing and lower spline dimension improve robustness while retaining the Job 14363 model specification."
 )
 sensitivity_models$age_length_variant <- "SUB075"
 sensitivity_models$tag_flag2 <- 1L
@@ -317,6 +327,6 @@ sensitivity_models$reporting_rate_prior <- "RRPTTP26"
 sensitivity_models <- sensitivity_models[, names(stepwise_models), drop = FALSE]
 stepwise_models <- rbind(stepwise_models, sensitivity_models)
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 17L
+stepwise_run$numbered_groups <- 18L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)
