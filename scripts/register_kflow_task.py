@@ -57,6 +57,30 @@ def read_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
+def resolve_local_apps(
+    config: dict[str, Any],
+    *,
+    config_path: Path,
+    repo_root: Path,
+) -> dict[str, Any]:
+    """Load a shared local-app declaration for small task-specific configs."""
+    if "local_apps" in config:
+        return config
+    source = str(config.get("local_apps_from") or "").strip()
+    if not source:
+        return config
+    source_path = (config_path.parent / source).resolve()
+    try:
+        source_path.relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError(f"local_apps_from must remain inside the repository: {source}") from exc
+    source_config = read_yaml(source_path)
+    local_apps = source_config.get("local_apps")
+    if not isinstance(local_apps, list) or not local_apps:
+        raise ValueError(f"{source_path} must define a non-empty local_apps list")
+    return {**config, "local_apps": local_apps}
+
+
 def api_json(
     method: str,
     url: str,
@@ -416,7 +440,11 @@ def main() -> int:
     token = os.environ.get("KFLOW_API_TOKEN", "")
     base_url = args.kflow_url.rstrip("/")
 
-    config = read_yaml(config_path)
+    config = resolve_local_apps(
+        read_yaml(config_path),
+        config_path=config_path,
+        repo_root=repo_root,
+    )
     task_name = args.task_name or config.get("name")
     if not task_name:
         raise SystemExit("Task name is missing.")
