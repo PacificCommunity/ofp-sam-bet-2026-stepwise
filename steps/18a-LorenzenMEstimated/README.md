@@ -9,14 +9,15 @@ Lorenzen natural-mortality log-intercept that is fixed in the parent fit.
 | Setting | Job 14363 parent | Sensitivity |
 | --- | --- | --- |
 | Lorenzen form | Parest flag 109 = 3 | Unchanged |
-| Log-intercept starting value | -2.54930339768360 | Unchanged |
+| Log-intercept starting value | -2.54930339768360 | -2.500 |
 | Natural-mortality coefficients estimated | Parest flag 121 = 0 | Runtime switch 121 = 1 |
 | Lorenzen length slope | Fixed | Fixed |
 
-The fit starts from the Job 14363 final parameter state. A single continuation
-optimization activates flag 121 = 1, with 10,000 function evaluations and a
-maximum-gradient convergence target of 1e-4. The parent final parameter values
-provide all other starting values, and the Lorenzen length slope remains fixed.
+The fit starts from the Job 14363 final parameter state. Before estimation, only
+the Lorenzen log-intercept starting value is changed to -2.500; all other parent
+parameter values are retained. A single continuation optimization activates
+flag 121 = 1, with 10,000 function evaluations and a maximum-gradient
+convergence target of 1e-4. The Lorenzen length slope remains fixed.
 
 ## Provenance
 

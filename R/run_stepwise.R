@@ -555,6 +555,66 @@ restore_payload_par <- function(payload_file, dest) {
   invisible(dest)
 }
 
+set_lorenzen_m_start <- function(par_file, start_raw = env("STEPWISE_LORENZEN_M_START", "")) {
+  start_raw <- trimws(as.character(start_raw %||% ""))
+  if (!nzchar(start_raw)) {
+    return(list(applied = FALSE, old = NA_real_, new = NA_real_, formatted = ""))
+  }
+  start <- suppressWarnings(as.numeric(start_raw))
+  if (!is.finite(start) || start <= -20 || start >= 2) {
+    stop("STEPWISE_LORENZEN_M_START must be a finite value strictly between -20 and 2.", call. = FALSE)
+  }
+
+  lines <- readLines(par_file, warn = FALSE)
+  marker <- which(trimws(lines) == "# age-class related parameters (age_pars)")
+  if (length(marker) != 1L) {
+    stop("Could not uniquely locate the age_pars section in ", par_file, call. = FALSE)
+  }
+  comment_text <- trimws(sub("^[[:space:]]*#[[:space:]]*", "", lines))
+  next_section <- which(
+    seq_along(lines) > marker &
+      grepl("^[[:space:]]*#", lines) &
+      nzchar(comment_text)
+  )
+  section_end <- if (length(next_section)) next_section[[1L]] - 1L else length(lines)
+  data_rows <- which(
+    seq_along(lines) > marker &
+      seq_along(lines) <= section_end &
+      nzchar(trimws(lines)) &
+      !grepl("^[[:space:]]*#", lines)
+  )
+  if (length(data_rows) < 5L) {
+    stop("The age_pars section does not contain the expected fifth row in ", par_file, call. = FALSE)
+  }
+
+  row <- data_rows[[5L]]
+  tokens <- strsplit(trimws(lines[[row]]), "[[:space:]]+")[[1L]]
+  old <- suppressWarnings(as.numeric(tokens[[1L]]))
+  slope <- suppressWarnings(as.numeric(tokens[[2L]]))
+  if (!is.finite(old) || !is.finite(slope) || !isTRUE(all.equal(slope, -1, tolerance = 1e-12))) {
+    stop(
+      "The expected Lorenzen intercept/slope pair was not found in age_pars row 5 of ",
+      par_file,
+      ".",
+      call. = FALSE
+    )
+  }
+
+  formatted <- sprintf("%.14e", start)
+  leading <- sub("^([[:space:]]*).*", "\\1", lines[[row]])
+  remainder <- sub("^[[:space:]]*[^[:space:]]+", "", lines[[row]])
+  lines[[row]] <- paste0(leading, formatted, remainder)
+  writeLines(lines, par_file, useBytes = TRUE)
+
+  check_lines <- readLines(par_file, warn = FALSE)
+  check_tokens <- strsplit(trimws(check_lines[[row]]), "[[:space:]]+")[[1L]]
+  check <- suppressWarnings(as.numeric(check_tokens[[1L]]))
+  if (!is.finite(check) || !isTRUE(all.equal(check, start, tolerance = 1e-12))) {
+    stop("Failed to apply STEPWISE_LORENZEN_M_START to ", par_file, call. = FALSE)
+  }
+  list(applied = TRUE, old = old, new = start, formatted = formatted)
+}
+
 stage_previous_job_par <- function(model_dir, step_id, job_ref, root, work_dir) {
   source_par <- find_previous_job_par(step_id, job_ref = job_ref, root = root, work_dir = work_dir)
   dest <- file.path(model_dir, "previous-job.par")
@@ -890,6 +950,7 @@ for (i in seq_len(nrow(step_table))) {
   par_source_step <- cfg$PAR_SOURCE_STEP %||% env("STEPWISE_PAR_SOURCE_STEP", "")
   if (!nzchar(par_source_step)) par_source_step <- step_id
   par_source_par <- ""
+  lorenzen_m_start <- list(applied = FALSE, old = NA_real_, new = NA_real_, formatted = "")
   par_fallback <- FALSE
   par_fallback_reason <- ""
   run_script_name <- cfg$RUN_SCRIPT %||% "doitall.sh"
@@ -927,6 +988,29 @@ for (i in seq_len(nrow(step_table))) {
     )
     input_par <- staged$input_par
     par_source_par <- staged$source_par
+    lorenzen_m_start <- set_lorenzen_m_start(file.path(model_dir, input_par))
+    if (isTRUE(lorenzen_m_start$applied)) {
+      message(
+        "  Lorenzen M start: ",
+        format(lorenzen_m_start$old, digits = 15),
+        " -> ",
+        lorenzen_m_start$formatted,
+        " (intercept only; slope unchanged)"
+      )
+      write.csv(
+        data.frame(
+          parameter = "age_pars(5,1)",
+          source_value = lorenzen_m_start$old,
+          starting_value = lorenzen_m_start$new,
+          slope = -1,
+          source_job = par_source_job,
+          source_model = par_source_step,
+          stringsAsFactors = FALSE
+        ),
+        file.path(model_dir, "lorenzen-m-start-audit.csv"),
+        row.names = FALSE
+      )
+    }
     run_mode <- "single_par"
     if (!nzchar(output_par)) output_par <- "final.par"
     message(
@@ -1082,7 +1166,8 @@ for (i in seq_len(nrow(step_table))) {
     "phase-progress.csv",
     "phase-process-summary.csv",
     "doitall-switches.csv",
-    "post-switch-summary.csv"
+    "post-switch-summary.csv",
+    "lorenzen-m-start-audit.csv"
   ))
   for (file in keep) {
     src <- file.path(model_dir, file)
@@ -1113,6 +1198,7 @@ for (i in seq_len(nrow(step_table))) {
     requested_input_par = requested_input_par,
     par_source_job = par_source_job,
     par_source_par = if (nzchar(par_source_par)) relative_display_path(par_source_par, root) else "",
+    lorenzen_m_start = if (isTRUE(lorenzen_m_start$applied)) lorenzen_m_start$new else NA_real_,
     frq = frq,
     output_par = final_output_par,
     final_par = "model_payload.rds:par",

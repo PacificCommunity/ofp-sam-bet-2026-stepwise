@@ -23,6 +23,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `stepwise_single_par_iterations` | `blank` | Optional maximum function evaluations for a `job_par` continuation. |
 | `stepwise_single_par_convergence` | `blank` | Optional convergence exponent for a `job_par` continuation. |
 | `stepwise_single_par_switches` | `blank` | Optional additional MFCL flag-value triples for a `job_par` continuation. |
+| `stepwise_lorenzen_m_start` | `blank` | Optional Lorenzen log-intercept starting value applied to the restored `.par`; the slope and every other parameter remain unchanged. |
 | `kflow_input_jobs` | `blank` | Optional Kflow input job number(s) to attach. For `.par` reruns, set this to the same previous same-step job as `PAR_SOURCE_JOB`. |
 
 
@@ -111,6 +112,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `STEPWISE_SINGLE_PAR_ITERATIONS` | `10000` | Maximum function evaluations for a `job_par` continuation. |
 | `STEPWISE_SINGLE_PAR_CONVERGENCE` | `-4` | Convergence exponent for a `job_par` continuation. |
 | `STEPWISE_SINGLE_PAR_SWITCHES` | `1 121 1` | Additional MFCL flag-value triples for a `job_par` continuation. |
+| `STEPWISE_LORENZEN_M_START` | `-2.5` | Change only the restored Lorenzen log-intercept starting value before the continuation. |
 | `INPUT_PAR` | `123.par` | Continue from one specific `.par` already in the selected model folder; if it is missing, the runner logs that and falls back to `doitall`. |
 | `STEPWISE_COMMIT_FINAL_PARS` | `false` | Optional legacy path to commit final `.par` files back to this repo. Keep off for parallel Kflow runs. |
 | `STEPWISE_PUSH_FINAL_PARS` | `false` | Optional legacy path to push the `.par` commit to GitHub. Keep off for parallel Kflow runs. |

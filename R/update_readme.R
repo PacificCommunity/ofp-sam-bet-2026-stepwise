@@ -117,6 +117,7 @@ defaults <- data.frame(
     "stepwise_single_par_iterations",
     "stepwise_single_par_convergence",
     "stepwise_single_par_switches",
+    "stepwise_lorenzen_m_start",
     "kflow_input_jobs"
   ),
   value = c(
@@ -135,6 +136,7 @@ defaults <- data.frame(
     tryCatch(kflow$env$STEPWISE_SINGLE_PAR_ITERATIONS, error = function(e) ""),
     tryCatch(kflow$env$STEPWISE_SINGLE_PAR_CONVERGENCE, error = function(e) ""),
     tryCatch(kflow$env$STEPWISE_SINGLE_PAR_SWITCHES, error = function(e) ""),
+    tryCatch(kflow$env$STEPWISE_LORENZEN_M_START, error = function(e) ""),
     tryCatch(kflow$env$KFLOW_INPUT_JOBS, error = function(e) "")
   ),
   meaning = c(
@@ -153,6 +155,7 @@ defaults <- data.frame(
     "Optional maximum function evaluations for a `job_par` continuation.",
     "Optional convergence exponent for a `job_par` continuation.",
     "Optional additional MFCL flag-value triples for a `job_par` continuation.",
+    "Optional Lorenzen log-intercept starting value applied to the restored `.par`; the slope and every other parameter remain unchanged.",
     "Optional Kflow input job number(s) to attach. For `.par` reruns, set this to the same previous same-step job as `PAR_SOURCE_JOB`."
   ),
   stringsAsFactors = FALSE

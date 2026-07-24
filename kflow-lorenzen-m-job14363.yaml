@@ -27,8 +27,9 @@ env:
   STEPWISE_SINGLE_PAR_ITERATIONS: "10000"
   STEPWISE_SINGLE_PAR_CONVERGENCE: "-4"
   STEPWISE_SINGLE_PAR_SWITCHES: "1 121 1"
+  STEPWISE_LORENZEN_M_START: "-2.5"
   JOB_TITLE: "BET 2026 natural-mortality sensitivity | estimated Lorenzen M"
-  JOB_DESCRIPTION: "Continue from the Job 14363 final parameter file and estimate one Lorenzen natural-mortality log-intercept; retain the fixed length slope and all other fitted parameters as starting values."
+  JOB_DESCRIPTION: "Continue from the Job 14363 final parameter file, set only the Lorenzen natural-mortality log-intercept starting value to -2.5, and estimate that intercept while retaining the fixed length slope."
   MODEL_LABEL: Estimated Lorenzen M
   JOB_KEY: 18a-estimated-lorenzen-m
   FLOW_GROUP: bet-2026-job14363-estimated-lorenzen-m-20260724

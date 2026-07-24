@@ -307,7 +307,7 @@ sensitivity_models <- do.call(
       "Estimated Lorenzen M",
       "BET 2026 natural-mortality sensitivity | estimated Lorenzen M",
       "18a-estimated-lorenzen-m",
-      "Continue from the Job 14363 final parameter file and estimate one Lorenzen natural-mortality log-intercept with parest flag 121 = 1; retain the fitted parent state as the starting point and keep the Lorenzen length slope fixed."
+      "Continue from the Job 14363 final parameter file, change only the Lorenzen log-intercept starting value to -2.5, and estimate that intercept with parest flag 121 = 1 while keeping the length slope fixed."
     )
   )
 )
