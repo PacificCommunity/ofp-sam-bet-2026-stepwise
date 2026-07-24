@@ -1,0 +1,82 @@
+name: bet-2026-job15363-r1-f2-f3-f29-shared-selectivity-20260725
+description: Full native-MFCL sensitivity from Job 15363 with F2, F3 and F29 sharing one four-node Region 1 selectivity while index catchability remains independent.
+
+command: bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+
+remote_host: suvofpsubmit.corp.spc.int
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 10GB
+
+env:
+  STEP_SELECT: 19a-R1F2F3F29SharedSelectivity
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  RUN_MODE: doitall
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  JOB_TITLE: "BET 2026 selectivity robustness sensitivity | R1 F2/F3/F29 shared"
+  JOB_DESCRIPTION: "Full native-MFCL doitall fit from the Job 15363 configuration. F2 LL.EAST.1, F3 LL.US.1 and F29 Index R1 share one four-node selectivity; F29 retains an independent flag-99 catchability group. Fixed M, DM G8 Nmax25 and all other inputs and controls are unchanged."
+  MODEL_LABEL: R1 F2/F3/F29 selectivity shared
+  JOB_KEY: 19a-r1-f2-f3-f29-selectivity-shared
+  FLOW_GROUP: bet-2026-job15363-r1-f2-f3-f29-shared-selectivity-20260725
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  TRIGGER_NEXT: "false"
+  PROGRAM_PATH: /home/mfcl/mfclo64
+  MFCL_LIVE_LOG: "true"
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: always
+  TUNA_FLOW_RUNTIME_UPDATE: always
+  KFLOW_REPO_RUNTIME_UPDATE: always
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@db11d83fa3854c571a634aa289c56ac8981d2e53
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: db11d83fa3854c571a634aa289c56ac8981d2e53
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+metadata:
+  task_role: sensitivity
+  task_visibility: primary
+  scientific_parent_job: "15363"
+  scientific_parent_model: 18-GroupedSelectivityRobustness
+  run_strategy: full-doitall
+  engine: native-mfcl
+  change_axis: F2 F3 F29 shared four-node Region 1 selectivity
+
+tags:
+  stage: sensitivity
+  flow: bet-2026-job15363-r1-f2-f3-f29-shared-selectivity-20260725
+  model: 19a-R1F2F3F29SharedSelectivity
+  parent_job: "15363"
+  run_mode: doitall
+  engine: mfcl
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+# Reuse the repository's version-pinned MFCL Shiny launcher.
+local_apps_from: kflow.yaml
+
+job_config:
+  optional:
+    - MFCL_LIVE_LOG

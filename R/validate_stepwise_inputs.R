@@ -352,6 +352,7 @@ expected_weighting_parents <- c(
   "17c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
   "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25",
   "18-GroupedSelectivityRobustness" = "17d-AllSelectivityFormRelaxed",
+  "19a-R1F2F3F29SharedSelectivity" = "18-GroupedSelectivityRobustness",
   "19-GroupedSelectivityEstimatedM" = "18-GroupedSelectivityRobustness"
 )
 for (child in names(expected_weighting_parents)) {
@@ -744,6 +745,7 @@ for (i in seq_len(nrow(models))) {
     "17a-F15FormRelaxed", "17b-F22FormRelaxed",
     "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed",
     "18-GroupedSelectivityRobustness",
+    "19a-R1F2F3F29SharedSelectivity",
     "19-GroupedSelectivityEstimatedM"
   )) {
     require_exact_controls(
@@ -1098,11 +1100,28 @@ for (i in seq_len(nrow(models))) {
     )
     grouped_robustness <- model_id %in% c(
       "18-GroupedSelectivityRobustness",
+      "19a-R1F2F3F29SharedSelectivity",
       "19-GroupedSelectivityEstimatedM"
     )
+    r1_shared_selectivity <- identical(
+      model_id, "19a-R1F2F3F29SharedSelectivity"
+    )
     expected_grouped <- c(1:28, 2, 4, 7, 8, 29)
-    expected_phase1 <- if (grouped_robustness) expected_grouped else c(1:28, rep(29, 5L))
-    expected_phase5 <- if (grouped_robustness) expected_grouped else 1:33
+    expected_r1_shared <- c(1, 2, 2, 3:27, 2, 3, 6, 7, 28)
+    expected_phase1 <- if (r1_shared_selectivity) {
+      expected_r1_shared
+    } else if (grouped_robustness) {
+      expected_grouped
+    } else {
+      c(1:28, rep(29, 5L))
+    }
+    expected_phase5 <- if (r1_shared_selectivity) {
+      expected_r1_shared
+    } else if (grouped_robustness) {
+      expected_grouped
+    } else {
+      1:33
+    }
     if (!identical(as.numeric(phase1_groups), as.numeric(expected_phase1))) {
       add_failure(
         model_id,
@@ -1130,6 +1149,7 @@ for (i in seq_len(nrow(models))) {
     all_form_boundary <- model_id %in% c(
       "17d-AllSelectivityFormRelaxed",
       "18-GroupedSelectivityRobustness",
+      "19a-R1F2F3F29SharedSelectivity",
       "19-GroupedSelectivityEstimatedM"
     )
     expected_active_form_fisheries <- c(
@@ -1161,18 +1181,31 @@ for (i in seq_len(nrow(models))) {
       )
     }
     for (fishery in 25:26) {
+      expected_selectivity_group <- if (r1_shared_selectivity) {
+        fishery - 1L
+      } else {
+        fishery
+      }
       check_flag(
         flags, -fishery, 3L, 25L, model_id,
         paste0("F", fishery, " last age class with non-zero dome selectivity")
       )
-      check_flag(flags, -fishery, 24L, fishery, model_id, paste0("F", fishery, " independent selectivity group"))
+      check_flag(
+        flags, -fishery, 24L, expected_selectivity_group, model_id,
+        paste0("F", fishery, " independent selectivity group")
+      )
       expected_form_flag <- if (all_form_boundary) 0L else 2L
       for (pair in list(c(61, 7), c(16, expected_form_flag), c(75, 0))) {
         check_flag(flags, -fishery, pair[[1L]], pair[[2L]], model_id, paste0("F", fishery, " N7 selectivity"))
       }
     }
     if (grouped_robustness) {
-      for (fishery in c(1L, 3L, 5L, 33L)) {
+      four_node_fisheries <- if (r1_shared_selectivity) {
+        c(1L, 2L, 3L, 5L, 29L, 33L)
+      } else {
+        c(1L, 3L, 5L, 33L)
+      }
+      for (fishery in four_node_fisheries) {
         check_flag(
           flags, -fishery, 61L, 4L, model_id,
           paste0("F", fishery, " reduced four-node spline")
@@ -1184,6 +1217,26 @@ for (i in seq_len(nrow(models))) {
           flags, -fishery, 99L, fishery, model_id,
           paste0("F", fishery, " independent catchability/likelihood group")
         )
+      }
+      if (r1_shared_selectivity) {
+        used_groups <- sort(unique(as.integer(phase5_groups)))
+        if (!identical(used_groups, 1:28)) {
+          add_failure(
+            model_id,
+            paste0(
+              "F2/F3/F29 sharing must leave contiguous selectivity groups 1:28; found `",
+              paste(used_groups, collapse = " "), "`."
+            )
+          )
+        }
+        for (phase in c(1L, 10L, 11L)) {
+          if (!identical(effective_flag_at_phase(flags, 1L, 121L, phase), 0)) {
+            add_failure(
+              model_id,
+              paste0("Lorenzen M intercept must remain fixed in Phase ", phase, ".")
+            )
+          }
+        }
       }
       if (identical(model_id, "19-GroupedSelectivityEstimatedM")) {
         check_flag(flags, 1L, 121L, 1L, model_id, "estimated Lorenzen M intercept")

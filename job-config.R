@@ -5,11 +5,11 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 28 independent models unless STEP_SELECT is supplied.
+  # Run all 29 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 17L,
-  model_rows = 28L,
-  selected_path_models = 19L,
+  numbered_groups = 19L,
+  model_rows = 29L,
+  selected_path_models = 18L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
   flow_group = "bet-2026-stepwise-2307-corrected",
@@ -310,6 +310,15 @@ sensitivity_models <- do.call(
       "Full native-MFCL doitall fit using the Job 14363 configuration. F29/F30/F31/F32 share selectivity with F2/F4/F7/F8 respectively; F33 remains independent. F1, F3, F5 and F33 use four spline nodes, F15 retains five, F25/F26 retain seven, and F29-F33 retain separate flag-99 catchability groups."
     ),
     model_row(
+      "19a-R1F2F3F29SharedSelectivity", "19-SelectivityRobustness", "18-GroupedSelectivityRobustness",
+      FALSE, "sensitivity",
+      "share one four-node Region 1 selectivity among F2, F3 and F29 while retaining independent index catchability",
+      "R1 F2/F3/F29 selectivity shared",
+      "BET 2026 selectivity robustness sensitivity | R1 F2/F3/F29 shared",
+      "19a-r1-f2-f3-f29-selectivity-shared",
+      "Full native-MFCL doitall fit using the Job 15363 configuration. F2 LL.EAST.1, F3 LL.US.1 and F29 Index R1 share one four-node selectivity. F29 retains its independent flag-99 catchability group; fixed M, DM G8 Nmax25 and every other Job 15363 input and control are unchanged."
+    ),
+    model_row(
       "19-GroupedSelectivityEstimatedM", "19-NaturalMortalitySensitivity", "18-GroupedSelectivityRobustness",
       FALSE, "sensitivity",
       "estimate the Lorenzen natural-mortality intercept from Phase 10",
@@ -326,6 +335,7 @@ sensitivity_models$report_purpose <- c(
   "Test their combined influence on fit, profile curvature and Hessian stability.",
   "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model.",
   "Test whether fishery-informed selectivity sharing and lower spline dimension improve robustness while retaining the Job 14363 model specification.",
+  "Test whether a common four-node F2/F3/F29 Region 1 selectivity removes the retrospective alternative mode without sharing index catchability.",
   "Evaluate the separate sensitivity of the grouped-selectivity configuration to estimating the Lorenzen natural-mortality intercept from a -2.5 starting value."
 )
 sensitivity_models$age_length_variant <- "SUB075"
