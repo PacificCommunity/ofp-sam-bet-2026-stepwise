@@ -112,7 +112,11 @@ defaults <- data.frame(
     "stepwise_commit_final_pars",
     "stepwise_push_final_pars",
     "par_source_job",
+    "par_source_step",
     "stepwise_par_source_dir",
+    "stepwise_single_par_iterations",
+    "stepwise_single_par_convergence",
+    "stepwise_single_par_switches",
     "kflow_input_jobs"
   ),
   value = c(
@@ -126,7 +130,11 @@ defaults <- data.frame(
     tryCatch(kflow$env$STEPWISE_COMMIT_FINAL_PARS, error = function(e) "false"),
     tryCatch(kflow$env$STEPWISE_PUSH_FINAL_PARS, error = function(e) "false"),
     tryCatch(kflow$env$PAR_SOURCE_JOB, error = function(e) ""),
+    tryCatch(kflow$env$PAR_SOURCE_STEP, error = function(e) ""),
     tryCatch(kflow$env$STEPWISE_PAR_SOURCE_DIR, error = function(e) ""),
+    tryCatch(kflow$env$STEPWISE_SINGLE_PAR_ITERATIONS, error = function(e) ""),
+    tryCatch(kflow$env$STEPWISE_SINGLE_PAR_CONVERGENCE, error = function(e) ""),
+    tryCatch(kflow$env$STEPWISE_SINGLE_PAR_SWITCHES, error = function(e) ""),
     tryCatch(kflow$env$KFLOW_INPUT_JOBS, error = function(e) "")
   ),
   meaning = c(
@@ -140,7 +148,11 @@ defaults <- data.frame(
     "Optional: create a narrow KflowBot commit containing saved final `.par` files. Off by default to avoid concurrent job push conflicts.",
     "Optional: push the saved final `.par` commit to the current branch. Off by default.",
     "Optional previous Kflow job number/reference used with `RUN_MODE=job_par`.",
+    "Optional source model ID when a `job_par` continuation is saved under a different step ID.",
     "Optional local folder to search for previous output `.par` files when testing `RUN_MODE=job_par` outside Kflow.",
+    "Optional maximum function evaluations for a `job_par` continuation.",
+    "Optional convergence exponent for a `job_par` continuation.",
+    "Optional additional MFCL flag-value triples for a `job_par` continuation.",
     "Optional Kflow input job number(s) to attach. For `.par` reruns, set this to the same previous same-step job as `PAR_SOURCE_JOB`."
   ),
   stringsAsFactors = FALSE

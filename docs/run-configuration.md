@@ -18,7 +18,11 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `stepwise_commit_final_pars` | `false` | Optional: create a narrow KflowBot commit containing saved final `.par` files. Off by default to avoid concurrent job push conflicts. |
 | `stepwise_push_final_pars` | `false` | Optional: push the saved final `.par` commit to the current branch. Off by default. |
 | `par_source_job` | `blank` | Optional previous Kflow job number/reference used with `RUN_MODE=job_par`. |
+| `par_source_step` | `blank` | Optional source model ID when a `job_par` continuation is saved under a different step ID. |
 | `stepwise_par_source_dir` | `blank` | Optional local folder to search for previous output `.par` files when testing `RUN_MODE=job_par` outside Kflow. |
+| `stepwise_single_par_iterations` | `blank` | Optional maximum function evaluations for a `job_par` continuation. |
+| `stepwise_single_par_convergence` | `blank` | Optional convergence exponent for a `job_par` continuation. |
+| `stepwise_single_par_switches` | `blank` | Optional additional MFCL flag-value triples for a `job_par` continuation. |
 | `kflow_input_jobs` | `blank` | Optional Kflow input job number(s) to attach. For `.par` reruns, set this to the same previous same-step job as `PAR_SOURCE_JOB`. |
 
 
@@ -102,7 +106,11 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `MFCL_LIVE_LOG` | `true` | Stream MFCL output into the Kflow log. |
 | `RUN_MODE` | `job_par` | Rerun from a previous Kflow job output `.par`. Use this with `PAR_SOURCE_JOB` and `KFLOW_INPUT_JOBS`. |
 | `PAR_SOURCE_JOB` | `354` | Previous same-step job number to search for `outputs/models/<step_id>/final.par`. |
+| `PAR_SOURCE_STEP` | `17d-AllSelectivityFormRelaxed` | Optional source model ID when the continuation is saved under a different step ID. |
 | `KFLOW_INPUT_JOBS` | `354` | Previous job number to attach as an input archive for the rerun. Usually the same value as `PAR_SOURCE_JOB`. |
+| `STEPWISE_SINGLE_PAR_ITERATIONS` | `10000` | Maximum function evaluations for a `job_par` continuation. |
+| `STEPWISE_SINGLE_PAR_CONVERGENCE` | `-4` | Convergence exponent for a `job_par` continuation. |
+| `STEPWISE_SINGLE_PAR_SWITCHES` | `1 121 1` | Additional MFCL flag-value triples for a `job_par` continuation. |
 | `INPUT_PAR` | `123.par` | Continue from one specific `.par` already in the selected model folder; if it is missing, the runner logs that and falls back to `doitall`. |
 | `STEPWISE_COMMIT_FINAL_PARS` | `false` | Optional legacy path to commit final `.par` files back to this repo. Keep off for parallel Kflow runs. |
 | `STEPWISE_PUSH_FINAL_PARS` | `false` | Optional legacy path to push the `.par` commit to GitHub. Keep off for parallel Kflow runs. |

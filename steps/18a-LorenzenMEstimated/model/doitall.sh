@@ -238,7 +238,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   2 188 2
 # Set Lorenzen M
   2 109 3  # select Lorenzen curve
-  1 121 0    # retain the Job 14363 fixed Lorenzen coefficients during staged model construction
+  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 # Filter out comps with input samples less than 50
   1 311 1  # enable tail-compressed observed and predicted length-frequency arrays
   1 301 1   # set tail compression for WF data
@@ -442,7 +442,7 @@ PHASE9
 $program_path bet.frq 09.par 10.par -file - <<PHASE10
   1 1 10000  # function evaluations
   1 50 $phase10_11_convergence  # convergence criterion; stepwise default -4 (MGC target 1e-4)
-  1 121 1    # estimate the Lorenzen natural-mortality log-intercept after the parent structure is established
+  1 121 0    # estimate no natural-mortality age_pars(5) coefficients; fix Lorenzen intercept and length slope at incoming .par values
 PHASE10
 
 # ----------

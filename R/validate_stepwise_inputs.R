@@ -759,16 +759,11 @@ for (i in seq_len(nrow(models))) {
       add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
     }
     if (identical(model_id, "18a-LorenzenMEstimated")) {
-      if (exact_control_count(doitall, "1 121 1") != 1L) {
+      if (exact_control_count(doitall, "1 121 1") != 0L ||
+          exact_control_count(doitall, "1 121 0") != 2L) {
         add_failure(
           model_id,
-          "Lorenzen-M sensitivity must activate one estimated natural-mortality coefficient in Phase 10."
-        )
-      }
-      if (exact_control_count(doitall, "1 121 0") != 1L) {
-        add_failure(
-          model_id,
-          "Lorenzen-M sensitivity must retain fixed M during staged construction before Phase 10."
+          "The frozen source doitall must retain Job 14363 fixed-M controls; the continuation task activates flag 121 at run time."
         )
       }
     }

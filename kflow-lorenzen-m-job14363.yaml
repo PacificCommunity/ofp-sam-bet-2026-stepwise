@@ -1,5 +1,5 @@
 name: bet-2026-job14363-estimated-lorenzen-m-20260724
-description: Estimate the Lorenzen natural-mortality log-intercept in the exact Job 14363 model configuration, retaining its starting value and fixed length slope.
+description: Continue directly from the Job 14363 final parameter file and estimate the Lorenzen natural-mortality log-intercept while retaining its fixed length slope.
 
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
@@ -20,9 +20,15 @@ input_jobs:
 env:
   STEP_SELECT: 18a-LorenzenMEstimated
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  RUN_MODE: doitall
+  RUN_MODE: job_par
+  PAR_SOURCE_JOB: "14363"
+  PAR_SOURCE_STEP: 17d-AllSelectivityFormRelaxed
+  OUTPUT_PAR: final.par
+  STEPWISE_SINGLE_PAR_ITERATIONS: "10000"
+  STEPWISE_SINGLE_PAR_CONVERGENCE: "-4"
+  STEPWISE_SINGLE_PAR_SWITCHES: "1 121 1"
   JOB_TITLE: "BET 2026 natural-mortality sensitivity | estimated Lorenzen M"
-  JOB_DESCRIPTION: "Rerun the Job 14363 configuration while estimating one Lorenzen natural-mortality log-intercept from the -2.549303 starting value; retain the fixed length slope and all other controls."
+  JOB_DESCRIPTION: "Continue from the Job 14363 final parameter file and estimate one Lorenzen natural-mortality log-intercept; retain the fixed length slope and all other fitted parameters as starting values."
   MODEL_LABEL: Estimated Lorenzen M
   JOB_KEY: 18a-estimated-lorenzen-m
   FLOW_GROUP: bet-2026-job14363-estimated-lorenzen-m-20260724
@@ -31,7 +37,6 @@ env:
   FLOW_ASSESSMENT_YEAR: "2026"
   TRIGGER_NEXT: "false"
   PROGRAM_PATH: /home/mfcl/mfclo64
-  BET_PHASE10_11_CONVERGENCE: "-4"
   MFCL_LIVE_LOG: "true"
   STEPWISE_BUILD_PAYLOAD: "true"
   STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
@@ -77,5 +82,4 @@ output_patterns:
 
 job_config:
   optional:
-    - BET_PHASE10_11_CONVERGENCE
     - MFCL_LIVE_LOG

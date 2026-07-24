@@ -1,8 +1,8 @@
 # 18a Estimated Lorenzen natural mortality
 
-This sensitivity uses the complete Job 14363 (`17d-AllSelectivityFormRelaxed`)
-model specification and estimates the Lorenzen natural-mortality log-intercept
-that is fixed in the parent fit.
+This sensitivity continues directly from the completed Job 14363
+(`17d-AllSelectivityFormRelaxed`) final parameter file and estimates the
+Lorenzen natural-mortality log-intercept that is fixed in the parent fit.
 
 ## Model change
 
@@ -10,14 +10,13 @@ that is fixed in the parent fit.
 | --- | --- | --- |
 | Lorenzen form | Parest flag 109 = 3 | Unchanged |
 | Log-intercept starting value | -2.54930339768360 | Unchanged |
-| Natural-mortality coefficients estimated | Parest flag 121 = 0 | Parest flag 121 = 1 |
+| Natural-mortality coefficients estimated | Parest flag 121 = 0 | Runtime switch 121 = 1 |
 | Lorenzen length slope | Fixed | Fixed |
 
-Flag 121 remains 0 during staged model construction and changes to 1 in
-Phase 10. This preserves the stable Job 14363 pathway before estimating the
-single Lorenzen natural-mortality coefficient in the final optimization.
-All other model inputs, likelihoods, parameter controls, phase settings and
-selectivity specifications are byte-identical to the Job 14363 source model.
+The fit starts from the Job 14363 final parameter state. A single continuation
+optimization activates flag 121 = 1, with 10,000 function evaluations and a
+maximum-gradient convergence target of 1e-4. The parent final parameter values
+provide all other starting values, and the Lorenzen length slope remains fixed.
 
 ## Provenance
 
@@ -29,5 +28,5 @@ selectivity specifications are byte-identical to the Job 14363 source model.
 | Sensitivity folder | `steps/18a-LorenzenMEstimated/model` |
 | Expected diagnostics | Hessian and total-average-biomass profile |
 
-The parent model is rerun from its frozen inputs. The Lorenzen log-intercept is
-released only after the parent model structure has been established.
+The parent model is not rebuilt from its initial inputs. Its archived compact
+payload supplies the final parameter file used by this continuation fit.

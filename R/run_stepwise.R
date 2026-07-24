@@ -324,15 +324,52 @@ bind_rows_fill <- function(rows) {
 }
 
 smoke_switch_args <- function(iterations = 1L) {
+  iterations_raw <- trimws(env("STEPWISE_SINGLE_PAR_ITERATIONS", ""))
+  if (nzchar(iterations_raw)) {
+    parsed_iterations <- suppressWarnings(as.integer(iterations_raw))
+    if (!is.finite(parsed_iterations) || parsed_iterations < 1L) {
+      stop("STEPWISE_SINGLE_PAR_ITERATIONS must be a positive integer.", call. = FALSE)
+    }
+    iterations <- parsed_iterations
+  }
+
+  convergence_raw <- trimws(env("STEPWISE_SINGLE_PAR_CONVERGENCE", ""))
+  convergence_switch <- numeric()
+  if (nzchar(convergence_raw)) {
+    convergence <- suppressWarnings(as.numeric(convergence_raw))
+    if (!is.finite(convergence)) {
+      stop("STEPWISE_SINGLE_PAR_CONVERGENCE must be numeric.", call. = FALSE)
+    }
+    convergence_switch <- c(1, 50, convergence)
+  }
+
+  extra_raw <- trimws(env("STEPWISE_SINGLE_PAR_SWITCHES", ""))
+  extra_switches <- numeric()
+  if (nzchar(extra_raw)) {
+    extra_switches <- suppressWarnings(as.numeric(strsplit(
+      gsub(",", " ", extra_raw, fixed = TRUE),
+      "[[:space:]]+"
+    )[[1L]]))
+    if (!length(extra_switches) || length(extra_switches) %% 3L != 0L ||
+        any(!is.finite(extra_switches))) {
+      stop(
+        "STEPWISE_SINGLE_PAR_SWITCHES must contain numeric flag-value triples.",
+        call. = FALSE
+      )
+    }
+  }
+
   report <- truthy(env("STEPWISE_SINGLE_PAR_REPORT", "true"), TRUE)
   report_flag <- as.integer(isTRUE(report))
   switches <- c(
     1, 1, as.integer(iterations),
+    convergence_switch,
     1, 189, report_flag,
     1, 190, report_flag,
     1, 188, report_flag,
     1, 187, report_flag,
-    1, 186, 0
+    1, 186, 0,
+    extra_switches
   )
   c("-switch", as.character(length(switches) / 3L), as.character(switches))
 }
@@ -825,7 +862,10 @@ for (i in seq_len(nrow(step_table))) {
   if (!dir.exists(step_dir)) stop("Step folder not found: steps/", step_id, call. = FALSE)
   cfg <- read_config(file.path(step_dir, "config.env"))
   cfg <- modifyList(cfg, row_to_config(step_table, i))
-  cfg <- apply_env_overrides(cfg, c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB"))
+  cfg <- apply_env_overrides(
+    cfg,
+    c("RUN_MODE", "INPUT_PAR", "FRQ", "OUTPUT_PAR", "PAR_SOURCE_JOB", "PAR_SOURCE_STEP")
+  )
   step_id <- basename(step_dir)
   if (!truthy(cfg$ENABLED %||% "true", default = TRUE)) {
     if (!isTRUE(allow_sequential_all)) {
@@ -847,6 +887,8 @@ for (i in seq_len(nrow(step_table))) {
   requested_run_mode <- run_mode
   requested_input_par <- input_par
   par_source_job <- cfg$PAR_SOURCE_JOB %||% env("STEPWISE_PAR_SOURCE_JOB", "")
+  par_source_step <- cfg$PAR_SOURCE_STEP %||% env("STEPWISE_PAR_SOURCE_STEP", "")
+  if (!nzchar(par_source_step)) par_source_step <- step_id
   par_source_par <- ""
   par_fallback <- FALSE
   par_fallback_reason <- ""
@@ -876,7 +918,13 @@ for (i in seq_len(nrow(step_table))) {
   message("  engine: ", engine_label(run_engine, step_program))
   message("  mfcl:   ", step_program)
   if (is_job_par_mode(run_mode)) {
-    staged <- stage_previous_job_par(model_dir, step_id, par_source_job, root = root, work_dir = work_dir)
+    staged <- stage_previous_job_par(
+      model_dir,
+      par_source_step,
+      par_source_job,
+      root = root,
+      work_dir = work_dir
+    )
     input_par <- staged$input_par
     par_source_par <- staged$source_par
     run_mode <- "single_par"
@@ -884,6 +932,7 @@ for (i in seq_len(nrow(step_table))) {
     message(
       "  previous job par: ",
       relative_display_path(par_source_par, root),
+      if (!identical(par_source_step, step_id)) paste0(" (source model ", par_source_step, ")") else "",
       if (nzchar(par_source_job)) paste0(" (requested job ", par_source_job, ")") else ""
     )
   }
