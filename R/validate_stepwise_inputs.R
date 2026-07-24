@@ -350,7 +350,8 @@ expected_weighting_parents <- c(
   "17a-F15FormRelaxed" = "16c-DMG8Nmax25",
   "17b-F22FormRelaxed" = "16c-DMG8Nmax25",
   "17c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
-  "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25"
+  "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25",
+  "18a-LorenzenMEstimated" = "17d-AllSelectivityFormRelaxed"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -740,7 +741,8 @@ for (i in seq_len(nrow(models))) {
   if (model_id %in% c(
     "16c-DMG8Nmax25",
     "17a-F15FormRelaxed", "17b-F22FormRelaxed",
-    "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed"
+    "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed",
+    "18a-LorenzenMEstimated"
   )) {
     require_exact_controls(
       doitall, job13328_dm_controls, model_id,
@@ -755,6 +757,17 @@ for (i in seq_len(nrow(models))) {
     }
     if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
       add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+    }
+    if (identical(model_id, "18a-LorenzenMEstimated")) {
+      if (exact_control_count(doitall, "1 121 1") != 2L) {
+        add_failure(
+          model_id,
+          "Lorenzen-M sensitivity must activate one estimated natural-mortality coefficient in Phases 1 and 10."
+        )
+      }
+      if (exact_control_count(doitall, "1 121 0") != 0L) {
+        add_failure(model_id, "Lorenzen-M sensitivity must not restore the fixed-M flag.")
+      }
     }
   }
 
@@ -1105,7 +1118,10 @@ for (i in seq_len(nrow(models))) {
       "age-based selectivity evaluated against scaled mean length-at-age"
     )
     check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
-    all_form_boundary <- identical(model_id, "17d-AllSelectivityFormRelaxed")
+    all_form_boundary <- model_id %in% c(
+      "17d-AllSelectivityFormRelaxed",
+      "18a-LorenzenMEstimated"
+    )
     expected_active_form_fisheries <- c(
       12L, 13L, 15L, 16L, 17L, 18L, 19L,
       21L, 22L, 23L, 24L, 25L, 26L, 27L

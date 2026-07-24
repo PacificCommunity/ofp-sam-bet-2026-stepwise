@@ -299,6 +299,15 @@ sensitivity_models <- do.call(
       "BET 2026 selectivity-form boundary sensitivity | all fisheries",
       "17d-all-selectivity-form-relaxed",
       "All 14 active fishery flag-16 controls change from 2 to 0; every other Step 16c input and control is unchanged. This is a boundary sensitivity, not a preferred model."
+    ),
+    model_row(
+      "18a-LorenzenMEstimated", "18-NaturalMortalitySensitivity", "17d-AllSelectivityFormRelaxed",
+      FALSE, "sensitivity",
+      "estimate the Lorenzen natural-mortality log-intercept",
+      "Estimated Lorenzen M",
+      "BET 2026 natural-mortality sensitivity | estimated Lorenzen M",
+      "18a-estimated-lorenzen-m",
+      "Use the exact Job 14363 model specification. Retain the -2.549303 starting value and the Lorenzen length slope, but change parest flag 121 from 0 to 1 in Phases 1 and 10 so that one natural-mortality log-intercept is estimated."
     )
   )
 )
@@ -306,7 +315,8 @@ sensitivity_models$report_purpose <- c(
   "Test sensitivity to the dominant F22 dome/old-age-tail selectivity-form penalty.",
   "Test sensitivity to the dominant F15 dome/old-age-tail selectivity-form penalty.",
   "Test their combined influence on fit, profile curvature and Hessian stability.",
-  "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model."
+  "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model.",
+  "Evaluate sensitivity of the Job 14363 configuration to estimating, rather than fixing, the Lorenzen natural-mortality log-intercept."
 )
 sensitivity_models$age_length_variant <- "SUB075"
 sensitivity_models$tag_flag2 <- 1L
@@ -317,6 +327,6 @@ sensitivity_models$reporting_rate_prior <- "RRPTTP26"
 sensitivity_models <- sensitivity_models[, names(stepwise_models), drop = FALSE]
 stepwise_models <- rbind(stepwise_models, sensitivity_models)
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 17L
+stepwise_run$numbered_groups <- 18L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

@@ -54,6 +54,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `17b-F22FormRelaxed` | `TRUE` | 17-SelectivityFormSensitivity | 17b | remove the F22 DOM.PH.2 dome/old-age-tail selectivity-form penalty | F22 form relaxed | BET 2026 selectivity-form sensitivity \| F22 | `17b-f22-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `17c-F15F22FormRelaxed` | `TRUE` | 17-SelectivityFormSensitivity | 17c | remove the F15 HL.PH.2 and F22 DOM.PH.2 dome/old-age-tail selectivity-form penalties | F15/F22 forms relaxed | BET 2026 selectivity-form sensitivity \| F15 + F22 | `17c-f15-f22-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `17d-AllSelectivityFormRelaxed` | `TRUE` | 17-SelectivityFormSensitivity | 17d | remove every active fishery-specific dome/old-age-tail selectivity-form penalty | All forms relaxed | BET 2026 selectivity-form boundary sensitivity \| all fisheries | `17d-all-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `18a-LorenzenMEstimated` | `TRUE` | 18-NaturalMortalitySensitivity | 18a | estimate the Lorenzen natural-mortality log-intercept | Estimated Lorenzen M | BET 2026 natural-mortality sensitivity \| estimated Lorenzen M | `18a-estimated-lorenzen-m` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -88,6 +89,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `17b-F22FormRelaxed` | `steps/17b-F22FormRelaxed/model` | `exists` |
 | `17c-F15F22FormRelaxed` | `steps/17c-F15F22FormRelaxed/model` | `exists` |
 | `17d-AllSelectivityFormRelaxed` | `steps/17d-AllSelectivityFormRelaxed/model` | `exists` |
+| `18a-LorenzenMEstimated` | `steps/18a-LorenzenMEstimated/model` | `exists` |
 
 
 ## Useful Kflow Config

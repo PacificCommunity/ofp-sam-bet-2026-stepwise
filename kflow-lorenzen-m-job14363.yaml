@@ -1,0 +1,81 @@
+name: bet-2026-job14363-estimated-lorenzen-m-20260724
+description: Estimate the Lorenzen natural-mortality log-intercept in the exact Job 14363 model configuration, retaining its starting value and fixed length slope.
+
+command: bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+
+remote_host: suvofpsubmit.corp.spc.int
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+resources:
+  cpus: 2
+  memory: 12GB
+  disk: 10GB
+
+input_jobs:
+  - "14363"
+
+env:
+  STEP_SELECT: 18a-LorenzenMEstimated
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  RUN_MODE: doitall
+  JOB_TITLE: "BET 2026 natural-mortality sensitivity | estimated Lorenzen M"
+  JOB_DESCRIPTION: "Rerun the Job 14363 configuration while estimating one Lorenzen natural-mortality log-intercept from the -2.549303 starting value; retain the fixed length slope and all other controls."
+  MODEL_LABEL: Estimated Lorenzen M
+  JOB_KEY: 18a-estimated-lorenzen-m
+  FLOW_GROUP: bet-2026-job14363-estimated-lorenzen-m-20260724
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  TRIGGER_NEXT: "false"
+  PROGRAM_PATH: /home/mfcl/mfclo64
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  MFCL_LIVE_LOG: "true"
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  KFLOW_INPUT_JOBS: "14363"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: always
+  TUNA_FLOW_RUNTIME_UPDATE: always
+  KFLOW_REPO_RUNTIME_UPDATE: always
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@db11d83fa3854c571a634aa289c56ac8981d2e53
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: db11d83fa3854c571a634aa289c56ac8981d2e53
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+metadata:
+  task_role: sensitivity
+  task_visibility: internal
+  scientific_parent_job: "14363"
+  scientific_parent_model: 17d-AllSelectivityFormRelaxed
+  change_axis: estimate Lorenzen natural-mortality log-intercept
+
+tags:
+  stage: sensitivity
+  flow: bet-2026-job14363-estimated-lorenzen-m-20260724
+  model: 18a-LorenzenMEstimated
+  parent_job: "14363"
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+job_config:
+  optional:
+    - BET_PHASE10_11_CONVERGENCE
+    - MFCL_LIVE_LOG
