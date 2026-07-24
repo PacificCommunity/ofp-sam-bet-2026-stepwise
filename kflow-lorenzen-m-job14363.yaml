@@ -57,7 +57,7 @@ env:
 
 metadata:
   task_role: sensitivity
-  task_visibility: internal
+  task_visibility: primary
   scientific_parent_job: "14363"
   scientific_parent_model: 17d-AllSelectivityFormRelaxed
   change_axis: estimate Lorenzen natural-mortality log-intercept
