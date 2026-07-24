@@ -351,7 +351,8 @@ expected_weighting_parents <- c(
   "17b-F22FormRelaxed" = "16c-DMG8Nmax25",
   "17c-F15F22FormRelaxed" = "16c-DMG8Nmax25",
   "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25",
-  "18-GroupedSelectivityRobustness" = "17d-AllSelectivityFormRelaxed"
+  "18-GroupedSelectivityRobustness" = "17d-AllSelectivityFormRelaxed",
+  "19-GroupedSelectivityEstimatedM" = "18-GroupedSelectivityRobustness"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -742,7 +743,8 @@ for (i in seq_len(nrow(models))) {
     "16c-DMG8Nmax25",
     "17a-F15FormRelaxed", "17b-F22FormRelaxed",
     "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed",
-    "18-GroupedSelectivityRobustness"
+    "18-GroupedSelectivityRobustness",
+    "19-GroupedSelectivityEstimatedM"
   )) {
     require_exact_controls(
       doitall, job13328_dm_controls, model_id,
@@ -768,7 +770,8 @@ for (i in seq_len(nrow(models))) {
     }
     if (is.finite(major_number) && major_number >= 3L) {
       age_pars <- numeric_section(ini, "age_pars")
-      expected_m <- -2.54930339768360
+      estimated_m_sensitivity <- identical(model_id, "19-GroupedSelectivityEstimatedM")
+      expected_m <- if (estimated_m_sensitivity) -2.5 else -2.54930339768360
       m_rows <- if (!is.null(age_pars) && ncol(age_pars) >= 2L) {
         which(age_pars[, 2L] == -1 & age_pars[, 1L] > -3 & age_pars[, 1L] < -2)
       } else integer()
@@ -778,8 +781,18 @@ for (i in seq_len(nrow(models))) {
         add_failure(
           model_id,
           paste0(
-            "fixed natural mortality must remain ", format(expected_m, digits = 16L),
-            " from step 03 onward; found ", found, "."
+            if (estimated_m_sensitivity) {
+              "Lorenzen natural-mortality starting value must be "
+            } else {
+              "fixed natural mortality must remain "
+            },
+            format(expected_m, digits = 16L),
+            if (estimated_m_sensitivity) {
+              " for the separate Phase-10 estimation sensitivity; found "
+            } else {
+              " from step 03 onward; found "
+            },
+            found, "."
           )
         )
       }
@@ -1083,7 +1096,10 @@ for (i in seq_len(nrow(models))) {
       1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 5L),
       numeric(1)
     )
-    grouped_robustness <- identical(model_id, "18-GroupedSelectivityRobustness")
+    grouped_robustness <- model_id %in% c(
+      "18-GroupedSelectivityRobustness",
+      "19-GroupedSelectivityEstimatedM"
+    )
     expected_grouped <- c(1:28, 2, 4, 7, 8, 29)
     expected_phase1 <- if (grouped_robustness) expected_grouped else c(1:28, rep(29, 5L))
     expected_phase5 <- if (grouped_robustness) expected_grouped else 1:33
@@ -1113,7 +1129,8 @@ for (i in seq_len(nrow(models))) {
     check_flag(flags, -999L, 57L, 3L, model_id, "common cubic spline")
     all_form_boundary <- model_id %in% c(
       "17d-AllSelectivityFormRelaxed",
-      "18-GroupedSelectivityRobustness"
+      "18-GroupedSelectivityRobustness",
+      "19-GroupedSelectivityEstimatedM"
     )
     expected_active_form_fisheries <- c(
       12L, 13L, 15L, 16L, 17L, 18L, 19L,
@@ -1167,6 +1184,18 @@ for (i in seq_len(nrow(models))) {
           flags, -fishery, 99L, fishery, model_id,
           paste0("F", fishery, " independent catchability/likelihood group")
         )
+      }
+      if (identical(model_id, "19-GroupedSelectivityEstimatedM")) {
+        check_flag(flags, 1L, 121L, 1L, model_id, "estimated Lorenzen M intercept")
+        phase1_m_flag <- effective_flag_at_phase(flags, 1L, 121L, 1L)
+        phase10_m_flag <- effective_flag_at_phase(flags, 1L, 121L, 10L)
+        phase11_m_flag <- effective_flag_at_phase(flags, 1L, 121L, 11L)
+        if (!identical(phase1_m_flag, 0)) {
+          add_failure(model_id, "Lorenzen M intercept must remain fixed through Phase 9.")
+        }
+        if (!identical(phase10_m_flag, 1) || !identical(phase11_m_flag, 1)) {
+          add_failure(model_id, "Lorenzen M intercept must be estimated in Phases 10 and 11.")
+        }
       }
     }
     if (all_form_boundary) {
