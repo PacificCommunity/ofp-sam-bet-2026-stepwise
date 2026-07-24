@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 29 independent models unless STEP_SELECT is supplied.
+  # Run all 33 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 19L,
-  model_rows = 29L,
+  numbered_groups = 20L,
+  model_rows = 33L,
   selected_path_models = 18L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -326,6 +326,42 @@ sensitivity_models <- do.call(
       "BET 2026 grouped-selectivity sensitivity | estimated Lorenzen M from -2.5",
       "19-grouped-selectivity-estimated-m",
       "Separate full native-MFCL doitall sensitivity. Set age_pars(5,1)=-2.5 in bet.ini, hold it fixed through Phase 9, and estimate the Lorenzen intercept from Phase 10 with flag 121=1 while retaining the length slope. All Step 18 DM/G8/Nmax25, selectivity, CPUE, tag and recruitment controls remain unchanged."
+    ),
+    model_row(
+      "20-Terminal2022TagReference", "20-TagCohortSensitivity", "18-GroupedSelectivityRobustness",
+      FALSE, "sensitivity",
+      "rerun the terminal-2022 retrospective input with PTTP release groups 59 and 60 retained",
+      "Terminal 2022 tag reference",
+      "BET 2026 tag-cohort sensitivity | terminal 2022 reference",
+      "20-terminal2022-tag-reference",
+      "Full native-MFCL doitall fit of the Job 15363 terminal-2022 retrospective input. Original PTTP release groups 59 and 60 are retained. This reference is rerun with the same inputs, executable, phases and convergence setting as the three exclusion cells."
+    ),
+    model_row(
+      "20a-Terminal2022TagG60Excluded", "20-TagCohortSensitivity", "18-GroupedSelectivityRobustness",
+      FALSE, "sensitivity",
+      "exclude PTTP release group 60 from the terminal-2022 retrospective input",
+      "Terminal 2022 without tag G60",
+      "BET 2026 tag-cohort sensitivity | terminal 2022 without G60",
+      "20a-terminal2022-tag-g60-excluded",
+      "Full native-MFCL doitall fit of the Job 15363 terminal-2022 retrospective input. Original PTTP release group 60 (Region 4, August 2021) is removed; TAG, MFCL-1007 INI tag sections and the FRQ tag-group dimension are synchronized and renumbered. Group 59 and every non-tag input and control are unchanged."
+    ),
+    model_row(
+      "20b-Terminal2022TagG59Excluded", "20-TagCohortSensitivity", "18-GroupedSelectivityRobustness",
+      FALSE, "sensitivity",
+      "exclude PTTP release group 59 from the terminal-2022 retrospective input",
+      "Terminal 2022 without tag G59",
+      "BET 2026 tag-cohort sensitivity | terminal 2022 without G59",
+      "20b-terminal2022-tag-g59-excluded",
+      "Full native-MFCL doitall fit of the Job 15363 terminal-2022 retrospective input. Original PTTP release group 59 (Region 4, August 2020) is removed; TAG, MFCL-1007 INI tag sections and the FRQ tag-group dimension are synchronized and renumbered. Group 60 and every non-tag input and control are unchanged."
+    ),
+    model_row(
+      "20c-Terminal2022TagG59G60Excluded", "20-TagCohortSensitivity", "18-GroupedSelectivityRobustness",
+      FALSE, "sensitivity",
+      "exclude PTTP release groups 59 and 60 from the terminal-2022 retrospective input",
+      "Terminal 2022 without tag G59/G60",
+      "BET 2026 tag-cohort sensitivity | terminal 2022 without G59 and G60",
+      "20c-terminal2022-tag-g59-g60-excluded",
+      "Full native-MFCL doitall fit of the Job 15363 terminal-2022 retrospective input. Original PTTP release groups 59 and 60 are removed together; TAG, MFCL-1007 INI tag sections and the FRQ tag-group dimension are synchronized and renumbered. Every non-tag input and control is unchanged."
     )
   )
 )
@@ -336,7 +372,11 @@ sensitivity_models$report_purpose <- c(
   "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model.",
   "Test whether fishery-informed selectivity sharing and lower spline dimension improve robustness while retaining the Job 14363 model specification.",
   "Test whether a common four-node F2/F3/F29 Region 1 selectivity removes the retrospective alternative mode without sharing index catchability.",
-  "Evaluate the separate sensitivity of the grouped-selectivity configuration to estimating the Lorenzen natural-mortality intercept from a -2.5 starting value."
+  "Evaluate the separate sensitivity of the grouped-selectivity configuration to estimating the Lorenzen natural-mortality intercept from a -2.5 starting value.",
+  "Provide a like-for-like terminal-2022 reference with original PTTP release groups 59 and 60 retained.",
+  "Isolate the influence of PTTP release group 60 on the Job 15363 terminal-2022 retrospective solution.",
+  "Isolate the influence of PTTP release group 59 on the Job 15363 terminal-2022 retrospective solution.",
+  "Test the joint influence of PTTP release groups 59 and 60 on the Job 15363 terminal-2022 retrospective solution."
 )
 sensitivity_models$age_length_variant <- "SUB075"
 sensitivity_models$tag_flag2 <- 1L
@@ -347,6 +387,6 @@ sensitivity_models$reporting_rate_prior <- "RRPTTP26"
 sensitivity_models <- sensitivity_models[, names(stepwise_models), drop = FALSE]
 stepwise_models <- rbind(stepwise_models, sensitivity_models)
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 19L
+stepwise_run$numbered_groups <- 20L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

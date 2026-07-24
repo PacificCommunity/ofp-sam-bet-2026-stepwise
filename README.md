@@ -5,7 +5,7 @@
 </p>
 
 Public, reproducible configuration for the 2026 bigeye tuna (BET) MFCL
-stepwise analysis. It contains 19 numbered scientific groups and 29
+stepwise analysis. It contains 20 numbered scientific groups and 33
 independently runnable model rows. Eighteen models form the selected
 carry-forward path.
 
@@ -16,11 +16,11 @@ carry-forward path.
   output.
 - `scientific_parent_id` records the model used for scientific comparison. It
   is provenance, not a scheduler dependency.
-- All 29 rows can run independently and in parallel through Kflow.
+- All 33 rows can run independently and in parallel through Kflow.
 - `selected = TRUE` identifies the adopted BET 2026 route. `carry_status` is
   `carry` when later rows inherit that model, `stop` for an unselected sibling,
   and `final` for the terminal model.
-- `STEP_SELECT=all` runs all 22 development rows and seven sensitivity rows,
+- `STEP_SELECT=all` runs all 22 development rows and eleven sensitivity rows,
   including sibling alternatives. Any row
   can be run alone, for example `STEP_SELECT=15-SelectivityUpdate`.
 - Every row has a unique `STEP_SELECT`, `job_key`, `job_title`, and
@@ -72,6 +72,10 @@ Dirichlet-multinomial is abbreviated DM in technical settings.
 | 18 | Grouped selectivity robustness | `18-GroupedSelectivityRobustness` | `17d-AllSelectivityFormRelaxed` | Share F29-F32 selectivity with matched extraction fisheries and reduce F1/F3/F5/F33 to four spline nodes. | All other Job 14363 inputs and controls, including independent F29-F33 q groups. | Robustness sensitivity; full native-MFCL `doitall` fit. |
 | 19a | Region 1 shared selectivity | `19a-R1F2F3F29SharedSelectivity` | `18-GroupedSelectivityRobustness` | Share one four-node selectivity among F2, F3 and F29 to test the Region 1 retrospective alternative mode. | All other Job 15363 inputs and controls, including fixed M, DM G8 Nmax25 and independent F29 q. | Robustness sensitivity; full native-MFCL `doitall` fit. |
 | 19 | Grouped selectivity + estimated M | `19-GroupedSelectivityEstimatedM` | `18-GroupedSelectivityRobustness` | Start the Lorenzen intercept at -2.5 and estimate it from Phase 10. | Step 18 selectivity and DM/G8/Nmax25 configuration; Lorenzen length slope and all other controls. | Separate natural-mortality sensitivity; full native-MFCL `doitall` fit. |
+| 20 | Terminal 2022 tag reference | `20-Terminal2022TagReference` | `18-GroupedSelectivityRobustness` | Rerun the terminal-2022 retrospective input with original PTTP release groups 59 and 60 retained. | All Job 15363 inputs and controls after terminal-year truncation. | Reference cell for a controlled 2 x 2 tag-cohort sensitivity. |
+| 20a | Terminal 2022 without tag G60 | `20a-Terminal2022TagG60Excluded` | `18-GroupedSelectivityRobustness` | Remove original PTTP release group 60 from the terminal-2022 retrospective input. | Group 59 and every non-tag input and model control. | Tag-cohort sensitivity; compare with Step 20. |
+| 20b | Terminal 2022 without tag G59 | `20b-Terminal2022TagG59Excluded` | `18-GroupedSelectivityRobustness` | Remove original PTTP release group 59 from the terminal-2022 retrospective input. | Group 60 and every non-tag input and model control. | Tag-cohort sensitivity; compare with Step 20. |
+| 20c | Terminal 2022 without tag G59/G60 | `20c-Terminal2022TagG59G60Excluded` | `18-GroupedSelectivityRobustness` | Remove original PTTP release groups 59 and 60 together from the terminal-2022 retrospective input. | Every non-tag input and model control. | Joint tag-cohort sensitivity; completes the 2 x 2 comparison. |
 
 The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
 structure at `04-NewStructure`. They are carried through steps 05-06 and

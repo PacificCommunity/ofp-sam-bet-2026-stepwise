@@ -1,0 +1,87 @@
+name: bet-2026-job15363-terminal2022-tag-g59-g60-sensitivity-20260725
+description: Controlled four-cell terminal-2022 sensitivity testing the separate and joint influence of original PTTP release groups G59 and G60 on the Job 15363 retrospective solution.
+
+command: bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 10GB
+
+env:
+  STEP_SELECT: 20-Terminal2022TagReference
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  RUN_MODE: doitall
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  JOB_TITLE: "BET 2026 terminal-2022 tag-cohort sensitivity"
+  JOB_DESCRIPTION: "Four independent full native-MFCL fits: G59/G60 retained, original G60 excluded, original G59 excluded, and both excluded. TAG, INI reporting-rate rows, and FRQ tag dimensions are synchronized; all non-tag inputs and controls are common."
+  MODEL_LABEL: Terminal 2022 tag-cohort sensitivity
+  JOB_KEY: 20-terminal2022-tag-cohort-sensitivity
+  FLOW_GROUP: bet-2026-job15363-terminal2022-tag-g59-g60-sensitivity-20260725
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  TRIGGER_NEXT: "false"
+  PROGRAM_PATH: /home/mfcl/mfclo64
+  MFCL_LIVE_LOG: "true"
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: always
+  TUNA_FLOW_RUNTIME_UPDATE: always
+  KFLOW_REPO_RUNTIME_UPDATE: always
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@db11d83fa3854c571a634aa289c56ac8981d2e53
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: db11d83fa3854c571a634aa289c56ac8981d2e53
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+metadata:
+  task_role: sensitivity
+  task_visibility: primary
+  scientific_parent_job: "15363"
+  existing_terminal2022_job: "15498"
+  scientific_parent_model: 18-GroupedSelectivityRobustness
+  run_strategy: four-independent-full-doitall-fits
+  engine: native-mfcl
+  change_axis: original PTTP release groups G59 and G60
+
+tags:
+  stage: sensitivity
+  flow: bet-2026-job15363-terminal2022-tag-g59-g60-sensitivity-20260725
+  model: terminal2022-tag-g59-g60
+  parent_job: "15363"
+  comparison_job: "15498"
+  run_mode: doitall
+  engine: mfcl
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+model_campaign:
+  rows_source: R/tag_group_sensitivity_job_config.R
+  design: terminal-2022-G59-G60-2x2
+
+local_apps_from: kflow.yaml
+
+job_config:
+  optional:
+    - MFCL_LIVE_LOG

@@ -353,7 +353,11 @@ expected_weighting_parents <- c(
   "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25",
   "18-GroupedSelectivityRobustness" = "17d-AllSelectivityFormRelaxed",
   "19a-R1F2F3F29SharedSelectivity" = "18-GroupedSelectivityRobustness",
-  "19-GroupedSelectivityEstimatedM" = "18-GroupedSelectivityRobustness"
+  "19-GroupedSelectivityEstimatedM" = "18-GroupedSelectivityRobustness",
+  "20-Terminal2022TagReference" = "18-GroupedSelectivityRobustness",
+  "20a-Terminal2022TagG60Excluded" = "18-GroupedSelectivityRobustness",
+  "20b-Terminal2022TagG59Excluded" = "18-GroupedSelectivityRobustness",
+  "20c-Terminal2022TagG59G60Excluded" = "18-GroupedSelectivityRobustness"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -674,6 +678,13 @@ format_rr_map_values <- function(x) {
   paste(format(x, digits = 10L, scientific = FALSE, trim = TRUE), collapse = ",")
 }
 
+tag_sensitivity_ids <- c(
+  "20-Terminal2022TagReference",
+  "20a-Terminal2022TagG60Excluded",
+  "20b-Terminal2022TagG59Excluded",
+  "20c-Terminal2022TagG59G60Excluded"
+)
+
 for (i in seq_len(nrow(models))) {
   row <- models[i, , drop = FALSE]
   model_id <- row$step_id[[1L]]
@@ -682,6 +693,7 @@ for (i in seq_len(nrow(models))) {
   step_dir <- dirname(model_dir)
   label <- paste(trim_character(unlist(row, use.names = FALSE)), collapse = " ")
   token <- toupper(paste(model_id, row_value(row, "model_label"), collapse = " "))
+  tag_cohort_sensitivity <- model_id %in% tag_sensitivity_ids
 
   if (!dir.exists(model_dir)) next
   missing_files <- required_files[!file.exists(file.path(model_dir, required_files))]
@@ -746,7 +758,8 @@ for (i in seq_len(nrow(models))) {
     "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed",
     "18-GroupedSelectivityRobustness",
     "19a-R1F2F3F29SharedSelectivity",
-    "19-GroupedSelectivityEstimatedM"
+    "19-GroupedSelectivityEstimatedM",
+    tag_sensitivity_ids
   )) {
     require_exact_controls(
       doitall, job13328_dm_controls, model_id,
@@ -802,7 +815,8 @@ for (i in seq_len(nrow(models))) {
   }
 
   tag_lock <- lock_by_role_name("tag_source", "LOW_RECAPS_REMOVED")
-  if (is.finite(major_number) && major_number >= 7L && !is.null(tag_lock) && file.exists(tag_path)) {
+  if (is.finite(major_number) && major_number >= 7L &&
+      !tag_cohort_sensitivity && !is.null(tag_lock) && file.exists(tag_path)) {
     expected <- trim_character(tag_lock$prepared_sha256[[1L]])
     actual <- sha256_file(tag_path)
     if (nzchar(expected) && !identical(expected, actual)) add_failure(model_id, paste0("bet.tag rollback/drift: expected SHA256 ", expected, ", got ", actual, "."))
@@ -812,7 +826,7 @@ for (i in seq_len(nrow(models))) {
   age_lock <- if (nzchar(age_variant)) lock_by_role_name("age_variant", age_variant) else NULL
   if (nzchar(age_variant) && is.null(age_lock)) {
     add_failure(model_id, paste0("age variant `", age_variant, "` has no unique provenance lock."))
-  } else if (!is.null(age_lock) && file.exists(age_path)) {
+  } else if (!is.null(age_lock) && file.exists(age_path) && !tag_cohort_sensitivity) {
     expected <- trim_character(age_lock$prepared_sha256[[1L]])
     actual <- sha256_file(age_path)
     if (!identical(expected, actual)) add_failure(model_id, paste0("age variant ", age_variant, " SHA256 mismatch: expected ", expected, ", got ", actual, "."))
@@ -872,7 +886,7 @@ for (i in seq_len(nrow(models))) {
     }
     rr_prior <- row_value(row, "reporting_rate_prior")
     signature <- paste(vapply(rr, function(x) paste(format(x, scientific = FALSE, trim = TRUE), collapse = ","), character(1)), collapse = "|")
-    if (nzchar(rr_prior)) {
+    if (nzchar(rr_prior) && !tag_cohort_sensitivity) {
       if (is.null(rr_signatures[[rr_prior]])) rr_signatures[[rr_prior]] <- signature
       else if (!identical(rr_signatures[[rr_prior]], signature)) add_failure(model_id, paste0("RR matrices drift within reporting_rate_prior `", rr_prior, "`."))
     }
@@ -996,6 +1010,203 @@ for (i in seq_len(nrow(models))) {
     }
   }
 
+  if (tag_cohort_sensitivity) {
+    expected_exclusions <- list(
+      "20-Terminal2022TagReference" = integer(),
+      "20a-Terminal2022TagG60Excluded" = 60L,
+      "20b-Terminal2022TagG59Excluded" = 59L,
+      "20c-Terminal2022TagG59G60Excluded" = c(59L, 60L)
+    )[[model_id]]
+    expected_release_groups <- 98L - length(expected_exclusions)
+    expected_mfclkit_commit <- "a0fe04baa9c119353123367e5a652bb73d909b84"
+
+    audit_path <- file.path(model_dir, "tag_group_sensitivity_audit.csv")
+    mapping_path <- file.path(model_dir, "tag_group_renumbering.csv")
+    if (!file.exists(audit_path)) {
+      add_failure(model_id, "missing tag_group_sensitivity_audit.csv.")
+    } else {
+      audit <- tryCatch(
+        utils::read.csv(
+          audit_path, stringsAsFactors = FALSE, check.names = FALSE,
+          na.strings = character()
+        ),
+        error = function(e) data.frame()
+      )
+      required_audit_columns <- c(
+        "variant", "terminal_year", "rel.group", "program", "region", "year",
+        "month", "corrected_releases", "recaptures_through_2022", "excluded",
+        "reference_release_groups", "fitted_release_groups", "mfclkit_commit"
+      )
+      if (!identical(sort(names(audit)), sort(required_audit_columns)) ||
+          nrow(audit) != 2L) {
+        add_failure(model_id, "tag sensitivity audit must contain the two original G59/G60 rows and required fields.")
+      } else {
+        audit <- audit[order(audit$rel.group), , drop = FALSE]
+        expected_excluded_flags <- c(59L, 60L) %in% expected_exclusions
+        exact_fields_ok <- identical(as.character(audit$variant), rep(model_id, 2L)) &&
+          identical(as.integer(audit$terminal_year), rep(2022L, 2L)) &&
+          identical(as.integer(audit$rel.group), c(59L, 60L)) &&
+          identical(as.character(audit$program), c("PTTP", "PTTP")) &&
+          identical(as.integer(audit$region), c(4L, 4L)) &&
+          identical(as.integer(audit$year), c(2020L, 2021L)) &&
+          identical(as.integer(audit$month), c(8L, 8L)) &&
+          identical(as.logical(audit$excluded), expected_excluded_flags) &&
+          identical(as.integer(audit$reference_release_groups), rep(98L, 2L)) &&
+          identical(
+            as.integer(audit$fitted_release_groups),
+            rep(expected_release_groups, 2L)
+          ) &&
+          identical(
+            as.character(audit$mfclkit_commit),
+            rep(expected_mfclkit_commit, 2L)
+          )
+        numeric_fields_ok <- isTRUE(all.equal(
+          as.numeric(audit$corrected_releases),
+          c(1892.77577266151, 3324.80902620608),
+          tolerance = 1e-10, check.attributes = FALSE
+        )) && identical(
+          as.numeric(audit$recaptures_through_2022), c(319, 1037)
+        )
+        if (!exact_fields_ok || !numeric_fields_ok) {
+          add_failure(model_id, "tag sensitivity audit does not match the audited PTTP G59/G60 release history.")
+        }
+      }
+    }
+
+    if (!file.exists(mapping_path)) {
+      add_failure(model_id, "missing tag_group_renumbering.csv.")
+    } else {
+      mapping <- tryCatch(
+        utils::read.csv(
+          mapping_path, stringsAsFactors = FALSE, check.names = FALSE,
+          na.strings = character()
+        ),
+        error = function(e) data.frame()
+      )
+      expected_keep <- setdiff(seq_len(98L), expected_exclusions)
+      expected_mapping <- data.frame(
+        original_release_group = seq_len(98L),
+        retained = seq_len(98L) %in% expected_keep,
+        fitted_release_group = match(seq_len(98L), expected_keep),
+        stringsAsFactors = FALSE
+      )
+      if (!isTRUE(all.equal(
+        mapping, expected_mapping, tolerance = 0,
+        check.attributes = FALSE
+      ))) {
+        add_failure(model_id, "release-group mapping is not the expected one-pass original-to-fitted mapping.")
+      }
+    }
+
+    if (is.null(tag_flags) || nrow(tag_flags) != expected_release_groups) {
+      add_failure(
+        model_id,
+        paste0(
+          "INI tag-flags rows must equal ", expected_release_groups,
+          " fitted release groups."
+        )
+      )
+    }
+    if (!any(vapply(rr, is.null, logical(1)))) {
+      rr_rows <- vapply(rr, nrow, integer(1))
+      if (!all(rr_rows == expected_release_groups + 1L)) {
+        add_failure(
+          model_id,
+          paste0(
+            "each reporting-rate matrix must have ", expected_release_groups + 1L,
+            " rows (release groups plus the pooled row)."
+          )
+        )
+      }
+    }
+
+    frq_lines <- read_text(file.path(model_dir, "bet.frq"))
+    definition_marker <- grep("Definition of fisheries", frq_lines, fixed = TRUE)
+    definition_rows <- if (length(definition_marker) == 1L) {
+      which(
+        seq_along(frq_lines) > definition_marker[[1L]] &
+          grepl("^[[:space:]]*[0-9]+[[:space:]]", frq_lines)
+      )
+    } else integer()
+    frq_tag_groups <- if (length(definition_rows)) {
+      suppressWarnings(as.integer(strsplit(
+        trimws(frq_lines[[definition_rows[[1L]]]]), "[[:space:]]+"
+      )[[1L]][[4L]]))
+    } else NA_integer_
+    datasets_marker <- grep("Datasets / LFIntervals", frq_lines, fixed = TRUE)
+    dataset_count <- if (length(datasets_marker) == 1L) {
+      suppressWarnings(as.integer(strsplit(
+        trimws(frq_lines[[datasets_marker[[1L]] + 1L]]), "[[:space:]]+"
+      )[[1L]][[1L]]))
+    } else NA_integer_
+    age_nage_marker <- grep("age_nage", frq_lines, fixed = TRUE)
+    frq_years <- if (length(age_nage_marker) == 1L) {
+      candidate <- trimws(frq_lines[(age_nage_marker[[1L]] + 2L):length(frq_lines)])
+      candidate <- candidate[grepl("^[12][0-9]{3}[[:space:]]", candidate)]
+      suppressWarnings(as.integer(sub("[[:space:]].*$", "", candidate)))
+    } else integer()
+    if (!identical(frq_tag_groups, expected_release_groups) ||
+        !identical(dataset_count, 7198L) ||
+        !length(frq_years) || max(frq_years, na.rm = TRUE) != 2022L) {
+      add_failure(
+        model_id,
+        "FRQ must contain 7,198 terminal-2022 records and the expected fitted tag-group dimension."
+      )
+    }
+
+    age_lines <- trimws(read_text(age_path))
+    age_years <- suppressWarnings(as.integer(
+      sub("[[:space:]].*$", "", age_lines[
+        grepl("^[12][0-9]{3}[[:space:]]", age_lines)
+      ])
+    ))
+    if (!length(age_years) || max(age_years, na.rm = TRUE) != 2022L) {
+      add_failure(model_id, "age-length data must be truncated at terminal year 2022.")
+    }
+
+    tag_map_path <- file.path(model_dir, "tag_rep_map.R")
+    tag_map_env <- new.env(parent = baseenv())
+    tag_map_loaded <- file.exists(tag_map_path) && tryCatch(
+      {
+        sys.source(tag_map_path, envir = tag_map_env)
+        TRUE
+      },
+      error = function(e) FALSE
+    )
+    if (!tag_map_loaded || !exists(
+      "tag_release_map", envir = tag_map_env, inherits = FALSE
+    )) {
+      add_failure(model_id, "could not load the regenerated tag release map.")
+    } else {
+      release_map <- tag_map_env$tag_release_map
+      expected_years <- setdiff(c(2020L, 2021L), c(
+        if (59L %in% expected_exclusions) 2020L,
+        if (60L %in% expected_exclusions) 2021L
+      ))
+      recent_pttp <- release_map[
+        toupper(release_map$tag_program) == "PTTP" &
+          release_map$release_region == 4L &
+          release_map$release_month == 8L &
+          release_map$release_year %in% c(2020L, 2021L),
+        , drop = FALSE
+      ]
+      if (nrow(release_map) != expected_release_groups ||
+          !identical(as.integer(release_map$release_group), seq_len(expected_release_groups)) ||
+          !identical(sort(as.integer(recent_pttp$release_year)), expected_years)) {
+        add_failure(model_id, "TAG release rows do not match the intended G59/G60 inclusion cell.")
+      }
+    }
+
+    for (phase in c(1L, 10L, 11L)) {
+      if (!identical(effective_flag_at_phase(flags, 1L, 121L, phase), 0)) {
+        add_failure(
+          model_id,
+          paste0("Lorenzen natural-mortality intercept must remain fixed in Phase ", phase, ".")
+        )
+      }
+    }
+  }
+
   regional_expected <- grepl("REGW[0-9]+", token) || nzchar(row_value(row, "regional_scaling_weight"))
   if (regional_expected) {
     active_path <- file.path(model_dir, "bet.reg_scaling")
@@ -1101,7 +1312,8 @@ for (i in seq_len(nrow(models))) {
     grouped_robustness <- model_id %in% c(
       "18-GroupedSelectivityRobustness",
       "19a-R1F2F3F29SharedSelectivity",
-      "19-GroupedSelectivityEstimatedM"
+      "19-GroupedSelectivityEstimatedM",
+      tag_sensitivity_ids
     )
     r1_shared_selectivity <- identical(
       model_id, "19a-R1F2F3F29SharedSelectivity"
@@ -1150,7 +1362,8 @@ for (i in seq_len(nrow(models))) {
       "17d-AllSelectivityFormRelaxed",
       "18-GroupedSelectivityRobustness",
       "19a-R1F2F3F29SharedSelectivity",
-      "19-GroupedSelectivityEstimatedM"
+      "19-GroupedSelectivityEstimatedM",
+      tag_sensitivity_ids
     )
     expected_active_form_fisheries <- c(
       12L, 13L, 15L, 16L, 17L, 18L, 19L,
@@ -1314,6 +1527,56 @@ for (i in seq_len(nrow(models))) {
     tag_flags = tag_flags,
     hashes = setNames(vapply(required_files, function(file) sha256_file(file.path(model_dir, file)), character(1)), required_files)
   )
+}
+
+available_tag_sensitivities <- tag_sensitivity_ids[
+  tag_sensitivity_ids %in% names(model_cache)
+]
+if (length(available_tag_sensitivities) == length(tag_sensitivity_ids)) {
+  reference_tag_sensitivity <- model_cache[[tag_sensitivity_ids[[1L]]]]
+  invariant_files <- c(
+    "bet.age_length", "doitall.sh", "mfcl.cfg", "bet.reg_scaling",
+    "bet.reg_scaling.full", "fishery_map.R", "cpue_mle_sigma_audit.csv"
+  )
+  reference_hashes <- setNames(vapply(
+    invariant_files,
+    function(file) sha256_file(file.path(reference_tag_sensitivity$model_dir, file)),
+    character(1)
+  ), invariant_files)
+  reference_frq <- read_text(file.path(reference_tag_sensitivity$model_dir, "bet.frq"))
+  reference_frq_marker <- grep("age_nage", reference_frq, fixed = TRUE)
+  reference_frq_records <- if (length(reference_frq_marker) == 1L) {
+    reference_frq[reference_frq_marker[[1L]]:length(reference_frq)]
+  } else character()
+  for (model_id in available_tag_sensitivities[-1L]) {
+    cached <- model_cache[[model_id]]
+    actual_hashes <- setNames(vapply(
+      invariant_files,
+      function(file) sha256_file(file.path(cached$model_dir, file)),
+      character(1)
+    ), invariant_files)
+    changed <- names(reference_hashes)[reference_hashes != actual_hashes]
+    if (length(changed)) {
+      add_failure(
+        model_id,
+        paste0(
+          "non-tag inputs/controls differ from the terminal-2022 reference: ",
+          paste(changed, collapse = ", "), "."
+        )
+      )
+    }
+    frq <- read_text(file.path(cached$model_dir, "bet.frq"))
+    frq_marker <- grep("age_nage", frq, fixed = TRUE)
+    frq_records <- if (length(frq_marker) == 1L) {
+      frq[frq_marker[[1L]]:length(frq)]
+    } else character()
+    if (!identical(frq_records, reference_frq_records)) {
+      add_failure(
+        model_id,
+        "FRQ observation records differ from the terminal-2022 reference outside the tag-group header dimension."
+      )
+    }
+  }
 }
 
 ## Step 02a is executable-only: its source inputs and scientific controls must

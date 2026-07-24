@@ -57,6 +57,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `18-GroupedSelectivityRobustness` | `TRUE` | 18-SelectivityRobustness | 18 | share regional-index selectivity with matched extraction fisheries and reduce selected spline dimensions | Grouped selectivity robustness | BET 2026 selectivity robustness sensitivity \| grouped regional index selectivity | `18-grouped-selectivity-robustness` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `19a-R1F2F3F29SharedSelectivity` | `TRUE` | 19-SelectivityRobustness | 19a | share one four-node Region 1 selectivity among F2, F3 and F29 while retaining independent index catchability | R1 F2/F3/F29 selectivity shared | BET 2026 selectivity robustness sensitivity \| R1 F2/F3/F29 shared | `19a-r1-f2-f3-f29-selectivity-shared` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `19-GroupedSelectivityEstimatedM` | `TRUE` | 19-NaturalMortalitySensitivity | 19 | estimate the Lorenzen natural-mortality intercept from Phase 10 | Grouped selectivity + estimated M | BET 2026 grouped-selectivity sensitivity \| estimated Lorenzen M from -2.5 | `19-grouped-selectivity-estimated-m` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `20-Terminal2022TagReference` | `TRUE` | 20-TagCohortSensitivity | 20 | rerun the terminal-2022 retrospective input with PTTP release groups 59 and 60 retained | Terminal 2022 tag reference | BET 2026 tag-cohort sensitivity \| terminal 2022 reference | `20-terminal2022-tag-reference` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `20a-Terminal2022TagG60Excluded` | `TRUE` | 20-TagCohortSensitivity | 20a | exclude PTTP release group 60 from the terminal-2022 retrospective input | Terminal 2022 without tag G60 | BET 2026 tag-cohort sensitivity \| terminal 2022 without G60 | `20a-terminal2022-tag-g60-excluded` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `20b-Terminal2022TagG59Excluded` | `TRUE` | 20-TagCohortSensitivity | 20b | exclude PTTP release group 59 from the terminal-2022 retrospective input | Terminal 2022 without tag G59 | BET 2026 tag-cohort sensitivity \| terminal 2022 without G59 | `20b-terminal2022-tag-g59-excluded` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `20c-Terminal2022TagG59G60Excluded` | `TRUE` | 20-TagCohortSensitivity | 20c | exclude PTTP release groups 59 and 60 from the terminal-2022 retrospective input | Terminal 2022 without tag G59/G60 | BET 2026 tag-cohort sensitivity \| terminal 2022 without G59 and G60 | `20c-terminal2022-tag-g59-g60-excluded` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -94,6 +98,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `18-GroupedSelectivityRobustness` | `steps/18-GroupedSelectivityRobustness/model` | `exists` |
 | `19a-R1F2F3F29SharedSelectivity` | `steps/19a-R1F2F3F29SharedSelectivity/model` | `exists` |
 | `19-GroupedSelectivityEstimatedM` | `steps/19-GroupedSelectivityEstimatedM/model` | `exists` |
+| `20-Terminal2022TagReference` | `steps/20-Terminal2022TagReference/model` | `exists` |
+| `20a-Terminal2022TagG60Excluded` | `steps/20a-Terminal2022TagG60Excluded/model` | `exists` |
+| `20b-Terminal2022TagG59Excluded` | `steps/20b-Terminal2022TagG59Excluded/model` | `exists` |
+| `20c-Terminal2022TagG59G60Excluded` | `steps/20c-Terminal2022TagG59G60Excluded/model` | `exists` |
 
 
 ## Useful Kflow Config

@@ -1,0 +1,3 @@
+"variant","terminal_year","rel.group","program","region","year","month","corrected_releases","recaptures_through_2022","excluded","reference_release_groups","fitted_release_groups","mfclkit_commit"
+"20c-Terminal2022TagG59G60Excluded",2022,59,"PTTP",4,2020,8,1892.77577266151,319,TRUE,98,96,"a0fe04baa9c119353123367e5a652bb73d909b84"
+"20c-Terminal2022TagG59G60Excluded",2022,60,"PTTP",4,2021,8,3324.80902620608,1037,TRUE,98,96,"a0fe04baa9c119353123367e5a652bb73d909b84"
