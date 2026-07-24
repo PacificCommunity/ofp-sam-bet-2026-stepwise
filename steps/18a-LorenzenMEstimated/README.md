@@ -13,8 +13,9 @@ that is fixed in the parent fit.
 | Natural-mortality coefficients estimated | Parest flag 121 = 0 | Parest flag 121 = 1 |
 | Lorenzen length slope | Fixed | Fixed |
 
-Flag 121 is set to 1 in Phases 1 and 10, matching the established MFCL
-control sequence for estimating one Lorenzen natural-mortality coefficient.
+Flag 121 remains 0 during staged model construction and changes to 1 in
+Phase 10. This preserves the stable Job 14363 pathway before estimating the
+single Lorenzen natural-mortality coefficient in the final optimization.
 All other model inputs, likelihoods, parameter controls, phase settings and
 selectivity specifications are byte-identical to the Job 14363 source model.
 
@@ -28,6 +29,5 @@ selectivity specifications are byte-identical to the Job 14363 source model.
 | Sensitivity folder | `steps/18a-LorenzenMEstimated/model` |
 | Expected diagnostics | Hessian and total-average-biomass profile |
 
-The parent model is rerun from its frozen inputs rather than modified through
-an intermediate fitted parameter file. This isolates the effect of estimating
-the Lorenzen log-intercept throughout the established phase sequence.
+The parent model is rerun from its frozen inputs. The Lorenzen log-intercept is
+released only after the parent model structure has been established.

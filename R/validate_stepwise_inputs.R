@@ -759,14 +759,17 @@ for (i in seq_len(nrow(models))) {
       add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
     }
     if (identical(model_id, "18a-LorenzenMEstimated")) {
-      if (exact_control_count(doitall, "1 121 1") != 2L) {
+      if (exact_control_count(doitall, "1 121 1") != 1L) {
         add_failure(
           model_id,
-          "Lorenzen-M sensitivity must activate one estimated natural-mortality coefficient in Phases 1 and 10."
+          "Lorenzen-M sensitivity must activate one estimated natural-mortality coefficient in Phase 10."
         )
       }
-      if (exact_control_count(doitall, "1 121 0") != 0L) {
-        add_failure(model_id, "Lorenzen-M sensitivity must not restore the fixed-M flag.")
+      if (exact_control_count(doitall, "1 121 0") != 1L) {
+        add_failure(
+          model_id,
+          "Lorenzen-M sensitivity must retain fixed M during staged construction before Phase 10."
+        )
       }
     }
   }
