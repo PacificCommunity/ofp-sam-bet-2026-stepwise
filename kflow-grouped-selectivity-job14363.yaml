@@ -11,7 +11,7 @@ slot_requirements: 'regexp("^suvofp", Machine)'
 
 resources:
   cpus: 2
-  memory: 12GB
+  memory: 8GB
   disk: 10GB
 
 env:
