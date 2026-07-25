@@ -220,6 +220,11 @@ def validate_grid(rows: list[dict[str, str]]) -> None:
         pair_keys.setdefault(key, set()).add(row["estimate_m"])
     if any(values != {"false", "true"} for values in pair_keys.values()):
         raise ValueError("Every scientific configuration must have fixed- and late-M pairs.")
+    long_labels = [
+        scenario_label(row) for row in rows if len(scenario_label(row)) > 140
+    ]
+    if long_labels:
+        raise ValueError("Scenario labels must fit Kflow's 140-character title limit.")
 
 
 def validate_task_config(config: dict[str, Any]) -> None:
@@ -267,8 +272,38 @@ def describe(row: dict[str, str]) -> str:
     )
 
 
+def scenario_label(row: dict[str, str]) -> str:
+    recruitment = (
+        "Standard recruitment"
+        if row["recruitment"] == "standard"
+        else "OPR 69-01-50-50"
+    )
+    selectivity = (
+        "F33 logistic"
+        if row["selectivity"] == "f33-asymptotic"
+        else "F33 4-node spline"
+    )
+    if row["tau_grouping"] == "program-informed":
+        tau = "tag tau 3 strata/native"
+    elif row["tau_lower"] == "2":
+        tau = "tag tau common/lower 2"
+    else:
+        tau = "tag tau common/native"
+    nmax = "Nmax 1,000" if row["nmax"] == "default" else "Nmax 25"
+    mortality = (
+        "M fixed"
+        if row["estimate_m"] == "false"
+        else "M estimated P11-12"
+    )
+    return (
+        f"{row['sensitivity_id']}. {recruitment} | {selectivity} | {tau} | "
+        f"regional-rec penalty {row['recpen']} | {nmax} | {mortality}"
+    )
+
+
 def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
     resources = config["resources"]
+    label = scenario_label(row)
     env = {
         **config["env"],
         "STEP_SELECT": row["step"],
@@ -278,11 +313,8 @@ def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
         "DM_NMAX": row["nmax"],
         "ESTIMATE_M_FINAL": row["estimate_m"],
         "JOB_KEY": row["sensitivity_id"],
-        "JOB_TITLE": f"{row['sensitivity_id']}. BET 2026 tag-dispersion sensitivity",
-        "MODEL_LABEL": (
-            f"{row['sensitivity_id']} | {row['selectivity']} | "
-            f"{row['recruitment']} | {row['tau_key']} | M {row['m_mode']}"
-        ),
+        "JOB_TITLE": label,
+        "MODEL_LABEL": label,
         "JOB_DESCRIPTION": describe(row),
     }
     return {
@@ -314,6 +346,7 @@ def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
         },
         "metadata": {
             "sensitivity_id": row["sensitivity_id"],
+            "scenario_label": label,
             "scientific_settings": row,
             "estimated_tau_count": int(row["tau_count"]),
             "mixing_period": "SC22-IP10 K=0.15",
