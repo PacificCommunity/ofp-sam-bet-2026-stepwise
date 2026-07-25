@@ -5,7 +5,8 @@ program_path=${PROGRAM_PATH:-/home/mfcl/mfclo64}
 input_root=${KFLOW_INPUT_DIR:-${INPUT_DIR:-}}
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 model_root="$repo_root/steps/22-TagTauSensitivity/model"
-output_root="$repo_root/outputs/tag-tau-smoke"
+output_base=${KFLOW_OUTPUT_DIR:-"$repo_root/outputs"}
+output_root="$output_base/tag-tau-smoke"
 
 if [ ! -x "$program_path" ]; then
   echo "Native MFCL executable is unavailable: $program_path" >&2
@@ -29,6 +30,10 @@ mkdir -p "$output_root"
 Rscript --vanilla "$repo_root/scripts/extract_payload_artifact.R" \
   "$payload" par "$output_root/job15984-final.par"
 cp "$model_root/bet.frq" "$output_root/bet.frq"
+cp "$model_root/bet.tag" "$output_root/bet.tag"
+cp "$model_root/bet.age_length" "$output_root/bet.age_length"
+cp "$model_root/bet.reg_scaling" "$output_root/bet.reg_scaling"
+cp "$model_root/mfcl.cfg" "$output_root/mfcl.cfg"
 cp "$model_root/tag_tau_scenarios.sh" "$output_root/tag_tau_scenarios.sh"
 
 (
@@ -43,6 +48,10 @@ cp "$model_root/tag_tau_scenarios.sh" "$output_root/tag_tau_scenarios.sh"
     scenario_dir="$output_root/$scenario"
     mkdir -p "$scenario_dir"
     cp bet.frq "$scenario_dir/bet.frq"
+    cp bet.tag "$scenario_dir/bet.tag"
+    cp bet.age_length "$scenario_dir/bet.age_length"
+    cp bet.reg_scaling "$scenario_dir/bet.reg_scaling"
+    cp mfcl.cfg "$scenario_dir/mfcl.cfg"
 
     awk -v theta="0.6931471805599453" '
       BEGIN { in_fish = 0; fish_row = 0; changed = 0 }

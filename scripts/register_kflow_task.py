@@ -57,6 +57,22 @@ def read_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
+def effective_local_apps(config: dict[str, Any]) -> list[dict[str, Any]]:
+    """Use the shared launcher for model-producing task-specific configs."""
+    if "local_apps" in config:
+        apps = config.get("local_apps") or []
+        return apps if isinstance(apps, list) else []
+    output_patterns = [str(value) for value in config.get("output_patterns") or []]
+    produces_models = any(
+        pattern == "outputs/models/**" or pattern.startswith("outputs/models/")
+        for pattern in output_patterns
+    )
+    if not produces_models:
+        return []
+    shared = read_yaml(ROOT / "kflow.yaml").get("local_apps") or []
+    return shared if isinstance(shared, list) else []
+
+
 def api_json(
     method: str,
     url: str,
@@ -304,9 +320,10 @@ def build_payload(
         ]
     if config.get("job_config") is not None:
         metadata["job_config"] = config["job_config"]
-    # Always send this field so removing local apps from kflow.yaml also clears
-    # stale app definitions on an existing Kflow task.
-    metadata["local_apps"] = config.get("local_apps") or []
+    # Task-specific model configs inherit the shared launcher so completed jobs
+    # do not lose mfclshiny merely because their compact YAML omits the block.
+    # Explicit local_apps: [] still disables launchers for a particular task.
+    metadata["local_apps"] = effective_local_apps(config)
 
     branch = first_present(args.branch, config.get("branch"), run_git(repo_root, "branch", "--show-current"), "main")
     full_name = first_present(args.repo_full_name, config.get("repo_full_name"), repo_full_name(repo_root))
