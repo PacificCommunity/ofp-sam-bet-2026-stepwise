@@ -350,6 +350,8 @@ expected_weighting_parents <- c(
   "21a-R1F2F3F29Shared-MIX015" = "20c-DMG8Nmax25",
   "21b-R1F2F3F29Shared-MIX005" =
     "21a-R1F2F3F29Shared-MIX015",
+  "21c-R1F2F3F29Shared-MIX015-OPR72E2" =
+    "21a-R1F2F3F29Shared-MIX015",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" =
     "21a-R1F2F3F29Shared-MIX015",
   "22b-R1F2F3F29Shared-MIX015-TAGW250" =
@@ -798,6 +800,7 @@ for (i in seq_len(nrow(models))) {
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
     "21b-R1F2F3F29Shared-MIX005",
+    "21c-R1F2F3F29Shared-MIX015-OPR72E2",
     "22a-R1F2F3F29Shared-MIX015-TAGW500",
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
@@ -817,6 +820,52 @@ for (i in seq_len(nrow(models))) {
     }
     if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
       add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+    }
+  }
+  if (identical(model_id, "21c-R1F2F3F29Shared-MIX015-OPR72E2")) {
+    for (phase in c(3L, 10L, 11L)) {
+      for (setting in list(
+        c(1L, 155L, 72L), c(1L, 217L, 1L),
+        c(1L, 216L, 50L), c(1L, 218L, 50L),
+        c(1L, 202L, 2L), c(2L, 30L, 1L),
+        c(2L, 70L, 0L), c(2L, 71L, 0L), c(2L, 178L, 0L)
+      )) {
+        actual <- effective_flag_at_phase(
+          flags, setting[[1L]], setting[[2L]], phase
+        )
+        if (!identical(as.numeric(actual), as.numeric(setting[[3L]]))) {
+          add_failure(
+            model_id,
+            paste0(
+              "OPR scope ", setting[[1L]], " flag ", setting[[2L]],
+              " must be ", setting[[3L]], " in Phase ", phase,
+              "; found ", actual, "."
+            )
+          )
+        }
+      }
+      for (region in 1:5) {
+        actual <- effective_flag_at_phase(flags, -100000L, region, phase)
+        if (!identical(as.numeric(actual), 0)) {
+          add_failure(
+            model_id,
+            paste0(
+              "standard regional recruitment distribution must remain off ",
+              "for Region ", region, " in Phase ", phase, "."
+            )
+          )
+        }
+      }
+    }
+    if (!identical(
+      as.numeric(effective_flag_at_phase(flags, 1L, 397L, 10L)), 0
+    )) {
+      add_failure(model_id, "OPR terminal-recruitment penalty must remain off through Phase 10.")
+    }
+    if (!identical(
+      as.numeric(effective_flag_at_phase(flags, 1L, 397L, 11L)), 100
+    )) {
+      add_failure(model_id, "OPR terminal-recruitment penalty must be 100 in Phase 11.")
     }
   }
 
@@ -1199,6 +1248,7 @@ for (i in seq_len(nrow(models))) {
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
       "21b-R1F2F3F29Shared-MIX005",
+      "21c-R1F2F3F29Shared-MIX015-OPR72E2",
       "22a-R1F2F3F29Shared-MIX015-TAGW500",
       "22b-R1F2F3F29Shared-MIX015-TAGW250",
       "22c-R1F2F3F29Shared-MIX005-TAGW500",
@@ -1683,6 +1733,25 @@ compare_tag_flag_boundary(
   "21b-R1F2F3F29Shared-MIX005",
   1L,
   "SC22-IP10 K=0.15 versus K=0.05 mixing-period sensitivity"
+)
+compare_model_hashes_except(
+  "21a-R1F2F3F29Shared-MIX015",
+  "21c-R1F2F3F29Shared-MIX015-OPR72E2",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "21a-R1F2F3F29Shared-MIX015",
+  "21c-R1F2F3F29Shared-MIX015-OPR72E2",
+  function(flags) {
+    (flags$scope == 1L &
+       flags$flag %in% c(
+         1L, 149L, 155L, 202L, 203L, 210L, 211L, 212L, 213L,
+         214L, 215L, 216L, 217L, 218L, 221L, 397L, 398L, 400L
+       )) |
+      (flags$scope == 2L &
+         flags$flag %in% c(30L, 32L, 70L, 71L, 113L, 177L, 178L)) |
+      (flags$scope == -100000L & flags$flag %in% 1:5)
+  }
 )
 
 tag_weight_parents <- c(

@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 29 independent models unless STEP_SELECT is supplied.
+  # Run all independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
   numbered_groups = 22L,
-  model_rows = 29L,
+  model_rows = 30L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -242,6 +242,16 @@ stepwise_models <- do.call(
       "Independent full native-MFCL doitall fit. The model is identical to Step 21a except that tag_flags(:,1) comes from the SC22-IP10 K=0.05 INI. Fixed M, DM G8 Nmax25, reporting-rate settings, selectivity grouping and all other controls are retained."
     ),
     model_row(
+      "21c-R1F2F3F29Shared-MIX015-OPR72E2", "21-RecruitmentSensitivity",
+      "21a-R1F2F3F29Shared-MIX015",
+      FALSE, "stop",
+      "retain Job 15989 inputs and controls and replace standard recruitment deviations with OPR 72-01-50-50 using an E2 terminal window",
+      "Job 15989 with OPR recruitment",
+      "21c Job 15989 sensitivity | OPR 72-01-50-50, E2",
+      "21c-job15989-opr72-e2",
+      "Independent full native-MFCL doitall fit. It is identical to Job 15989 through Phase 2, introduces orthogonal-polynomial recruitment (OPR) 72-01-50-50 in Phase 3, and applies the reviewed two-calendar-year terminal window and terminal-recruitment penalty in Phase 11. Fixed M, DM G8 Nmax25, SC22 K=0.15, reporting-rate settings, selectivity grouping, data and all other controls are retained."
+    ),
+    model_row(
       "22a-R1F2F3F29Shared-MIX015-TAGW500", "22-TagLikelihoodWeightSensitivity",
       "21a-R1F2F3F29Shared-MIX015",
       FALSE, "stop",
@@ -315,6 +325,7 @@ stepwise_report_change <- c(
   "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting",
   "21a-R1F2F3F29Shared-MIX015" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.15 mixing periods",
   "21b-R1F2F3F29Shared-MIX005" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.05 mixing periods",
+  "21c-R1F2F3F29Shared-MIX015-OPR72E2" = "Job 15989 controls with orthogonal-polynomial recruitment (72-01-50-50; E2)",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" = "SC22 K=0.15 with tag-return likelihood weight 0.50",
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = "SC22 K=0.15 with tag-return likelihood weight 0.25",
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "SC22 K=0.05 with tag-return likelihood weight 0.50",
@@ -346,6 +357,7 @@ stepwise_report_purpose <- c(
   "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25.",
   "21a-R1F2F3F29Shared-MIX015" = "Evaluate the Job 15984 selectivity grouping using the current final DM inputs and SC22-IP10 K=0.15 mixing periods.",
   "21b-R1F2F3F29Shared-MIX005" = "Isolate sensitivity to the SC22-IP10 K=0.05 release-group mixing periods under the same grouped-selectivity final DM model.",
+  "21c-R1F2F3F29Shared-MIX015-OPR72E2" = "Evaluate whether the Job 15989 fit is robust to replacing standard recruitment deviations with a lower-dimensional OPR representation while retaining all other scientific settings.",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.15 while retaining reporting-rate priors.",
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.15 while retaining reporting-rate priors.",
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.05 while retaining reporting-rate priors.",
@@ -379,6 +391,7 @@ path_stage <- c(
   "20c-DMG8Nmax25" = 20L,
   "21a-R1F2F3F29Shared-MIX015" = 21L,
   "21b-R1F2F3F29Shared-MIX005" = 21L,
+  "21c-R1F2F3F29Shared-MIX015-OPR72E2" = 21L,
   "22a-R1F2F3F29Shared-MIX015-TAGW500" = 22L,
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = 22L,
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = 22L,
@@ -413,6 +426,7 @@ stepwise_models$dm_grouping[
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
     "21b-R1F2F3F29Shared-MIX005",
+    "21c-R1F2F3F29Shared-MIX015-OPR72E2",
     "22a-R1F2F3F29Shared-MIX015-TAGW500",
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
@@ -425,6 +439,7 @@ stepwise_models$dm_nmax[
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
     "21b-R1F2F3F29Shared-MIX005",
+    "21c-R1F2F3F29Shared-MIX015-OPR72E2",
     "22a-R1F2F3F29Shared-MIX015-TAGW500",
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
@@ -450,6 +465,7 @@ stepwise_models$tail_compression_percent <- ifelse(
       "20c-DMG8Nmax25",
       "21a-R1F2F3F29Shared-MIX015",
       "21b-R1F2F3F29Shared-MIX005",
+      "21c-R1F2F3F29Shared-MIX015-OPR72E2",
       "22a-R1F2F3F29Shared-MIX015-TAGW500",
       "22b-R1F2F3F29Shared-MIX015-TAGW250",
       "22c-R1F2F3F29Shared-MIX005-TAGW500",
