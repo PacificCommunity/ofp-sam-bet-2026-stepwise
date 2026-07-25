@@ -350,6 +350,8 @@ expected_weighting_parents <- c(
   "21a-R1F2F3F29Shared-MIX015" = "20c-DMG8Nmax25",
   "S01-SelectivityStability-MIX015" =
     "21a-R1F2F3F29Shared-MIX015",
+  "S02-F33Asymptotic-MIX015" =
+    "S01-SelectivityStability-MIX015",
   "21b-R1F2F3F29Shared-MIX005" =
     "21a-R1F2F3F29Shared-MIX015",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" =
@@ -804,7 +806,8 @@ for (i in seq_len(nrow(models))) {
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
     "22d-R1F2F3F29Shared-MIX005-TAGW250",
-    "S01-SelectivityStability-MIX015"
+    "S01-SelectivityStability-MIX015",
+    "S02-F33Asymptotic-MIX015"
   )
   if (model_id %in% final_dm_models) {
     require_exact_controls(
@@ -1199,9 +1202,11 @@ for (i in seq_len(nrow(models))) {
 
   n7_expected <- selectivity_expected
   if (n7_expected) {
-    selectivity_stability <- identical(
-      model_id, "S01-SelectivityStability-MIX015"
+    selectivity_stability <- model_id %in% c(
+      "S01-SelectivityStability-MIX015",
+      "S02-F33Asymptotic-MIX015"
     )
+    f33_asymptotic <- identical(model_id, "S02-F33Asymptotic-MIX015")
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
       "21b-R1F2F3F29Shared-MIX005",
@@ -1315,7 +1320,9 @@ for (i in seq_len(nrow(models))) {
       }
     }
     if (selectivity_stability) {
-      for (fishery in c(1L, 2L, 3L, 5L, 29L, 33L)) {
+      four_node_fisheries <- c(1L, 2L, 3L, 5L, 29L)
+      if (!f33_asymptotic) four_node_fisheries <- c(four_node_fisheries, 33L)
+      for (fishery in four_node_fisheries) {
         check_flag(
           flags, -fishery, 61L, 4L, model_id,
           paste0("F", fishery, " selectivity-stability four-node curve")
@@ -1331,6 +1338,23 @@ for (i in seq_len(nrow(models))) {
         check_flag(
           flags, -fishery, 99L, fishery, model_id,
           paste0("F", fishery, " index catchability remains independent")
+        )
+      }
+      if (f33_asymptotic) {
+        check_flag(
+          flags, -33L, 57L, 1L, model_id,
+          "F33 independent asymptotic logistic selectivity"
+        )
+        if (any(flags$scope == -33L & flags$flag == 61L)) {
+          add_failure(
+            model_id,
+            "F33 logistic sensitivity must not retain a fish-specific spline-node override."
+          )
+        }
+      } else {
+        check_flag(
+          flags, -33L, 57L, 3L, model_id,
+          "F33 independent cubic-spline reference selectivity"
         )
       }
     }
@@ -1725,6 +1749,18 @@ compare_flags_after_filter(
   "S01-SelectivityStability-MIX015",
   function(flags) {
     flags$scope <= -1L & flags$scope >= -33L & flags$flag == 24L
+  }
+)
+compare_model_hashes_except(
+  "S01-SelectivityStability-MIX015",
+  "S02-F33Asymptotic-MIX015",
+  c("doitall.sh", "fishery_map.R")
+)
+compare_flags_after_filter(
+  "S01-SelectivityStability-MIX015",
+  "S02-F33Asymptotic-MIX015",
+  function(flags) {
+    flags$scope == -33L & flags$flag %in% c(57L, 61L)
   }
 )
 

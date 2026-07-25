@@ -11,7 +11,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
 | `flow_group` | `bet-2026-stepwise-pathway` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `false` | Whether command-line Kflow submissions keep the downstream results/report chain. |
-| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360` | Docker image used by Kflow and local Docker runs. |
+| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 | `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
 | `stepwise_save_raw_mfcl_inputs` | `true` | Preserve the full raw MFCL input folder under `outputs/models/<step_id>/mfcl-inputs/` for native-style auditability. |
@@ -58,6 +58,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `22c-R1F2F3F29Shared-MIX005-TAGW500` | `TRUE` | 22-TagLikelihoodWeightSensitivity | 22c | retain SC22 K=0.05 and multiply the tag-return likelihood by 0.50 | K=0.05; tag weight 0.50 | 22c Final DM sensitivity \| SC22 K=0.05, tag-return weight 0.50 | `22c-r1-shared-mix005-tagw500` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `TRUE` | 22-TagLikelihoodWeightSensitivity | 22d | retain SC22 K=0.05 and multiply the tag-return likelihood by 0.25 | K=0.05; tag weight 0.25 | 22d Final DM sensitivity \| SC22 K=0.05, tag-return weight 0.25 | `22d-r1-shared-mix005-tagw250` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `S01-SelectivityStability-MIX015` | `TRUE` | S01-SelectivityStability | S01 | test extraction-based selectivity sharing while keeping all regional index selectivities independent | Selectivity-stability sensitivity; K=0.15 | S01 Selectivity-stability sensitivity \| independent indices | `s01-selectivity-stability-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S02-F33Asymptotic-MIX015` | `TRUE` | S02-F33Asymptotic | S02 | replace only the independent Region 5 index spline with an asymptotic logistic selectivity | F33 asymptotic-selectivity sensitivity; K=0.15 | S02 Selectivity-stability sensitivity \| F33 independent asymptotic | `s02-f33-asymptotic-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -96,6 +97,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `22c-R1F2F3F29Shared-MIX005-TAGW500` | `steps/22c-R1F2F3F29Shared-MIX005-TAGW500/model` | `exists` |
 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `steps/22d-R1F2F3F29Shared-MIX005-TAGW250/model` | `exists` |
 | `S01-SelectivityStability-MIX015` | `steps/S01-SelectivityStability-MIX015/model` | `exists` |
+| `S02-F33Asymptotic-MIX015` | `steps/S02-F33Asymptotic-MIX015/model` | `exists` |
 
 
 ## Useful Kflow Config

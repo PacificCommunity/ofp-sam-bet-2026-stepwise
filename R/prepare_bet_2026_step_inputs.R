@@ -909,6 +909,7 @@ write_sequence_step <- function(
     index_selectivity = FALSE,
     r1_f2_f3_f29_shared_selectivity = FALSE,
     selectivity_stability_map = FALSE,
+    f33_asymptotic_selectivity = FALSE,
     tag_return_likelihood_weight = NA_integer_,
     selectivity_update_bundle = FALSE,
     all_selectivity_forms_relaxed = FALSE,
@@ -929,6 +930,7 @@ write_sequence_step <- function(
       r1_f2_f3_f29_shared_selectivity =
         r1_f2_f3_f29_shared_selectivity,
       selectivity_stability_map = selectivity_stability_map,
+      f33_asymptotic_selectivity = f33_asymptotic_selectivity,
       tag_return_likelihood_weight = tag_return_likelihood_weight,
       selectivity_update_bundle = selectivity_update_bundle,
       all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
@@ -986,6 +988,11 @@ write_sequence_step <- function(
         "The selectivity-stability sensitivity shares F2/F3 and F7/F9; ",
         "F19, F25, F26 and F29-F33 remain independent. The Job 15989 node ",
         "settings are retained, including seven nodes for F25/F26."
+      ),
+      if (f33_asymptotic_selectivity) paste0(
+        "F33 remains an independent Region 5 index selectivity and uses the ",
+        "two-parameter asymptotic logistic form; its catchability group and ",
+        "all extraction-index separations are unchanged."
       ),
       if (selectivity_update_bundle && !selectivity_stability_map) paste0(
         "The intended selectivity bundle unshares F15-F28 and applies fishery-specific ",
@@ -1207,6 +1214,7 @@ write_selected_path_step <- function(
     index_selectivity = FALSE, selectivity_update_bundle = FALSE,
     r1_f2_f3_f29_shared_selectivity = FALSE,
     selectivity_stability_map = FALSE,
+    f33_asymptotic_selectivity = FALSE,
     tag_return_likelihood_weight = NA_integer_,
     all_selectivity_forms_relaxed = FALSE,
     dom = FALSE, francis = numeric(),
@@ -1236,6 +1244,7 @@ write_selected_path_step <- function(
     r1_f2_f3_f29_shared_selectivity =
       r1_f2_f3_f29_shared_selectivity,
     selectivity_stability_map = selectivity_stability_map,
+    f33_asymptotic_selectivity = f33_asymptotic_selectivity,
     tag_return_likelihood_weight = tag_return_likelihood_weight,
     selectivity_update_bundle = selectivity_update_bundle,
     all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
@@ -1560,6 +1569,51 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE,
   dm_grouping = "G8PSSET", dm_nmax = 25L,
   status = "Prepared independent selectivity-stability sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S02-F33Asymptotic-MIX015",
+  "S02 F33 asymptotic-selectivity sensitivity with SC22 K=0.15 mixing",
+  "S01-SelectivityStability-MIX015",
+  paste0(
+    "Retain the extraction-only selectivity sharing and independent regional ",
+    "indices from S01, and replace only the F33 Region 5 four-node spline ",
+    "with an independent asymptotic logistic selectivity."
+  ),
+  audit_notes = c(
+    paste0(
+      "F33 has 24 retained quarterly size compositions from 1965-1996, while ",
+      "its regional CPUE index spans 292 quarters from 1952-2024. Peatman et ",
+      "al. (2026; WCPFC-SC22-2026-SA-IP06) also identify Region 5 index ",
+      "compositions as sparse."
+    ),
+    paste0(
+      "The unconstrained F33 spline fitted an effectively asymptotic curve; ",
+      "the logistic form tests whether removing an unsupported descending ",
+      "limb improves stability without materially degrading fit."
+    ),
+    paste0(
+      "F29-F33 remain independent from extraction fisheries and from each ",
+      "other. F33 catchability, fixed Lorenzen M, DM G8 Nmax25, SC22-IP10 ",
+      "K=0.15 tag settings, reporting-rate priors, CPUE controls, data and ",
+      "all other settings are unchanged."
+    ),
+    paste0(
+      "Runtime: tuna-flow v2.6 uses the MFCL pre-mixing reporting-rate ",
+      "exclusion correction; comparison with earlier-executable runs therefore ",
+      "includes that executable change as well as the F33 form change."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  f33_asymptotic_selectivity = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent F33 asymptotic-selectivity sensitivity snapshot."
 )
 
 # Remove superseded numbering and selectivity-sensitivity folders after the

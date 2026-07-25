@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-stepwise-pathway-v2
-name: bet-2026-stepwise-pathway-v2
-description: Fit the reordered 23-model BET 2026 pathway with separate time-varying CPUE uncertainty and CPUE observation-error calibration steps, 1% LF tail compression on the normal-likelihood pathway, the Job 14363 fleet-specific selectivity choice with form penalties off, an isolated reporting-rate exclusion step, and a final DM model with flag 313 reset to 0 and DM support controlled by flag 320.
+#   /api/job/bet-2026-f33-asymptotic-selectivity-20260726
+name: bet-2026-f33-asymptotic-selectivity-20260726
+description: Fit the BET 2026 final DM selectivity-stability sensitivity with extraction-only sharing, independent regional indices, an independent asymptotic logistic selectivity for the Region 5 index, and the tuna-flow v2.6 pre-mixing reporting-rate correction.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -20,9 +20,9 @@ slot_requirements: 'regexp("^suvofp", Machine)'
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
 
-# Immutable digest resolved for tuna-flow:v2.2. Never replace this with a tag
-# for a campaign run.
-docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+# Immutable digest resolved for tuna-flow:v2.6. This image uses the MFCL build
+# that applies tag flag 2 consistently to pre-mixing reporting rates.
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
 
 # HTCondor resource request. Increase memory/disk before increasing CPUs unless
 # the MFCL command itself can use more threads.
@@ -40,14 +40,14 @@ env:
   # A public-task launch is safe by default: exactly one model is selected.
   # Campaign rows override all four identity fields together. Local sequential
   # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
-  STEP_SELECT: 01-Diag2023
+  STEP_SELECT: S02-F33Asymptotic-MIX015
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "BET 2026 stepwise | 01 2023 diagnostic rerun"
-  JOB_DESCRIPTION: "Run one independently frozen BET 2026 stepwise model from the corrected public campaign."
-  MODEL_LABEL: 2023 diagnostic rerun
-  JOB_KEY: 01-diag2023
+  JOB_TITLE: "BET 2026 selectivity sensitivity | F33 asymptotic, tuna-flow 2.6"
+  JOB_DESCRIPTION: "Run the full final-DM doitall fit with extraction-only selectivity sharing, independent indices, a logistic Region 5 index selectivity and the corrected pre-mixing reporting-rate calculation."
+  MODEL_LABEL: F33 independent asymptotic selectivity
+  JOB_KEY: s02-f33-asymptotic-mix015
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-stepwise-pathway
+  FLOW_GROUP: bet-2026-f33-asymptotic-selectivity
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"

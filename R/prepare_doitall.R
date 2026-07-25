@@ -676,6 +676,21 @@ apply_selectivity_stability_map <- function(lines) {
   lines
 }
 
+apply_f33_asymptotic_selectivity <- function(lines) {
+  # F33 is the independent Region 5 longline index. Retain its independent
+  # selectivity and catchability groups, but replace the weakly informed
+  # four-node spline with the two-parameter logistic form.
+  lines <- remove_exact_doitall_controls(lines, "-33 61 4")
+  set_control_flag_in_phase(
+    lines,
+    "-33",
+    57L,
+    1L,
+    1L,
+    "F33 independent asymptotic logistic selectivity"
+  )
+}
+
 apply_tag_return_likelihood_weight <- function(lines, weight_per_mille) {
   weight_per_mille <- as.integer(weight_per_mille)
   if (length(weight_per_mille) != 1L || is.na(weight_per_mille) ||
@@ -1067,6 +1082,30 @@ apply_selectivity_stability_display_map <- function(path) {
   invisible(TRUE)
 }
 
+apply_f33_asymptotic_display_map <- function(path) {
+  eol <- file_eol(path)
+  lines <- readLines(path, warn = FALSE)
+  marker <- grep(
+    "fishery_map$selectivity_name[c(7, 9)]",
+    lines,
+    fixed = TRUE
+  )
+  if (length(marker) != 1L) {
+    stop(
+      "Expected one F7/F9 selectivity-name assignment in ",
+      path,
+      call. = FALSE
+    )
+  }
+  lines <- append(
+    lines,
+    'fishery_map$selectivity_name[33] <- "Index R5 (independent logistic)"',
+    after = marker
+  )
+  writeLines(lines, path, sep = eol, useBytes = TRUE)
+  invisible(TRUE)
+}
+
 # Supersedes the legacy broad sensitivity writer above. The public
 # sequence deliberately excludes OPR and length-bin selectivity controls.
 write_doitall <- function(from, to, mix_from_ini = FALSE,
@@ -1078,6 +1117,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           index_selectivity = FALSE,
                           r1_f2_f3_f29_shared_selectivity = FALSE,
                           selectivity_stability_map = FALSE,
+                          f33_asymptotic_selectivity = FALSE,
                           tag_return_likelihood_weight = NA_integer_,
                           selectivity_update_bundle = FALSE,
                           all_selectivity_forms_relaxed = FALSE,
@@ -1157,6 +1197,16 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       )
     }
     lines <- apply_selectivity_stability_map(lines)
+  }
+  if (isTRUE(f33_asymptotic_selectivity)) {
+    if (!isTRUE(selectivity_stability_map)) {
+      stop(
+        "The F33 asymptotic sensitivity requires the independent-index ",
+        "selectivity-stability map.",
+        call. = FALSE
+      )
+    }
+    lines <- apply_f33_asymptotic_selectivity(lines)
   }
   if (!is.na(tag_return_likelihood_weight)) {
     lines <- apply_tag_return_likelihood_weight(

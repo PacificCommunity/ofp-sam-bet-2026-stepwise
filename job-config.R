@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 30 independent models unless STEP_SELECT is supplied.
+  # Run all 31 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
   numbered_groups = 22L,
-  model_rows = 30L,
+  model_rows = 31L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -296,6 +296,24 @@ stepwise_models <- do.call(
         "DM G8 Nmax25, SC22-IP10 K=0.15 tag settings, reporting-rate priors",
         "and all non-selectivity controls are unchanged."
       )
+    ),
+    model_row(
+      "S02-F33Asymptotic-MIX015", "S02-F33Asymptotic",
+      "S01-SelectivityStability-MIX015",
+      FALSE, "stop",
+      "replace only the independent Region 5 index spline with an asymptotic logistic selectivity",
+      "F33 asymptotic-selectivity sensitivity; K=0.15",
+      "S02 Selectivity-stability sensitivity | F33 independent asymptotic",
+      "s02-f33-asymptotic-mix015",
+      paste(
+        "Independent full native-MFCL doitall fit. F2/F3 and F7/F9 retain",
+        "extraction-only sharing, F29-F33 remain independent from extraction",
+        "fisheries and each other, and F33 alone changes from a four-node",
+        "spline to a two-parameter logistic selectivity. F33 catchability,",
+        "fixed M, DM G8 Nmax25, SC22-IP10 K=0.15 tag settings, reporting-rate",
+        "priors and all other controls are unchanged. The task uses tuna-flow",
+        "v2.6 with the pre-mixing reporting-rate exclusion correction."
+      )
     )
   )
 )
@@ -335,7 +353,8 @@ stepwise_report_change <- c(
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = "SC22 K=0.15 with tag-return likelihood weight 0.25",
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "SC22 K=0.05 with tag-return likelihood weight 0.50",
   "22d-R1F2F3F29Shared-MIX005-TAGW250" = "SC22 K=0.05 with tag-return likelihood weight 0.25",
-  "S01-SelectivityStability-MIX015" = "Extraction-based selectivity sharing with independent regional indices"
+  "S01-SelectivityStability-MIX015" = "Extraction-based selectivity sharing with independent regional indices",
+  "S02-F33Asymptotic-MIX015" = "Independent asymptotic logistic selectivity for the Region 5 index"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -367,7 +386,8 @@ stepwise_report_purpose <- c(
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.15 while retaining reporting-rate priors.",
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.05 while retaining reporting-rate priors.",
   "22d-R1F2F3F29Shared-MIX005-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.05 while retaining reporting-rate priors.",
-  "S01-SelectivityStability-MIX015" = "Test whether limited sharing among comparable longline extraction fisheries improves stability without coupling index selectivity to extraction-fishery composition processes or reducing the selected purse-seine flexibility."
+  "S01-SelectivityStability-MIX015" = "Test whether limited sharing among comparable longline extraction fisheries improves stability without coupling index selectivity to extraction-fishery composition processes or reducing the selected purse-seine flexibility.",
+  "S02-F33Asymptotic-MIX015" = "Test whether constraining the sparsely informed Region 5 index selectivity to an asymptotic logistic form improves stability without materially degrading index or composition fit."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -401,7 +421,8 @@ path_stage <- c(
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = 22L,
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = 22L,
   "22d-R1F2F3F29Shared-MIX005-TAGW250" = 22L,
-  "S01-SelectivityStability-MIX015" = 23L
+  "S01-SelectivityStability-MIX015" = 23L,
+  "S02-F33Asymptotic-MIX015" = 24L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -436,7 +457,8 @@ stepwise_models$dm_grouping[
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
     "22d-R1F2F3F29Shared-MIX005-TAGW250",
-    "S01-SelectivityStability-MIX015"
+    "S01-SelectivityStability-MIX015",
+    "S02-F33Asymptotic-MIX015"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -449,7 +471,8 @@ stepwise_models$dm_nmax[
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
     "22d-R1F2F3F29Shared-MIX005-TAGW250",
-    "S01-SelectivityStability-MIX015"
+    "S01-SelectivityStability-MIX015",
+    "S02-F33Asymptotic-MIX015"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -475,7 +498,8 @@ stepwise_models$tail_compression_percent <- ifelse(
       "22b-R1F2F3F29Shared-MIX015-TAGW250",
       "22c-R1F2F3F29Shared-MIX005-TAGW500",
       "22d-R1F2F3F29Shared-MIX005-TAGW250",
-      "S01-SelectivityStability-MIX015"
+      "S01-SelectivityStability-MIX015",
+      "S02-F33Asymptotic-MIX015"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
