@@ -1033,7 +1033,9 @@ for (i in seq_len(nrow(step_table))) {
     "phase-progress.csv",
     "phase-process-summary.csv",
     "doitall-switches.csv",
-    "post-switch-summary.csv"
+    "post-switch-summary.csv",
+    "tag-tau-audit.csv",
+    "tag-tau-map-final.txt"
   ))
   for (file in keep) {
     src <- file.path(model_dir, file)

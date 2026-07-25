@@ -585,3 +585,63 @@ $program_path bet.frq 11.par 12.par -file - <<PHASE12
   1 121 0    # keep Lorenzen natural mortality fixed
   1 246 1   # indepvar.rpt
 PHASE12
+
+# Fail the fit if MFCL did not carry the requested direct-tau controls into
+# the final parameter file.
+expected_tau=$(tag_tau_expected_groups "$tag_tau_scenario")
+actual_tau=$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' indepvar.rpt)
+if [ "$actual_tau" -ne "$expected_tau" ]; then
+  echo "Final fit estimated $actual_tau tau parameters; expected $expected_tau." >&2
+  exit 44
+fi
+
+awk '
+  /^# fish flags/ {in_fish=1; next}
+  in_fish && /^#/ {exit}
+  in_fish && NF {
+    fishery++
+    print fishery, $43, $44
+    if (fishery == 33) exit
+  }
+' 12.par > tag-tau-map-final.txt
+if [ "$(wc -l < tag-tau-map-final.txt)" -ne 33 ]; then
+  echo "Final parameter file did not contain all 33 fishery tau controls." >&2
+  exit 45
+fi
+while read -r fishery active group; do
+  expected_group=$(tag_tau_group_for_fishery "$tag_tau_scenario" "$fishery")
+  if tag_tau_fishery_is_active "$fishery"; then
+    expected_active=1
+  else
+    expected_active=0
+  fi
+  if [ "$active" != "$expected_active" ] || [ "$group" != "$expected_group" ]; then
+    echo "Final tau map differs at F$fishery: $active/$group; expected $expected_active/$expected_group." >&2
+    exit 46
+  fi
+done < tag-tau-map-final.txt
+
+parest_111=$(awk '/^# The parest_flags/{getline; print $111; exit}' 12.par)
+parest_121=$(awk '/^# The parest_flags/{getline; print $121; exit}' 12.par)
+parest_177=$(awk '/^# The parest_flags/{getline; print $177; exit}' 12.par)
+parest_239=$(awk '/^# The parest_flags/{getline; print $239; exit}' 12.par)
+parest_249=$(awk '/^# The parest_flags/{getline; print $249; exit}' 12.par)
+parest_305=$(awk '/^# The parest_flags/{getline; print $305; exit}' 12.par)
+parest_306=$(awk '/^# The parest_flags/{getline; print $306; exit}' 12.par)
+parest_358=$(awk '/^# The parest_flags/{getline; print $358; exit}' 12.par)
+if [ "$parest_111" != 4 ] || [ "$parest_121" != 0 ] ||
+   [ "$parest_177" != 0 ] || [ "$parest_239" != 0 ] ||
+   [ "$parest_249" != 0 ] || [ "$parest_305" != 1 ] ||
+   [ "$parest_306" != "$tag_tau_lower_x100" ] || [ "$parest_358" != 0 ]; then
+  echo "Final parameter file did not retain the required direct-tau controls." >&2
+  exit 47
+fi
+
+printf 'scenario,tau_lower,tau_start,expected_tau,estimated_tau,parest111,parest121,parest177,parest239,parest249,parest305,parest306,parest358,status\n' \
+  > tag-tau-audit.csv
+printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,passed\n' \
+  "$tag_tau_scenario" "$((tag_tau_lower_x100 / 100))" \
+  "$((tag_tau_lower_x100 / 100 + 1))" "$expected_tau" "$actual_tau" \
+  "$parest_111" "$parest_121" "$parest_177" "$parest_239" \
+  "$parest_249" "$parest_305" "$parest_306" "$parest_358" \
+  >> tag-tau-audit.csv
