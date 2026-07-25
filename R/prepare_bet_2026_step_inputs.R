@@ -36,10 +36,24 @@ if (!length(input_root_hit)) {
 }
 input_root <- normalizePath(input_root_hit[[1L]], winslash = "/", mustWork = TRUE)
 
-frq_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-frq-build", "BET")
-ini_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-build-ini", "BET")
-tag_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-tag-prep", "BET")
-age_root <- file.path(input_root, "ofp-sam-2026-BET-YFT-age-length-build", "BET")
+input_repo_root <- function(repo_name, env_name = "") {
+  configured <- if (nzchar(env_name)) trimws(Sys.getenv(env_name, "")) else ""
+  path <- if (nzchar(configured)) configured else file.path(input_root, repo_name)
+  normalizePath(path, winslash = "/", mustWork = TRUE)
+}
+frq_repo_root <- input_repo_root("ofp-sam-2026-BET-YFT-frq-build")
+ini_repo_root <- input_repo_root(
+  "ofp-sam-2026-BET-YFT-build-ini", "BET_2026_INI_REPO_ROOT"
+)
+tag_repo_root <- input_repo_root(
+  "ofp-sam-2026-BET-YFT-tag-prep", "BET_2026_TAG_REPO_ROOT"
+)
+age_repo_root <- input_repo_root("ofp-sam-2026-BET-YFT-age-length-build")
+
+frq_root <- file.path(frq_repo_root, "BET")
+ini_root <- file.path(ini_repo_root, "BET")
+tag_root <- file.path(tag_repo_root, "BET")
+age_root <- file.path(age_repo_root, "BET")
 reg_scaling_source <- file.path(frq_root, "bet.2026.reg_scaling")
 read_reg_scaling_period <- function(name, default) {
   raw <- trimws(Sys.getenv(name, as.character(default)))
@@ -144,10 +158,10 @@ rep2023_root <- normalizePath(bet_2026_rep_hits[[1L]], winslash = "/", mustWork 
 bet_2026_repo_root <- normalizePath(file.path(rep2023_root, "..", "..", ".."), winslash = "/", mustWork = TRUE)
 
 input_repo_roots <- c(
-  "ofp-sam-2026-BET-YFT-frq-build" = file.path(input_root, "ofp-sam-2026-BET-YFT-frq-build"),
-  "ofp-sam-2026-BET-YFT-build-ini" = file.path(input_root, "ofp-sam-2026-BET-YFT-build-ini"),
-  "ofp-sam-2026-BET-YFT-tag-prep" = file.path(input_root, "ofp-sam-2026-BET-YFT-tag-prep"),
-  "ofp-sam-2026-BET-YFT-age-length-build" = file.path(input_root, "ofp-sam-2026-BET-YFT-age-length-build"),
+  "ofp-sam-2026-BET-YFT-frq-build" = frq_repo_root,
+  "ofp-sam-2026-BET-YFT-build-ini" = ini_repo_root,
+  "ofp-sam-2026-BET-YFT-tag-prep" = tag_repo_root,
+  "ofp-sam-2026-BET-YFT-age-length-build" = age_repo_root,
   "ofp-sam-bet-2023-diagnostic" = diagnostic_repo_root,
   "ofp-sam-2026-BET" = bet_2026_repo_root
 )
@@ -558,8 +572,10 @@ write_diagnostic_substep(
 old_age <- file.path(age_root, "bet.2023.new-structure.age_length")
 new_age <- file.path(age_root, "bet.2026.age_length")
 new_ini <- file.path(ini_root, "bet.2026.ini")
-new_tag <- file.path(root, "inputs", "bet.2026.low.recaps.removed.tag")
-mix_ini <- file.path(ini_root, "ini.mix-period", "bet.2026.mix-0.2.ini")
+new_tag <- file.path(tag_root, "bet.2026.low.recaps.removed.tag")
+mix015_ini <- file.path(
+  ini_root, "ini.mix-period", "bet.2026.mix-0.15.ini"
+)
 regfish_ini_source <- file.path(ini_root, "bet.2023.new.structure.ini")
 regfish_tag_source <- file.path(tag_root, "bet.2023.new.structure-low.recaps.removed.tag")
 rrpttp26_reporting_source <- file.path(root, "config", "rrpttp26-reporting-rates.csv")
@@ -771,8 +787,7 @@ age_variant_root <- file.path(
 )
 regional_age_075 <- file.path(age_variant_root, "bet.2026.regional.0.75.age_length")
 sub_basin_age_075 <- file.path(age_variant_root, "bet.2026.sub.basin.0.75.age_length")
-mix015_ini <- file.path(root, "inputs", "bet.2026.mix-0.15.ini")
-peatman_rr_ini <- mix_ini
+peatman_rr_ini <- new_ini
 
 # Step 13 carries the CPUE observation-error controls actually submitted and
 # executed for Job13328. It is an exact input transfer, not a recalculation.
@@ -1216,6 +1231,11 @@ write_selected_path_step(
     "Apply the release-group-specific MIX015 periods in tag_flags(:,1), while ",
     "keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately ",
     "in Step 18; do not change reporting-rate values or priors."
+  ),
+  audit_notes = c(
+    "INI source: ofp-sam-2026-BET-YFT-build-ini branch SC22-IP10-based at commit 5b2fb60; the main branch is not used for this mixing-period step.",
+    "The release-group periods implement Appendix A of WCPFC-SC22-2026-SA-IP10.",
+    "The five reporting-rate matrices are identical to the Step 10-16 source; only tag_flags(:,1) changes at this step."
   ),
   tag_mixing = TRUE, tag_flag2 = 0L, time_varying_cv = TRUE,
   fixed_cpue_sigma = TRUE,

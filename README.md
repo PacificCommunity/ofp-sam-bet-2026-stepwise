@@ -44,6 +44,18 @@ pathway record.
 The root [`kflow.yaml`](kflow.yaml) is the separate 23-model MFCL fitting task;
 do not use it when only the HTML report is required.
 
+## Pinned INI Source
+
+All INIs sourced from the 2026 build-ini repository are taken from
+`PacificCommunity/ofp-sam-2026-BET-YFT-build-ini` branch
+`SC22-IP10-based` at commit `5b2fb60`, not from `main`. This includes
+`bet.2023.new.structure.ini` for Steps 06–09, `bet.2026.ini` for Steps 10–20,
+and the SC22-IP10 Appendix A `bet.2026.mix-0.15.ini` from Step 17 onward.
+Steps 01–05 intentionally retain the historical 2023 diagnostic INI pathway.
+For a rebuild, point `BET_2026_INI_REPO_ROOT` to a checkout of
+`SC22-IP10-based`; the provenance lock verifies the exact base and MIX015
+file hashes.
+
 The selected route is
 `01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 11 → 12 → 13 → 14 → 15b → 16 → 17 → 18 → 19 → 20c`.
 At the two comparison points, `15b-SUB075` and `20c-DMG8Nmax25` are carried

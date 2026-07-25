@@ -19,7 +19,7 @@ copied as-is and what is intentionally changed in the generated model folders?
 | Repo | Current source commit | BET-side note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Latest pulled changes affect YFT files only; BET `.frq` sources used here are unchanged. |
-| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | BET base and mix-period INIs contain the updated RR group IDs and reject conflicting reporting-rate priors. |
+| `ofp-sam-2026-BET-YFT-build-ini` | `5b2fb60` (`SC22-IP10-based`) | All build-ini sources use this branch, not `main`; it contains the aligned RR matrices and SC22-IP10 Appendix A mixing periods. |
 | `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | Current low-recapture-filtered BET tag source with the audited reporting-rate grouping update. |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | Source CAAL records are used; generated files only change effective sample size. |
 
@@ -48,11 +48,11 @@ copied as-is and what is intentionally changed in the generated model folders?
 | 03 | Step 02 generated input | Sets ini version to `1007`; inserts 118 `# tag flags` rows with two-quarter mixing and `tag_flags(it,2)=0`; inserts a zero tag-shed vector; inserts MFCL 1007 defaults for `LN(R0)=25` and Richards growth parameter `0`. | Converts the 2023 replication ini into a current-reader layout without changing the assessment data. |
 | 04 | Step 03 generated input | Replaces the `# age_pars` natural-mortality row with the fixed-M row from the 01 diagnostic `mgc=-5` final par. | Establishes fixed M before updating the length-weight conversion. |
 | 05 | Step 04 generated input | Changes `# Length-weight parameters` from `3.063397e-05 2.932384` to `3.073533e-05 2.932410`; the fixed-M row is unchanged. | Isolates the BET 2026 bias-corrected L-W update after fixed M. |
-| 06-08 | `BET/bet.2023.new.structure.ini` from `ofp-sam-2026-BET-YFT-build-ini@d48e396`, with `config/rrpttp26-reporting-rates.csv` | Applies FixM, `LN(R0)=17`, BET 2026 L-W, and tag/RR alignment. The 96-release-group tag source is `ofp-sam-2026-BET-YFT-tag-prep@6d66dc3`; SC22 BET means and penalties are mapped by tag programme and fishery, with West and East groups kept separate. | Introduces the final reporting-rate specification with the 33-fishery structure instead of retaining a pooled West/East group. |
+| 06-08 | `BET/bet.2023.new.structure.ini` from `ofp-sam-2026-BET-YFT-build-ini@5b2fb60` (`SC22-IP10-based`), with `config/rrpttp26-reporting-rates.csv` | Applies FixM, `LN(R0)=17`, BET 2026 L-W, and tag/RR alignment. The 96-release-group tag source is `ofp-sam-2026-BET-YFT-tag-prep@6d66dc3`; SC22 BET means and penalties are mapped by tag programme and fishery, with West and East groups kept separate. | Introduces the final reporting-rate specification with the 33-fishery structure instead of retaining a pooled West/East group. |
 | 09 | Same 2021 five-region inputs as Step 08 | No `.ini` edit; only doitall parest flag 313 changes from `0` to `1`. | Introduces LF tail aggregation after weight-to-length conversion and observed-length supplementation. |
-| 10-16 | Primary base `BET/bet.2026.ini` plus `config/rrpttp26-reporting-rates.csv` | Keeps two-quarter mixing from the base, maps the carried SC22 BET reporting-rate specification to the expanded 2026 tag rows, sets `tag_flags(it,2)=0`, and validates positive recaptures. | Extends the tag-release rows without changing the reporting-rate means, penalties, or West/East grouping. |
-| 17 | Primary base plus the selected MIX015 column and audited RR source | Applies release-group-specific mixing while retaining `tag_flags(it,2)=0`. | Isolates the mixing-period change while reporting rates still apply during the configured periods. |
-| 18-20 | Generated Step 17 state | Keeps the Step 17 release-group-specific mixing periods and changes only `tag_flags(it,2)` from `0` to `1`. Step 20c additionally resets parest flag 313 from `1` to `0` when selecting the DM likelihood; flag 320=5 controls DM length-bin support. | Removes reporting rates only from predicted recaptures within the pre-mixing windows, without changing their post-mixing use or numeric values, groups, targets, or penalties; also avoids carrying an inactive normal-likelihood threshold into the final DM input. |
+| 10-16 | `BET/bet.2026.ini` from `SC22-IP10-based` plus `config/rrpttp26-reporting-rates.csv` | Keeps two-quarter mixing from the base, maps the carried SC22 BET reporting-rate specification to the expanded 2026 tag rows, sets `tag_flags(it,2)=0`, and validates positive recaptures. | Extends the tag-release rows without changing the reporting-rate means, penalties, or West/East grouping. |
+| 17 | The same branch base plus `BET/ini.mix-period/bet.2026.mix-0.15.ini` | Copies only the SC22-IP10 release-group mixing-period column and retains `tag_flags(it,2)=0`. The five RR matrices remain identical to Steps 10-16. | Isolates the mixing-period change while reporting rates still apply during the configured periods. |
+| 18-20 | The same branch base and MIX015 source, rebuilt independently | Keeps the Step 17 mixing periods and changes only `tag_flags(it,2)` from `0` to `1`. Step 20c additionally resets parest flag 313 from `1` to `0` when selecting the DM likelihood; flag 320=5 controls DM length-bin support. | Removes reporting rates only from predicted recaptures within the pre-mixing windows, without changing their post-mixing use or numeric values, groups, targets, or penalties; also avoids carrying an inactive normal-likelihood threshold into the final DM input. |
 
 Current tag-flag check:
 
@@ -62,7 +62,7 @@ Current tag-flag check:
 | Generated step 06 ini | 96 | all `2` | all `0` |
 | Source `bet.2026.ini` | 98 | all `2` | all `1` |
 | Generated step 10 ini | 98 | all `2` | all `0` |
-| Source `bet.2026.mix-0.2.ini` | 98 | `0`, `1`, `2`, `3`, `4` release-group-specific values | all `1` |
+| Source `bet.2026.mix-0.15.ini` from `SC22-IP10-based` | 98 | `0`, `1`, `2`, `3`, `4` release-group-specific values | all `1` |
 | Generated step 17 ini | 98 | selected MIX015 release-group-specific values | all `0` |
 | Generated step 18 ini | 98 | selected MIX015 release-group-specific values | all `1` |
 

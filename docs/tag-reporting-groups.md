@@ -43,11 +43,11 @@ Generated inputs check three tag sections before Kflow submission:
 | Tag-control rows | One row per release group. |
 | Tag shed rate | One value per release group. |
 
-For `10`-`16`, the selected 2026 tag file has 98 release groups and the latest
-source reporting matrices already have 99 rows, including the pooled row. The
-generator copies the latest RR/active/target/penalty blocks from the mix-period
-ini, then checks the dimensions and positive-recapture cells before writing
-each model folder.
+For `10`-`16`, the selected 2026 tag file has 98 release groups and the 2026
+base INI has 99 reporting-rate rows, including the pooled row. The generator
+copies the five RR matrices from that base INI, then checks their dimensions
+and all positive-recapture cells before writing each model folder. The
+SC22-IP10 mixing-period INIs contain the same five matrices.
 
 ## Generated Changes To Tag Inputs
 
@@ -61,8 +61,8 @@ that match the selected `.tag`.
 | Tag flags, steps 06-09 | `bet.2023.new.structure.ini` | Source has 98 identical tag-control rows for a 96-release-group tag file; generated rows are trimmed to 96. |
 | RR matrices, steps 06-09 | `config/rrpttp26-reporting-rates.csv` | Maps the SC22 BET purse-seine means and penalties to the 96 release rows, retaining separate West and East groups. |
 | Tag flags, steps 10-16 | `bet.2026.ini` | Latest 98 rows kept; column 2 `tag_flags(it,2)` set from `1` to `0`. |
-| RR matrices, steps 10-20 | `bet.2026.mix-0.2.ini` | Five RR/active/target/penalty blocks, including updated group IDs, are kept at 99 rows. |
-| Mixing periods, steps 17-20 | `bet.2026.mix-0.15.ini` | The selected MIX015 release-group-specific mixing periods begin at Step 17 and are carried unchanged. |
+| RR matrices, steps 10-20 | `bet.2026.ini` | Five RR/active/target/penalty blocks, including updated group IDs, are kept at 99 rows. |
+| Mixing periods, steps 17-20 | `bet.2026.mix-0.15.ini` | SC22-IP10 Appendix A release-group-specific mixing periods begin at Step 17 and are carried unchanged. |
 | Tag flags, step 17 | Selected MIX015 state | Column 2 `tag_flags(it,2)` remains `0`. |
 | Tag flags, steps 18-20 | Generated Step 17 state | Column 2 `tag_flags(it,2)` changes to `1` at Step 18 and is carried unchanged. |
 | Positive recapture RR check, steps 06-20 | Generated `.ini` and selected `.tag` | Every positive recapture must have nonzero RR, active, target, and penalty cells. |
@@ -72,20 +72,29 @@ that still have inactive RR cells, but the pinned 2026 source combination
 passes by validation rather than by applying that repair.
 
 The current source combination is
-`ofp-sam-2026-BET-YFT-build-ini@d48e396` and
+`ofp-sam-2026-BET-YFT-build-ini@5b2fb60` from branch
+`SC22-IP10-based` and
 `ofp-sam-2026-BET-YFT-tag-prep@6d66dc3`. These revisions include the audited
-BET reporting-rate grouping and conflicting-prior checks. Steps 10-16 record
-`bet.2026.ini` as the primary INI and `bet.2026.mix-0.2.ini` as the five-block
-reporting-rate source. Steps 17-20 use the selected
-`bet.2026.mix-0.15.ini` mixing-period column. The generated files preserve the
-source reporting-rate group IDs; `tag_flags(it,2)` is `0` through Step 17 and
-`1` from Step 18 onward. Fishery display names and regions in `fishery_map.R` are
+BET reporting-rate grouping, conflicting-prior checks, and SC22-IP10 Appendix
+A mixing periods. Steps 10-20 use the five reporting-rate matrices in
+`bet.2026.ini`; all mixing-period variants contain identical copies of those
+matrices. Steps 17-20 use only tag-flag column 1 from
+`bet.2026.mix-0.15.ini`. The generated files preserve the source
+reporting-rate group IDs; `tag_flags(it,2)` is `0` through Step 17 and `1`
+from Step 18 onward. Fishery display names and regions in `fishery_map.R` are
 synchronized from `BET/bet.RR.2026.csv`; `tag_rep_map.R` then uses those same
 labels so MFCLShiny reads a consistent pair of sidecars. Starting at step 06,
 F25/F27 and F26/F28 use separate West and East reporting-rate groups. Step 10
 retains those groups while mapping the same fishery-level specification to
 the two additional 2026 release rows. Other grouped initial values are
 harmonized where native MFCL requires a shared start.
+
+The build-ini `main` branch is not the source for this stepwise update.
+Every INI read from the build-ini repository—`bet.2023.new.structure.ini`,
+`bet.2026.ini`, and the selected mix-period INI—comes from
+`SC22-IP10-based`. Rebuilds must set `BET_2026_INI_REPO_ROOT` to a checkout of
+that branch; the locked commit and SHA256 values prevent silent fallback to a
+different base or MIX015 INI.
 
 The BET purse-seine means and penalties follow Table 3 of Peatman et al.
 (2026), *Analysis of tag seeding data for the 2026 bigeye and yellowfin

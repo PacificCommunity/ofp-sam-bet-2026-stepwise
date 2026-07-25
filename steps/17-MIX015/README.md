@@ -14,8 +14,11 @@ Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping
 | # | Change |
 | --- | --- |
 | 1 | Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately in Step 18; do not change reporting-rate values or priors. |
-| 2 | Scientific parent: '16-SelectivityUpdate'. |
-| 3 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
+| 2 | INI source: ofp-sam-2026-BET-YFT-build-ini branch SC22-IP10-based at commit 5b2fb60; the main branch is not used for this mixing-period step. |
+| 3 | The release-group periods implement Appendix A of WCPFC-SC22-2026-SA-IP10. |
+| 4 | The five reporting-rate matrices are identical to the Step 10-16 source; only tag_flags(:,1) changes at this step. |
+| 5 | Scientific parent: '16-SelectivityUpdate'. |
+| 6 | The model folder is rebuilt from source inputs plus the complete cumulative edit set. |
 
 ## Inputs
 
@@ -42,8 +45,8 @@ Apply the release-group-specific MIX015 periods in tag_flags(:,1), while keeping
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
+| `ofp-sam-2026-BET-YFT-build-ini` | `5b2fb60` | Document SC22-IP10 mixing-period implementation |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `6d66dc3` | update RR groupings |
 | `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
