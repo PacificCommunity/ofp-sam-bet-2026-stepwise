@@ -5,7 +5,7 @@
 </p>
 
 Public, reproducible configuration for the 2026 bigeye tuna (BET) MFCL
-stepwise analysis. It contains 22 numbered scientific groups and 29
+stepwise analysis. It contains 22 numbered scientific groups and 30
 independently runnable model rows. Twenty models form the selected
 carry-forward path; Steps 21–22 contain post-selection sensitivities.
 
@@ -16,11 +16,11 @@ carry-forward path; Steps 21–22 contain post-selection sensitivities.
   output.
 - `scientific_parent_id` records the model used for scientific comparison. It
   is provenance, not a scheduler dependency.
-- All 29 rows can run independently and in parallel through Kflow.
+- All 30 rows can run independently and in parallel through Kflow.
 - `selected = TRUE` identifies the adopted BET 2026 route. `carry_status` is
   `carry` when later rows inherit that model, `stop` for an unselected sibling,
   and `final` for the terminal model.
-- `STEP_SELECT=all` runs all 29 development rows, including sibling
+- `STEP_SELECT=all` runs all 30 development rows, including sibling
   alternatives. Any row can be run alone, for example
   `STEP_SELECT=16-SelectivityUpdate`.
 - Every row has a unique `STEP_SELECT`, `job_key`, `job_title`, and
@@ -35,13 +35,13 @@ carry-forward path; Steps 21–22 contain post-selection sensitivities.
 The report-only task is defined in
 [`model-development-report/kflow.yaml`](model-development-report/kflow.yaml).
 With `STEPWISE_MODEL_JOBS=""`, it renders a self-contained HTML containing the
-publication methods text, DAG and caption, the 29-row configuration table, and
+publication methods text, DAG and caption, the 30-row configuration table, and
 separate tables for the selected Dirichlet-multinomial configuration and its
 eight fishery groups. Each section can be copied to Word or LaTeX. Supplying an
 explicit step-to-job map later adds fitted-model results without changing the
 pathway record.
 
-The root [`kflow.yaml`](kflow.yaml) is the separate 29-model MFCL fitting task;
+The root [`kflow.yaml`](kflow.yaml) is the separate 30-model MFCL fitting task;
 do not use it when only the HTML report is required.
 
 ## Pinned INI Source
@@ -103,6 +103,7 @@ table for the functional explanation and implementation detail of each step.
 | 22b | Tag-return weight 0.25, K=0.15 | `22b-R1F2F3F29Shared-MIX015-TAGW250` | `21a-R1F2F3F29Shared-MIX015` | Set parest flag 177 to 250, multiplying the tag-return likelihood by 0.25. | K=0.15 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
 | 22c | Tag-return weight 0.50, K=0.05 | `22c-R1F2F3F29Shared-MIX005-TAGW500` | `21b-R1F2F3F29Shared-MIX005` | Set parest flag 177 to 500, multiplying the tag-return likelihood by 0.50. | K=0.05 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
 | 22d | Tag-return weight 0.25, K=0.05 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `21b-R1F2F3F29Shared-MIX005` | Set parest flag 177 to 250, multiplying the tag-return likelihood by 0.25. | K=0.05 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
+| S01 | Selectivity stability with independent indices | `S01-SelectivityStability-MIX015` | `21a-R1F2F3F29Shared-MIX015` | Separate F29-F33 from extraction-fishery selectivities and share only F2/F3 and F7/F9; retain all Job 15989 node settings. | Fixed M, DM G8 `Nmax=25`, SC22-IP10 K=0.15 mixing periods, reporting-rate priors, data and all non-selectivity controls. | Post-selection sensitivity; retain only if fit is maintained and stability improves. |
 
 The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
 structure at `06-NewStructure`. They are carried through steps 07-09 and
@@ -293,7 +294,8 @@ inputs.
 
 | Path | Purpose |
 | --- | --- |
-| `job-config.R` | Public 29-row development matrix and cumulative-state metadata. |
+| `job-config.R` | Public 30-row development matrix and cumulative-state metadata. |
+| [`SELECTIVITY_STABILITY_SENSITIVITY.md`](SELECTIVITY_STABILITY_SENSITIVITY.md) | Report-ready rationale and acceptance criteria for the independent-index selectivity sensitivity. |
 | `steps/<STEP_SELECT>/README.md` | Model-specific scientific and input notes. |
 | `steps/<STEP_SELECT>/input_manifest.csv` | Source-input provenance. |
 | `steps/<STEP_SELECT>/model/` | Self-contained MFCL run folder. |

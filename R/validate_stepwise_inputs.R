@@ -348,6 +348,8 @@ expected_weighting_parents <- c(
   "20b-Francis" = "19-EffortCreep",
   "20c-DMG8Nmax25" = "19-EffortCreep",
   "21a-R1F2F3F29Shared-MIX015" = "20c-DMG8Nmax25",
+  "S01-SelectivityStability-MIX015" =
+    "21a-R1F2F3F29Shared-MIX015",
   "21b-R1F2F3F29Shared-MIX005" =
     "21a-R1F2F3F29Shared-MIX015",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" =
@@ -801,7 +803,8 @@ for (i in seq_len(nrow(models))) {
     "22a-R1F2F3F29Shared-MIX015-TAGW500",
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
-    "22d-R1F2F3F29Shared-MIX005-TAGW250"
+    "22d-R1F2F3F29Shared-MIX005-TAGW250",
+    "S01-SelectivityStability-MIX015"
   )
   if (model_id %in% final_dm_models) {
     require_exact_controls(
@@ -1196,6 +1199,9 @@ for (i in seq_len(nrow(models))) {
 
   n7_expected <- selectivity_expected
   if (n7_expected) {
+    selectivity_stability <- identical(
+      model_id, "S01-SelectivityStability-MIX015"
+    )
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
       "21b-R1F2F3F29Shared-MIX005",
@@ -1213,12 +1219,21 @@ for (i in seq_len(nrow(models))) {
       numeric(1)
     )
     expected_r1_shared <- c(1, 2, 2, 3:27, 2, 3, 6, 7, 28)
-    expected_phase1 <- if (r1_shared_selectivity) {
+    expected_stability <- c(
+      1, 2, 2, 3, 4, 5, 6, 7, 6, 8, 9, 10, 11, 12, 13, 14,
+      15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+      27, 28, 29, 30, 31
+    )
+    expected_phase1 <- if (selectivity_stability) {
+      expected_stability
+    } else if (r1_shared_selectivity) {
       expected_r1_shared
     } else {
       c(1:28, rep(29, 5L))
     }
-    expected_phase5 <- if (r1_shared_selectivity) {
+    expected_phase5 <- if (selectivity_stability) {
+      expected_stability
+    } else if (r1_shared_selectivity) {
       expected_r1_shared
     } else {
       1:33
@@ -1268,7 +1283,9 @@ for (i in seq_len(nrow(models))) {
       )
     }
     for (fishery in 25:26) {
-      expected_selectivity_group <- if (r1_shared_selectivity) {
+      expected_selectivity_group <- if (selectivity_stability) {
+        c(`25` = 23L, `26` = 24L)[[as.character(fishery)]]
+      } else if (r1_shared_selectivity) {
         fishery - 1L
       } else {
         fishery
@@ -1282,7 +1299,10 @@ for (i in seq_len(nrow(models))) {
         paste0("F", fishery, " independent selectivity group")
       )
       expected_form_flag <- if (all_forms_relaxed) 0L else 2L
-      for (pair in list(c(61, 7), c(16, expected_form_flag), c(75, 0))) {
+      expected_nodes <- 7L
+      for (pair in list(
+        c(61, expected_nodes), c(16, expected_form_flag), c(75, 0)
+      )) {
         check_flag(flags, -fishery, pair[[1L]], pair[[2L]], model_id, paste0("F", fishery, " N7 selectivity"))
       }
     }
@@ -1291,6 +1311,26 @@ for (i in seq_len(nrow(models))) {
         check_flag(
           flags, -fishery, 16L, 0L, model_id,
           paste0("F", fishery, " selected all-relaxed selectivity form")
+        )
+      }
+    }
+    if (selectivity_stability) {
+      for (fishery in c(1L, 2L, 3L, 5L, 29L, 33L)) {
+        check_flag(
+          flags, -fishery, 61L, 4L, model_id,
+          paste0("F", fishery, " selectivity-stability four-node curve")
+        )
+      }
+      for (fishery in c(25L, 26L)) {
+        check_flag(
+          flags, -fishery, 61L, 7L, model_id,
+          paste0("F", fishery, " retained seven-node curve")
+        )
+      }
+      for (fishery in 29:33) {
+        check_flag(
+          flags, -fishery, 99L, fishery, model_id,
+          paste0("F", fishery, " index catchability remains independent")
         )
       }
     }
@@ -1305,6 +1345,8 @@ for (i in seq_len(nrow(models))) {
         flags, -29L, 99L, 29L, model_id,
         "F29 index catchability remains independent"
       )
+    }
+    if (r1_shared_selectivity || selectivity_stability) {
       for (phase in c(1L, 10L, 11L)) {
         if (!identical(effective_flag_at_phase(flags, 1L, 121L, phase), 0)) {
           add_failure(
@@ -1673,6 +1715,119 @@ compare_flags_after_filter(
          flags$flag == 61L)
   }
 )
+compare_model_hashes_except(
+  "21a-R1F2F3F29Shared-MIX015",
+  "S01-SelectivityStability-MIX015",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "21a-R1F2F3F29Shared-MIX015",
+  "S01-SelectivityStability-MIX015",
+  function(flags) {
+    flags$scope <= -1L & flags$scope >= -33L & flags$flag == 24L
+  }
+)
+
+stability_id <- "S01-SelectivityStability-MIX015"
+stability_map_path <- file.path(root, "config", "selectivity-stability-map.csv")
+stability <- model_cache[[stability_id]]
+if (is.null(stability)) {
+  add_failure(stability_id, "generated model is unavailable for map validation.")
+} else if (!file.exists(stability_map_path)) {
+  add_failure(stability_id, "missing config/selectivity-stability-map.csv.")
+} else {
+  stability_map <- tryCatch(
+    utils::read.csv(
+      stability_map_path,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    ),
+    error = function(e) {
+      add_failure(
+        stability_id,
+        paste0("could not read selectivity map: ", conditionMessage(e))
+      )
+      data.frame()
+    }
+  )
+  required_map_columns <- c(
+    "fishery", "fishery_name", "selectivity_group", "n_nodes", "role"
+  )
+  if (!all(required_map_columns %in% names(stability_map))) {
+    add_failure(
+      stability_id,
+      paste0(
+        "selectivity map must contain columns: ",
+        paste(required_map_columns, collapse = ", "), "."
+      )
+    )
+  } else if (!identical(as.integer(stability_map$fishery), 1:33)) {
+    add_failure(stability_id, "selectivity map must contain fisheries 1:33 once and in order.")
+  } else {
+    configured_groups <- as.integer(stability_map$selectivity_group)
+    configured_nodes <- as.integer(stability_map$n_nodes)
+    phase1_groups <- vapply(
+      1:33,
+      function(fishery) effective_flag_at_phase(
+        stability$flags, -fishery, 24L, 1L
+      ),
+      numeric(1)
+    )
+    phase5_groups <- vapply(
+      1:33,
+      function(fishery) effective_flag_at_phase(
+        stability$flags, -fishery, 24L, 5L
+      ),
+      numeric(1)
+    )
+    effective_nodes <- vapply(
+      1:33,
+      function(fishery) effective_flag(
+        stability$flags, -fishery, 61L
+      ),
+      numeric(1)
+    )
+    if (!identical(as.integer(phase1_groups), configured_groups) ||
+        !identical(as.integer(phase5_groups), configured_groups)) {
+      add_failure(
+        stability_id,
+        "phase-1/phase-5 flag-24 values differ from the documented map."
+      )
+    }
+    if (!identical(as.integer(effective_nodes), configured_nodes)) {
+      add_failure(
+        stability_id,
+        "effective flag-61 node counts differ from the documented map."
+      )
+    }
+    if (!identical(sort(unique(configured_groups)), 1:31)) {
+      add_failure(
+        stability_id,
+        "selectivity groups must be contiguous 1:31."
+      )
+    }
+    shared_sets <- unname(split(1:33, configured_groups))
+    shared_sets <- shared_sets[lengths(shared_sets) > 1L]
+    shared_sets <- lapply(shared_sets, as.integer)
+    expected_shared_sets <- list(c(2L, 3L), c(7L, 9L))
+    if (!identical(shared_sets, expected_shared_sets)) {
+      add_failure(
+        stability_id,
+        "only F2/F3 and F7/F9 may share selectivity."
+      )
+    }
+    index_groups <- configured_groups[29:33]
+    extraction_groups <- configured_groups[1:28]
+    if (anyDuplicated(index_groups) ||
+        any(index_groups %in% extraction_groups)) {
+      add_failure(
+        stability_id,
+        "F29-F33 selectivity groups must be mutually independent and separate from extraction fisheries."
+      )
+    }
+  }
+}
+
 compare_model_hashes_except(
   "21a-R1F2F3F29Shared-MIX015",
   "21b-R1F2F3F29Shared-MIX005",

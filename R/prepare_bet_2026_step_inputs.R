@@ -786,7 +786,7 @@ write_readme(
 stepwise_5_region_template_step_id <- "06-NewStructure"
 
 age_variant_root <- file.path(
-  dirname(root), "ofp-sam-bet-2026-exploration", "reference-inputs", "age-length-variants"
+  input_root, "ofp-sam-bet-2026-exploration", "reference-inputs", "age-length-variants"
 )
 regional_age_075 <- file.path(age_variant_root, "bet.2026.regional.0.75.age_length")
 sub_basin_age_075 <- file.path(age_variant_root, "bet.2026.sub.basin.0.75.age_length")
@@ -908,6 +908,7 @@ write_sequence_step <- function(
     tail_compression_1pct = FALSE,
     index_selectivity = FALSE,
     r1_f2_f3_f29_shared_selectivity = FALSE,
+    selectivity_stability_map = FALSE,
     tag_return_likelihood_weight = NA_integer_,
     selectivity_update_bundle = FALSE,
     all_selectivity_forms_relaxed = FALSE,
@@ -927,6 +928,7 @@ write_sequence_step <- function(
       index_selectivity = index_selectivity,
       r1_f2_f3_f29_shared_selectivity =
         r1_f2_f3_f29_shared_selectivity,
+      selectivity_stability_map = selectivity_stability_map,
       tag_return_likelihood_weight = tag_return_likelihood_weight,
       selectivity_update_bundle = selectivity_update_bundle,
       all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
@@ -980,10 +982,21 @@ write_sequence_step <- function(
       if (tail_compression_1pct && !nzchar(dm_grouping)) "Length-frequency parest flag 313 is 1, activating 1% tail aggregation; flags 311/301 remain 1 and weight-frequency flag 303 remains 0.",
       if (nzchar(dm_grouping)) "Length-frequency parest flag 313 is reset to 0 because the DM likelihood does not read the percentage threshold; this also avoids unrelated percentage-tail preprocessing, while parest flag 320 controls DM support.",
       if (index_selectivity) "F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5.",
-      if (selectivity_update_bundle) paste0(
+      if (selectivity_stability_map) paste0(
+        "The selectivity-stability sensitivity shares F2/F3 and F7/F9; ",
+        "F19, F25, F26 and F29-F33 remain independent. The Job 15989 node ",
+        "settings are retained, including seven nodes for F25/F26."
+      ),
+      if (selectivity_update_bundle && !selectivity_stability_map) paste0(
         "The intended selectivity bundle unshares F15-F28 and applies fishery-specific ",
         "terminal/dome and youngest-age-tail controls; F25/F26 each use seven ",
         "nodes, terminal age 25, dome flag 2, and youngest-tail flag 0."
+      ),
+      if (selectivity_update_bundle && selectivity_stability_map) paste0(
+        "Fishery-specific terminal, dome and youngest-age-tail controls from ",
+        "the revised selectivity bundle are retained; only the documented ",
+        "coefficient-sharing groups change, while Job 15989 spline-node ",
+        "counts are retained."
       ),
       if (all_selectivity_forms_relaxed) paste0(
         "The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 ",
@@ -1193,6 +1206,7 @@ write_selected_path_step <- function(
     fixed_cpue_sigma = FALSE,
     index_selectivity = FALSE, selectivity_update_bundle = FALSE,
     r1_f2_f3_f29_shared_selectivity = FALSE,
+    selectivity_stability_map = FALSE,
     tag_return_likelihood_weight = NA_integer_,
     all_selectivity_forms_relaxed = FALSE,
     dom = FALSE, francis = numeric(),
@@ -1221,6 +1235,7 @@ write_selected_path_step <- function(
     index_selectivity = index_selectivity,
     r1_f2_f3_f29_shared_selectivity =
       r1_f2_f3_f29_shared_selectivity,
+    selectivity_stability_map = selectivity_stability_map,
     tag_return_likelihood_weight = tag_return_likelihood_weight,
     selectivity_update_bundle = selectivity_update_bundle,
     all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
@@ -1502,6 +1517,49 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE,
   dm_grouping = "G8PSSET", dm_nmax = 25L,
   status = "Prepared independent tag-return weight sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S01-SelectivityStability-MIX015",
+  "S01 Selectivity-stability sensitivity with SC22 K=0.15 mixing",
+  "21a-R1F2F3F29Shared-MIX015",
+  paste0(
+    "Retain the final DM model and SC22-IP10 K=0.15 tag settings, separate ",
+    "all regional index selectivities from extraction fisheries, and share ",
+    "only the extraction-fishery pairs F2/F3 and F7/F9."
+  ),
+  audit_notes = c(
+    paste0(
+      "Basis: extraction and index compositions have different weighting and ",
+      "sampling processes in Peatman et al. (2026), WCPFC-SC22-2026-SA-IP06; ",
+      "index selectivities are therefore kept independent."
+    ),
+    paste0(
+      "The two extraction-fishery pairs combine compatible gear, spatial and ",
+      "composition-processing strata with similar fitted selectivity curves. ",
+      "This is a stability sensitivity, not a claim that the paper prescribes ",
+      "selectivity sharing."
+    ),
+    paste0(
+      "F19, F25 and F26 remain independent, and all Job 15989 spline-node ",
+      "settings are retained. Fixed Lorenzen M, DM G8 Nmax25, reporting-rate ",
+      "priors, CPUE controls, data and all other settings are unchanged."
+    ),
+    paste0(
+      "Report-ready rationale and interpretation: ",
+      "[SELECTIVITY_STABILITY_SENSITIVITY.md]",
+      "(../../SELECTIVITY_STABILITY_SENSITIVITY.md)."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent selectivity-stability sensitivity snapshot."
 )
 
 # Remove superseded numbering and selectivity-sensitivity folders after the

@@ -57,6 +57,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `22b-R1F2F3F29Shared-MIX015-TAGW250` | `TRUE` | 22-TagLikelihoodWeightSensitivity | 22b | retain SC22 K=0.15 and multiply the tag-return likelihood by 0.25 | K=0.15; tag weight 0.25 | 22b Final DM sensitivity \| SC22 K=0.15, tag-return weight 0.25 | `22b-r1-shared-mix015-tagw250` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `22c-R1F2F3F29Shared-MIX005-TAGW500` | `TRUE` | 22-TagLikelihoodWeightSensitivity | 22c | retain SC22 K=0.05 and multiply the tag-return likelihood by 0.50 | K=0.05; tag weight 0.50 | 22c Final DM sensitivity \| SC22 K=0.05, tag-return weight 0.50 | `22c-r1-shared-mix005-tagw500` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `TRUE` | 22-TagLikelihoodWeightSensitivity | 22d | retain SC22 K=0.05 and multiply the tag-return likelihood by 0.25 | K=0.05; tag weight 0.25 | 22d Final DM sensitivity \| SC22 K=0.05, tag-return weight 0.25 | `22d-r1-shared-mix005-tagw250` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S01-SelectivityStability-MIX015` | `TRUE` | S01-SelectivityStability | S01 | test extraction-based selectivity sharing while keeping all regional index selectivities independent | Selectivity-stability sensitivity; K=0.15 | S01 Selectivity-stability sensitivity \| independent indices | `s01-selectivity-stability-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -94,6 +95,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `22b-R1F2F3F29Shared-MIX015-TAGW250` | `steps/22b-R1F2F3F29Shared-MIX015-TAGW250/model` | `exists` |
 | `22c-R1F2F3F29Shared-MIX005-TAGW500` | `steps/22c-R1F2F3F29Shared-MIX005-TAGW500/model` | `exists` |
 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `steps/22d-R1F2F3F29Shared-MIX005-TAGW250/model` | `exists` |
+| `S01-SelectivityStability-MIX015` | `steps/S01-SelectivityStability-MIX015/model` | `exists` |
 
 
 ## Useful Kflow Config

@@ -165,6 +165,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   if (isTRUE(doitall_edits$index_selectivity)) {
     apply_regional_index_selectivity_map(fishery_map_out)
   }
+  if (isTRUE(doitall_edits$selectivity_stability_map)) {
+    apply_selectivity_stability_display_map(fishery_map_out)
+  }
   write_generated_tag_rep_map(model_dir)
 
   sigma_flags <- integer()
@@ -184,6 +187,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     index_selectivity = isTRUE(doitall_edits$index_selectivity),
     r1_f2_f3_f29_shared_selectivity = isTRUE(
       doitall_edits$r1_f2_f3_f29_shared_selectivity
+    ),
+    selectivity_stability_map = isTRUE(
+      doitall_edits$selectivity_stability_map
     ),
     tag_return_likelihood_weight = get0(
       "tag_return_likelihood_weight",

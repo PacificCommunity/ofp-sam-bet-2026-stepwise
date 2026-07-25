@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 29 independent models unless STEP_SELECT is supplied.
+  # Run all 30 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
   numbered_groups = 22L,
-  model_rows = 29L,
+  model_rows = 30L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -280,6 +280,22 @@ stepwise_models <- do.call(
       "22d Final DM sensitivity | SC22 K=0.05, tag-return weight 0.25",
       "22d-r1-shared-mix005-tagw250",
       "Independent full native-MFCL doitall fit. Parest flag 177=250 multiplies the tag-return likelihood by 0.25. Reporting-rate priors, fixed M, DM G8 Nmax25, Job 15984 selectivity grouping and all other settings are retained."
+    ),
+    model_row(
+      "S01-SelectivityStability-MIX015", "S01-SelectivityStability",
+      "21a-R1F2F3F29Shared-MIX015",
+      FALSE, "stop",
+      "test extraction-based selectivity sharing while keeping all regional index selectivities independent",
+      "Selectivity-stability sensitivity; K=0.15",
+      "S01 Selectivity-stability sensitivity | independent indices",
+      "s01-selectivity-stability-mix015",
+      paste(
+        "Independent full native-MFCL doitall fit. F2/F3 and F7/F9 share",
+        "extraction-fishery selectivities. F19, F25, F26 and F29-F33 remain",
+        "independent, and all Job 15989 node settings are retained. Fixed M,",
+        "DM G8 Nmax25, SC22-IP10 K=0.15 tag settings, reporting-rate priors",
+        "and all non-selectivity controls are unchanged."
+      )
     )
   )
 )
@@ -318,7 +334,8 @@ stepwise_report_change <- c(
   "22a-R1F2F3F29Shared-MIX015-TAGW500" = "SC22 K=0.15 with tag-return likelihood weight 0.50",
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = "SC22 K=0.15 with tag-return likelihood weight 0.25",
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "SC22 K=0.05 with tag-return likelihood weight 0.50",
-  "22d-R1F2F3F29Shared-MIX005-TAGW250" = "SC22 K=0.05 with tag-return likelihood weight 0.25"
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" = "SC22 K=0.05 with tag-return likelihood weight 0.25",
+  "S01-SelectivityStability-MIX015" = "Extraction-based selectivity sharing with independent regional indices"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -349,7 +366,8 @@ stepwise_report_purpose <- c(
   "22a-R1F2F3F29Shared-MIX015-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.15 while retaining reporting-rate priors.",
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.15 while retaining reporting-rate priors.",
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.05 while retaining reporting-rate priors.",
-  "22d-R1F2F3F29Shared-MIX005-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.05 while retaining reporting-rate priors."
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.05 while retaining reporting-rate priors.",
+  "S01-SelectivityStability-MIX015" = "Test whether limited sharing among comparable longline extraction fisheries improves stability without coupling index selectivity to extraction-fishery composition processes or reducing the selected purse-seine flexibility."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -382,7 +400,8 @@ path_stage <- c(
   "22a-R1F2F3F29Shared-MIX015-TAGW500" = 22L,
   "22b-R1F2F3F29Shared-MIX015-TAGW250" = 22L,
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = 22L,
-  "22d-R1F2F3F29Shared-MIX005-TAGW250" = 22L
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" = 22L,
+  "S01-SelectivityStability-MIX015" = 23L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -416,7 +435,8 @@ stepwise_models$dm_grouping[
     "22a-R1F2F3F29Shared-MIX015-TAGW500",
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
-    "22d-R1F2F3F29Shared-MIX005-TAGW250"
+    "22d-R1F2F3F29Shared-MIX005-TAGW250",
+    "S01-SelectivityStability-MIX015"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -428,7 +448,8 @@ stepwise_models$dm_nmax[
     "22a-R1F2F3F29Shared-MIX015-TAGW500",
     "22b-R1F2F3F29Shared-MIX015-TAGW250",
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
-    "22d-R1F2F3F29Shared-MIX005-TAGW250"
+    "22d-R1F2F3F29Shared-MIX005-TAGW250",
+    "S01-SelectivityStability-MIX015"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -453,7 +474,8 @@ stepwise_models$tail_compression_percent <- ifelse(
       "22a-R1F2F3F29Shared-MIX015-TAGW500",
       "22b-R1F2F3F29Shared-MIX015-TAGW250",
       "22c-R1F2F3F29Shared-MIX005-TAGW500",
-      "22d-R1F2F3F29Shared-MIX005-TAGW250"
+      "22d-R1F2F3F29Shared-MIX005-TAGW250",
+      "S01-SelectivityStability-MIX015"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
