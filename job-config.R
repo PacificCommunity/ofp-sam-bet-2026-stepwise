@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 23 independent models unless STEP_SELECT is supplied.
+  # Run all 25 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 20L,
-  model_rows = 23L,
+  numbered_groups = 21L,
+  model_rows = 25L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -220,6 +220,26 @@ stepwise_models <- do.call(
       "DM weighting", "20c Final DM weighting model (Job 14363 settings)", "20c-dm-length-composition-weighting",
       "Selected final weighting treatment. This branch does not inherit divisor 200 or Francis controls. It retains the Job 14363 revised fishery-specific selectivity setting with form penalties off, plus the selected tag settings. Nmax=25 is the asymptotic effective-sample-size upper bound and lies just above the 22.22-23.81 range of 95th-percentile composition-level Francis ESS across 2,399 positive LF compositions in matched robust-normal fits. Flag 313 is reset to 0 because the DM likelihood does not read that percentage threshold and to avoid unrelated percentage-tail preprocessing; flag 320=5 controls DM support, matching the Job 14363 numeric controls.",
       fitted_job_id = "14363"
+    ),
+    model_row(
+      "21a-R1F2F3F29Shared-MIX015", "21-SelectivityMixingSensitivity",
+      "20c-DMG8Nmax25",
+      FALSE, "stop",
+      "apply the Job 15984 R1 selectivity grouping with SC22-IP10 K=0.15 mixing periods",
+      "R1 grouped selectivity; K=0.15",
+      "21a Final DM sensitivity | R1 F2/F3/F29 shared, SC22 K=0.15",
+      "21a-r1-f2-f3-f29-shared-mix015",
+      "Independent full native-MFCL doitall fit. F2, F3 and F29 share one four-node Region 1 selectivity; F30/F4, F31/F7 and F32/F8 remain paired; F33 and F29-F33 catchability groups remain independent. Fixed M, DM G8 Nmax25, reporting-rate settings and all other final-model controls are retained."
+    ),
+    model_row(
+      "21b-R1F2F3F29Shared-MIX005", "21-SelectivityMixingSensitivity",
+      "21a-R1F2F3F29Shared-MIX015",
+      FALSE, "stop",
+      "retain the Job 15984 R1 selectivity grouping and change only SC22-IP10 mixing periods from K=0.15 to K=0.05",
+      "R1 grouped selectivity; K=0.05",
+      "21b Final DM sensitivity | R1 F2/F3/F29 shared, SC22 K=0.05",
+      "21b-r1-f2-f3-f29-shared-mix005",
+      "Independent full native-MFCL doitall fit. The model is identical to Step 21a except that tag_flags(:,1) comes from the SC22-IP10 K=0.05 INI. Fixed M, DM G8 Nmax25, reporting-rate settings, selectivity grouping and all other controls are retained."
     )
   )
 )
@@ -252,7 +272,9 @@ stepwise_report_change <- c(
   "19-EffortCreep" = "Effort-creep adjustment",
   "20a-DOMDiv200" = "Downweighting of three domestic fisheries (F21-F23; divisor 200)",
   "20b-Francis" = "Francis composition reweighting",
-  "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting"
+  "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting",
+  "21a-R1F2F3F29Shared-MIX015" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.15 mixing periods",
+  "21b-R1F2F3F29Shared-MIX005" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.05 mixing periods"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -277,7 +299,9 @@ stepwise_report_purpose <- c(
   "19-EffortCreep" = "Account for gradual changes in fishing efficiency.",
   "20a-DOMDiv200" = "Test strong downweighting of length compositions from the Indonesian, Philippine and Vietnamese domestic fisheries.",
   "20b-Francis" = "Apply fishery-specific length-composition divisors calculated from standardized mean-length residuals using method TA1.8 of Francis (2011).",
-  "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25."
+  "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25.",
+  "21a-R1F2F3F29Shared-MIX015" = "Evaluate the Job 15984 selectivity grouping using the current final DM inputs and SC22-IP10 K=0.15 mixing periods.",
+  "21b-R1F2F3F29Shared-MIX005" = "Isolate sensitivity to the SC22-IP10 K=0.05 release-group mixing periods under the same grouped-selectivity final DM model."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -304,7 +328,9 @@ path_stage <- c(
   "16-SelectivityUpdate" = 16L, "17-MIX015" = 17L,
   "18-TagReportingExclusion" = 18L, "19-EffortCreep" = 19L,
   "20a-DOMDiv200" = 20L, "20b-Francis" = 20L,
-  "20c-DMG8Nmax25" = 20L
+  "20c-DMG8Nmax25" = 20L,
+  "21a-R1F2F3F29Shared-MIX015" = 21L,
+  "21b-R1F2F3F29Shared-MIX005" = 21L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -317,9 +343,21 @@ stepwise_models$tag_flag2 <- NA_integer_
 stepwise_models$tag_flag2[stepwise_models$path_stage >= 3L] <- 0L
 stepwise_models$tag_flag2[stepwise_models$path_stage >= 18L] <- 1L
 stepwise_models$dm_grouping <- ""
-stepwise_models$dm_grouping[stepwise_models$step_id == "20c-DMG8Nmax25"] <- "G8PSSET"
+stepwise_models$dm_grouping[
+  stepwise_models$step_id %in% c(
+    "20c-DMG8Nmax25",
+    "21a-R1F2F3F29Shared-MIX015",
+    "21b-R1F2F3F29Shared-MIX005"
+  )
+] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
-stepwise_models$dm_nmax[stepwise_models$step_id == "20c-DMG8Nmax25"] <- 25L
+stepwise_models$dm_nmax[
+  stepwise_models$step_id %in% c(
+    "20c-DMG8Nmax25",
+    "21a-R1F2F3F29Shared-MIX015",
+    "21b-R1F2F3F29Shared-MIX005"
+  )
+] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
 stepwise_models$regional_scaling_weight[stepwise_models$path_stage >= 11L] <- 100L
 stepwise_models$reporting_rate_prior <- ifelse(
@@ -335,12 +373,16 @@ stepwise_models$fixed_natural_mortality <- stepwise_models$path_stage >= 4L
 stepwise_models$length_weight_updated <- stepwise_models$path_stage >= 5L
 stepwise_models$tail_compression_percent <- ifelse(
   stepwise_models$path_stage >= 9L &
-    stepwise_models$step_id != "20c-DMG8Nmax25", 1, 0
+    !stepwise_models$step_id %in% c(
+      "20c-DMG8Nmax25",
+      "21a-R1F2F3F29Shared-MIX015",
+      "21b-R1F2F3F29Shared-MIX005"
+    ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 16L
 stepwise_models$all_selectivity_forms_relaxed <- stepwise_models$path_stage >= 16L
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 20L
+stepwise_run$numbered_groups <- 21L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

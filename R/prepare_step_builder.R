@@ -182,6 +182,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     regional_scaling_start_period = reg_scaling_active_start_period,
     regional_scaling_end_period = reg_scaling_active_end_period,
     index_selectivity = isTRUE(doitall_edits$index_selectivity),
+    r1_f2_f3_f29_shared_selectivity = isTRUE(
+      doitall_edits$r1_f2_f3_f29_shared_selectivity
+    ),
     selectivity_update_bundle = isTRUE(
       doitall_edits$selectivity_update_bundle
     ),

@@ -1,0 +1,85 @@
+name: bet-2026-final-dm-job15984-grouping-sc22-k015-20260725
+description: Final BET 2026 DM model using the exact Job 15984 selectivity grouping and the SC22-IP10 K=0.15 release-group mixing periods.
+
+command: bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 10GB
+
+env:
+  STEP_SELECT: 21a-R1F2F3F29Shared-MIX015
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  RUN_MODE: doitall
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  JOB_TITLE: "BET 2026 final DM sensitivity | Job 15984 grouping, SC22 K=0.15"
+  JOB_DESCRIPTION: "Independent native-MFCL doitall fit of the current final DM model. F2, F3 and F29 share one four-node Region 1 selectivity exactly as in Job 15984; F29 catchability remains independent. Mixing periods use SC22-IP10 K=0.15. Lorenzen M is fixed at -2.54930339768360; DM G8 Nmax25 and reporting-rate controls are retained."
+  MODEL_LABEL: Final DM; R1 F2/F3/F29 shared; K=0.15
+  JOB_KEY: 21a-r1-f2-f3-f29-shared-mix015
+  FLOW_GROUP: bet-2026-final-dm-job15984-grouping-sc22-k015-20260725
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  TRIGGER_NEXT: "false"
+  PROGRAM_PATH: /home/mfcl/mfclo64
+  MFCL_LIVE_LOG: "true"
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@2c931ebd20fd04286fb4ff476c774ec036c49bb9,mfclshiny=PacificCommunity/mfclshiny@dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
+  MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+metadata:
+  task_role: sensitivity
+  task_visibility: primary
+  scientific_parent_job: "15984"
+  scientific_parent_model: 20c-DMG8Nmax25
+  run_strategy: full-doitall
+  engine: native-mfcl
+  stepwise_main_commit: 5efbaec579e65c0a53e511223aa995bfe6fc53b4
+  selectivity_source_commit: d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12
+  ini_source_commit: 5b2fb6053e34a58ef61275a68d8a67ec988833c1
+  change_axis: Job 15984 selectivity grouping with SC22-IP10 K=0.15 mixing
+
+tags:
+  stage: sensitivity
+  flow: bet-2026-final-dm-job15984-grouping-sc22-k015-20260725
+  model: 21a-R1F2F3F29Shared-MIX015
+  parent_job: "15984"
+  mixing_cutoff: "0.15"
+  run_mode: doitall
+  engine: mfcl
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+job_config:
+  optional:
+    - MFCL_LIVE_LOG

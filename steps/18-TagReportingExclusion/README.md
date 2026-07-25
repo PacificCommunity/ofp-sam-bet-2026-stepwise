@@ -35,7 +35,7 @@ Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so repor
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
 | `.frq` | Uses the selected source without additional scientific transformation. | All non-effort FRQ values. |
-| `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
+| `.ini` | rrpttp26 reporting-rate matrices; bet.2026.mix-0.15.ini copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
 | `Step-specific change` | Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 so reporting rates are not applied to predicted recaptures within each release group's pre-mixing window; post-mixing treatment and all reporting-rate values, groups, targets, and priors remain unchanged. | All previously selected controls; no OPR or length-bin selectivity. |

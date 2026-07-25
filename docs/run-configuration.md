@@ -51,6 +51,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `20a-DOMDiv200` | `TRUE` | 20-CompositionWeighting | 20a | apply divisor 200 to length compositions from the three domestic fisheries F21-F23 | Three domestic fisheries downweighted | 20a F21-F23 length-composition downweighting | `20a-dom-f21-f23-div200` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `20b-Francis` | `TRUE` | 20-CompositionWeighting | 20b | apply the independent Francis composition-data weighting comparison | Francis reweighting | 20b Francis length-composition reweighting | `20b-francis` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `20c-DMG8Nmax25` | `TRUE` | 20-CompositionWeighting | 20c | branch directly from Step 19 and use a Dirichlet-multinomial likelihood with G8 grouping and Nmax 25 | DM weighting | 20c Final DM weighting model (Job 14363 settings) | `20c-dm-length-composition-weighting` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `21a-R1F2F3F29Shared-MIX015` | `TRUE` | 21-SelectivityMixingSensitivity | 21a | apply the Job 15984 R1 selectivity grouping with SC22-IP10 K=0.15 mixing periods | R1 grouped selectivity; K=0.15 | 21a Final DM sensitivity \| R1 F2/F3/F29 shared, SC22 K=0.15 | `21a-r1-f2-f3-f29-shared-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `21b-R1F2F3F29Shared-MIX005` | `TRUE` | 21-SelectivityMixingSensitivity | 21b | retain the Job 15984 R1 selectivity grouping and change only SC22-IP10 mixing periods from K=0.15 to K=0.05 | R1 grouped selectivity; K=0.05 | 21b Final DM sensitivity \| R1 F2/F3/F29 shared, SC22 K=0.05 | `21b-r1-f2-f3-f29-shared-mix005` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -82,6 +84,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `20a-DOMDiv200` | `steps/20a-DOMDiv200/model` | `exists` |
 | `20b-Francis` | `steps/20b-Francis/model` | `exists` |
 | `20c-DMG8Nmax25` | `steps/20c-DMG8Nmax25/model` | `exists` |
+| `21a-R1F2F3F29Shared-MIX015` | `steps/21a-R1F2F3F29Shared-MIX015/model` | `exists` |
+| `21b-R1F2F3F29Shared-MIX005` | `steps/21b-R1F2F3F29Shared-MIX005/model` | `exists` |
 
 
 ## Useful Kflow Config

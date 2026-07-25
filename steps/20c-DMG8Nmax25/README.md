@@ -35,7 +35,7 @@ Branch directly from Step 19 and use a Dirichlet-multinomial length-composition 
 | Scope | Generated change | Unchanged |
 | --- | --- | --- |
 | `.frq` | Changes only positive F29-F33 effort using the agreed creep schedule. | All non-effort FRQ values. |
-| `.ini` | rrpttp26 reporting-rate matrices; MIX015 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
+| `.ini` | rrpttp26 reporting-rate matrices; bet.2026.mix-0.15.ini copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
 | `Step-specific change` | Branch directly from Step 19 and use a Dirichlet-multinomial length-composition likelihood with G8 grouping and Nmax 25, without DOM divisor 200 or Francis weighting. | All previously selected controls; no OPR or length-bin selectivity. |

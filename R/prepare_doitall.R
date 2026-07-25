@@ -542,6 +542,91 @@ apply_index_selectivity_separation <- function(lines, index_fisheries = 29:33) {
   append_phase_controls(lines, 5L, block)
 }
 
+set_control_flag_in_phase <- function(lines, actor, flag, value, phase,
+                                      comment = "") {
+  bounds <- phase_heredoc_bounds(lines, phase)
+  block <- seq.int(bounds[["start"]] + 1L, bounds[["end"]] - 1L)
+  actor <- as.character(actor)
+  flag <- as.integer(flag)
+  pattern <- sprintf(
+    "(^|[[:space:]])%s[[:space:]]+%d[[:space:]]+",
+    actor, flag
+  )
+  hit <- block[grep(pattern, lines[block])]
+  if (!length(hit)) {
+    return(append_phase_controls(
+      lines,
+      phase,
+      paste0(
+        "  ", actor, " ", flag, " ", value,
+        if (nzchar(comment)) paste0("  # ", comment) else ""
+      )
+    ))
+  }
+  if (length(hit) > 1L) {
+    stop(
+      "Expected one Phase ", phase, " control for actor ", actor,
+      " flag ", flag, "; found ", length(hit),
+      call. = FALSE
+    )
+  }
+  line <- lines[[hit]]
+  body <- sub("[[:space:]]+#.*$", "", line)
+  words <- read_words(body)
+  target <- which(
+    seq_along(words) <= length(words) - 2L &
+      words == actor & words[seq_along(words) + 1L] == as.character(flag)
+  )
+  if (length(target) != 1L) {
+    stop(
+      "Could not isolate Phase ", phase, " actor ", actor,
+      " flag ", flag,
+      call. = FALSE
+    )
+  }
+  words[[target + 2L]] <- as.character(value)
+  lines[[hit]] <- paste0(
+    "  ", paste(words, collapse = " "),
+    if (nzchar(comment)) paste0("  # ", comment) else ""
+  )
+  lines
+}
+
+apply_r1_f2_f3_f29_shared_selectivity <- function(lines) {
+  # Exact Job 15984 map. F2, F3 and Index R1 (F29) share group 2;
+  # the pre-existing F30/F4, F31/F7 and F32/F8 regional matches remain.
+  # F33 remains independent. Reassert the complete map in Phase 5 so the
+  # staged index-separation block cannot undo the intended grouping.
+  groups <- c(1L, 2L, 2L, 3:27, 2L, 3L, 6L, 7L, 28L)
+  stopifnot(length(groups) == 33L, identical(sort(unique(groups)), 1:28))
+  for (phase in c(1L, 5L)) {
+    for (fishery in seq_len(33L)) {
+      lines <- set_control_flag_in_phase(
+        lines,
+        paste0("-", fishery),
+        24L,
+        groups[[fishery]],
+        phase,
+        paste0(
+          "F", fishery, " Job 15984 selectivity group",
+          if (fishery %in% c(2L, 3L, 29L)) " (shared Region 1 curve)" else ""
+        )
+      )
+    }
+  }
+  for (fishery in c(1L, 2L, 3L, 5L, 29L, 33L)) {
+    lines <- set_control_flag_in_phase(
+      lines,
+      paste0("-", fishery),
+      61L,
+      4L,
+      1L,
+      paste0("F", fishery, " Job 15984 four-node cubic-spline selectivity")
+    )
+  }
+  lines
+}
+
 apply_selectivity_update_bundle <- function(lines) {
   phase1_groups <- c(seq_len(28L), rep(29L, 5L))
   old_group_comment <- grep(
@@ -885,6 +970,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_scaling_start_period = reg_scaling_active_start_period,
                           regional_scaling_end_period = reg_scaling_active_end_period,
                           index_selectivity = FALSE,
+                          r1_f2_f3_f29_shared_selectivity = FALSE,
                           selectivity_update_bundle = FALSE,
                           all_selectivity_forms_relaxed = FALSE,
                           tail_compression_1pct = FALSE,
@@ -937,6 +1023,16 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     )
   }
   if (isTRUE(index_selectivity)) lines <- apply_index_selectivity_separation(lines)
+  if (isTRUE(r1_f2_f3_f29_shared_selectivity)) {
+    if (!isTRUE(index_selectivity) || !isTRUE(selectivity_update_bundle)) {
+      stop(
+        "The Job 15984 shared-selectivity map requires the revised selectivity ",
+        "bundle and staged index separation.",
+        call. = FALSE
+      )
+    }
+    lines <- apply_r1_f2_f3_f29_shared_selectivity(lines)
+  }
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)
   if (isTRUE(dom_divisor200)) lines <- apply_dom_lf_divisors(lines)
   if (length(cpue_sigma_flag92)) {

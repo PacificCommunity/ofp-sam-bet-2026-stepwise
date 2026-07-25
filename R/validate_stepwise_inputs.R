@@ -346,7 +346,10 @@ for (id in models$step_id) visit_parent(id)
 expected_weighting_parents <- c(
   "20a-DOMDiv200" = "19-EffortCreep",
   "20b-Francis" = "19-EffortCreep",
-  "20c-DMG8Nmax25" = "19-EffortCreep"
+  "20c-DMG8Nmax25" = "19-EffortCreep",
+  "21a-R1F2F3F29Shared-MIX015" = "20c-DMG8Nmax25",
+  "21b-R1F2F3F29Shared-MIX005" =
+    "21a-R1F2F3F29Shared-MIX015"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -783,7 +786,12 @@ for (i in seq_len(nrow(models))) {
       "20b Francis replacement weighting"
     )
   }
-  if (identical(model_id, "20c-DMG8Nmax25")) {
+  final_dm_models <- c(
+    "20c-DMG8Nmax25",
+    "21a-R1F2F3F29Shared-MIX015",
+    "21b-R1F2F3F29Shared-MIX005"
+  )
+  if (model_id %in% final_dm_models) {
     require_exact_controls(
       doitall, job13328_dm_controls, model_id,
       "Job 13328 S011 DM/G8/Nmax25 state"
@@ -1147,6 +1155,10 @@ for (i in seq_len(nrow(models))) {
 
   n7_expected <- selectivity_expected
   if (n7_expected) {
+    r1_shared_selectivity <- model_id %in% c(
+      "21a-R1F2F3F29Shared-MIX015",
+      "21b-R1F2F3F29Shared-MIX005"
+    )
     phase1_groups <- vapply(
       1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 1L),
       numeric(1)
@@ -1155,7 +1167,17 @@ for (i in seq_len(nrow(models))) {
       1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 5L),
       numeric(1)
     )
-    expected_phase1 <- c(1:28, rep(29, 5L))
+    expected_r1_shared <- c(1, 2, 2, 3:27, 2, 3, 6, 7, 28)
+    expected_phase1 <- if (r1_shared_selectivity) {
+      expected_r1_shared
+    } else {
+      c(1:28, rep(29, 5L))
+    }
+    expected_phase5 <- if (r1_shared_selectivity) {
+      expected_r1_shared
+    } else {
+      1:33
+    }
     if (!identical(as.numeric(phase1_groups), as.numeric(expected_phase1))) {
       add_failure(
         model_id,
@@ -1165,11 +1187,13 @@ for (i in seq_len(nrow(models))) {
         )
       )
     }
-    if (!identical(as.numeric(phase5_groups), as.numeric(1:33))) {
+    if (!identical(as.numeric(phase5_groups), as.numeric(expected_phase5))) {
       add_failure(
         model_id,
         paste0(
-          "phase-5 effective selectivity grouping must be contiguous 1:33; found `",
+          "phase-5 effective selectivity grouping must be `",
+          paste(expected_phase5, collapse = " "),
+          "`; found `",
           paste(phase5_groups, collapse = " "), "`."
         )
       )
@@ -1199,11 +1223,19 @@ for (i in seq_len(nrow(models))) {
       )
     }
     for (fishery in 25:26) {
+      expected_selectivity_group <- if (r1_shared_selectivity) {
+        fishery - 1L
+      } else {
+        fishery
+      }
       check_flag(
         flags, -fishery, 3L, 25L, model_id,
         paste0("F", fishery, " last age class with non-zero dome selectivity")
       )
-      check_flag(flags, -fishery, 24L, fishery, model_id, paste0("F", fishery, " independent selectivity group"))
+      check_flag(
+        flags, -fishery, 24L, expected_selectivity_group, model_id,
+        paste0("F", fishery, " independent selectivity group")
+      )
       expected_form_flag <- if (all_forms_relaxed) 0L else 2L
       for (pair in list(c(61, 7), c(16, expected_form_flag), c(75, 0))) {
         check_flag(flags, -fishery, pair[[1L]], pair[[2L]], model_id, paste0("F", fishery, " N7 selectivity"))
@@ -1215,6 +1247,26 @@ for (i in seq_len(nrow(models))) {
           flags, -fishery, 16L, 0L, model_id,
           paste0("F", fishery, " selected all-relaxed selectivity form")
         )
+      }
+    }
+    if (r1_shared_selectivity) {
+      for (fishery in c(1L, 2L, 3L, 5L, 29L, 33L)) {
+        check_flag(
+          flags, -fishery, 61L, 4L, model_id,
+          paste0("F", fishery, " Job 15984 four-node selectivity")
+        )
+      }
+      check_flag(
+        flags, -29L, 99L, 29L, model_id,
+        "F29 index catchability remains independent"
+      )
+      for (phase in c(1L, 10L, 11L)) {
+        if (!identical(effective_flag_at_phase(flags, 1L, 121L, phase), 0)) {
+          add_failure(
+            model_id,
+            paste0("Lorenzen M must remain fixed in Phase ", phase, ".")
+          )
+        }
       }
     }
   }
@@ -1561,6 +1613,31 @@ compare_flags_after_filter(
       (flags$scope <= -1L & flags$scope >= -33L & flags$flag == 68L) |
       (flags$scope == -999L & flags$flag %in% c(69L, 89L))
   }
+)
+compare_model_hashes_except(
+  "20c-DMG8Nmax25",
+  "21a-R1F2F3F29Shared-MIX015",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "20c-DMG8Nmax25",
+  "21a-R1F2F3F29Shared-MIX015",
+  function(flags) {
+    (flags$scope <= -1L & flags$scope >= -33L & flags$flag == 24L) |
+      (flags$scope %in% -c(1L, 2L, 3L, 5L, 29L, 33L) &
+         flags$flag == 61L)
+  }
+)
+compare_model_hashes_except(
+  "21a-R1F2F3F29Shared-MIX015",
+  "21b-R1F2F3F29Shared-MIX005",
+  "bet.ini"
+)
+compare_tag_flag_boundary(
+  "21a-R1F2F3F29Shared-MIX015",
+  "21b-R1F2F3F29Shared-MIX005",
+  1L,
+  "SC22-IP10 K=0.15 versus K=0.05 mixing-period sensitivity"
 )
 
 ## Isolation checks for matched TAGF2 and mixing-period pairs, when configured.

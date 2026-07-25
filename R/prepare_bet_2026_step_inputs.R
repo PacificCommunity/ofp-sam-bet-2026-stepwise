@@ -576,6 +576,9 @@ new_tag <- file.path(tag_root, "bet.2026.low.recaps.removed.tag")
 mix015_ini <- file.path(
   ini_root, "ini.mix-period", "bet.2026.mix-0.15.ini"
 )
+mix005_ini <- file.path(
+  ini_root, "ini.mix-period", "bet.2026.mix-0.05.ini"
+)
 regfish_ini_source <- file.path(ini_root, "bet.2023.new.structure.ini")
 regfish_tag_source <- file.path(tag_root, "bet.2023.new.structure-low.recaps.removed.tag")
 rrpttp26_reporting_source <- file.path(root, "config", "rrpttp26-reporting-rates.csv")
@@ -904,6 +907,7 @@ write_sequence_step <- function(
     regional_scaling_weight = NA_integer_,
     tail_compression_1pct = FALSE,
     index_selectivity = FALSE,
+    r1_f2_f3_f29_shared_selectivity = FALSE,
     selectivity_update_bundle = FALSE,
     all_selectivity_forms_relaxed = FALSE,
     time_varying_cv = FALSE,
@@ -920,6 +924,8 @@ write_sequence_step <- function(
     list(
       regional_cpue = regional_cpue,
       index_selectivity = index_selectivity,
+      r1_f2_f3_f29_shared_selectivity =
+        r1_f2_f3_f29_shared_selectivity,
       selectivity_update_bundle = selectivity_update_bundle,
       all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
       tail_compression_1pct = tail_compression_1pct,
@@ -1002,7 +1008,12 @@ write_sequence_step <- function(
         paste(
           c(
             if (nzchar(tag_reporting_source)) paste0(reporting_rate_variant, " reporting-rate matrices"),
-            if (nzchar(tag_mixing_source)) "MIX015 copied only into tag_flags(:,1)",
+            if (nzchar(tag_mixing_source)) {
+              paste0(
+                basename(tag_mixing_source),
+                " copied only into tag_flags(:,1)"
+              )
+            },
             paste0("tag_flags(:,2)=", tag_flag_column2)
           ),
           collapse = "; "
@@ -1168,10 +1179,12 @@ write_selected_path_step <- function(
     step_id, title, parent, change,
     audit_notes = character(),
     tag_mixing = FALSE, tag_flag2 = 0L,
+    tag_mixing_source_override = "",
     tail_compression_1pct = TRUE,
     time_varying_cv = FALSE, effort_creep = FALSE,
     fixed_cpue_sigma = FALSE,
     index_selectivity = FALSE, selectivity_update_bundle = FALSE,
+    r1_f2_f3_f29_shared_selectivity = FALSE,
     all_selectivity_forms_relaxed = FALSE,
     dom = FALSE, francis = numeric(),
     dm_grouping = "", dm_nmax = NA_integer_,
@@ -1184,13 +1197,21 @@ write_selected_path_step <- function(
     age_effective_sample_size = NA_real_,
     reporting_rate_variant = "rrpttp26",
     tag_reporting_source = peatman_rr_ini,
-    tag_mixing_source = if (tag_mixing) mix015_ini else "",
+    tag_mixing_source = if (nzchar(tag_mixing_source_override)) {
+      tag_mixing_source_override
+    } else if (tag_mixing) {
+      mix015_ini
+    } else {
+      ""
+    },
     tag_flag_column2 = tag_flag2,
     regional_cpue = TRUE,
     regional_scaling = TRUE,
     regional_scaling_weight = 100L,
     tail_compression_1pct = tail_compression_1pct,
     index_selectivity = index_selectivity,
+    r1_f2_f3_f29_shared_selectivity =
+      r1_f2_f3_f29_shared_selectivity,
     selectivity_update_bundle = selectivity_update_bundle,
     all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
     time_varying_cv = time_varying_cv,
@@ -1320,6 +1341,57 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE,
   dm_grouping = "G8PSSET", dm_nmax = 25L,
   status = "Prepared selected-model snapshot; model fit not run here."
+)
+
+write_selected_path_step(
+  "21a-R1F2F3F29Shared-MIX015",
+  "21a R1 shared selectivity with SC22 K=0.15 mixing",
+  "20c-DMG8Nmax25",
+  paste0(
+    "Retain the final DM model and apply the exact Job 15984 selectivity map: ",
+    "F2, F3 and F29 share one four-node Region 1 curve; F30/F4, F31/F7 ",
+    "and F32/F8 remain paired; F33 and all index catchability groups remain ",
+    "independent."
+  ),
+  audit_notes = c(
+    "Selectivity source: Job 15984, repository commit d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12.",
+    "Mixing-period source: ofp-sam-2026-BET-YFT-build-ini SC22-IP10-based commit 5b2fb6053e34a58ef61275a68d8a67ec988833c1, K=0.15.",
+    "Held constant: fixed Lorenzen M, DM G8 Nmax25, reporting-rate groups, targets, penalties, CPUE controls, data and all non-selectivity settings."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  r1_f2_f3_f29_shared_selectivity = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent final-DM sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "21b-R1F2F3F29Shared-MIX005",
+  "21b R1 shared selectivity with SC22 K=0.05 mixing",
+  "21a-R1F2F3F29Shared-MIX015",
+  paste0(
+    "Use the same final DM model and exact Job 15984 selectivity map as Step ",
+    "21a, changing only tag_flags(:,1) from the SC22 K=0.15 periods to the ",
+    "SC22 K=0.05 periods."
+  ),
+  audit_notes = c(
+    "Selectivity source: Job 15984, repository commit d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12.",
+    "Mixing-period source: ofp-sam-2026-BET-YFT-build-ini SC22-IP10-based commit 5b2fb6053e34a58ef61275a68d8a67ec988833c1, K=0.05.",
+    "Held constant relative to Step 21a: fixed Lorenzen M, DM G8 Nmax25, reporting-rate groups, targets, penalties, CPUE controls, data and every doitall control."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix005_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  r1_f2_f3_f29_shared_selectivity = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent K=0.05 mixing-period sensitivity snapshot."
 )
 
 # Remove superseded numbering and selectivity-sensitivity folders after the
