@@ -1,0 +1,4 @@
+"lower_x100","tau_lower","tau_upper","maximum_relative_information","interpretation"
+"200","2","100","0.510","Tag information cannot exceed approximately 51% of Job 15984; start tau=3."
+"300","3","150","0.340","Tag information cannot exceed approximately 34% of Job 15984; start tau=4."
+"400","4","200","0.255","Tag information cannot exceed approximately 26% of Job 15984; start tau=5."

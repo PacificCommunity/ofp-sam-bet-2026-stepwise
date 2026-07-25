@@ -319,6 +319,15 @@ sensitivity_models <- do.call(
       "Full native-MFCL doitall fit using the Job 15363 configuration. F2 LL.EAST.1, F3 LL.US.1 and F29 Index R1 share one four-node selectivity. F29 retains its independent flag-99 catchability group; fixed M, DM G8 Nmax25 and every other Job 15363 input and control are unchanged."
     ),
     model_row(
+      "20-TagTauSensitivity", "20-TagTauSensitivity", "19a-R1F2F3F29SharedSelectivity",
+      FALSE, "sensitivity",
+      "estimate tag-recapture overdispersion under alternative fishery-stratum groupings",
+      "Tag-recapture overdispersion sensitivity",
+      "BET 2026 tag-recapture overdispersion sensitivity",
+      "20-tag-tau-sensitivity",
+      "Full native-MFCL doitall sensitivity from Job 15984. Phase 10 opens direct negative-binomial tau estimation under the TAG_TAU_SCENARIO grouping. No fixed tag-likelihood multiplier is applied (parest 177=0). Fixed M, KS 0.15 mixing, RRPTTP26, DM G8 Nmax25, and the Job 15984 selectivity map are retained."
+    ),
+    model_row(
       "19-GroupedSelectivityEstimatedM", "19-NaturalMortalitySensitivity", "18-GroupedSelectivityRobustness",
       FALSE, "sensitivity",
       "estimate the Lorenzen natural-mortality intercept from Phase 10",
@@ -336,6 +345,7 @@ sensitivity_models$report_purpose <- c(
   "Bound the influence of all active fishery-specific dome/old-age-tail penalties; this is not a preferred model.",
   "Test whether fishery-informed selectivity sharing and lower spline dimension improve robustness while retaining the Job 14363 model specification.",
   "Test whether a common four-node F2/F3/F29 Region 1 selectivity removes the retrospective alternative mode without sharing index catchability.",
+  "Estimate tag-recapture overdispersion and test whether its fitted scale depends on the fishery-stratum grouping.",
   "Evaluate the separate sensitivity of the grouped-selectivity configuration to estimating the Lorenzen natural-mortality intercept from a -2.5 starting value."
 )
 sensitivity_models$age_length_variant <- "SUB075"
@@ -347,6 +357,6 @@ sensitivity_models$reporting_rate_prior <- "RRPTTP26"
 sensitivity_models <- sensitivity_models[, names(stepwise_models), drop = FALSE]
 stepwise_models <- rbind(stepwise_models, sensitivity_models)
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 19L
+stepwise_run$numbered_groups <- 20L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

@@ -56,6 +56,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `17d-AllSelectivityFormRelaxed` | `TRUE` | 17-SelectivityFormSensitivity | 17d | remove every active fishery-specific dome/old-age-tail selectivity-form penalty | All forms relaxed | BET 2026 selectivity-form boundary sensitivity \| all fisheries | `17d-all-selectivity-form-relaxed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `18-GroupedSelectivityRobustness` | `TRUE` | 18-SelectivityRobustness | 18 | share regional-index selectivity with matched extraction fisheries and reduce selected spline dimensions | Grouped selectivity robustness | BET 2026 selectivity robustness sensitivity \| grouped regional index selectivity | `18-grouped-selectivity-robustness` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `19a-R1F2F3F29SharedSelectivity` | `TRUE` | 19-SelectivityRobustness | 19a | share one four-node Region 1 selectivity among F2, F3 and F29 while retaining independent index catchability | R1 F2/F3/F29 selectivity shared | BET 2026 selectivity robustness sensitivity \| R1 F2/F3/F29 shared | `19a-r1-f2-f3-f29-selectivity-shared` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `20-TagTauSensitivity` | `TRUE` | 20-TagTauSensitivity | 20 | estimate tag-recapture overdispersion under alternative fishery-stratum groupings | Tag-recapture overdispersion sensitivity | BET 2026 tag-recapture overdispersion sensitivity | `20-tag-tau-sensitivity` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `19-GroupedSelectivityEstimatedM` | `TRUE` | 19-NaturalMortalitySensitivity | 19 | estimate the Lorenzen natural-mortality intercept from Phase 10 | Grouped selectivity + estimated M | BET 2026 grouped-selectivity sensitivity \| estimated Lorenzen M from -2.5 | `19-grouped-selectivity-estimated-m` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
@@ -93,6 +94,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `17d-AllSelectivityFormRelaxed` | `steps/17d-AllSelectivityFormRelaxed/model` | `exists` |
 | `18-GroupedSelectivityRobustness` | `steps/18-GroupedSelectivityRobustness/model` | `exists` |
 | `19a-R1F2F3F29SharedSelectivity` | `steps/19a-R1F2F3F29SharedSelectivity/model` | `exists` |
+| `20-TagTauSensitivity` | `steps/20-TagTauSensitivity/model` | `exists` |
 | `19-GroupedSelectivityEstimatedM` | `steps/19-GroupedSelectivityEstimatedM/model` | `exists` |
 
 

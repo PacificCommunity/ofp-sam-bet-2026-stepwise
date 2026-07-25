@@ -353,6 +353,7 @@ expected_weighting_parents <- c(
   "17d-AllSelectivityFormRelaxed" = "16c-DMG8Nmax25",
   "18-GroupedSelectivityRobustness" = "17d-AllSelectivityFormRelaxed",
   "19a-R1F2F3F29SharedSelectivity" = "18-GroupedSelectivityRobustness",
+  "20-TagTauSensitivity" = "19a-R1F2F3F29SharedSelectivity",
   "19-GroupedSelectivityEstimatedM" = "18-GroupedSelectivityRobustness"
 )
 for (child in names(expected_weighting_parents)) {
@@ -746,6 +747,7 @@ for (i in seq_len(nrow(models))) {
     "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed",
     "18-GroupedSelectivityRobustness",
     "19a-R1F2F3F29SharedSelectivity",
+    "20-TagTauSensitivity",
     "19-GroupedSelectivityEstimatedM"
   )) {
     require_exact_controls(
@@ -756,11 +758,52 @@ for (i in seq_len(nrow(models))) {
       doitall, c(dom_divisor_controls, francis_dom_controls), model_id,
       "direct Step 15 DM branch"
     )
-    if (sum(trimws(doitall) == "phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}") != 1L) {
-      add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE10_11_CONVERGENCE=-4`).")
-    }
-    if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
-      add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+    if (identical(model_id, "20-TagTauSensitivity")) {
+      expected_convergence_line <-
+        "phase11_12_convergence=${BET_PHASE11_12_CONVERGENCE:-${BET_PHASE10_11_CONVERGENCE:--4}}"
+      if (sum(trimws(doitall) == expected_convergence_line) != 1L) {
+        add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE11_12_CONVERGENCE=-4`).")
+      }
+      if (exact_control_count(doitall, "1 50 $phase11_12_convergence") != 2L) {
+        add_failure(model_id, "PHASE 11 and PHASE 12 must both use the final run-time MGC target.")
+      }
+      require_exact_controls(
+        doitall,
+        c(
+          "1 177 0", "1 239 0", "1 249 0", "1 101 0",
+          "1 305 1", "1 306 $tag_tau_lower_x100", "1 358 0",
+          "2 100 0", "2 121 0", "2 122 0"
+        ),
+        model_id,
+        "direct tag-recapture tau estimation"
+      )
+      if (sum(trimws(doitall) == "tag_tau_lower_x100=${TAG_TAU_LOWER_X100:-200}") != 1L ||
+          !all(vapply(c("200[)]", "300[)]", "400[)]"), function(pattern) {
+            sum(grepl(paste0("^  ", pattern), doitall)) == 1L
+          }, logical(1)))) {
+        add_failure(
+          model_id,
+          "TAG tau lower-bound campaign must allow exactly 2, 3, and 4 with 2 as default."
+        )
+      }
+      rr_prior_mutation <- grepl(
+        "TAG_JPTP_RR_PRIOR|prepare_jptp_rr_prior|bet[.]run[.]ini",
+        doitall,
+        ignore.case = TRUE
+      )
+      if (any(rr_prior_mutation)) {
+        add_failure(
+          model_id,
+          "TAG tau sensitivities must not alter reporting-rate groups, initial values, priors, penalties, or bounds."
+        )
+      }
+    } else {
+      if (sum(trimws(doitall) == "phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}") != 1L) {
+        add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE10_11_CONVERGENCE=-4`).")
+      }
+      if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
+        add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+      }
     }
   }
 
@@ -1101,10 +1144,12 @@ for (i in seq_len(nrow(models))) {
     grouped_robustness <- model_id %in% c(
       "18-GroupedSelectivityRobustness",
       "19a-R1F2F3F29SharedSelectivity",
+      "20-TagTauSensitivity",
       "19-GroupedSelectivityEstimatedM"
     )
-    r1_shared_selectivity <- identical(
-      model_id, "19a-R1F2F3F29SharedSelectivity"
+    r1_shared_selectivity <- model_id %in% c(
+      "19a-R1F2F3F29SharedSelectivity",
+      "20-TagTauSensitivity"
     )
     expected_grouped <- c(1:28, 2, 4, 7, 8, 29)
     expected_r1_shared <- c(1, 2, 2, 3:27, 2, 3, 6, 7, 28)
@@ -1150,6 +1195,7 @@ for (i in seq_len(nrow(models))) {
       "17d-AllSelectivityFormRelaxed",
       "18-GroupedSelectivityRobustness",
       "19a-R1F2F3F29SharedSelectivity",
+      "20-TagTauSensitivity",
       "19-GroupedSelectivityEstimatedM"
     )
     expected_active_form_fisheries <- c(
@@ -1229,7 +1275,12 @@ for (i in seq_len(nrow(models))) {
             )
           )
         }
-        for (phase in c(1L, 10L, 11L)) {
+        fixed_m_phases <- if (identical(model_id, "20-TagTauSensitivity")) {
+          c(1L, 10L, 11L, 12L)
+        } else {
+          c(1L, 10L, 11L)
+        }
+        for (phase in fixed_m_phases) {
           if (!identical(effective_flag_at_phase(flags, 1L, 121L, phase), 0)) {
             add_failure(
               model_id,
