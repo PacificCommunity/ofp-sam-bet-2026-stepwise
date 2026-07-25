@@ -1,0 +1,11 @@
+scenario,estimated_tau,recapture_fishery_strata,purpose
+g01-common,1,"F1-F28","Common tag-recapture dispersion benchmark."
+g02-jptp-proxy,2,"F1/F12/F13; remainder","Separate the fisheries containing 93.4% of post-mixing JPTP recaptures."
+g03-pttp-r4-proxy,2,"F25-F28; remainder","Separate the fisheries containing 93.1% of post-mixing recaptures from PTTP Region 4 releases."
+g04-jptp-r4,3,"F1/F12/F13; F25-F28; remainder","Estimate distinct JPTP-proxy and PTTP Region 4-proxy dispersion."
+g05-jptp-r4-west-east,4,"F1/F12/F13; F25/F27; F26/F28; remainder","Also separate the established western and eastern Region 4 recapture strata."
+g06-jptp-gear-r4-west-east,5,"F1; F12/F13; F25/F27; F26/F28; remainder","Separate JPTP-dominant longline and Japanese surface-fishery recaptures."
+g07-jptp-fishery-r4-west-east,6,"F1; F12; F13; F25/F27; F26/F28; remainder","Separate each JPTP-dominant fishery while retaining the Region 4 west/east strata."
+g08-focus-fisheries,8,"F1; F12; F13; F25; F26; F27; F28; remainder","Test fishery-specific dispersion for the seven focal recapture fisheries."
+g09-operational,15,"Supported flag-32 operational strata","Follow the existing tag-recapture process grouping, merging unsupported cells with related supported strata."
+g10-fishery,19,"Each post-mixing-supported fishery; related unsupported fisheries pooled","Maximum data-supported fishery resolution under K=0.15."

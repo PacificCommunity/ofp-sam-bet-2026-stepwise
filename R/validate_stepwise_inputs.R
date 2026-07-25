@@ -349,7 +349,8 @@ expected_weighting_parents <- c(
   "20c-DMG8Nmax25" = "19-EffortCreep",
   "21a-R1F2F3F29Shared-MIX015" = "20c-DMG8Nmax25",
   "21b-R1F2F3F29Shared-MIX005" =
-    "21a-R1F2F3F29Shared-MIX015"
+    "21a-R1F2F3F29Shared-MIX015",
+  "22-TagTauSensitivity" = "21a-R1F2F3F29Shared-MIX015"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -789,7 +790,8 @@ for (i in seq_len(nrow(models))) {
   final_dm_models <- c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
-    "21b-R1F2F3F29Shared-MIX005"
+    "21b-R1F2F3F29Shared-MIX005",
+    "22-TagTauSensitivity"
   )
   if (model_id %in% final_dm_models) {
     require_exact_controls(
@@ -800,11 +802,34 @@ for (i in seq_len(nrow(models))) {
       doitall, c(dom_divisor_controls, francis_dom_controls), model_id,
       "direct Step 19 DM branch"
     )
-    if (sum(trimws(doitall) == "phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}") != 1L) {
-      add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE10_11_CONVERGENCE=-4`).")
-    }
-    if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
-      add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+    if (identical(model_id, "22-TagTauSensitivity")) {
+      require_exact_controls(
+        doitall,
+        c(
+          "1 177 0", "1 239 0", "1 249 0", "1 101 0",
+          "1 305 1", "1 306 $tag_tau_lower_x100", "1 358 0",
+          "2 100 0", "2 121 0", "2 122 0"
+        ),
+        model_id,
+        "direct tag-recapture tau estimation"
+      )
+      if (exact_control_count(doitall, "1 111 4") != 2L) {
+        add_failure(model_id, "negative-binomial tag likelihood must be retained in Phase 1 and restated when tau opens.")
+      }
+      if (sum(trimws(doitall) ==
+              "phase11_12_convergence=${BET_PHASE11_12_CONVERGENCE:-${BET_PHASE10_11_CONVERGENCE:--4}}") != 1L) {
+        add_failure(model_id, "tag-tau final MGC default must be exactly 1e-4.")
+      }
+      if (exact_control_count(doitall, "1 50 $phase11_12_convergence") != 2L) {
+        add_failure(model_id, "tag-tau PHASE 11 and PHASE 12 must use the final run-time MGC target.")
+      }
+    } else {
+      if (sum(trimws(doitall) == "phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}") != 1L) {
+        add_failure(model_id, "final MGC default must be exactly 1e-4 (`BET_PHASE10_11_CONVERGENCE=-4`).")
+      }
+      if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
+        add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+      }
     }
   }
 
@@ -1157,7 +1182,8 @@ for (i in seq_len(nrow(models))) {
   if (n7_expected) {
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
-      "21b-R1F2F3F29Shared-MIX005"
+      "21b-R1F2F3F29Shared-MIX005",
+      "22-TagTauSensitivity"
     )
     phase1_groups <- vapply(
       1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 1L),

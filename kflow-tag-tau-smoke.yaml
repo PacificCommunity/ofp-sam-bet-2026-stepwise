@@ -1,0 +1,53 @@
+name: bet-2026-job15984-tag-tau-smoke-20260725
+description: Short native-MFCL validation of common, four-stratum and fishery-resolution tag-dispersion structures from the Job 15984 final parameter file.
+
+command: bash scripts/run_tag_tau_smoke.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+input_jobs:
+  - "15984"
+
+env:
+  PROGRAM_PATH: /home/mfcl/mfclo64
+  KFLOW_INPUT_JOBS: "15984"
+  JOB_TITLE: "BET 2026 tag-dispersion smoke test | Job 15984"
+  JOB_DESCRIPTION: "Validate native MFCL direct-tau estimation for 1, 4 and 19 recapture-fishery strata from the Job 15984 final par. Thirty evaluations only; not an assessment fit."
+  MODEL_LABEL: "Tag tau smoke | G01/G05/G10"
+  JOB_KEY: tag-tau-smoke-job15984
+  FLOW_GROUP: bet-2026-job15984-tag-tau-smoke-20260725
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  TRIGGER_NEXT: "false"
+
+metadata:
+  task_role: validation
+  task_visibility: primary
+  scientific_parent_job: "15984"
+  scientific_parent_model: 19a-R1F2F3F29SharedSelectivity
+  run_strategy: final-par-smoke
+  engine: native-mfcl
+  evaluations: 30
+  tau_lower: 2
+  tau_start: 3
+  tested_group_counts: 1, 4, 19
+
+tags:
+  stage: validation
+  flow: bet-2026-job15984-tag-tau-smoke-20260725
+  parent_job: "15984"
+  engine: mfcl
+  test: tag-tau
+
+output_patterns:
+  - outputs/tag-tau-smoke/**

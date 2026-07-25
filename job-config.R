@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 25 independent models unless STEP_SELECT is supplied.
+  # Run all 26 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
   numbered_groups = 21L,
-  model_rows = 25L,
+  model_rows = 26L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -240,6 +240,16 @@ stepwise_models <- do.call(
       "21b Final DM sensitivity | R1 F2/F3/F29 shared, SC22 K=0.05",
       "21b-r1-f2-f3-f29-shared-mix005",
       "Independent full native-MFCL doitall fit. The model is identical to Step 21a except that tag_flags(:,1) comes from the SC22-IP10 K=0.05 INI. Fixed M, DM G8 Nmax25, reporting-rate settings, selectivity grouping and all other controls are retained."
+    ),
+    model_row(
+      "22-TagTauSensitivity", "22-TagDispersionSensitivity",
+      "21a-R1F2F3F29Shared-MIX015",
+      FALSE, "stop",
+      "estimate negative-binomial tag-recapture dispersion under hierarchical recapture-fishery groupings",
+      "Estimated tag-recapture dispersion",
+      "22 Tag-recapture dispersion sensitivity",
+      "22-tag-tau-sensitivity",
+      "Independent full native-MFCL doitall sensitivity. TAG_TAU_SCENARIO selects one of ten recapture-fishery groupings and TAG_TAU_LOWER_X100 selects a lower tau bound of 2, 3 or 4. Fixed Lorenzen M, SC22-IP10 K=0.15 mixing, RR settings, DM G8 Nmax25, and the Job 15984 selectivity map are unchanged."
     )
   )
 )
@@ -274,7 +284,8 @@ stepwise_report_change <- c(
   "20b-Francis" = "Francis composition reweighting",
   "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting",
   "21a-R1F2F3F29Shared-MIX015" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.15 mixing periods",
-  "21b-R1F2F3F29Shared-MIX005" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.05 mixing periods"
+  "21b-R1F2F3F29Shared-MIX005" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.05 mixing periods",
+  "22-TagTauSensitivity" = "Estimated negative-binomial tag-recapture dispersion"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -301,7 +312,8 @@ stepwise_report_purpose <- c(
   "20b-Francis" = "Apply fishery-specific length-composition divisors calculated from standardized mean-length residuals using method TA1.8 of Francis (2011).",
   "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25.",
   "21a-R1F2F3F29Shared-MIX015" = "Evaluate the Job 15984 selectivity grouping using the current final DM inputs and SC22-IP10 K=0.15 mixing periods.",
-  "21b-R1F2F3F29Shared-MIX005" = "Isolate sensitivity to the SC22-IP10 K=0.05 release-group mixing periods under the same grouped-selectivity final DM model."
+  "21b-R1F2F3F29Shared-MIX005" = "Isolate sensitivity to the SC22-IP10 K=0.05 release-group mixing periods under the same grouped-selectivity final DM model.",
+  "22-TagTauSensitivity" = "Evaluate whether tag-data influence and model robustness depend on estimable recapture overdispersion and its grouping."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -330,7 +342,8 @@ path_stage <- c(
   "20a-DOMDiv200" = 20L, "20b-Francis" = 20L,
   "20c-DMG8Nmax25" = 20L,
   "21a-R1F2F3F29Shared-MIX015" = 21L,
-  "21b-R1F2F3F29Shared-MIX005" = 21L
+  "21b-R1F2F3F29Shared-MIX005" = 21L,
+  "22-TagTauSensitivity" = 22L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -347,7 +360,8 @@ stepwise_models$dm_grouping[
   stepwise_models$step_id %in% c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
-    "21b-R1F2F3F29Shared-MIX005"
+    "21b-R1F2F3F29Shared-MIX005",
+    "22-TagTauSensitivity"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -355,7 +369,8 @@ stepwise_models$dm_nmax[
   stepwise_models$step_id %in% c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
-    "21b-R1F2F3F29Shared-MIX005"
+    "21b-R1F2F3F29Shared-MIX005",
+    "22-TagTauSensitivity"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -376,13 +391,14 @@ stepwise_models$tail_compression_percent <- ifelse(
     !stepwise_models$step_id %in% c(
       "20c-DMG8Nmax25",
       "21a-R1F2F3F29Shared-MIX015",
-      "21b-R1F2F3F29Shared-MIX005"
+      "21b-R1F2F3F29Shared-MIX005",
+      "22-TagTauSensitivity"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 16L
 stepwise_models$all_selectivity_forms_relaxed <- stepwise_models$path_stage >= 16L
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 21L
+stepwise_run$numbered_groups <- 22L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

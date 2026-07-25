@@ -1,0 +1,92 @@
+name: bet-2026-tag-tau-sc22-k015-20260725
+description: Thirty native-MFCL full-fit sensitivities estimating tag-recapture dispersion under ten nested fishery groupings and tau lower bounds of 2, 3 and 4.
+
+command: bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 10GB
+
+env:
+  STEP_SELECT: 22-TagTauSensitivity
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  RUN_MODE: doitall
+  TAG_TAU_SCENARIO: g01-common
+  TAG_TAU_LOWER_X100: "200"
+  BET_PHASE11_12_CONVERGENCE: "-4"
+  JOB_TITLE: "BET 2026 tag-recapture dispersion | G01 common, lower 2"
+  JOB_DESCRIPTION: "Full native-MFCL doitall sensitivity using SC22-IP10 K=0.15 mixing. Estimate one common recapture-fishery tau with lower bound 2. Fixed M, RR settings, DM G8 Nmax25, and Job 15984 selectivity grouping are unchanged."
+  MODEL_LABEL: "Tag tau | G01 common | lower 2"
+  JOB_KEY: tag-tau-g01-common-lb2
+  FLOW_GROUP: bet-2026-tag-tau-sc22-k015-20260725
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  TRIGGER_NEXT: "false"
+  PROGRAM_PATH: /home/mfcl/mfclo64
+  MFCL_LIVE_LOG: "true"
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@2c931ebd20fd04286fb4ff476c774ec036c49bb9,mfclshiny=PacificCommunity/mfclshiny@dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
+  MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+metadata:
+  task_role: sensitivity
+  task_visibility: primary
+  scientific_parent_job: "15989"
+  scientific_parent_model: 21a-R1F2F3F29Shared-MIX015
+  run_strategy: full-doitall
+  engine: native-mfcl
+  mixing_period: SC22-IP10 K=0.15
+  campaign_size: 30
+  group_structures: 10
+  tau_lower_bounds: 2, 3, 4
+  tag_likelihood_multiplier: none
+
+tags:
+  stage: sensitivity
+  flow: bet-2026-tag-tau-sc22-k015-20260725
+  model: 22-TagTauSensitivity
+  parent_job: "15989"
+  run_mode: doitall
+  engine: mfcl
+  mixing: sc22-k015
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+job_config:
+  optional:
+    - MFCL_LIVE_LOG
+    - TAG_TAU_SCENARIO
+    - TAG_TAU_LOWER_X100
+    - MODEL_LABEL
+    - JOB_KEY
+    - JOB_TITLE
+    - JOB_DESCRIPTION
