@@ -185,6 +185,11 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     r1_f2_f3_f29_shared_selectivity = isTRUE(
       doitall_edits$r1_f2_f3_f29_shared_selectivity
     ),
+    tag_return_likelihood_weight = get0(
+      "tag_return_likelihood_weight",
+      doitall_edits,
+      ifnotfound = NA_integer_
+    ),
     selectivity_update_bundle = isTRUE(
       doitall_edits$selectivity_update_bundle
     ),

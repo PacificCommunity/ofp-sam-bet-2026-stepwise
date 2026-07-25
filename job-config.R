@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 25 independent models unless STEP_SELECT is supplied.
+  # Run all 29 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 21L,
-  model_rows = 25L,
+  numbered_groups = 22L,
+  model_rows = 29L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -240,6 +240,46 @@ stepwise_models <- do.call(
       "21b Final DM sensitivity | R1 F2/F3/F29 shared, SC22 K=0.05",
       "21b-r1-f2-f3-f29-shared-mix005",
       "Independent full native-MFCL doitall fit. The model is identical to Step 21a except that tag_flags(:,1) comes from the SC22-IP10 K=0.05 INI. Fixed M, DM G8 Nmax25, reporting-rate settings, selectivity grouping and all other controls are retained."
+    ),
+    model_row(
+      "22a-R1F2F3F29Shared-MIX015-TAGW500", "22-TagLikelihoodWeightSensitivity",
+      "21a-R1F2F3F29Shared-MIX015",
+      FALSE, "stop",
+      "retain SC22 K=0.15 and multiply the tag-return likelihood by 0.50",
+      "K=0.15; tag weight 0.50",
+      "22a Final DM sensitivity | SC22 K=0.15, tag-return weight 0.50",
+      "22a-r1-shared-mix015-tagw500",
+      "Independent full native-MFCL doitall fit. Parest flag 177=500 multiplies the tag-return likelihood by 0.50. Reporting-rate priors, fixed M, DM G8 Nmax25, Job 15984 selectivity grouping and all other settings are retained."
+    ),
+    model_row(
+      "22b-R1F2F3F29Shared-MIX015-TAGW250", "22-TagLikelihoodWeightSensitivity",
+      "21a-R1F2F3F29Shared-MIX015",
+      FALSE, "stop",
+      "retain SC22 K=0.15 and multiply the tag-return likelihood by 0.25",
+      "K=0.15; tag weight 0.25",
+      "22b Final DM sensitivity | SC22 K=0.15, tag-return weight 0.25",
+      "22b-r1-shared-mix015-tagw250",
+      "Independent full native-MFCL doitall fit. Parest flag 177=250 multiplies the tag-return likelihood by 0.25. Reporting-rate priors, fixed M, DM G8 Nmax25, Job 15984 selectivity grouping and all other settings are retained."
+    ),
+    model_row(
+      "22c-R1F2F3F29Shared-MIX005-TAGW500", "22-TagLikelihoodWeightSensitivity",
+      "21b-R1F2F3F29Shared-MIX005",
+      FALSE, "stop",
+      "retain SC22 K=0.05 and multiply the tag-return likelihood by 0.50",
+      "K=0.05; tag weight 0.50",
+      "22c Final DM sensitivity | SC22 K=0.05, tag-return weight 0.50",
+      "22c-r1-shared-mix005-tagw500",
+      "Independent full native-MFCL doitall fit. Parest flag 177=500 multiplies the tag-return likelihood by 0.50. Reporting-rate priors, fixed M, DM G8 Nmax25, Job 15984 selectivity grouping and all other settings are retained."
+    ),
+    model_row(
+      "22d-R1F2F3F29Shared-MIX005-TAGW250", "22-TagLikelihoodWeightSensitivity",
+      "21b-R1F2F3F29Shared-MIX005",
+      FALSE, "stop",
+      "retain SC22 K=0.05 and multiply the tag-return likelihood by 0.25",
+      "K=0.05; tag weight 0.25",
+      "22d Final DM sensitivity | SC22 K=0.05, tag-return weight 0.25",
+      "22d-r1-shared-mix005-tagw250",
+      "Independent full native-MFCL doitall fit. Parest flag 177=250 multiplies the tag-return likelihood by 0.25. Reporting-rate priors, fixed M, DM G8 Nmax25, Job 15984 selectivity grouping and all other settings are retained."
     )
   )
 )
@@ -274,7 +314,11 @@ stepwise_report_change <- c(
   "20b-Francis" = "Francis composition reweighting",
   "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting",
   "21a-R1F2F3F29Shared-MIX015" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.15 mixing periods",
-  "21b-R1F2F3F29Shared-MIX005" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.05 mixing periods"
+  "21b-R1F2F3F29Shared-MIX005" = "Job 15984 Region 1 selectivity grouping with SC22 K=0.05 mixing periods",
+  "22a-R1F2F3F29Shared-MIX015-TAGW500" = "SC22 K=0.15 with tag-return likelihood weight 0.50",
+  "22b-R1F2F3F29Shared-MIX015-TAGW250" = "SC22 K=0.15 with tag-return likelihood weight 0.25",
+  "22c-R1F2F3F29Shared-MIX005-TAGW500" = "SC22 K=0.05 with tag-return likelihood weight 0.50",
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" = "SC22 K=0.05 with tag-return likelihood weight 0.25"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -301,7 +345,11 @@ stepwise_report_purpose <- c(
   "20b-Francis" = "Apply fishery-specific length-composition divisors calculated from standardized mean-length residuals using method TA1.8 of Francis (2011).",
   "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25.",
   "21a-R1F2F3F29Shared-MIX015" = "Evaluate the Job 15984 selectivity grouping using the current final DM inputs and SC22-IP10 K=0.15 mixing periods.",
-  "21b-R1F2F3F29Shared-MIX005" = "Isolate sensitivity to the SC22-IP10 K=0.05 release-group mixing periods under the same grouped-selectivity final DM model."
+  "21b-R1F2F3F29Shared-MIX005" = "Isolate sensitivity to the SC22-IP10 K=0.05 release-group mixing periods under the same grouped-selectivity final DM model.",
+  "22a-R1F2F3F29Shared-MIX015-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.15 while retaining reporting-rate priors.",
+  "22b-R1F2F3F29Shared-MIX015-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.15 while retaining reporting-rate priors.",
+  "22c-R1F2F3F29Shared-MIX005-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.05 while retaining reporting-rate priors.",
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.05 while retaining reporting-rate priors."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -330,7 +378,11 @@ path_stage <- c(
   "20a-DOMDiv200" = 20L, "20b-Francis" = 20L,
   "20c-DMG8Nmax25" = 20L,
   "21a-R1F2F3F29Shared-MIX015" = 21L,
-  "21b-R1F2F3F29Shared-MIX005" = 21L
+  "21b-R1F2F3F29Shared-MIX005" = 21L,
+  "22a-R1F2F3F29Shared-MIX015-TAGW500" = 22L,
+  "22b-R1F2F3F29Shared-MIX015-TAGW250" = 22L,
+  "22c-R1F2F3F29Shared-MIX005-TAGW500" = 22L,
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" = 22L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -342,12 +394,29 @@ stepwise_models$age_length_variant[
 stepwise_models$tag_flag2 <- NA_integer_
 stepwise_models$tag_flag2[stepwise_models$path_stage >= 3L] <- 0L
 stepwise_models$tag_flag2[stepwise_models$path_stage >= 18L] <- 1L
+stepwise_models$tag_return_likelihood_weight <- 1
+stepwise_models$tag_return_likelihood_weight[
+  stepwise_models$step_id %in% c(
+    "22a-R1F2F3F29Shared-MIX015-TAGW500",
+    "22c-R1F2F3F29Shared-MIX005-TAGW500"
+  )
+] <- 0.50
+stepwise_models$tag_return_likelihood_weight[
+  stepwise_models$step_id %in% c(
+    "22b-R1F2F3F29Shared-MIX015-TAGW250",
+    "22d-R1F2F3F29Shared-MIX005-TAGW250"
+  )
+] <- 0.25
 stepwise_models$dm_grouping <- ""
 stepwise_models$dm_grouping[
   stepwise_models$step_id %in% c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
-    "21b-R1F2F3F29Shared-MIX005"
+    "21b-R1F2F3F29Shared-MIX005",
+    "22a-R1F2F3F29Shared-MIX015-TAGW500",
+    "22b-R1F2F3F29Shared-MIX015-TAGW250",
+    "22c-R1F2F3F29Shared-MIX005-TAGW500",
+    "22d-R1F2F3F29Shared-MIX005-TAGW250"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -355,7 +424,11 @@ stepwise_models$dm_nmax[
   stepwise_models$step_id %in% c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
-    "21b-R1F2F3F29Shared-MIX005"
+    "21b-R1F2F3F29Shared-MIX005",
+    "22a-R1F2F3F29Shared-MIX015-TAGW500",
+    "22b-R1F2F3F29Shared-MIX015-TAGW250",
+    "22c-R1F2F3F29Shared-MIX005-TAGW500",
+    "22d-R1F2F3F29Shared-MIX005-TAGW250"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -376,13 +449,17 @@ stepwise_models$tail_compression_percent <- ifelse(
     !stepwise_models$step_id %in% c(
       "20c-DMG8Nmax25",
       "21a-R1F2F3F29Shared-MIX015",
-      "21b-R1F2F3F29Shared-MIX005"
+      "21b-R1F2F3F29Shared-MIX005",
+      "22a-R1F2F3F29Shared-MIX015-TAGW500",
+      "22b-R1F2F3F29Shared-MIX015-TAGW250",
+      "22c-R1F2F3F29Shared-MIX005-TAGW500",
+      "22d-R1F2F3F29Shared-MIX005-TAGW250"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 16L
 stepwise_models$all_selectivity_forms_relaxed <- stepwise_models$path_stage >= 16L
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 21L
+stepwise_run$numbered_groups <- 22L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

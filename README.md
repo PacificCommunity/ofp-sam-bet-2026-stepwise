@@ -5,9 +5,9 @@
 </p>
 
 Public, reproducible configuration for the 2026 bigeye tuna (BET) MFCL
-stepwise analysis. It contains 21 numbered scientific groups and 25
+stepwise analysis. It contains 22 numbered scientific groups and 29
 independently runnable model rows. Twenty models form the selected
-carry-forward path; Step 21 contains two post-selection sensitivities.
+carry-forward path; Steps 21–22 contain post-selection sensitivities.
 
 ## Run Contract
 
@@ -16,11 +16,11 @@ carry-forward path; Step 21 contains two post-selection sensitivities.
   output.
 - `scientific_parent_id` records the model used for scientific comparison. It
   is provenance, not a scheduler dependency.
-- All 25 rows can run independently and in parallel through Kflow.
+- All 29 rows can run independently and in parallel through Kflow.
 - `selected = TRUE` identifies the adopted BET 2026 route. `carry_status` is
   `carry` when later rows inherit that model, `stop` for an unselected sibling,
   and `final` for the terminal model.
-- `STEP_SELECT=all` runs all 25 development rows, including sibling
+- `STEP_SELECT=all` runs all 29 development rows, including sibling
   alternatives. Any row can be run alone, for example
   `STEP_SELECT=16-SelectivityUpdate`.
 - Every row has a unique `STEP_SELECT`, `job_key`, `job_title`, and
@@ -35,13 +35,13 @@ carry-forward path; Step 21 contains two post-selection sensitivities.
 The report-only task is defined in
 [`model-development-report/kflow.yaml`](model-development-report/kflow.yaml).
 With `STEPWISE_MODEL_JOBS=""`, it renders a self-contained HTML containing the
-publication methods text, DAG and caption, the 25-row configuration table, and
+publication methods text, DAG and caption, the 29-row configuration table, and
 separate tables for the selected Dirichlet-multinomial configuration and its
 eight fishery groups. Each section can be copied to Word or LaTeX. Supplying an
 explicit step-to-job map later adds fitted-model results without changing the
 pathway record.
 
-The root [`kflow.yaml`](kflow.yaml) is the separate 25-model MFCL fitting task;
+The root [`kflow.yaml`](kflow.yaml) is the separate 29-model MFCL fitting task;
 do not use it when only the HTML report is required.
 
 ## Pinned INI Source
@@ -49,7 +49,7 @@ do not use it when only the HTML report is required.
 All INIs sourced from the 2026 build-ini repository are taken from
 `PacificCommunity/ofp-sam-2026-BET-YFT-build-ini` branch
 `SC22-IP10-based` at commit `5b2fb60`, not from `main`. This includes
-`bet.2023.new.structure.ini` for Steps 06–09, `bet.2026.ini` for Steps 10–21,
+`bet.2023.new.structure.ini` for Steps 06–09, `bet.2026.ini` for Steps 10–22,
 the SC22-IP10 Appendix A `bet.2026.mix-0.15.ini` from Step 17 onward, and
 `bet.2026.mix-0.05.ini` for the Step 21b sensitivity.
 Steps 01–05 intentionally retain the historical 2023 diagnostic INI pathway.
@@ -99,6 +99,10 @@ table for the functional explanation and implementation detail of each step.
 | 20c | DM weighting | `20c-DMG8Nmax25` | `19-EffortCreep` | Estimate composition information internally using eight fishery groups and `Nmax=25`, the effective-sample-size upper asymptote. | Step 19 settings; no 20a domestic-fishery divisor or 20b Francis weight is inherited. | Selected final model. |
 | 21a | Region 1 shared selectivity, K=0.15 | `21a-R1F2F3F29Shared-MIX015` | `20c-DMG8Nmax25` | Apply the exact Job 15984 selectivity map, including one four-node curve shared by F2, F3 and F29. | Fixed M, DM G8 `Nmax=25`, SC22-IP10 K=0.15 mixing periods, reporting rates, data and all non-selectivity controls. | Post-selection sensitivity. |
 | 21b | Region 1 shared selectivity, K=0.05 | `21b-R1F2F3F29Shared-MIX005` | `21a-R1F2F3F29Shared-MIX015` | Change only the release-group mixing periods from SC22-IP10 K=0.15 to K=0.05. | Job 15984 selectivity map and every other model input and control. | Post-selection sensitivity. |
+| 22a | Tag-return weight 0.50, K=0.15 | `22a-R1F2F3F29Shared-MIX015-TAGW500` | `21a-R1F2F3F29Shared-MIX015` | Set parest flag 177 to 500, multiplying the tag-return likelihood by 0.50. | K=0.15 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
+| 22b | Tag-return weight 0.25, K=0.15 | `22b-R1F2F3F29Shared-MIX015-TAGW250` | `21a-R1F2F3F29Shared-MIX015` | Set parest flag 177 to 250, multiplying the tag-return likelihood by 0.25. | K=0.15 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
+| 22c | Tag-return weight 0.50, K=0.05 | `22c-R1F2F3F29Shared-MIX005-TAGW500` | `21b-R1F2F3F29Shared-MIX005` | Set parest flag 177 to 500, multiplying the tag-return likelihood by 0.50. | K=0.05 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
+| 22d | Tag-return weight 0.25, K=0.05 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `21b-R1F2F3F29Shared-MIX005` | Set parest flag 177 to 250, multiplying the tag-return likelihood by 0.25. | K=0.05 mixing periods, reporting-rate priors and all other final-DM controls. | Post-selection sensitivity. |
 
 The SC22 BET purse-seine reporting-rate penalties enter with the 33-fishery
 structure at `06-NewStructure`. They are carried through steps 07-09 and
@@ -278,7 +282,7 @@ submit, fetch, or merge jobs as part of `job-config.R`.
 | Rows | Regions | CPUs | Memory | Disk | Run mode | Expected output |
 | --- | ---: | ---: | ---: | ---: | --- | --- |
 | 01-05 | 9 | 2 | 12 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
-| 06-21 | 5 | 2 | 8 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
+| 06-22 | 5 | 2 | 8 GB | 8 GB | native MFCL `doitall` | auto-detected final `.par` plus `model_payload.rds` |
 
 Step 01 alone pins the historical diagnostic executable. All other rows use
 the current container MFCL executable. `BET_PHASE10_11_CONVERGENCE` remains a
@@ -289,7 +293,7 @@ inputs.
 
 | Path | Purpose |
 | --- | --- |
-| `job-config.R` | Public 25-row development matrix and cumulative-state metadata. |
+| `job-config.R` | Public 29-row development matrix and cumulative-state metadata. |
 | `steps/<STEP_SELECT>/README.md` | Model-specific scientific and input notes. |
 | `steps/<STEP_SELECT>/input_manifest.csv` | Source-input provenance. |
 | `steps/<STEP_SELECT>/model/` | Self-contained MFCL run folder. |

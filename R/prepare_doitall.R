@@ -627,6 +627,29 @@ apply_r1_f2_f3_f29_shared_selectivity <- function(lines) {
   lines
 }
 
+apply_tag_return_likelihood_weight <- function(lines, weight_per_mille) {
+  weight_per_mille <- as.integer(weight_per_mille)
+  if (length(weight_per_mille) != 1L || is.na(weight_per_mille) ||
+      weight_per_mille < 1L || weight_per_mille > 1000L) {
+    stop(
+      "Tag-return likelihood weight must be an integer from 1 to 1000; ",
+      "parest flag 177 uses flag/1000 and zero is the special full-weight default.",
+      call. = FALSE
+    )
+  }
+  set_control_flag_in_phase(
+    lines,
+    1L,
+    177L,
+    weight_per_mille,
+    1L,
+    paste0(
+      "tag-return likelihood multiplier = ",
+      format(weight_per_mille / 1000, nsmall = 2L)
+    )
+  )
+}
+
 apply_selectivity_update_bundle <- function(lines) {
   phase1_groups <- c(seq_len(28L), rep(29L, 5L))
   old_group_comment <- grep(
@@ -961,7 +984,7 @@ apply_regional_index_selectivity_map <- function(path) {
   invisible(TRUE)
 }
 
-# Supersedes the legacy broad sensitivity writer above. The 23-row public
+# Supersedes the legacy broad sensitivity writer above. The public
 # sequence deliberately excludes OPR and length-bin selectivity controls.
 write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_cpue = FALSE,
@@ -971,6 +994,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_scaling_end_period = reg_scaling_active_end_period,
                           index_selectivity = FALSE,
                           r1_f2_f3_f29_shared_selectivity = FALSE,
+                          tag_return_likelihood_weight = NA_integer_,
                           selectivity_update_bundle = FALSE,
                           all_selectivity_forms_relaxed = FALSE,
                           tail_compression_1pct = FALSE,
@@ -1032,6 +1056,12 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       )
     }
     lines <- apply_r1_f2_f3_f29_shared_selectivity(lines)
+  }
+  if (!is.na(tag_return_likelihood_weight)) {
+    lines <- apply_tag_return_likelihood_weight(
+      lines,
+      tag_return_likelihood_weight
+    )
   }
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)
   if (isTRUE(dom_divisor200)) lines <- apply_dom_lf_divisors(lines)

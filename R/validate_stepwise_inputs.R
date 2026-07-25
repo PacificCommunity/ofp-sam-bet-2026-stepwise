@@ -349,7 +349,15 @@ expected_weighting_parents <- c(
   "20c-DMG8Nmax25" = "19-EffortCreep",
   "21a-R1F2F3F29Shared-MIX015" = "20c-DMG8Nmax25",
   "21b-R1F2F3F29Shared-MIX005" =
-    "21a-R1F2F3F29Shared-MIX015"
+    "21a-R1F2F3F29Shared-MIX015",
+  "22a-R1F2F3F29Shared-MIX015-TAGW500" =
+    "21a-R1F2F3F29Shared-MIX015",
+  "22b-R1F2F3F29Shared-MIX015-TAGW250" =
+    "21a-R1F2F3F29Shared-MIX015",
+  "22c-R1F2F3F29Shared-MIX005-TAGW500" =
+    "21b-R1F2F3F29Shared-MIX005",
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" =
+    "21b-R1F2F3F29Shared-MIX005"
 )
 for (child in names(expected_weighting_parents)) {
   index <- match(child, models$step_id)
@@ -789,7 +797,11 @@ for (i in seq_len(nrow(models))) {
   final_dm_models <- c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
-    "21b-R1F2F3F29Shared-MIX005"
+    "21b-R1F2F3F29Shared-MIX005",
+    "22a-R1F2F3F29Shared-MIX015-TAGW500",
+    "22b-R1F2F3F29Shared-MIX015-TAGW250",
+    "22c-R1F2F3F29Shared-MIX005-TAGW500",
+    "22d-R1F2F3F29Shared-MIX005-TAGW250"
   )
   if (model_id %in% final_dm_models) {
     require_exact_controls(
@@ -1153,11 +1165,44 @@ for (i in seq_len(nrow(models))) {
     }
   }
 
+  expected_tag_weight <- c(
+    "22a-R1F2F3F29Shared-MIX015-TAGW500" = 500,
+    "22b-R1F2F3F29Shared-MIX015-TAGW250" = 250,
+    "22c-R1F2F3F29Shared-MIX005-TAGW500" = 500,
+    "22d-R1F2F3F29Shared-MIX005-TAGW250" = 250
+  )
+  if (model_id %in% names(expected_tag_weight)) {
+    for (phase in c(1L, 5L, 11L)) {
+      actual_weight <- effective_flag_at_phase(flags, 1L, 177L, phase)
+      if (!identical(
+        as.numeric(actual_weight),
+        as.numeric(expected_tag_weight[[model_id]])
+      )) {
+        add_failure(
+          model_id,
+          paste0(
+            "parest flag 177 must remain ",
+            expected_tag_weight[[model_id]],
+            " through Phase ", phase, "; found ", actual_weight, "."
+          )
+        )
+      }
+    }
+    check_flag(
+      flags, 2L, 177L, 1L, model_id,
+      "age flag 177 old total-population scaling remains unchanged"
+    )
+  }
+
   n7_expected <- selectivity_expected
   if (n7_expected) {
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
-      "21b-R1F2F3F29Shared-MIX005"
+      "21b-R1F2F3F29Shared-MIX005",
+      "22a-R1F2F3F29Shared-MIX015-TAGW500",
+      "22b-R1F2F3F29Shared-MIX015-TAGW250",
+      "22c-R1F2F3F29Shared-MIX005-TAGW500",
+      "22d-R1F2F3F29Shared-MIX005-TAGW250"
     )
     phase1_groups <- vapply(
       1:33, function(fishery) effective_flag_at_phase(flags, -fishery, 24L, 1L),
@@ -1639,6 +1684,45 @@ compare_tag_flag_boundary(
   1L,
   "SC22-IP10 K=0.15 versus K=0.05 mixing-period sensitivity"
 )
+
+tag_weight_parents <- c(
+  "22a-R1F2F3F29Shared-MIX015-TAGW500" =
+    "21a-R1F2F3F29Shared-MIX015",
+  "22b-R1F2F3F29Shared-MIX015-TAGW250" =
+    "21a-R1F2F3F29Shared-MIX015",
+  "22c-R1F2F3F29Shared-MIX005-TAGW500" =
+    "21b-R1F2F3F29Shared-MIX005",
+  "22d-R1F2F3F29Shared-MIX005-TAGW250" =
+    "21b-R1F2F3F29Shared-MIX005"
+)
+for (child in names(tag_weight_parents)) {
+  parent <- tag_weight_parents[[child]]
+  compare_model_hashes_except(parent, child, "doitall.sh")
+  compare_flags_after_filter(
+    parent,
+    child,
+    function(flags) flags$scope == 1L & flags$flag == 177L
+  )
+}
+
+for (pair in list(
+  c(
+    "22a-R1F2F3F29Shared-MIX015-TAGW500",
+    "22c-R1F2F3F29Shared-MIX005-TAGW500"
+  ),
+  c(
+    "22b-R1F2F3F29Shared-MIX015-TAGW250",
+    "22d-R1F2F3F29Shared-MIX005-TAGW250"
+  )
+)) {
+  compare_model_hashes_except(pair[[1L]], pair[[2L]], "bet.ini")
+  compare_tag_flag_boundary(
+    pair[[1L]],
+    pair[[2L]],
+    1L,
+    "matched tag-weight K=0.15 versus K=0.05 sensitivity"
+  )
+}
 
 ## Isolation checks for matched TAGF2 and mixing-period pairs, when configured.
 normalise_pair_id <- function(id, dimension) {

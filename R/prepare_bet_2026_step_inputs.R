@@ -908,6 +908,7 @@ write_sequence_step <- function(
     tail_compression_1pct = FALSE,
     index_selectivity = FALSE,
     r1_f2_f3_f29_shared_selectivity = FALSE,
+    tag_return_likelihood_weight = NA_integer_,
     selectivity_update_bundle = FALSE,
     all_selectivity_forms_relaxed = FALSE,
     time_varying_cv = FALSE,
@@ -926,6 +927,7 @@ write_sequence_step <- function(
       index_selectivity = index_selectivity,
       r1_f2_f3_f29_shared_selectivity =
         r1_f2_f3_f29_shared_selectivity,
+      tag_return_likelihood_weight = tag_return_likelihood_weight,
       selectivity_update_bundle = selectivity_update_bundle,
       all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
       tail_compression_1pct = tail_compression_1pct,
@@ -986,6 +988,12 @@ write_sequence_step <- function(
       if (all_selectivity_forms_relaxed) paste0(
         "The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 ",
         "for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off."
+      ),
+      if (!is.na(tag_return_likelihood_weight)) paste0(
+        "Parest flag 177 is ", tag_return_likelihood_weight,
+        ", multiplying the tag-return likelihood by ",
+        format(tag_return_likelihood_weight / 1000, nsmall = 2L),
+        "; release-group reporting-rate priors are retained at their configured weights."
       ),
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
@@ -1185,6 +1193,7 @@ write_selected_path_step <- function(
     fixed_cpue_sigma = FALSE,
     index_selectivity = FALSE, selectivity_update_bundle = FALSE,
     r1_f2_f3_f29_shared_selectivity = FALSE,
+    tag_return_likelihood_weight = NA_integer_,
     all_selectivity_forms_relaxed = FALSE,
     dom = FALSE, francis = numeric(),
     dm_grouping = "", dm_nmax = NA_integer_,
@@ -1212,6 +1221,7 @@ write_selected_path_step <- function(
     index_selectivity = index_selectivity,
     r1_f2_f3_f29_shared_selectivity =
       r1_f2_f3_f29_shared_selectivity,
+    tag_return_likelihood_weight = tag_return_likelihood_weight,
     selectivity_update_bundle = selectivity_update_bundle,
     all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
     time_varying_cv = time_varying_cv,
@@ -1392,6 +1402,106 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE,
   dm_grouping = "G8PSSET", dm_nmax = 25L,
   status = "Prepared independent K=0.05 mixing-period sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "22a-R1F2F3F29Shared-MIX015-TAGW500",
+  "22a SC22 K=0.15 with tag-return weight 0.50",
+  "21a-R1F2F3F29Shared-MIX015",
+  paste0(
+    "Retain the K=0.15 grouped-selectivity final DM model and set parest ",
+    "flag 177 to 500, multiplying the tag-return likelihood by 0.50."
+  ),
+  audit_notes = c(
+    "Selectivity source: Job 15984, repository commit d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12.",
+    "Mixing-period source: SC22-IP10 K=0.15.",
+    "Held constant: fixed Lorenzen M, DM G8 Nmax25, reporting-rate groups, targets and priors, CPUE controls, data and all other settings."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  r1_f2_f3_f29_shared_selectivity = TRUE,
+  tag_return_likelihood_weight = 500L,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent tag-return weight sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "22b-R1F2F3F29Shared-MIX015-TAGW250",
+  "22b SC22 K=0.15 with tag-return weight 0.25",
+  "21a-R1F2F3F29Shared-MIX015",
+  paste0(
+    "Retain the K=0.15 grouped-selectivity final DM model and set parest ",
+    "flag 177 to 250, multiplying the tag-return likelihood by 0.25."
+  ),
+  audit_notes = c(
+    "Selectivity source: Job 15984, repository commit d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12.",
+    "Mixing-period source: SC22-IP10 K=0.15.",
+    "Held constant: fixed Lorenzen M, DM G8 Nmax25, reporting-rate groups, targets and priors, CPUE controls, data and all other settings."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  r1_f2_f3_f29_shared_selectivity = TRUE,
+  tag_return_likelihood_weight = 250L,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent tag-return weight sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "22c-R1F2F3F29Shared-MIX005-TAGW500",
+  "22c SC22 K=0.05 with tag-return weight 0.50",
+  "21b-R1F2F3F29Shared-MIX005",
+  paste0(
+    "Retain the K=0.05 grouped-selectivity final DM model and set parest ",
+    "flag 177 to 500, multiplying the tag-return likelihood by 0.50."
+  ),
+  audit_notes = c(
+    "Selectivity source: Job 15984, repository commit d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12.",
+    "Mixing-period source: SC22-IP10 K=0.05.",
+    "Held constant: fixed Lorenzen M, DM G8 Nmax25, reporting-rate groups, targets and priors, CPUE controls, data and all other settings."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix005_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  r1_f2_f3_f29_shared_selectivity = TRUE,
+  tag_return_likelihood_weight = 500L,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent tag-return weight sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "22d-R1F2F3F29Shared-MIX005-TAGW250",
+  "22d SC22 K=0.05 with tag-return weight 0.25",
+  "21b-R1F2F3F29Shared-MIX005",
+  paste0(
+    "Retain the K=0.05 grouped-selectivity final DM model and set parest ",
+    "flag 177 to 250, multiplying the tag-return likelihood by 0.25."
+  ),
+  audit_notes = c(
+    "Selectivity source: Job 15984, repository commit d9fd5377abd5ba6aac5aee1b56ec54a9d9d4fc12.",
+    "Mixing-period source: SC22-IP10 K=0.05.",
+    "Held constant: fixed Lorenzen M, DM G8 Nmax25, reporting-rate groups, targets and priors, CPUE controls, data and all other settings."
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix005_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  r1_f2_f3_f29_shared_selectivity = TRUE,
+  tag_return_likelihood_weight = 250L,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared independent tag-return weight sensitivity snapshot."
 )
 
 # Remove superseded numbering and selectivity-sensitivity folders after the
