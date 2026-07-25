@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import io
 import json
@@ -55,6 +56,36 @@ def read_yaml(path: Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a YAML mapping")
     return data
+
+
+def resolve_local_apps(config: dict[str, Any], config_path: Path) -> dict[str, Any]:
+    """Load shared local apps while retaining the task-specific package pins."""
+    source = str(config.get("local_apps_from") or "").strip()
+    if not source or config.get("local_apps") is not None:
+        return config
+
+    source_path = Path(source)
+    if not source_path.is_absolute():
+        source_path = config_path.parent / source_path
+    source_config = read_yaml(source_path.resolve())
+    local_apps = source_config.get("local_apps")
+    if not isinstance(local_apps, list) or not local_apps:
+        raise ValueError(f"{source_path} does not define a non-empty local_apps list")
+
+    resolved = copy.deepcopy(local_apps)
+    task_env = config.get("env") if isinstance(config.get("env"), dict) else {}
+    for app in resolved:
+        if not isinstance(app, dict):
+            continue
+        app_env = dict(app.get("env") or {})
+        for key in tuple(app_env):
+            if key.endswith("_GITHUB_REF") and task_env.get(key) not in (None, ""):
+                app_env[key] = str(task_env[key])
+        app["env"] = app_env
+
+    output = dict(config)
+    output["local_apps"] = resolved
+    return output
 
 
 def api_json(
@@ -416,7 +447,7 @@ def main() -> int:
     token = os.environ.get("KFLOW_API_TOKEN", "")
     base_url = args.kflow_url.rstrip("/")
 
-    config = read_yaml(config_path)
+    config = resolve_local_apps(read_yaml(config_path), config_path)
     task_name = args.task_name or config.get("name")
     if not task_name:
         raise SystemExit("Task name is missing.")
