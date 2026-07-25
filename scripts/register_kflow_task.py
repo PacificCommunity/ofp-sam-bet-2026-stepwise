@@ -210,7 +210,11 @@ def validate_immutable_campaign(config: dict[str, Any], rows: list[dict[str, str
         if not match:
             raise ValueError(f"Runtime package spec is not pinned to a full commit SHA: {spec}")
         expected_refs[match.group(1)] = match.group(3).lower()
-    for package, env_name in (("mfclkit", "MFCLKIT_GITHUB_REF"), ("mfclshiny", "MFCLSHINY_GITHUB_REF")):
+    for package, env_name in (
+        ("FLR4MFCL", "FLR4MFCL_GITHUB_REF"),
+        ("mfclkit", "MFCLKIT_GITHUB_REF"),
+        ("mfclshiny", "MFCLSHINY_GITHUB_REF"),
+    ):
         ref = str(env.get(env_name) or "").lower()
         if expected_refs.get(package) != ref:
             raise ValueError(f"{env_name} must exactly match the pinned {package} package spec.")
