@@ -50,4 +50,8 @@ tags:
   test: tag-tau
 
 output_patterns:
-  - outputs/tag-tau-smoke/**
+  - outputs/tag-tau-smoke/smoke-summary.csv
+  - outputs/tag-tau-smoke/*/audit.csv
+  - outputs/tag-tau-smoke/*/output-tau-map.txt
+  - outputs/tag-tau-smoke/*/indepvar.rpt
+  - outputs/tag-tau-smoke/*/mfcl.log
