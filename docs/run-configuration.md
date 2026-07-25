@@ -59,6 +59,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `TRUE` | 22-TagLikelihoodWeightSensitivity | 22d | retain SC22 K=0.05 and multiply the tag-return likelihood by 0.25 | K=0.05; tag weight 0.25 | 22d Final DM sensitivity \| SC22 K=0.05, tag-return weight 0.25 | `22d-r1-shared-mix005-tagw250` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `S01-SelectivityStability-MIX015` | `TRUE` | S01-SelectivityStability | S01 | test extraction-based selectivity sharing while keeping all regional index selectivities independent | Selectivity-stability sensitivity; K=0.15 | S01 Selectivity-stability sensitivity \| independent indices | `s01-selectivity-stability-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `S02-F33Asymptotic-MIX015` | `TRUE` | S02-F33Asymptotic | S02 | replace only the independent Region 5 index spline with an asymptotic logistic selectivity | F33 asymptotic-selectivity sensitivity; K=0.15 | S02 Selectivity-stability sensitivity \| F33 independent asymptotic | `s02-f33-asymptotic-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S03-CommonTagTau-MIX015` | `TRUE` | S03-CommonTagTau | S03 | estimate tag-recapture overdispersion under the native MFCL bound, lower bound 2 and programme-informed recapture-fishery strata | Common tag-overdispersion sensitivity; K=0.15 | S03 Tag-overdispersion sensitivity \| one common tau | `s03-common-tag-tau-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S04-CommonTagTauSpline-MIX015` | `TRUE` | S04-CommonTagTauSpline | S04 | estimate one common tag-recapture overdispersion parameter while retaining the independent Region 5 index spline | Common tag-overdispersion sensitivity; F33 spline; K=0.15 | S04 Tag-overdispersion sensitivity \| F33 independent spline | `s04-common-tag-tau-spline-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S05-CommonTagTauOPR-MIX015` | `TRUE` | S05-CommonTagTauOPR | S05 | apply the BET 69-01-50-50 orthogonal-polynomial recruitment structure with F33 asymptotic selectivity | Common tag overdispersion; OPR; F33 asymptotic; K=0.15 | S05 OPR tag-overdispersion sensitivity \| F33 asymptotic | `s05-common-tag-tau-opr-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S06-CommonTagTauSplineOPR-MIX015` | `TRUE` | S06-CommonTagTauSplineOPR | S06 | apply the BET 69-01-50-50 orthogonal-polynomial recruitment structure with the independent F33 spline | Common tag overdispersion; OPR; F33 spline; K=0.15 | S06 OPR tag-overdispersion sensitivity \| F33 spline | `s06-common-tag-tau-spline-opr-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -98,6 +102,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `22d-R1F2F3F29Shared-MIX005-TAGW250` | `steps/22d-R1F2F3F29Shared-MIX005-TAGW250/model` | `exists` |
 | `S01-SelectivityStability-MIX015` | `steps/S01-SelectivityStability-MIX015/model` | `exists` |
 | `S02-F33Asymptotic-MIX015` | `steps/S02-F33Asymptotic-MIX015/model` | `exists` |
+| `S03-CommonTagTau-MIX015` | `steps/S03-CommonTagTau-MIX015/model` | `exists` |
+| `S04-CommonTagTauSpline-MIX015` | `steps/S04-CommonTagTauSpline-MIX015/model` | `exists` |
+| `S05-CommonTagTauOPR-MIX015` | `steps/S05-CommonTagTauOPR-MIX015/model` | `exists` |
+| `S06-CommonTagTauSplineOPR-MIX015` | `steps/S06-CommonTagTauSplineOPR-MIX015/model` | `exists` |
 
 
 ## Useful Kflow Config

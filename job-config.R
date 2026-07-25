@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 31 independent models unless STEP_SELECT is supplied.
+  # Run all independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
   numbered_groups = 22L,
-  model_rows = 31L,
+  model_rows = 35L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -314,6 +314,74 @@ stepwise_models <- do.call(
         "priors and all other controls are unchanged. The task uses tuna-flow",
         "v2.6 with the pre-mixing reporting-rate exclusion correction."
       )
+    ),
+    model_row(
+      "S03-CommonTagTau-MIX015", "S03-CommonTagTau",
+      "S02-F33Asymptotic-MIX015",
+      FALSE, "stop",
+      "estimate tag-recapture overdispersion under the native MFCL bound, lower bound 2 and programme-informed recapture-fishery strata",
+      "Common tag-overdispersion sensitivity; K=0.15",
+      "S03 Tag-overdispersion sensitivity | one common tau",
+      "s03-common-tag-tau-mix015",
+      paste(
+        "Independent full native-MFCL doitall fit. F1-F28 share one",
+        "negative-binomial tag-overdispersion parameter; F29-F33 are",
+        "inactive. F2/F3 and F7/F9 extraction sharing, independent indices,",
+        "F33 logistic selectivity, fixed INI M=-2.54930339768360, DM G8",
+        "Nmax25, SC22-IP10 K=0.15 tag settings, reporting-rate priors, CPUE",
+        "controls and all other settings are unchanged."
+      )
+    ),
+    model_row(
+      "S04-CommonTagTauSpline-MIX015", "S04-CommonTagTauSpline",
+      "S01-SelectivityStability-MIX015",
+      FALSE, "stop",
+      "estimate one common tag-recapture overdispersion parameter while retaining the independent Region 5 index spline",
+      "Common tag-overdispersion sensitivity; F33 spline; K=0.15",
+      "S04 Tag-overdispersion sensitivity | F33 independent spline",
+      "s04-common-tag-tau-spline-mix015",
+      paste(
+        "Independent full native-MFCL doitall fit. F1-F28 share one",
+        "negative-binomial tag-overdispersion parameter; F29-F33 are",
+        "inactive. F2/F3 and F7/F9 extraction sharing and independent",
+        "indices are retained, while F33 uses the same four-node spline as",
+        "the other selectivity-stability reference. Fixed INI",
+        "M=-2.54930339768360, DM G8 Nmax25, SC22-IP10 K=0.15 tag settings,",
+        "reporting-rate priors, CPUE controls and all other settings are",
+        "unchanged."
+      )
+    ),
+    model_row(
+      "S05-CommonTagTauOPR-MIX015", "S05-CommonTagTauOPR",
+      "S03-CommonTagTau-MIX015",
+      FALSE, "stop",
+      "apply the BET 69-01-50-50 orthogonal-polynomial recruitment structure with F33 asymptotic selectivity",
+      "Common tag overdispersion; OPR; F33 asymptotic; K=0.15",
+      "S05 OPR tag-overdispersion sensitivity | F33 asymptotic",
+      "s05-common-tag-tau-opr-mix015",
+      paste(
+        "Independent full native-MFCL doitall fit. The OPR transfer occurs",
+        "in Phase 3 using the audited BET 69-01-50-50 structure. F1-F28",
+        "share one tag-overdispersion parameter; F29-F33 are inactive.",
+        "F33 uses an independent asymptotic logistic selectivity. Nmax=25",
+        "and the MFCL default Nmax=1000 are launched as paired variants."
+      )
+    ),
+    model_row(
+      "S06-CommonTagTauSplineOPR-MIX015", "S06-CommonTagTauSplineOPR",
+      "S04-CommonTagTauSpline-MIX015",
+      FALSE, "stop",
+      "apply the BET 69-01-50-50 orthogonal-polynomial recruitment structure with the independent F33 spline",
+      "Common tag overdispersion; OPR; F33 spline; K=0.15",
+      "S06 OPR tag-overdispersion sensitivity | F33 spline",
+      "s06-common-tag-tau-spline-opr-mix015",
+      paste(
+        "Independent full native-MFCL doitall fit. The OPR transfer occurs",
+        "in Phase 3 using the audited BET 69-01-50-50 structure. F1-F28",
+        "share one tag-overdispersion parameter; F29-F33 are inactive.",
+        "F33 retains its independent four-node spline. Nmax=25 and the",
+        "MFCL default Nmax=1000 are launched as paired variants."
+      )
     )
   )
 )
@@ -354,7 +422,11 @@ stepwise_report_change <- c(
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "SC22 K=0.05 with tag-return likelihood weight 0.50",
   "22d-R1F2F3F29Shared-MIX005-TAGW250" = "SC22 K=0.05 with tag-return likelihood weight 0.25",
   "S01-SelectivityStability-MIX015" = "Extraction-based selectivity sharing with independent regional indices",
-  "S02-F33Asymptotic-MIX015" = "Independent asymptotic logistic selectivity for the Region 5 index"
+  "S02-F33Asymptotic-MIX015" = "Independent asymptotic logistic selectivity for the Region 5 index",
+  "S03-CommonTagTau-MIX015" = "One common negative-binomial tag-overdispersion parameter",
+  "S04-CommonTagTauSpline-MIX015" = "One common tag-overdispersion parameter with an independent Region 5 index spline",
+  "S05-CommonTagTauOPR-MIX015" = "Orthogonal-polynomial recruitment with common tag overdispersion and F33 asymptotic selectivity",
+  "S06-CommonTagTauSplineOPR-MIX015" = "Orthogonal-polynomial recruitment with common tag overdispersion and the F33 spline"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -387,7 +459,11 @@ stepwise_report_purpose <- c(
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = "Evaluate tag-index conflict by halving the tag-return likelihood under K=0.05 while retaining reporting-rate priors.",
   "22d-R1F2F3F29Shared-MIX005-TAGW250" = "Evaluate a stronger tag-return downweighting under K=0.05 while retaining reporting-rate priors.",
   "S01-SelectivityStability-MIX015" = "Test whether limited sharing among comparable longline extraction fisheries improves stability without coupling index selectivity to extraction-fishery composition processes or reducing the selected purse-seine flexibility.",
-  "S02-F33Asymptotic-MIX015" = "Test whether constraining the sparsely informed Region 5 index selectivity to an asymptotic logistic form improves stability without materially degrading index or composition fit."
+  "S02-F33Asymptotic-MIX015" = "Test whether constraining the sparsely informed Region 5 index selectivity to an asymptotic logistic form improves stability without materially degrading index or composition fit.",
+  "S03-CommonTagTau-MIX015" = "Compare common and programme-informed recapture-fishery tag-overdispersion structures, native and lower-2 bounds, regional recruitment coefficients 0.1 and 0.2, and F33 asymptotic selectivity.",
+  "S04-CommonTagTauSpline-MIX015" = "Repeat the tag-overdispersion and recruitment-coefficient sensitivities while retaining the independent four-node F33 spline.",
+  "S05-CommonTagTauOPR-MIX015" = "Apply the audited BET 69-01-50-50 OPR structure and compare Nmax 25 with the MFCL default 1000 under the same tag-overdispersion settings and F33 asymptotic selectivity.",
+  "S06-CommonTagTauSplineOPR-MIX015" = "Repeat the OPR, Nmax and tag-overdispersion sensitivities while retaining the independent four-node F33 spline."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -422,7 +498,11 @@ path_stage <- c(
   "22c-R1F2F3F29Shared-MIX005-TAGW500" = 22L,
   "22d-R1F2F3F29Shared-MIX005-TAGW250" = 22L,
   "S01-SelectivityStability-MIX015" = 23L,
-  "S02-F33Asymptotic-MIX015" = 24L
+  "S02-F33Asymptotic-MIX015" = 24L,
+  "S03-CommonTagTau-MIX015" = 25L,
+  "S04-CommonTagTauSpline-MIX015" = 25L,
+  "S05-CommonTagTauOPR-MIX015" = 26L,
+  "S06-CommonTagTauSplineOPR-MIX015" = 26L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -458,7 +538,11 @@ stepwise_models$dm_grouping[
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
     "22d-R1F2F3F29Shared-MIX005-TAGW250",
     "S01-SelectivityStability-MIX015",
-    "S02-F33Asymptotic-MIX015"
+    "S02-F33Asymptotic-MIX015",
+    "S03-CommonTagTau-MIX015",
+    "S04-CommonTagTauSpline-MIX015",
+    "S05-CommonTagTauOPR-MIX015",
+    "S06-CommonTagTauSplineOPR-MIX015"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -472,7 +556,11 @@ stepwise_models$dm_nmax[
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
     "22d-R1F2F3F29Shared-MIX005-TAGW250",
     "S01-SelectivityStability-MIX015",
-    "S02-F33Asymptotic-MIX015"
+    "S02-F33Asymptotic-MIX015",
+    "S03-CommonTagTau-MIX015",
+    "S04-CommonTagTauSpline-MIX015",
+    "S05-CommonTagTauOPR-MIX015",
+    "S06-CommonTagTauSplineOPR-MIX015"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -499,7 +587,11 @@ stepwise_models$tail_compression_percent <- ifelse(
       "22c-R1F2F3F29Shared-MIX005-TAGW500",
       "22d-R1F2F3F29Shared-MIX005-TAGW250",
       "S01-SelectivityStability-MIX015",
-      "S02-F33Asymptotic-MIX015"
+      "S02-F33Asymptotic-MIX015",
+      "S03-CommonTagTau-MIX015",
+      "S04-CommonTagTauSpline-MIX015",
+      "S05-CommonTagTauOPR-MIX015",
+      "S06-CommonTagTauSplineOPR-MIX015"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L

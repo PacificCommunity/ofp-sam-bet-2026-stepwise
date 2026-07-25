@@ -904,6 +904,7 @@ write_sequence_step <- function(
     reporting_rate_group_prior_repairs = list(),
     regional_cpue = FALSE,
     regional_scaling = FALSE,
+    reg_scaling_calendar_header = FALSE,
     regional_scaling_weight = NA_integer_,
     tail_compression_1pct = FALSE,
     index_selectivity = FALSE,
@@ -911,6 +912,8 @@ write_sequence_step <- function(
     selectivity_stability_map = FALSE,
     f33_asymptotic_selectivity = FALSE,
     tag_return_likelihood_weight = NA_integer_,
+    common_tag_tau = FALSE,
+    opr = FALSE,
     selectivity_update_bundle = FALSE,
     all_selectivity_forms_relaxed = FALSE,
     time_varying_cv = FALSE,
@@ -931,6 +934,8 @@ write_sequence_step <- function(
         r1_f2_f3_f29_shared_selectivity,
       selectivity_stability_map = selectivity_stability_map,
       f33_asymptotic_selectivity = f33_asymptotic_selectivity,
+      common_tag_tau = common_tag_tau,
+      opr = opr,
       tag_return_likelihood_weight = tag_return_likelihood_weight,
       selectivity_update_bundle = selectivity_update_bundle,
       all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
@@ -958,6 +963,7 @@ write_sequence_step <- function(
     reporting_rate_group_prior_repairs = reporting_rate_group_prior_repairs,
     age_effective_sample_size = age_effective_sample_size,
     reg_scaling_source = if (isTRUE(regional_scaling)) reg_scaling_source else "",
+    reg_scaling_calendar_header = reg_scaling_calendar_header,
     regional_scaling_weight = regional_scaling_weight,
     doitall_edits = controls,
     cpue_sigma_calibration = if (isTRUE(fixed_cpue_sigma)) cpue_sigma_calibration else NULL,
@@ -1216,6 +1222,9 @@ write_selected_path_step <- function(
     selectivity_stability_map = FALSE,
     f33_asymptotic_selectivity = FALSE,
     tag_return_likelihood_weight = NA_integer_,
+    common_tag_tau = FALSE,
+    opr = FALSE,
+    reg_scaling_calendar_header = FALSE,
     all_selectivity_forms_relaxed = FALSE,
     dom = FALSE, francis = numeric(),
     dm_grouping = "", dm_nmax = NA_integer_,
@@ -1238,6 +1247,7 @@ write_selected_path_step <- function(
     tag_flag_column2 = tag_flag2,
     regional_cpue = TRUE,
     regional_scaling = TRUE,
+    reg_scaling_calendar_header = reg_scaling_calendar_header,
     regional_scaling_weight = 100L,
     tail_compression_1pct = tail_compression_1pct,
     index_selectivity = index_selectivity,
@@ -1246,6 +1256,8 @@ write_selected_path_step <- function(
     selectivity_stability_map = selectivity_stability_map,
     f33_asymptotic_selectivity = f33_asymptotic_selectivity,
     tag_return_likelihood_weight = tag_return_likelihood_weight,
+    common_tag_tau = common_tag_tau,
+    opr = opr,
     selectivity_update_bundle = selectivity_update_bundle,
     all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
     time_varying_cv = time_varying_cv,
@@ -1611,9 +1623,204 @@ write_selected_path_step(
   index_selectivity = TRUE, selectivity_update_bundle = TRUE,
   selectivity_stability_map = TRUE,
   f33_asymptotic_selectivity = TRUE,
+  reg_scaling_calendar_header = TRUE,
   all_selectivity_forms_relaxed = TRUE,
   dm_grouping = "G8PSSET", dm_nmax = 25L,
   status = "Prepared independent F33 asymptotic-selectivity sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S03-CommonTagTau-MIX015",
+  "S03 Common tag-overdispersion sensitivity with SC22 K=0.15 mixing",
+  "S02-F33Asymptotic-MIX015",
+  paste0(
+    "Retain the F33 asymptotic selectivity model and estimate one common ",
+    "negative-binomial tag-overdispersion parameter across active ",
+    "tag-recapture fisheries F1-F28."
+  ),
+  audit_notes = c(
+    paste0(
+      "Common-tau fits use the native MFCL bound and a requested lower bound ",
+      "of 2. The native fit uses MFCL's finite transformed lower bound ",
+      "tau = 1 + exp(-5) = 1.006737947 because flag 306=100 would evaluate ",
+      "log(0)."
+    ),
+    paste0(
+      "The grouping matches the common-tau structure used in the earlier ",
+      "tag-tau campaign: F1-F28 share group 1; F29-F33 have no active ",
+      "tag-overdispersion parameter."
+    ),
+    paste0(
+      "The programme-informed launch instead estimates three recapture-fishery ",
+      "strata: JPTP-dominant F1/F12/F13, PTTP Region 4-dominant F25-F28, ",
+      "and the remaining active fisheries. These are recapture proxies, not ",
+      "release-programme-specific tau parameters."
+    ),
+    paste0(
+      "F2/F3 and F7/F9 extraction selectivity sharing, independent F29-F33 ",
+      "selectivities, F33 logistic form, DM G8 Nmax25, SC22-IP10 K=0.15 ",
+      "mixing periods, reporting-rate priors, CPUE controls and data are ",
+      "unchanged."
+    ),
+    paste0(
+      "Lorenzen natural mortality is read from the INI at ",
+      "-2.54930339768360 and remains fixed because parest flag 121 is zero ",
+      "in every estimation phase."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  f33_asymptotic_selectivity = TRUE,
+  common_tag_tau = TRUE,
+  reg_scaling_calendar_header = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared common-tau lower-bound sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S04-CommonTagTauSpline-MIX015",
+  "S04 Common tag-overdispersion sensitivity with F33 spline and SC22 K=0.15 mixing",
+  "S01-SelectivityStability-MIX015",
+  paste0(
+    "Retain the independent four-node spline for the Region 5 index (F33) ",
+    "and estimate one common negative-binomial tag-overdispersion parameter ",
+    "across active tag-recapture fisheries F1-F28."
+  ),
+  audit_notes = c(
+    paste0(
+      "This configuration differs from S03 only in F33 selectivity form: ",
+      "the four-node cubic spline is retained instead of the asymptotic ",
+      "logistic curve."
+    ),
+    paste0(
+      "The native tau bound and requested lower bound 2 are crossed with regional ",
+      "recruitment-distribution penalty coefficients 0.1 and 0.2. MFCL ",
+      "represents the latter as age flag 110=2."
+    ),
+    paste0(
+      "The runtime grouping is either one common F1-F28 tau or three ",
+      "programme-informed recapture-fishery strata; F29-F33 remain inactive. ",
+      "Index selectivities and catchabilities remain mutually independent ",
+      "and separate from extraction fisheries."
+    ),
+    paste0(
+      "Lorenzen natural mortality is read from the INI at ",
+      "-2.54930339768360 and remains fixed because parest flag 121 is zero ",
+      "in every estimation phase."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  f33_asymptotic_selectivity = FALSE,
+  common_tag_tau = TRUE,
+  reg_scaling_calendar_header = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared F33-spline common-tau sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S05-CommonTagTauOPR-MIX015",
+  "S05 Common tag-overdispersion sensitivity with OPR and F33 asymptotic selectivity",
+  "S03-CommonTagTau-MIX015",
+  paste0(
+    "Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment ",
+    "structure while retaining the F33 asymptotic selectivity and one common ",
+    "tag-overdispersion parameter."
+  ),
+  audit_notes = c(
+    paste0(
+      "The OPR controls are introduced in Phase 3. They replace the ",
+      "mean-plus-deviation regional recruitment time series and retain the ",
+      "same data, tag, CPUE, selectivity and composition-likelihood settings."
+    ),
+    paste0(
+      "Age flag 110 remains active under OPR as the coefficient on the ",
+      "difference between OPR-implied mean regional recruitment proportions ",
+      "and the reference regional proportions."
+    ),
+    paste0(
+      "Nmax=25 and the MFCL default Nmax=1000 are launched as paired OPR ",
+      "sensitivities; flag 342=0 invokes the source-code default of 1000."
+    ),
+    paste0(
+      "Tau grouping is set at runtime to one common F1-F28 parameter or ",
+      "three programme-informed recapture-fishery strata; the latter are ",
+      "JPTP and PTTP Region 4 proxies rather than release-programme parameters."
+    ),
+    paste0(
+      "M remains fixed through Phase 10. Paired M sensitivities open only ",
+      "the Lorenzen intercept in Phases 11-12."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  f33_asymptotic_selectivity = TRUE,
+  common_tag_tau = TRUE,
+  opr = TRUE,
+  reg_scaling_calendar_header = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared OPR common-tau sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S06-CommonTagTauSplineOPR-MIX015",
+  "S06 Common tag-overdispersion sensitivity with OPR and F33 spline",
+  "S04-CommonTagTauSpline-MIX015",
+  paste0(
+    "Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment ",
+    "structure while retaining the independent F33 four-node spline and one ",
+    "common tag-overdispersion parameter."
+  ),
+  audit_notes = c(
+    paste0(
+      "This configuration differs from S05 only in F33 selectivity form: ",
+      "the independent four-node cubic spline replaces the asymptotic ",
+      "logistic curve."
+    ),
+    paste0(
+      "Age flag 110 remains active under OPR as the coefficient on the ",
+      "difference between OPR-implied mean regional recruitment proportions ",
+      "and the reference regional proportions."
+    ),
+    paste0(
+      "Nmax=25 and the MFCL default Nmax=1000 are launched as paired OPR ",
+      "sensitivities. M remains fixed through Phase 10 and is opened only in ",
+      "Phases 11-12 for the paired M-estimation runs."
+    ),
+    paste0(
+      "Tau grouping is set at runtime to one common F1-F28 parameter or ",
+      "three programme-informed recapture-fishery strata; F29-F33 remain ",
+      "inactive because the regional index fisheries have no tag recaptures."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  f33_asymptotic_selectivity = FALSE,
+  common_tag_tau = TRUE,
+  opr = TRUE,
+  reg_scaling_calendar_header = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared OPR F33-spline common-tau sensitivity snapshot."
 )
 
 # Remove superseded numbering and selectivity-sensitivity folders after the

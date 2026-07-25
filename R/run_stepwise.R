@@ -544,16 +544,31 @@ stage_previous_job_par <- function(model_dir, step_id, job_ref, root, work_dir) 
   }
 }
 
-expected_final_par_for_run <- function(run_mode, run_script_name, cfg) {
+expected_final_par_for_run <- function(run_mode, run_script_name, cfg,
+                                       model_dir = ".") {
   expected <- cfg$EXPECTED_FINAL_PAR %||% cfg$FINAL_PAR %||% ""
-  if (!nzchar(expected) && is_doitall_like_mode(run_mode) && identical(basename(run_script_name), "doitall.sh")) {
-    expected <- "11.par"
+  if (!nzchar(expected) && is_doitall_like_mode(run_mode)) {
+    script_path <- file.path(model_dir, run_script_name)
+    if (file.exists(script_path)) {
+      lines <- trimws(readLines(script_path, warn = FALSE))
+      assignment <- grep(
+        "^final_par=['\"]?[A-Za-z0-9._-]+[.]par['\"]?$",
+        lines,
+        value = TRUE
+      )
+      if (length(assignment)) {
+        expected <- sub("^final_par=", "", assignment[[length(assignment)]])
+        expected <- gsub("^['\"]|['\"]$", "", expected)
+      }
+    }
   }
   expected
 }
 
 select_final_par <- function(model_dir, step_id, run_mode, run_script_name, cfg) {
-  expected <- expected_final_par_for_run(run_mode, run_script_name, cfg)
+  expected <- expected_final_par_for_run(
+    run_mode, run_script_name, cfg, model_dir = model_dir
+  )
   if (nzchar(expected)) {
     final_par <- file.path(model_dir, expected)
     if (!file.exists(final_par)) {
@@ -583,6 +598,104 @@ select_final_par <- function(model_dir, step_id, run_mode, run_script_name, cfg)
     )
   }
   best
+}
+
+regional_scaling_payload_summary <- function(model_dir) {
+  path <- file.path(model_dir, "bet.reg_scaling")
+  doitall <- file.path(model_dir, "doitall.sh")
+  if (!file.exists(path) || !file.exists(doitall)) return(NULL)
+
+  lines <- readLines(path, warn = FALSE)
+  fields <- strsplit(trimws(lines[nzchar(trimws(lines))]), "[[:space:]]+")
+  if (!length(fields)) return(NULL)
+  has_calendar_header <- length(fields[[1L]]) == 4L &&
+    length(fields) > 1L &&
+    all(vapply(fields[-1L], length, integer(1)) == 5L)
+  data_lines <- if (has_calendar_header) lines[-1L] else lines
+  matrix_values <- tryCatch(
+    as.matrix(utils::read.table(text = data_lines, header = FALSE)),
+    error = function(e) NULL
+  )
+  if (is.null(matrix_values) || !nrow(matrix_values) || !ncol(matrix_values)) {
+    return(NULL)
+  }
+  storage.mode(matrix_values) <- "numeric"
+
+  control_lines <- sub("#.*$", "", readLines(doitall, warn = FALSE))
+  flags <- stats::setNames(rep(NA_real_, 5L), c("77", "78", "79", "80", "81"))
+  for (line in control_lines) {
+    words <- strsplit(trimws(line), "[[:space:]]+")[[1L]]
+    if (length(words) < 3L || words[[1L]] != "1" || !words[[2L]] %in% names(flags)) next
+    value <- suppressWarnings(as.numeric(words[[3L]]))
+    if (is.finite(value)) flags[[words[[2L]]]] <- value
+  }
+  if (!is.finite(flags[["77"]]) || flags[["77"]] <= 0) return(NULL)
+
+  full_path <- file.path(model_dir, "bet.reg_scaling.full")
+  n_periods <- if (file.exists(full_path)) {
+    sum(nzchar(trimws(readLines(full_path, warn = FALSE))))
+  } else if (has_calendar_header &&
+             is.finite(flags[["79"]]) && is.finite(flags[["80"]])) {
+    nrow(matrix_values) + as.integer(flags[["80"]])
+  } else {
+    nrow(matrix_values)
+  }
+  period_start <- if (is.finite(flags[["79"]]) && flags[["79"]] > 0) {
+    as.integer(n_periods - round(flags[["79"]]) + 1L)
+  } else {
+    1L
+  }
+  period_end <- if (is.finite(flags[["80"]]) && flags[["80"]] > 0) {
+    as.integer(n_periods - round(flags[["80"]]))
+  } else {
+    as.integer(n_periods)
+  }
+  period_count <- as.integer(period_end - period_start + 1L)
+  if (period_count <= 0L || nrow(matrix_values) < period_count) return(NULL)
+  active <- if (nrow(matrix_values) >= n_periods) {
+    matrix_values[period_start:period_end, , drop = FALSE]
+  } else {
+    matrix_values[seq_len(period_count), , drop = FALSE]
+  }
+  totals <- rowSums(active, na.rm = TRUE)
+  keep <- is.finite(totals) & totals > 0
+  if (!any(keep)) return(NULL)
+  shares <- sweep(active[keep, , drop = FALSE], 1L, totals[keep], "/")
+
+  list(
+    active = TRUE,
+    reason = NA_character_,
+    file = basename(path),
+    n_periods = as.integer(n_periods),
+    file_periods = as.integer(nrow(matrix_values)),
+    n_regions = as.integer(ncol(matrix_values)),
+    period_start = period_start,
+    period_end = period_end,
+    period_count = period_count,
+    calendar_header = if (has_calendar_header) trimws(lines[[1L]]) else "",
+    flags = list(
+      regional_scaling_weight = flags[["77"]],
+      use_mean_target = flags[["78"]],
+      start_flag = flags[["79"]],
+      end_flag = flags[["80"]],
+      mvn_penalty = flags[["81"]]
+    ),
+    ratios = as.numeric(colMeans(shares, na.rm = TRUE))
+  )
+}
+
+inject_regional_scaling_payload_summary <- function(payload_file, model_dir) {
+  summary <- regional_scaling_payload_summary(model_dir)
+  if (is.null(summary) || !file.exists(payload_file)) return(FALSE)
+  payload <- tryCatch(readRDS(payload_file), error = function(e) NULL)
+  if (is.null(payload) || !is.list(payload)) return(FALSE)
+  if (is.null(payload$data) || !is.list(payload$data)) payload$data <- list()
+  if (is.null(payload$data$info) || !is.list(payload$data$info)) {
+    payload$data$info <- list()
+  }
+  payload$data$info$reg_scaling <- summary
+  saveRDS(payload, payload_file)
+  TRUE
 }
 
 build_payload <- function(model_dir, step_id) {
@@ -620,6 +733,9 @@ build_payload <- function(model_dir, step_id) {
         "will show only values available from the final par file.",
         call. = FALSE
       )
+    }
+    if (isTRUE(inject_regional_scaling_payload_summary(payload_file, model_dir))) {
+      method <- paste0(method, " + header-aware regional scaling")
     }
     method
   }

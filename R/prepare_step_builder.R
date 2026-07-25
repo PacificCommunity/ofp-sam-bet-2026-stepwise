@@ -13,6 +13,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
                       tag_reporting_cell_repairs = list(),
                       reporting_rate_group_prior_repairs = list(),
                       reg_scaling_source = "",
+                      reg_scaling_calendar_header = FALSE,
                       regional_scaling_weight = NA_integer_,
                       doitall_edits = list(),
                       cpue_sigma_calibration = NULL,
@@ -153,7 +154,8 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       active_path = file.path(model_dir, "bet.reg_scaling"),
       full_path = file.path(model_dir, "bet.reg_scaling.full"),
       start_period = reg_scaling_active_start_period,
-      end_period = reg_scaling_active_end_period
+      end_period = reg_scaling_active_end_period,
+      calendar_header = reg_scaling_calendar_header
     )
   }
 
@@ -197,6 +199,8 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     f33_asymptotic_selectivity = isTRUE(
       doitall_edits$f33_asymptotic_selectivity
     ),
+    common_tag_tau = isTRUE(doitall_edits$common_tag_tau),
+    opr = isTRUE(doitall_edits$opr),
     tag_return_likelihood_weight = get0(
       "tag_return_likelihood_weight",
       doitall_edits,
@@ -262,7 +266,15 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   if (has_reg_scaling) {
     entries <- c(entries, list(
       list(role = "reg_scaling", file = "bet.reg_scaling", source = reg_scaling_source,
-           note = paste0("active periods ", reg_scaling_active_start_period, "-", reg_scaling_active_end_period)),
+           note = paste0(
+             "active periods ", reg_scaling_active_start_period, "-",
+             reg_scaling_active_end_period,
+             if (isTRUE(reg_scaling_calendar_header)) {
+               paste0("; current-MFCL calendar header ", reg_info$header)
+             } else {
+               ""
+             }
+           )),
       list(role = "reg_scaling_full", file = "bet.reg_scaling.full", source = reg_scaling_source,
            note = "complete source matrix retained as a calculation/audit artifact")
     ))
@@ -299,7 +311,11 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     controls = c(
       control_notes,
       "The folder is generated independently from source inputs; its scientific parent is not a runtime dependency.",
-      "No OPR or length-bin selectivity controls are generated.",
+      if (isTRUE(doitall_edits$opr)) {
+        "OPR uses the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure."
+      } else {
+        "No OPR or length-bin selectivity controls are generated."
+      },
       "INI and TAG inputs are never rolled back to an earlier selected row."
     ),
     outstanding = outstanding,

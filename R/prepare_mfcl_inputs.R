@@ -307,7 +307,10 @@ copy_tag_reporting_matrices <- function(path, source_ini) {
 }
 
 write_regional_scaling_inputs <- function(source_path, active_path, full_path,
-                                          start_period, end_period) {
+                                          start_period, end_period,
+                                          calendar_header = FALSE,
+                                          first_year = 1952L,
+                                          quarter_months = c(2L, 5L, 8L, 11L)) {
   # MFCL streams only the rows allocated by parest flags 79-80. Keep that
   # compact matrix at the executable filename, and retain the complete source
   # beside it so alternative windows can be regenerated without another pull.
@@ -340,8 +343,32 @@ write_regional_scaling_inputs <- function(source_path, active_path, full_path,
   }
 
   dir.create(dirname(active_path), recursive = TRUE, showWarnings = FALSE)
+  active_lines <- lines[start_period:end_period]
+  header <- character()
+  if (isTRUE(calendar_header)) {
+    quarter_months <- as.integer(quarter_months)
+    if (length(quarter_months) != 4L || anyNA(quarter_months) ||
+        any(quarter_months < 1L | quarter_months > 12L) ||
+        any(diff(quarter_months) <= 0L)) {
+      stop("Regional-scaling quarter months must be four increasing calendar months", call. = FALSE)
+    }
+    period_date <- function(period) {
+      offset <- as.integer(period) - 1L
+      c(
+        year = as.integer(first_year) + offset %/% 4L,
+        month = quarter_months[[offset %% 4L + 1L]]
+      )
+    }
+    start_date <- period_date(start_period)
+    end_date <- period_date(end_period)
+    header <- paste(
+      start_date[["year"]], start_date[["month"]],
+      end_date[["year"]], end_date[["month"]]
+    )
+    active_lines <- c(header, active_lines)
+  }
   writeLines(
-    lines[start_period:end_period], active_path,
+    active_lines, active_path,
     sep = file_eol(source_path), useBytes = TRUE
   )
   if (!file.copy(source_path, full_path, overwrite = TRUE, copy.mode = TRUE)) {
@@ -353,7 +380,9 @@ write_regional_scaling_inputs <- function(source_path, active_path, full_path,
     active_periods = end_period - start_period + 1L,
     columns = widths[[1L]],
     start = start_period,
-    end = end_period
+    end = end_period,
+    calendar_header = isTRUE(calendar_header),
+    header = header
   )
 }
 

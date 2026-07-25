@@ -691,6 +691,104 @@ apply_f33_asymptotic_selectivity <- function(lines) {
   )
 }
 
+apply_common_tag_tau <- function(lines) {
+  phase10_command <- grep("<<PHASE10[[:space:]]*$", lines)
+  if (length(phase10_command) != 1L) {
+    stop("Expected one PHASE10 command before adding common tag tau", call. = FALSE)
+  }
+  convergence_echo <- grep(
+    '^echo "PHASE 10/11 convergence criterion: \\$phase10_11_convergence"$',
+    lines
+  )
+  if (length(convergence_echo) != 1L) {
+    stop(
+      "Expected one convergence echo before adding the recruitment-penalty switch",
+      call. = FALSE
+    )
+  }
+  recruitment_penalty_block <- c(
+    "",
+    "regional_recruitment_penalty=${REGIONAL_RECRUITMENT_PENALTY:-0.1}",
+    'case "$regional_recruitment_penalty" in',
+    "  0.1)",
+    "    regional_recruitment_penalty_flag=0",
+    "    ;;",
+    "  0.2)",
+    "    # MFCL stores ten times this coefficient in age flag 110.",
+    "    regional_recruitment_penalty_flag=2",
+    "    ;;",
+    "  *)",
+    '    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1 or 0.2." >&2',
+    "    exit 39",
+    "    ;;",
+    "esac",
+    'echo "Regional recruitment-distribution penalty: $regional_recruitment_penalty (age flag 110=$regional_recruitment_penalty_flag)"',
+    "",
+    "dm_nmax=${DM_NMAX:-25}",
+    'case "$dm_nmax" in',
+    "  25)",
+    "    dm_nmax_flag=25",
+    "    dm_nmax_effective=25",
+    "    ;;",
+    "  default|1000)",
+    "    # A zero flag invokes the MFCL no-random-effects DM default Nmax=1000.",
+    "    dm_nmax_flag=0",
+    "    dm_nmax_effective=1000",
+    "    ;;",
+    "  *)",
+    '    echo "DM_NMAX must be 25, default, or 1000." >&2',
+    "    exit 38",
+    "    ;;",
+    "esac",
+    'echo "DM effective-sample-size upper bound: $dm_nmax_effective (parest flag 342=$dm_nmax_flag)"'
+  )
+  lines <- append(
+    lines,
+    recruitment_penalty_block,
+    after = convergence_echo
+  )
+  phase1_age_anchor <- grep(
+    "^[[:space:]]*2[[:space:]]+177[[:space:]]+1[[:space:]]+# use old totpop scaling method$",
+    lines
+  )
+  if (length(phase1_age_anchor) != 1L) {
+    stop(
+      "Expected one Phase 1 age-flag anchor before adding age flag 110",
+      call. = FALSE
+    )
+  }
+  lines <- append(
+    lines,
+    paste0(
+      "  2 110 $regional_recruitment_penalty_flag",
+      "  # regional recruitment-distribution penalty coefficient"
+    ),
+    after = phase1_age_anchor
+  )
+  nmax_anchor <- grep(
+    "^[[:space:]]*1[[:space:]]+342[[:space:]]+25([[:space:]]|$)",
+    lines
+  )
+  if (length(nmax_anchor) != 1L) {
+    observed_nmax <- lines[grepl("342", lines, fixed = TRUE)]
+    stop(
+      "Expected one Phase 1 DM Nmax=25 control before adding the Nmax switch; found: ",
+      paste(observed_nmax, collapse = " | "),
+      call. = FALSE
+    )
+  }
+  lines[[nmax_anchor]] <- paste0(
+    "  1 342 $dm_nmax_flag",
+    "  # selected DM effective-sample-size upper bound"
+  )
+  phase10_command <- grep("<<PHASE10[[:space:]]*$", lines)
+  template <- file.path(root, "templates", "common-tag-tau-tail.sh")
+  if (!file.exists(template)) {
+    stop("Missing common tag-tau doitall template: ", template, call. = FALSE)
+  }
+  c(lines[seq_len(phase10_command - 1L)], readLines(template, warn = FALSE))
+}
+
 apply_tag_return_likelihood_weight <- function(lines, weight_per_mille) {
   weight_per_mille <- as.integer(weight_per_mille)
   if (length(weight_per_mille) != 1L || is.na(weight_per_mille) ||
@@ -1118,6 +1216,8 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           r1_f2_f3_f29_shared_selectivity = FALSE,
                           selectivity_stability_map = FALSE,
                           f33_asymptotic_selectivity = FALSE,
+                          common_tag_tau = FALSE,
+                          opr = FALSE,
                           tag_return_likelihood_weight = NA_integer_,
                           selectivity_update_bundle = FALSE,
                           all_selectivity_forms_relaxed = FALSE,
@@ -1208,6 +1308,9 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     }
     lines <- apply_f33_asymptotic_selectivity(lines)
   }
+  if (isTRUE(opr)) {
+    lines <- apply_opr(lines)
+  }
   if (!is.na(tag_return_likelihood_weight)) {
     lines <- apply_tag_return_likelihood_weight(
       lines,
@@ -1223,6 +1326,16 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
   }
   if (length(francis_divisors)) lines <- apply_francis_lf_divisors(lines, francis_divisors)
   if (nzchar(dm_grouping)) lines <- apply_dm_likelihood(lines, dm_grouping, dm_nmax)
+  if (isTRUE(common_tag_tau)) {
+    if (!isTRUE(selectivity_stability_map)) {
+      stop(
+        "The common tag-tau sensitivity requires the independent-index ",
+        "selectivity-stability map.",
+        call. = FALSE
+      )
+    }
+    lines <- apply_common_tag_tau(lines)
+  }
   writeLines(lines, to, useBytes = TRUE)
   Sys.chmod(to, mode = "0755")
   invisible(to)

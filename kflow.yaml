@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-f33-asymptotic-selectivity-20260726
-name: bet-2026-f33-asymptotic-selectivity-20260726
-description: Fit the BET 2026 final DM selectivity-stability sensitivity with extraction-only sharing, independent regional indices, an independent asymptotic logistic selectivity for the Region 5 index, and the tuna-flow v2.6 pre-mixing reporting-rate correction.
+#   /api/job/bet-2026-tag-dispersion-opr-nmax-m-20260726
+name: bet-2026-tag-dispersion-opr-nmax-m-20260726
+description: Run 72 BET sensitivities crossing common or program-informed recapture-fishery tau strata, the MFCL default or tau lower bound 2, F33 asymptotic or spline selectivity, regional recruitment penalties 0.1 or 0.2, standard or OPR recruitment, OPR Nmax 25 or default 1000, and fixed or Phase 11-12 estimated M.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -28,7 +28,7 @@ docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac95
 # the MFCL command itself can use more threads.
 resources:
   cpus: 2
-  memory: 12GB
+  memory: 8GB
   disk: 8GB
 
 # Default is intentionally empty. Add machines only for a temporary launch or
@@ -40,14 +40,19 @@ env:
   # A public-task launch is safe by default: exactly one model is selected.
   # Campaign rows override all four identity fields together. Local sequential
   # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
-  STEP_SELECT: S02-F33Asymptotic-MIX015
+  STEP_SELECT: S03-CommonTagTau-MIX015
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "BET 2026 selectivity sensitivity | F33 asymptotic, tuna-flow 2.6"
-  JOB_DESCRIPTION: "Run the full final-DM doitall fit with extraction-only selectivity sharing, independent indices, a logistic Region 5 index selectivity and the corrected pre-mixing reporting-rate calculation."
-  MODEL_LABEL: F33 independent asymptotic selectivity
-  JOB_KEY: s02-f33-asymptotic-mix015
+  JOB_TITLE: "BET 2026 tag-overdispersion sensitivity | common tau, default bound"
+  JOB_DESCRIPTION: "Run the full final-DM doitall fit with one common recapture-fishery tag-overdispersion parameter and the native MFCL bound."
+  MODEL_LABEL: Common tag tau; default bound
+  JOB_KEY: s03-common-tag-tau-default
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  DM_NMAX: "25"
+  ESTIMATE_M_FINAL: "false"
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-f33-asymptotic-selectivity
+  FLOW_GROUP: bet-2026-tag-dispersion-opr-nmax-m
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -90,9 +95,9 @@ env:
   MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
-  KFLOW_REPORT_COMMIT_GENERATED: "true"
-  KFLOW_REPORT_PUSH_GENERATED: "true"
-  KFLOW_REPORT_PUBLISH_REQUIRED: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
 
 # Keep artifacts compact. The final .par is stored losslessly inside
 # model_payload.rds; outputs/ contains the payload plus small manifests/indexes.
@@ -415,7 +420,7 @@ triggers: {}
 # Consumed by scripts/register_kflow_task.py. Rows and their descriptions are
 # derived at registration/plan time; no model count is duplicated here.
 model_campaign:
-  rows_source: job-config.R
+  rows_source: job-config-tau.R
   execution: independent-concurrent
   inputs: frozen
   scientific_parent: metadata-only
@@ -453,6 +458,11 @@ job_config:
     - PROGRAM_PATH
     - MFCL_LIVE_LOG
     - BET_PHASE10_11_CONVERGENCE
+    - TAG_TAU_GROUPING
+    - TAG_TAU_LOWER_BOUND
+    - REGIONAL_RECRUITMENT_PENALTY
+    - DM_NMAX
+    - ESTIMATE_M_FINAL
     - PLOT_TITLE
     - PLOT_MAX_FISHERIES
     - FLOW_SPECIES

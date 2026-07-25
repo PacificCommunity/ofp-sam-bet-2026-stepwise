@@ -352,6 +352,14 @@ expected_weighting_parents <- c(
     "21a-R1F2F3F29Shared-MIX015",
   "S02-F33Asymptotic-MIX015" =
     "S01-SelectivityStability-MIX015",
+  "S03-CommonTagTau-MIX015" =
+    "S02-F33Asymptotic-MIX015",
+  "S04-CommonTagTauSpline-MIX015" =
+    "S01-SelectivityStability-MIX015",
+  "S05-CommonTagTauOPR-MIX015" =
+    "S03-CommonTagTau-MIX015",
+  "S06-CommonTagTauSplineOPR-MIX015" =
+    "S04-CommonTagTauSpline-MIX015",
   "21b-R1F2F3F29Shared-MIX005" =
     "21a-R1F2F3F29Shared-MIX015",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" =
@@ -798,6 +806,12 @@ for (i in seq_len(nrow(models))) {
       "20b Francis replacement weighting"
     )
   }
+  common_tau_models <- c(
+    "S03-CommonTagTau-MIX015",
+    "S04-CommonTagTauSpline-MIX015",
+    "S05-CommonTagTauOPR-MIX015",
+    "S06-CommonTagTauSplineOPR-MIX015"
+  )
   final_dm_models <- c(
     "20c-DMG8Nmax25",
     "21a-R1F2F3F29Shared-MIX015",
@@ -807,11 +821,20 @@ for (i in seq_len(nrow(models))) {
     "22c-R1F2F3F29Shared-MIX005-TAGW500",
     "22d-R1F2F3F29Shared-MIX005-TAGW250",
     "S01-SelectivityStability-MIX015",
-    "S02-F33Asymptotic-MIX015"
+    "S02-F33Asymptotic-MIX015",
+    "S03-CommonTagTau-MIX015",
+    "S04-CommonTagTauSpline-MIX015",
+    "S05-CommonTagTauOPR-MIX015",
+    "S06-CommonTagTauSplineOPR-MIX015"
   )
   if (model_id %in% final_dm_models) {
+    required_dm_controls <- if (model_id %in% common_tau_models) {
+      setdiff(job13328_dm_controls, "1 342 25")
+    } else {
+      job13328_dm_controls
+    }
     require_exact_controls(
-      doitall, job13328_dm_controls, model_id,
+      doitall, required_dm_controls, model_id,
       "Job 13328 S011 DM/G8/Nmax25 state"
     )
     forbid_exact_controls(
@@ -823,6 +846,80 @@ for (i in seq_len(nrow(models))) {
     }
     if (exact_control_count(doitall, "1 50 $phase10_11_convergence") != 2L) {
       add_failure(model_id, "PHASE 10 and PHASE 11 must both use the final run-time MGC target.")
+    }
+  }
+  if (model_id %in% common_tau_models) {
+    required_runtime_controls <- c(
+      "regional_recruitment_penalty=${REGIONAL_RECRUITMENT_PENALTY:-0.1}",
+      "regional_recruitment_penalty_flag=0",
+      "regional_recruitment_penalty_flag=2",
+      "2 110 $regional_recruitment_penalty_flag  # regional recruitment-distribution penalty coefficient",
+      "dm_nmax=${DM_NMAX:-25}",
+      "tag_tau_lower_bound=${TAG_TAU_LOWER_BOUND:-default}",
+      "tag_tau_grouping=${TAG_TAU_GROUPING:-common}",
+      "estimate_m_final=${ESTIMATE_M_FINAL:-false}"
+    )
+    missing_runtime_controls <- required_runtime_controls[
+      !vapply(
+        required_runtime_controls,
+        function(control) any(trimws(doitall) == control),
+        logical(1)
+      )
+    ]
+    if (length(missing_runtime_controls)) {
+      add_failure(
+        model_id,
+        paste0(
+          "common-tau runtime controls are incomplete: ",
+          paste(missing_runtime_controls, collapse = "; "),
+          "."
+        )
+      )
+    }
+    if (sum(grepl(
+      "^[[:space:]]*2[[:space:]]+110[[:space:]]+\\$regional_recruitment_penalty_flag",
+      doitall
+    )) != 1L) {
+      add_failure(
+        model_id,
+        "age flag 110 must be set exactly once in Phase 1 from the 0.1/0.2 runtime switch."
+      )
+    }
+    if (!any(grepl(
+      'age_flag_110=.*print \\$110',
+      doitall
+    ))) {
+      add_failure(
+        model_id,
+        "final-par audit must read and verify age flag 110."
+      )
+    }
+  }
+  opr_models <- c(
+    "S05-CommonTagTauOPR-MIX015",
+    "S06-CommonTagTauSplineOPR-MIX015"
+  )
+  if (model_id %in% opr_models) {
+    require_exact_controls(
+      doitall,
+      c(
+        "1 398 0", "1 400 0",
+        "2 177 0", "2 32 0",
+        "1 155 69", "1 217 1", "1 216 50", "1 218 50",
+        "1 202 2", "1 210 0", "1 212 0", "1 214 0",
+        "2 30 1", "2 70 0", "2 71 0", "2 178 0"
+      ),
+      model_id,
+      "audited 69-01-50-50 OPR transfer"
+    )
+    if (exact_control_count(doitall, "1 155 69") != 1L ||
+        exact_control_count(doitall, "1 216 50") != 1L ||
+        exact_control_count(doitall, "1 217 1") != 1L ||
+        exact_control_count(doitall, "1 218 50") != 1L) {
+      add_failure(
+        model_id,
+        "OPR year, region, season and region-season controls must each be introduced exactly once."
+      )
     }
   }
 
@@ -968,6 +1065,67 @@ for (i in seq_len(nrow(models))) {
       if (!all(required_targets %in% as.numeric(target))) add_failure(model_id, "PTTP RR matrices are missing exact targets 49.62, 51.21, and 52.82.")
     }
 
+    current_tag_sensitivity_ids <- c(
+      "S02-F33Asymptotic-MIX015",
+      "S03-CommonTagTau-MIX015",
+      "S04-CommonTagTauSpline-MIX015",
+      "S05-CommonTagTauOPR-MIX015",
+      "S06-CommonTagTauSplineOPR-MIX015"
+    )
+    if (model_id %in% current_tag_sensitivity_ids) {
+      expected_ini_sha256 <-
+        "4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a"
+      if (!identical(sha256_file(ini_path), expected_ini_sha256)) {
+        add_failure(
+          model_id,
+          paste0(
+            "final sensitivity INI drift: expected frozen SC22-IP10 K=0.15 ",
+            "and RR specification SHA256 ", expected_ini_sha256, "."
+          )
+        )
+      }
+      expected_active_groups <- c(
+        1L, 6L, 7L, 10L, 13L, 14L, 17L, 18L, 19L, 20L, 23L, 29L
+      )
+      actual_active_groups <- sort(unique(as.integer(groups[active_cells])))
+      if (!identical(actual_active_groups, expected_active_groups)) {
+        add_failure(
+          model_id,
+          paste0(
+            "active RR groups must remain the 12 audited groups ",
+            paste(expected_active_groups, collapse = ", "), "; found ",
+            paste(actual_active_groups, collapse = ", "), "."
+          )
+        )
+      }
+      expected_rr_values <- list(
+        mean = c(0.4962, 0.5, 0.5121, 0.5282),
+        target = c(49.62, 50, 51.21, 52.82),
+        penalty = c(1, 231.2, 354.5, 739.2)
+      )
+      actual_rr_values <- list(
+        mean = sort(unique(as.numeric(means[active_cells]))),
+        target = sort(unique(as.numeric(target[active_cells]))),
+        penalty = sort(unique(as.numeric(penalty[active_cells])))
+      )
+      for (field in names(expected_rr_values)) {
+        if (!isTRUE(all.equal(
+          actual_rr_values[[field]],
+          sort(expected_rr_values[[field]]),
+          tolerance = 1e-12,
+          check.attributes = FALSE
+        ))) {
+          add_failure(
+            model_id,
+            paste0(
+              "active RR ", field, " values differ from the audited SC22-IP10 ",
+              "specification."
+            )
+          )
+        }
+      }
+    }
+
     if (is.finite(major_number) && major_number >= 6L) {
       release_programs <- tag_release_programs(read_text(tag_path), tag_path)
       program_rows <- c(release_programs, "PTTP")
@@ -1088,11 +1246,44 @@ for (i in seq_len(nrow(models))) {
     } else {
       active_lock <- lock_by_role_name("regional_scaling", "ACTIVE20X5")
       full_lock <- lock_by_role_name("regional_scaling", "FULL292X5")
-      if (!is.null(active_lock) && !identical(sha256_file(active_path), trim_character(active_lock$prepared_sha256[[1L]]))) add_failure(model_id, "active regional-scaling SHA256 differs from the locked 20x5 matrix.")
+      current_mfcl_header <- model_id %in% c(
+        "S02-F33Asymptotic-MIX015",
+        "S03-CommonTagTau-MIX015",
+        "S04-CommonTagTauSpline-MIX015",
+        "S05-CommonTagTauOPR-MIX015",
+        "S06-CommonTagTauSplineOPR-MIX015"
+      )
+      if (current_mfcl_header) {
+        active_lines <- readLines(active_path, warn = FALSE)
+        full_lines <- readLines(full_path, warn = FALSE)
+        if (length(active_lines) != 21L ||
+            !identical(trimws(active_lines[[1L]]), "1965 2 1969 11") ||
+            !identical(active_lines[-1L], full_lines[53:72])) {
+          add_failure(
+            model_id,
+            paste0(
+              "current MFCL regional-scaling input must contain header ",
+              "`1965 2 1969 11` followed by the locked active periods 53-72."
+            )
+          )
+        }
+      } else if (!is.null(active_lock) &&
+                 !identical(
+                   sha256_file(active_path),
+                   trim_character(active_lock$prepared_sha256[[1L]])
+                 )) {
+        add_failure(model_id, "active regional-scaling SHA256 differs from the locked 20x5 matrix.")
+      }
       if (!is.null(full_lock) && !identical(sha256_file(full_path), trim_character(full_lock$prepared_sha256[[1L]]))) add_failure(model_id, "full regional-scaling SHA256 differs from the locked 292x5 matrix.")
     }
     regw <- suppressWarnings(as.numeric(row_value(row, "regional_scaling_weight", sub(".*REGW([0-9]+).*", "\\1", token))))
-    if (is.finite(regw)) check_flag(flags, 1L, 77L, regw, model_id, "regional-scaling weight")
+    if (is.finite(regw)) {
+      check_flag(flags, 1L, 77L, regw, model_id, "regional-scaling weight")
+      check_flag(flags, 1L, 78L, 1L, model_id, "mean regional-scaling target")
+      check_flag(flags, 1L, 79L, 240L, model_id, "regional-scaling start offset")
+      check_flag(flags, 1L, 80L, 220L, model_id, "regional-scaling end offset")
+      check_flag(flags, 1L, 81L, 1L, model_id, "multivariate-normal regional-scaling penalty")
+    }
     for (pair in list(c(78, 1), c(79, 240), c(80, 220), c(81, 1))) check_flag(flags, 1L, pair[[1L]], pair[[2L]], model_id, "regional-scaling window/control")
     phase1_cpue <- vapply(
       29:33, function(fishery) effective_flag_at_phase(flags, -fishery, 99L, 1L),
@@ -1204,9 +1395,17 @@ for (i in seq_len(nrow(models))) {
   if (n7_expected) {
     selectivity_stability <- model_id %in% c(
       "S01-SelectivityStability-MIX015",
-      "S02-F33Asymptotic-MIX015"
+      "S02-F33Asymptotic-MIX015",
+      "S03-CommonTagTau-MIX015",
+      "S04-CommonTagTauSpline-MIX015",
+      "S05-CommonTagTauOPR-MIX015",
+      "S06-CommonTagTauSplineOPR-MIX015"
     )
-    f33_asymptotic <- identical(model_id, "S02-F33Asymptotic-MIX015")
+    f33_asymptotic <- model_id %in% c(
+      "S02-F33Asymptotic-MIX015",
+      "S03-CommonTagTau-MIX015",
+      "S05-CommonTagTauOPR-MIX015"
+    )
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
       "21b-R1F2F3F29Shared-MIX005",
@@ -1388,7 +1587,13 @@ for (i in seq_len(nrow(models))) {
   nmax_values <- unique(flag_values(flags, 1L, 342L))
   if (is.finite(nmax_config) && is.finite(nmax_from_label) && nmax_config != nmax_from_label) add_failure(model_id, paste0("Nmax label says ", nmax_from_label, " but job-config says ", nmax_config, "."))
   expected_nmax <- if (is.finite(nmax_config)) nmax_config else nmax_from_label
-  if (is.finite(expected_nmax) && (length(nmax_values) == 0L || any(nmax_values != expected_nmax))) {
+  runtime_nmax <- model_id %in% common_tau_models
+  if (runtime_nmax &&
+      sum(trimws(doitall) == "1 342 $dm_nmax_flag  # selected DM effective-sample-size upper bound") != 1L) {
+    add_failure(model_id, "runtime Nmax model must set parest flag 342 exactly once from DM_NMAX.")
+  }
+  if (!runtime_nmax && is.finite(expected_nmax) &&
+      (length(nmax_values) == 0L || any(nmax_values != expected_nmax))) {
     add_failure(model_id, paste0("Nmax label/config requires parest flag 342=", expected_nmax, "; found ", paste(nmax_values, collapse = ", "), "."))
   }
 
@@ -1761,6 +1966,84 @@ compare_flags_after_filter(
   "S02-F33Asymptotic-MIX015",
   function(flags) {
     flags$scope == -33L & flags$flag %in% c(57L, 61L)
+  }
+)
+compare_model_hashes_except(
+  "S02-F33Asymptotic-MIX015",
+  "S03-CommonTagTau-MIX015",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "S02-F33Asymptotic-MIX015",
+  "S03-CommonTagTau-MIX015",
+  function(flags) {
+    (flags$scope == 1L & flags$flag %in% c(
+      1L, 50L, 101L, 111L, 121L, 177L, 239L, 246L, 249L,
+      305L, 306L, 342L, 358L
+    )) |
+      (flags$scope == 2L & flags$flag %in% c(
+        100L, 110L, 121L, 122L
+      )) |
+      (flags$scope <= -1L & flags$scope >= -33L &
+         flags$flag %in% c(43L, 44L))
+  }
+)
+compare_model_hashes_except(
+  "S01-SelectivityStability-MIX015",
+  "S04-CommonTagTauSpline-MIX015",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "S01-SelectivityStability-MIX015",
+  "S04-CommonTagTauSpline-MIX015",
+  function(flags) {
+    (flags$scope == 1L & flags$flag %in% c(
+      1L, 50L, 101L, 111L, 121L, 177L, 239L, 246L, 249L,
+      305L, 306L, 342L, 358L
+    )) |
+      (flags$scope == 2L & flags$flag %in% c(
+        100L, 110L, 121L, 122L
+      )) |
+      (flags$scope <= -1L & flags$scope >= -33L &
+         flags$flag %in% c(43L, 44L))
+  }
+)
+compare_model_hashes_except(
+  "S03-CommonTagTau-MIX015",
+  "S05-CommonTagTauOPR-MIX015",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "S03-CommonTagTau-MIX015",
+  "S05-CommonTagTauOPR-MIX015",
+  function(flags) {
+    (flags$scope == 1L & flags$flag %in% c(
+      1L, 149L, 155L, 202L, 210L, 212L, 214L, 216L, 217L, 218L,
+      398L, 400L
+    )) |
+      (flags$scope == 2L & flags$flag %in% c(
+        30L, 32L, 70L, 71L, 113L, 177L, 178L
+      )) |
+      (flags$scope == -100000L & flags$flag %in% 1:5)
+  }
+)
+compare_model_hashes_except(
+  "S04-CommonTagTauSpline-MIX015",
+  "S06-CommonTagTauSplineOPR-MIX015",
+  "doitall.sh"
+)
+compare_flags_after_filter(
+  "S04-CommonTagTauSpline-MIX015",
+  "S06-CommonTagTauSplineOPR-MIX015",
+  function(flags) {
+    (flags$scope == 1L & flags$flag %in% c(
+      1L, 149L, 155L, 202L, 210L, 212L, 214L, 216L, 217L, 218L,
+      398L, 400L
+    )) |
+      (flags$scope == 2L & flags$flag %in% c(
+        30L, 32L, 70L, 71L, 113L, 177L, 178L
+      )) |
+      (flags$scope == -100000L & flags$flag %in% 1:5)
   }
 )
 
