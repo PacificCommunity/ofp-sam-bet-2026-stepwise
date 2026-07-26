@@ -78,7 +78,7 @@ copy_model_source <- function(from, to, step_dir = "") {
   invisible(to)
 }
 
-copy_raw_mfcl_inputs <- function(from, to) {
+copy_raw_mfcl_inputs <- function(from, to, staged_from = "") {
   if (!dir.exists(from)) {
     return(FALSE)
   }
@@ -86,9 +86,15 @@ copy_raw_mfcl_inputs <- function(from, to) {
     unlink(to, recursive = TRUE, force = TRUE)
   }
   dir.create(to, recursive = TRUE, showWarnings = FALSE)
-  files <- list.files(from, all.files = TRUE, no.. = TRUE, full.names = TRUE)
-  if (!length(files)) {
+  source_files <- list.files(from, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+  if (!length(source_files)) {
     return(TRUE)
+  }
+  files <- source_files
+  if (nzchar(staged_from) && dir.exists(staged_from)) {
+    staged_files <- file.path(staged_from, basename(source_files))
+    use_staged <- file.exists(staged_files) | dir.exists(staged_files)
+    files[use_staged] <- staged_files[use_staged]
   }
   ok <- file.copy(files, to, recursive = TRUE, overwrite = TRUE, copy.date = TRUE)
   all(ok)
@@ -1130,7 +1136,11 @@ for (i in seq_len(nrow(step_table))) {
   raw_mfcl_inputs_saved <- FALSE
   if (isTRUE(save_raw_mfcl_inputs)) {
     raw_mfcl_inputs_dir <- file.path(step_out, "mfcl-inputs")
-    raw_mfcl_inputs_saved <- copy_raw_mfcl_inputs(model_source, raw_mfcl_inputs_dir)
+    raw_mfcl_inputs_saved <- copy_raw_mfcl_inputs(
+      model_source,
+      raw_mfcl_inputs_dir,
+      staged_from = model_dir
+    )
     if (!isTRUE(raw_mfcl_inputs_saved)) {
       warning("Could not save raw MFCL inputs for ", step_id, call. = FALSE)
       raw_mfcl_inputs_dir <- ""
@@ -1149,7 +1159,8 @@ for (i in seq_len(nrow(step_table))) {
     "phase-progress.csv",
     "phase-process-summary.csv",
     "doitall-switches.csv",
-    "post-switch-summary.csv"
+    "post-switch-summary.csv",
+    "mixing-period-audit.csv"
   ))
   for (file in keep) {
     src <- file.path(model_dir, file)
