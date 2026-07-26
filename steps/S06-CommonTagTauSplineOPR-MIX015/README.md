@@ -1,6 +1,6 @@
 # S06 Common tag-overdispersion sensitivity with OPR and F33 spline
 
-Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure while retaining the independent F33 four-node spline and one common tag-overdispersion parameter.
+Apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure while retaining the independent F33 four-node spline and one common tag-overdispersion parameter.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure wh
 
 | # | Change |
 | --- | --- |
-| 1 | Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure while retaining the independent F33 four-node spline and one common tag-overdispersion parameter. |
+| 1 | Apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure while retaining the independent F33 four-node spline and one common tag-overdispersion parameter. |
 | 2 | This configuration differs from S05 only in F33 selectivity form: the independent four-node cubic spline replaces the asymptotic logistic curve. |
 | 3 | Age flag 110 remains active under OPR as the coefficient on the difference between OPR-implied mean regional recruitment proportions and the reference regional proportions. |
 | 4 | Nmax=25 and the MFCL default Nmax=1000 are launched as paired OPR sensitivities. M remains fixed through Phase 10 and is opened only in Phases 11-12 for the paired M-estimation runs. |
@@ -39,7 +39,7 @@ Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure wh
 | `.ini` | rrpttp26 reporting-rate matrices; bet.2026.mix-0.15.ini copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure while retaining the independent F33 four-node spline and one common tag-overdispersion parameter. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure while retaining the independent F33 four-node spline and one common tag-overdispersion parameter. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -48,7 +48,7 @@ Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure wh
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
 | `ofp-sam-2026-BET-YFT-build-ini` | `5b2fb60` | Document SC22-IP10 mixing-period implementation |
 | `ofp-sam-2026-BET-YFT-tag-prep` | `44f8043` | update RR groupings |
-| `ofp-sam-2026-BET-YFT-age-length-build` | `96a06d2` | add various effective sample sizes |
+| `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
 
@@ -67,7 +67,7 @@ Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure wh
 |  9 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 10 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25. |
 | 11 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
-| 12 | OPR uses the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure. |
+| 12 | OPR uses the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure with a two-real-year end window. |
 | 13 | INI and TAG inputs are never rolled back to an earlier selected row. |
 
 ## Run Notes

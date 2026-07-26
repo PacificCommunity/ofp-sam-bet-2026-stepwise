@@ -17,7 +17,7 @@ and recapture processes, and tau differences should not be interpreted as
 differences in tuna behaviour. The complete executable mapping is recorded in
 `config/tag-tau-program-informed-map.csv`.
 
-The 72 independent fits cross the tag-dispersion structure with Region 5 index
+The 96 independent fits cross the tag-dispersion structure with Region 5 index
 selectivity, regional recruitment-distribution coefficient, standard or
 orthogonal-polynomial recruitment (OPR), the OPR composition effective-sample-
 size upper bound, and fixed or late-estimated natural mortality. The native
@@ -26,10 +26,15 @@ programme-informed configuration uses the native bound. Natural mortality is
 fixed at -2.54930339768360 through Phase 10 and, where requested, is estimated
 only in Phases 11-12.
 
-Kflow labels the fits consecutively from 1 to 72. Within each six-fit block,
+Kflow labels the primary fits consecutively from 1 to 72. Within each six-fit block,
 the order is common tau with the native bound, common tau with lower bound 2,
 and programme-informed tau with the native bound; each setting is run first
 with fixed natural mortality and then with late-estimated natural mortality.
+Fits 73-96 repeat the 24 fixed-M, Nmax-25 combinations with parest flag
+177=500, which multiplies the tag-recapture likelihood by 0.50. Their matched
+primary fits retain the full likelihood weight through the special flag value
+zero. This targeted comparison evaluates tag influence without adding
+interactions with M estimation or Nmax 1,000.
 
 | Sensitivity | Recruitment | F33 selectivity | Recruitment coefficient | Nmax |
 |---:|---|---|---:|---:|
@@ -45,12 +50,16 @@ with fixed natural mortality and then with late-estimated natural mortality.
 | 55-60 | OPR | Four-node spline | 0.1 | 1,000 |
 | 61-66 | OPR | Four-node spline | 0.2 | 25 |
 | 67-72 | OPR | Four-node spline | 0.2 | 1,000 |
+| 73-78 | Standard, tag weight 50% | Asymptotic | 0.1-0.2 | 25 |
+| 79-84 | Standard, tag weight 50% | Four-node spline | 0.1-0.2 | 25 |
+| 85-90 | OPR, tag weight 50% | Asymptotic | 0.1-0.2 | 25 |
+| 91-96 | OPR, tag weight 50% | Four-node spline | 0.1-0.2 | 25 |
 
 All fits retain the SC22-IP10 K=0.15 mixing periods, reporting-rate groups and
 priors, Dirichlet-multinomial eight-group composition structure, CPUE settings,
-data and selectivity sharing outside F33. The OPR configurations use the
-audited 69-01-50-50 structure. Nmax is 25 except for paired OPR sensitivities
-using the MFCL default of 1,000.
+data and selectivity sharing outside F33. The OPR configurations use the BET
+2026 72-01-50-50 structure, with a two-real-year end window. Nmax is 25 except
+for paired OPR sensitivities using the MFCL default of 1,000.
 
 The fixed reporting-rate specification contains 31 group identifiers, of which
 12 unique groups are active and estimated. Group 1 is shared by RTTP and PTTP.

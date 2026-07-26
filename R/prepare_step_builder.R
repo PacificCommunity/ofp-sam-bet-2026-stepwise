@@ -312,7 +312,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       control_notes,
       "The folder is generated independently from source inputs; its scientific parent is not a runtime dependency.",
       if (isTRUE(doitall_edits$opr)) {
-        "OPR uses the audited BET 69-01-50-50 orthogonal-polynomial recruitment structure."
+        paste0(
+          "OPR uses the BET 2026 72-01-50-50 orthogonal-polynomial ",
+          "recruitment structure with a two-real-year end window."
+        )
       } else {
         "No OPR or length-bin selectivity controls are generated."
       },

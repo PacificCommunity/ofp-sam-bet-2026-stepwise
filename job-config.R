@@ -355,13 +355,14 @@ stepwise_models <- do.call(
       "S05-CommonTagTauOPR-MIX015", "S05-CommonTagTauOPR",
       "S03-CommonTagTau-MIX015",
       FALSE, "stop",
-      "apply the BET 69-01-50-50 orthogonal-polynomial recruitment structure with F33 asymptotic selectivity",
+      "apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure with F33 asymptotic selectivity",
       "Common tag overdispersion; OPR; F33 asymptotic; K=0.15",
       "S05 OPR tag-overdispersion sensitivity | F33 asymptotic",
       "s05-common-tag-tau-opr-mix015",
       paste(
         "Independent full native-MFCL doitall fit. The OPR transfer occurs",
-        "in Phase 3 using the audited BET 69-01-50-50 structure. F1-F28",
+        "in Phase 3 using the BET 2026 72-01-50-50 structure and a",
+        "two-real-year end window. F1-F28",
         "share one tag-overdispersion parameter; F29-F33 are inactive.",
         "F33 uses an independent asymptotic logistic selectivity. Nmax=25",
         "and the MFCL default Nmax=1000 are launched as paired variants."
@@ -371,13 +372,14 @@ stepwise_models <- do.call(
       "S06-CommonTagTauSplineOPR-MIX015", "S06-CommonTagTauSplineOPR",
       "S04-CommonTagTauSpline-MIX015",
       FALSE, "stop",
-      "apply the BET 69-01-50-50 orthogonal-polynomial recruitment structure with the independent F33 spline",
+      "apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure with the independent F33 spline",
       "Common tag overdispersion; OPR; F33 spline; K=0.15",
       "S06 OPR tag-overdispersion sensitivity | F33 spline",
       "s06-common-tag-tau-spline-opr-mix015",
       paste(
         "Independent full native-MFCL doitall fit. The OPR transfer occurs",
-        "in Phase 3 using the audited BET 69-01-50-50 structure. F1-F28",
+        "in Phase 3 using the BET 2026 72-01-50-50 structure and a",
+        "two-real-year end window. F1-F28",
         "share one tag-overdispersion parameter; F29-F33 are inactive.",
         "F33 retains its independent four-node spline. Nmax=25 and the",
         "MFCL default Nmax=1000 are launched as paired variants."
@@ -462,7 +464,7 @@ stepwise_report_purpose <- c(
   "S02-F33Asymptotic-MIX015" = "Test whether constraining the sparsely informed Region 5 index selectivity to an asymptotic logistic form improves stability without materially degrading index or composition fit.",
   "S03-CommonTagTau-MIX015" = "Compare common and programme-informed recapture-fishery tag-overdispersion structures, native and lower-2 bounds, regional recruitment coefficients 0.1 and 0.2, and F33 asymptotic selectivity.",
   "S04-CommonTagTauSpline-MIX015" = "Repeat the tag-overdispersion and recruitment-coefficient sensitivities while retaining the independent four-node F33 spline.",
-  "S05-CommonTagTauOPR-MIX015" = "Apply the audited BET 69-01-50-50 OPR structure and compare Nmax 25 with the MFCL default 1000 under the same tag-overdispersion settings and F33 asymptotic selectivity.",
+  "S05-CommonTagTauOPR-MIX015" = "Apply the BET 2026 72-01-50-50 OPR structure with a two-real-year end window and compare Nmax 25 with the MFCL default 1000 under the same tag-overdispersion settings and F33 asymptotic selectivity.",
   "S06-CommonTagTauSplineOPR-MIX015" = "Repeat the OPR, Nmax and tag-overdispersion sensitivities while retaining the independent four-node F33 spline."
 )
 stepwise_models$report_change <- unname(

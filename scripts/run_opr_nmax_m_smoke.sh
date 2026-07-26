@@ -37,6 +37,7 @@ chmod +x "$output_root/doitall.sh"
   REGIONAL_RECRUITMENT_PENALTY=0.2 \
   DM_NMAX=default \
   ESTIMATE_M_FINAL=true \
+  TAG_LIKELIHOOD_WEIGHT=500 \
     sh doitall.sh > mfcl.log 2>&1
 )
 
@@ -52,7 +53,8 @@ ageflag()
 }
 
 [ "$(parest 121)" = 1 ]
-[ "$(parest 155)" = 69 ]
+[ "$(parest 177)" = 500 ]
+[ "$(parest 155)" = 72 ]
 [ "$(parest 216)" = 50 ]
 [ "$(parest 217)" = 1 ]
 [ "$(parest 218)" = 50 ]
@@ -67,8 +69,9 @@ ageflag()
 
 printf '%s\n' \
   "Sequential generated doitall: passed" \
-  "OPR 69-01-50-50 from Phase 3: passed" \
+  "OPR 72-01-50-50 with end2 from Phase 3: passed" \
   "regional recruitment coefficient 0.2 (age flag 110=2): passed" \
   "MFCL default DM Nmax (parest flag 342=0): passed" \
+  "tag-recapture likelihood multiplier 0.50 (parest flag 177=500): passed" \
   "programme-informed three-tau mapping from Phase 10: passed" \
   "late Lorenzen M estimation from Phase 11: passed"

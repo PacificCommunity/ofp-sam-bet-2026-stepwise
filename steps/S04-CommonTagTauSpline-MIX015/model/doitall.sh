@@ -552,6 +552,21 @@ case "$estimate_m_final" in
     ;;
 esac
 
+tag_likelihood_weight=${TAG_LIKELIHOOD_WEIGHT:-0}
+case "$tag_likelihood_weight" in
+  0|full|FULL)
+    tag_likelihood_weight=0
+    tag_likelihood_multiplier=1.00
+    ;;
+  500)
+    tag_likelihood_multiplier=0.50
+    ;;
+  *)
+    echo "TAG_LIKELIHOOD_WEIGHT must be 0, full, or 500." >&2
+    exit 55
+    ;;
+esac
+
 tag_tau_grouping=${TAG_TAU_GROUPING:-common}
 case "$tag_tau_grouping" in
   common)
@@ -611,6 +626,7 @@ echo "TAG tau grouping: $tag_tau_grouping_label ($expected_tau_count estimated p
 echo "TAG tau requested lower bound: $tag_tau_lower_bound"
 echo "TAG tau effective lower bound: $tag_tau_effective_lower"
 echo "TAG tau starting value: $tag_tau_start"
+echo "TAG-recapture likelihood multiplier: $tag_likelihood_multiplier (parest flag 177=$tag_likelihood_weight)"
 echo "Lorenzen M estimation in Phases 11-12: $estimate_m_final"
 
 # Set only fishery-parameter row 4 in the Phase 10 input. Phases 0-9 retain
@@ -646,7 +662,7 @@ awk -v theta="$tag_tau_start_theta" '
 
 $program_path bet.frq 09.tau.par 10.par -file - <<PHASE10
   1 111 4    # negative-binomial tag-recapture likelihood
-  1 177 0    # retain the unscaled tag-recapture likelihood
+  1 177 $tag_likelihood_weight  # selected tag-recapture likelihood multiplier
   1 239 0    # serial tag-return implementation supporting direct tau
   1 249 0    # standard tag-return likelihood
   1 101 0    # standard tag-return calculation
@@ -729,11 +745,11 @@ parest_306=$(awk '/^# The parest_flags/{getline; print $306; exit}' "$final_par"
 parest_342=$(awk '/^# The parest_flags/{getline; print $342; exit}' "$final_par")
 parest_358=$(awk '/^# The parest_flags/{getline; print $358; exit}' "$final_par")
 if [ "$parest_111" != 4 ] ||
-   [ "$parest_177" != 0 ] || [ "$parest_239" != 0 ] ||
+   [ "$parest_177" != "$tag_likelihood_weight" ] || [ "$parest_239" != 0 ] ||
    [ "$parest_249" != 0 ] || [ "$parest_305" != 1 ] ||
    [ "$parest_306" != "$tag_tau_flag306" ] ||
    [ "$parest_342" != "$dm_nmax_flag" ] || [ "$parest_358" != 0 ]; then
-  echo "Final parameter file did not retain the required direct-tau controls." >&2
+  echo "Final parameter file did not retain the required direct-tau or tag-weight controls." >&2
   exit 47
 fi
 if { [ "$estimate_m_final" = false ] && [ "$parest_121" != 0 ]; } ||

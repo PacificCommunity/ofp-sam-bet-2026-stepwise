@@ -7,7 +7,7 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/bet-2026-tag-dispersion-opr-nmax-m-20260726
 name: bet-2026-tag-dispersion-opr-nmax-m-20260726
-description: Run 72 BET sensitivities crossing common or program-informed recapture-fishery tau strata, the MFCL default or tau lower bound 2, F33 asymptotic or spline selectivity, regional recruitment penalties 0.1 or 0.2, standard or OPR recruitment, OPR Nmax 25 or default 1000, and fixed or Phase 11-12 estimated M.
+description: "Run 96 BET sensitivities: 72 primary tag-dispersion, selectivity, recruitment, Nmax and M combinations, plus 24 matched fixed-M and Nmax-25 fits with the tag-recapture likelihood weighted by 0.50."
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -51,6 +51,7 @@ env:
   REGIONAL_RECRUITMENT_PENALTY: "0.1"
   DM_NMAX: "25"
   ESTIMATE_M_FINAL: "false"
+  TAG_LIKELIHOOD_WEIGHT: "0"
   TRIGGER_NEXT: "false"
   FLOW_GROUP: bet-2026-tag-dispersion-opr-nmax-m
   FLOW_SPECIES: BET
@@ -463,6 +464,7 @@ job_config:
     - REGIONAL_RECRUITMENT_PENALTY
     - DM_NMAX
     - ESTIMATE_M_FINAL
+    - TAG_LIKELIHOOD_WEIGHT
     - PLOT_TITLE
     - PLOT_MAX_FISHERIES
     - FLOW_SPECIES

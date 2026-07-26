@@ -1733,7 +1733,7 @@ write_selected_path_step(
   "S05 Common tag-overdispersion sensitivity with OPR and F33 asymptotic selectivity",
   "S03-CommonTagTau-MIX015",
   paste0(
-    "Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment ",
+    "Apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment ",
     "structure while retaining the F33 asymptotic selectivity and one common ",
     "tag-overdispersion parameter."
   ),
@@ -1782,7 +1782,7 @@ write_selected_path_step(
   "S06 Common tag-overdispersion sensitivity with OPR and F33 spline",
   "S04-CommonTagTauSpline-MIX015",
   paste0(
-    "Apply the audited BET 69-01-50-50 orthogonal-polynomial recruitment ",
+    "Apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment ",
     "structure while retaining the independent F33 four-node spline and one ",
     "common tag-overdispersion parameter."
   ),

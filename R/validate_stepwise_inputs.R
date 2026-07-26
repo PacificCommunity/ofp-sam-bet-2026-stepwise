@@ -905,14 +905,14 @@ for (i in seq_len(nrow(models))) {
       c(
         "1 398 0", "1 400 0",
         "2 177 0", "2 32 0",
-        "1 155 69", "1 217 1", "1 216 50", "1 218 50",
+        "1 155 72", "1 217 1", "1 216 50", "1 218 50",
         "1 202 2", "1 210 0", "1 212 0", "1 214 0",
         "2 30 1", "2 70 0", "2 71 0", "2 178 0"
       ),
       model_id,
-      "audited 69-01-50-50 OPR transfer"
+      "BET 2026 72-01-50-50 OPR transfer"
     )
-    if (exact_control_count(doitall, "1 155 69") != 1L ||
+    if (exact_control_count(doitall, "1 155 72") != 1L ||
         exact_control_count(doitall, "1 216 50") != 1L ||
         exact_control_count(doitall, "1 217 1") != 1L ||
         exact_control_count(doitall, "1 218 50") != 1L) {

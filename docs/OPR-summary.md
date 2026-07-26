@@ -9,6 +9,12 @@ stepwise pathway documented in this repository. OPR is retained here as
 background screening information only; none of the current Steps 01-20 applies
 an OPR update.
 
+The separate BET 2026 OPR sensitivity campaign updates the year effect to 72
+while retaining season 1, region 50 and region-season 50. It uses
+`parest_flag(202)=2`, so the last two real years share the constrained endpoint
+treatment. The `69-01-50-50` configuration below remains the historical
+screening result and is not the current sensitivity setting.
+
 ## BET Result Used
 
 | model | -LN(L) | npar | AIC | rank |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and submit the 72-job BET tag-dispersion sensitivity campaign."""
+"""Validate and submit the 96-job BET tag-dispersion sensitivity campaign."""
 
 from __future__ import annotations
 
@@ -130,13 +130,13 @@ def build_grid() -> list[dict[str, str]]:
         },
         {
             "step": "S05-CommonTagTauOPR-MIX015",
-            "recruitment": "opr-69-01-50-50",
+            "recruitment": "opr-72-01-50-50-end2",
             "selectivity": "f33-asymptotic",
             "nmax_values": ("25", "default"),
         },
         {
             "step": "S06-CommonTagTauSplineOPR-MIX015",
-            "recruitment": "opr-69-01-50-50",
+            "recruitment": "opr-72-01-50-50-end2",
             "selectivity": "f33-spline",
             "nmax_values": ("25", "default"),
         },
@@ -176,8 +176,20 @@ def build_grid() -> list[dict[str, str]]:
                                 "nmax": nmax,
                                 "m_mode": "late-estimated" if estimate_m == "true" else "fixed",
                                 "estimate_m": estimate_m,
+                                "tag_weight": "full",
+                                "matched_full_weight_id": "",
                             }
                         )
+    half_weight_rows = [
+        {
+            **row,
+            "tag_weight": "500",
+            "matched_full_weight_id": str(index),
+        }
+        for index, row in enumerate(rows, start=1)
+        if row["nmax"] == "25" and row["estimate_m"] == "false"
+    ]
+    rows.extend(half_weight_rows)
     for index, row in enumerate(rows, start=1):
         row["sensitivity_id"] = str(index)
     validate_grid(rows)
@@ -185,16 +197,17 @@ def build_grid() -> list[dict[str, str]]:
 
 
 def validate_grid(rows: list[dict[str, str]]) -> None:
-    if len(rows) != 72:
-        raise ValueError(f"Expected 72 sensitivity rows; found {len(rows)}.")
+    if len(rows) != 96:
+        raise ValueError(f"Expected 96 sensitivity rows; found {len(rows)}.")
     ids = [row["sensitivity_id"] for row in rows]
     if len(ids) != len(set(ids)):
         raise ValueError("Sensitivity identifiers are not unique.")
-    if ids != [str(index) for index in range(1, 73)]:
-        raise ValueError("Sensitivity identifiers must run consecutively from 1 to 72.")
+    if ids != [str(index) for index in range(1, 97)]:
+        raise ValueError("Sensitivity identifiers must run consecutively from 1 to 96.")
     signatures = [
         tuple(row[key] for key in (
-            "step", "recpen", "nmax", "tau_grouping", "tau_lower", "estimate_m"
+            "step", "recpen", "nmax", "tau_grouping", "tau_lower", "estimate_m",
+            "tag_weight"
         ))
         for row in rows
     ]
@@ -208,12 +221,43 @@ def validate_grid(rows: list[dict[str, str]]) -> None:
             raise ValueError("Program-informed tau must use the native MFCL lower bound.")
         if row["tau_grouping"] == "common" and row["tau_lower"] not in {"default", "2"}:
             raise ValueError("Common tau must use the native bound or lower bound 2.")
-    fixed = sum(row["estimate_m"] == "false" for row in rows)
-    estimated = sum(row["estimate_m"] == "true" for row in rows)
+        if row["tag_weight"] not in {"full", "500"}:
+            raise ValueError("Tag likelihood weight must be full or 500.")
+        if row["tag_weight"] == "500" and (
+            row["nmax"] != "25" or row["estimate_m"] != "false"
+        ):
+            raise ValueError(
+                "Half-weight tag sensitivities must use Nmax 25 and fixed M."
+            )
+    full_rows = [row for row in rows if row["tag_weight"] == "full"]
+    half_rows = [row for row in rows if row["tag_weight"] == "500"]
+    if (len(full_rows), len(half_rows)) != (72, 24):
+        raise ValueError(
+            "Expected 72 full-weight and 24 half-weight rows; "
+            f"found {len(full_rows)}/{len(half_rows)}."
+        )
+    by_id = {row["sensitivity_id"]: row for row in full_rows}
+    comparison_fields = (
+        "step", "recruitment", "selectivity", "tau_key", "tau_grouping",
+        "tau_lower", "tau_count", "recpen", "nmax", "m_mode", "estimate_m",
+    )
+    for row in half_rows:
+        parent = by_id.get(row["matched_full_weight_id"])
+        if parent is None:
+            raise ValueError(
+                f"Half-weight row {row['sensitivity_id']} has no full-weight match."
+            )
+        if any(row[field] != parent[field] for field in comparison_fields):
+            raise ValueError(
+                f"Half-weight row {row['sensitivity_id']} differs from matched "
+                f"row {parent['sensitivity_id']} by more than tag weight."
+            )
+    fixed = sum(row["estimate_m"] == "false" for row in full_rows)
+    estimated = sum(row["estimate_m"] == "true" for row in full_rows)
     if (fixed, estimated) != (36, 36):
         raise ValueError(f"Expected 36 fixed-M and 36 late-M rows; found {fixed}/{estimated}.")
     pair_keys: dict[tuple[str, ...], set[str]] = {}
-    for row in rows:
+    for row in full_rows:
         key = tuple(row[field] for field in (
             "step", "recpen", "nmax", "tau_grouping", "tau_lower"
         ))
@@ -263,41 +307,57 @@ def describe(row: dict[str, str]) -> str:
         else "M fixed through Phase 10 and estimated in Phases 11-12"
     )
     nmax = "MFCL default Nmax 1000" if row["nmax"] == "default" else "Nmax 25"
+    tag_weight = (
+        "full tag-recapture likelihood weight"
+        if row["tag_weight"] == "full"
+        else (
+            "tag-recapture likelihood multiplied by 0.50 "
+            f"(parest flag 177=500; matched primary fit "
+            f"{row['matched_full_weight_id']})"
+        )
+    )
     return (
         f"{row['sensitivity_id']}. Independent full native-MFCL doitall fit; "
         f"{tau}; {lower}; {row['selectivity']}; "
         f"{row['recruitment']} recruitment; regional recruitment coefficient "
-        f"{row['recpen']}; {nmax}; {mortality}. SC22-IP10 K=0.15 mixing, "
+        f"{row['recpen']}; {nmax}; {mortality}; {tag_weight}. "
+        "SC22-IP10 K=0.15 mixing, "
         "reporting-rate priors, DM G8 grouping, CPUE settings and all data are fixed."
     )
 
 
 def scenario_label(row: dict[str, str]) -> str:
     recruitment = (
-        "Standard recruitment"
+        "Standard"
         if row["recruitment"] == "standard"
-        else "OPR 69-01-50-50"
+        else "OPR 72-01-50-50 end2"
     )
     selectivity = (
         "F33 logistic"
         if row["selectivity"] == "f33-asymptotic"
-        else "F33 4-node spline"
+        else "F33 4-node"
     )
     if row["tau_grouping"] == "program-informed":
-        tau = "tag tau 3 strata/native"
+        tau = "tau 3 strata/native"
     elif row["tau_lower"] == "2":
-        tau = "tag tau common/lower 2"
+        tau = "tau common/lower 2"
     else:
-        tau = "tag tau common/native"
-    nmax = "Nmax 1,000" if row["nmax"] == "default" else "Nmax 25"
+        tau = "tau common/native"
+    nmax = "Nmax1000" if row["nmax"] == "default" else "Nmax25"
     mortality = (
         "M fixed"
         if row["estimate_m"] == "false"
-        else "M estimated P11-12"
+        else "M est P11-12"
+    )
+    tag_weight = (
+        "tag likelihood 100%"
+        if row["tag_weight"] == "full"
+        else "tag likelihood 50%"
     )
     return (
         f"{row['sensitivity_id']}. {recruitment} | {selectivity} | {tau} | "
-        f"regional-rec penalty {row['recpen']} | {nmax} | {mortality}"
+        f"rec penalty {row['recpen']} | {nmax} | {mortality} | "
+        f"{tag_weight}"
     )
 
 
@@ -312,6 +372,7 @@ def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
         "REGIONAL_RECRUITMENT_PENALTY": row["recpen"],
         "DM_NMAX": row["nmax"],
         "ESTIMATE_M_FINAL": row["estimate_m"],
+        "TAG_LIKELIHOOD_WEIGHT": "0" if row["tag_weight"] == "full" else "500",
         "JOB_KEY": row["sensitivity_id"],
         "JOB_TITLE": label,
         "MODEL_LABEL": label,
@@ -343,6 +404,8 @@ def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
             "tau_grouping": row["tau_grouping"],
             "tau_lower": row["tau_lower"],
             "m_mode": row["m_mode"],
+            "tag_likelihood_weight": row["tag_weight"],
+            "matched_full_weight_id": row["matched_full_weight_id"],
         },
         "metadata": {
             "sensitivity_id": row["sensitivity_id"],
@@ -353,7 +416,7 @@ def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
             "mortality_fixed_value": -2.54930339768360,
             "independent_fit": True,
             "inputs_frozen": True,
-            "campaign_size": 72,
+            "campaign_size": 96,
             "container": "tuna-flow v2.6",
             "mfcl_sha256": (
                 "13f5b1b6a8873cfd9afc850b3bdcb46d5bb62d28dcc70604362e4c89b29fb682"
@@ -411,6 +474,9 @@ def verify_job(
         "REGIONAL_RECRUITMENT_PENALTY": row["recpen"],
         "DM_NMAX": row["nmax"],
         "ESTIMATE_M_FINAL": row["estimate_m"],
+        "TAG_LIKELIHOOD_WEIGHT": (
+            "0" if row["tag_weight"] == "full" else "500"
+        ),
         **EXPECTED_PACKAGE_REFS,
     }
     bad = {
@@ -442,6 +508,8 @@ def main() -> int:
         "program_informed_tau": sum(
             row["tau_grouping"] == "program-informed" for row in rows
         ),
+        "full_tag_weight": sum(row["tag_weight"] == "full" for row in rows),
+        "half_tag_weight": sum(row["tag_weight"] == "500" for row in rows),
     }
     if args.dry_run:
         print(json.dumps({"summary": summary, "rows": rows}, indent=2))
@@ -510,7 +578,7 @@ def main() -> int:
         },
         indent=2,
     ))
-    if failures or len(already) + len(results) != 72:
+    if failures or len(already) + len(results) != 96:
         raise SystemExit("Campaign submission or post-submission verification was incomplete.")
     return 0
 

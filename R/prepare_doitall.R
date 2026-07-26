@@ -153,7 +153,7 @@ apply_time_varying_cpue_cv <- function(lines, index_fisheries = 29:33) {
   lines
 }
 
-apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
+apply_opr <- function(lines, year_effect = 72L, season_effect = 1L,
                       region_effect = 50L, region_season_effect = 50L,
                       terminal_year_constraint = 2L) {
   phase3 <- grep("^[[:space:]]*2[[:space:]]+70[[:space:]]+1[[:space:]]", lines)
@@ -168,7 +168,7 @@ apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
     stop("Unexpected phase-3 recruitment flag block for OPR", call. = FALSE)
   }
   new_block <- c(
-    "# OPR settings. BET OPR screening rank-1 model: 69-01-50-50.",
+    "# BET 2026 OPR settings: 72-01-50-50 with a two-real-year end window.",
     "  1 149 0   # turn off recruitment-deviation penalty for OPR",
     "  1 398 0   # turn off arithmetic-mean terminal fixed-recruitment option for OPR",
     "  1 400 0   # clear fixed terminal recruitment-deviate block for OPR",
@@ -207,7 +207,7 @@ apply_opr <- function(lines, year_effect = 69L, season_effect = 1L,
   if (length(phase3_eval) != 1L) {
     stop("Expected one PHASE3 function-evaluation line for OPR", call. = FALSE)
   }
-  lines[[phase3_eval]] <- "  1 1 500  # function evaluations from the OPR screening doitall example"
+  lines[[phase3_eval]] <- "  1 1 500  # function evaluations for the BET 2026 OPR transfer"
 
   region_flags <- grep("^[[:space:]]*-100000[[:space:]]+[1-5][[:space:]]+1([[:space:]]|$)", lines)
   if (!length(region_flags)) {
