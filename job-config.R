@@ -384,6 +384,25 @@ stepwise_models <- do.call(
         "F33 retains its independent four-node spline. Nmax=25 and the",
         "MFCL default Nmax=1000 are launched as paired variants."
       )
+    ),
+    model_row(
+      "S07-CommonTagTauF335Node-MIX015", "S07-CommonTagTauF335Node",
+      "S03-CommonTagTau-MIX015",
+      FALSE, "stop",
+      "replace only the independent F33 logistic curve with a five-node cubic spline",
+      "Common tag overdispersion; F33 5-node spline; K=0.15",
+      "S07 Supplemental sensitivity | F33 independent 5-node spline",
+      "s07-common-tag-tau-f33-5node-mix015",
+      paste(
+        "Supplemental independent full native-MFCL doitall fit matching",
+        "sensitivity 1 (job 16594). Standard recruitment, one common",
+        "native-bound tau, recruitment penalty 0.1, Nmax25 and full tag",
+        "likelihood are retained, with fixed-M and late-M paired runs. Only",
+        "F33 changes from its",
+        "two-parameter asymptotic logistic curve to an independent five-node",
+        "cubic spline, matching the form and node count of F31/F32 without",
+        "sharing coefficients or catchability."
+      )
     )
   )
 )
@@ -428,7 +447,8 @@ stepwise_report_change <- c(
   "S03-CommonTagTau-MIX015" = "One common negative-binomial tag-overdispersion parameter",
   "S04-CommonTagTauSpline-MIX015" = "One common tag-overdispersion parameter with an independent Region 5 index spline",
   "S05-CommonTagTauOPR-MIX015" = "Orthogonal-polynomial recruitment with common tag overdispersion and F33 asymptotic selectivity",
-  "S06-CommonTagTauSplineOPR-MIX015" = "Orthogonal-polynomial recruitment with common tag overdispersion and the F33 spline"
+  "S06-CommonTagTauSplineOPR-MIX015" = "Orthogonal-polynomial recruitment with common tag overdispersion and the F33 spline",
+  "S07-CommonTagTauF335Node-MIX015" = "One common tag-overdispersion parameter with an independent five-node F33 spline"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -465,7 +485,8 @@ stepwise_report_purpose <- c(
   "S03-CommonTagTau-MIX015" = "Compare common and programme-informed recapture-fishery tag-overdispersion structures, native and lower-2 bounds, regional recruitment coefficients 0.1 and 0.2, and F33 asymptotic selectivity.",
   "S04-CommonTagTauSpline-MIX015" = "Repeat the tag-overdispersion and recruitment-coefficient sensitivities while retaining the independent four-node F33 spline.",
   "S05-CommonTagTauOPR-MIX015" = "Apply the BET 2026 72-01-50-50 OPR structure with a two-real-year end window and compare Nmax 25 with the MFCL default 1000 under the same tag-overdispersion settings and F33 asymptotic selectivity.",
-  "S06-CommonTagTauSplineOPR-MIX015" = "Repeat the OPR, Nmax and tag-overdispersion sensitivities while retaining the independent four-node F33 spline."
+  "S06-CommonTagTauSplineOPR-MIX015" = "Repeat the OPR, Nmax and tag-overdispersion sensitivities while retaining the independent four-node F33 spline.",
+  "S07-CommonTagTauF335Node-MIX015" = "Test the job 16594 configuration with only F33 changed from logistic to the five-node cubic spline used by F31/F32."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -504,7 +525,8 @@ path_stage <- c(
   "S03-CommonTagTau-MIX015" = 25L,
   "S04-CommonTagTauSpline-MIX015" = 25L,
   "S05-CommonTagTauOPR-MIX015" = 26L,
-  "S06-CommonTagTauSplineOPR-MIX015" = 26L
+  "S06-CommonTagTauSplineOPR-MIX015" = 26L,
+  "S07-CommonTagTauF335Node-MIX015" = 27L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -544,7 +566,8 @@ stepwise_models$dm_grouping[
     "S03-CommonTagTau-MIX015",
     "S04-CommonTagTauSpline-MIX015",
     "S05-CommonTagTauOPR-MIX015",
-    "S06-CommonTagTauSplineOPR-MIX015"
+    "S06-CommonTagTauSplineOPR-MIX015",
+    "S07-CommonTagTauF335Node-MIX015"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -562,7 +585,8 @@ stepwise_models$dm_nmax[
     "S03-CommonTagTau-MIX015",
     "S04-CommonTagTauSpline-MIX015",
     "S05-CommonTagTauOPR-MIX015",
-    "S06-CommonTagTauSplineOPR-MIX015"
+    "S06-CommonTagTauSplineOPR-MIX015",
+    "S07-CommonTagTauF335Node-MIX015"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -593,7 +617,8 @@ stepwise_models$tail_compression_percent <- ifelse(
       "S03-CommonTagTau-MIX015",
       "S04-CommonTagTauSpline-MIX015",
       "S05-CommonTagTauOPR-MIX015",
-      "S06-CommonTagTauSplineOPR-MIX015"
+      "S06-CommonTagTauSplineOPR-MIX015",
+      "S07-CommonTagTauF335Node-MIX015"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L

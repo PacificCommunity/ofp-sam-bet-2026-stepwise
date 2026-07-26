@@ -173,6 +173,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   if (isTRUE(doitall_edits$f33_asymptotic_selectivity)) {
     apply_f33_asymptotic_display_map(fishery_map_out)
   }
+  if (isTRUE(doitall_edits$f33_five_node_selectivity)) {
+    apply_f33_five_node_display_map(fishery_map_out)
+  }
   write_generated_tag_rep_map(model_dir)
 
   sigma_flags <- integer()
@@ -198,6 +201,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     ),
     f33_asymptotic_selectivity = isTRUE(
       doitall_edits$f33_asymptotic_selectivity
+    ),
+    f33_five_node_selectivity = isTRUE(
+      doitall_edits$f33_five_node_selectivity
     ),
     common_tag_tau = isTRUE(doitall_edits$common_tag_tau),
     opr = isTRUE(doitall_edits$opr),

@@ -911,6 +911,7 @@ write_sequence_step <- function(
     r1_f2_f3_f29_shared_selectivity = FALSE,
     selectivity_stability_map = FALSE,
     f33_asymptotic_selectivity = FALSE,
+    f33_five_node_selectivity = FALSE,
     tag_return_likelihood_weight = NA_integer_,
     common_tag_tau = FALSE,
     opr = FALSE,
@@ -934,6 +935,7 @@ write_sequence_step <- function(
         r1_f2_f3_f29_shared_selectivity,
       selectivity_stability_map = selectivity_stability_map,
       f33_asymptotic_selectivity = f33_asymptotic_selectivity,
+      f33_five_node_selectivity = f33_five_node_selectivity,
       common_tag_tau = common_tag_tau,
       opr = opr,
       tag_return_likelihood_weight = tag_return_likelihood_weight,
@@ -999,6 +1001,11 @@ write_sequence_step <- function(
         "F33 remains an independent Region 5 index selectivity and uses the ",
         "two-parameter asymptotic logistic form; its catchability group and ",
         "all extraction-index separations are unchanged."
+      ),
+      if (f33_five_node_selectivity) paste0(
+        "F33 remains an independent Region 5 index selectivity and uses a ",
+        "five-node cubic spline, matching the form and node count of F31/F32; ",
+        "its selectivity coefficients and catchability group remain independent."
       ),
       if (selectivity_update_bundle && !selectivity_stability_map) paste0(
         "The intended selectivity bundle unshares F15-F28 and applies fishery-specific ",
@@ -1221,6 +1228,7 @@ write_selected_path_step <- function(
     r1_f2_f3_f29_shared_selectivity = FALSE,
     selectivity_stability_map = FALSE,
     f33_asymptotic_selectivity = FALSE,
+    f33_five_node_selectivity = FALSE,
     tag_return_likelihood_weight = NA_integer_,
     common_tag_tau = FALSE,
     opr = FALSE,
@@ -1255,6 +1263,7 @@ write_selected_path_step <- function(
       r1_f2_f3_f29_shared_selectivity,
     selectivity_stability_map = selectivity_stability_map,
     f33_asymptotic_selectivity = f33_asymptotic_selectivity,
+    f33_five_node_selectivity = f33_five_node_selectivity,
     tag_return_likelihood_weight = tag_return_likelihood_weight,
     common_tag_tau = common_tag_tau,
     opr = opr,
@@ -1821,6 +1830,45 @@ write_selected_path_step(
   all_selectivity_forms_relaxed = TRUE,
   dm_grouping = "G8PSSET", dm_nmax = 25L,
   status = "Prepared OPR F33-spline common-tau sensitivity snapshot."
+)
+
+write_selected_path_step(
+  "S07-CommonTagTauF335Node-MIX015",
+  "S07 Common tag-overdispersion sensitivity with F33 five-node spline",
+  "S03-CommonTagTau-MIX015",
+  paste0(
+    "Replace only the independent F33 asymptotic logistic curve with a ",
+    "five-node cubic spline, matching the selectivity form and node count ",
+    "used by F31 and F32."
+  ),
+  audit_notes = c(
+    paste0(
+      "This supplemental configuration matches sensitivity 1 (job 16594): ",
+      "standard recruitment, one common native-bound tau, regional ",
+      "recruitment penalty 0.1, DM Nmax25 and full tag likelihood. It is ",
+      "launched as paired fixed-M and Phase 11-12 M-estimation runs."
+    ),
+    paste0(
+      "F33 retains its independent selectivity-coefficient and catchability ",
+      "groups. No coefficients are shared with F31 or F32."
+    ),
+    paste0(
+      "SC22-IP10 K=0.15 mixing periods, reporting-rate priors, data, CPUE ",
+      "controls and every non-F33 selectivity control are unchanged."
+    )
+  ),
+  tag_mixing = TRUE, tag_flag2 = 1L,
+  tag_mixing_source_override = mix015_ini,
+  tail_compression_1pct = FALSE,
+  time_varying_cv = TRUE, effort_creep = TRUE, fixed_cpue_sigma = TRUE,
+  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
+  selectivity_stability_map = TRUE,
+  f33_five_node_selectivity = TRUE,
+  common_tag_tau = TRUE,
+  reg_scaling_calendar_header = TRUE,
+  all_selectivity_forms_relaxed = TRUE,
+  dm_grouping = "G8PSSET", dm_nmax = 25L,
+  status = "Prepared supplemental F33 five-node common-tau sensitivity."
 )
 
 # Remove superseded numbering and selectivity-sensitivity folders after the

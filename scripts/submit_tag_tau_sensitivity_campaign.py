@@ -40,6 +40,7 @@ CAMPAIGN_STEPS = (
     "S05-CommonTagTauOPR-MIX015",
     "S06-CommonTagTauSplineOPR-MIX015",
 )
+SUPPLEMENTAL_F33_FIVE_NODE_STEP = "S07-CommonTagTauF335Node-MIX015"
 
 
 def api_json(
@@ -77,8 +78,10 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def validate_science_inputs() -> None:
-    for step in CAMPAIGN_STEPS:
+def validate_science_inputs(
+    steps: tuple[str, ...] = CAMPAIGN_STEPS,
+) -> None:
+    for step in steps:
         model = ROOT / "steps" / step / "model"
         ini = model / "bet.ini"
         reg_scaling = model / "bet.reg_scaling"
@@ -240,6 +243,34 @@ def build_grid() -> list[dict[str, str]]:
         row["sensitivity_id"] = str(index)
     validate_grid(rows)
     return rows
+
+
+def supplemental_f33_five_node_rows() -> list[dict[str, str]]:
+    fixed = {
+        "step": SUPPLEMENTAL_F33_FIVE_NODE_STEP,
+        "recruitment": "standard",
+        "selectivity": "f33-spline-5node",
+        "tau_key": "common-default",
+        "tau_grouping": "common",
+        "tau_lower": "default",
+        "tau_count": "1",
+        "recpen": "0.1",
+        "nmax": "25",
+        "m_mode": "fixed",
+        "estimate_m": "false",
+        "tag_weight": "full",
+        "matched_full_weight_id": "",
+        "sensitivity_id": "117",
+    }
+    return [
+        fixed,
+        {
+            **fixed,
+            "m_mode": "late-estimated",
+            "estimate_m": "true",
+            "sensitivity_id": "118",
+        },
+    ]
 
 
 def validate_grid(rows: list[dict[str, str]]) -> None:
@@ -410,11 +441,12 @@ def scenario_label(row: dict[str, str]) -> str:
         if row["recruitment"] == "standard"
         else "OPR 72-01-50-50 end2"
     )
-    selectivity = (
-        "F33 logistic"
-        if row["selectivity"] == "f33-asymptotic"
-        else "F33 4-node"
-    )
+    selectivity_labels = {
+        "f33-asymptotic": "F33 logistic",
+        "f33-spline": "F33 4-node",
+        "f33-spline-5node": "F33 5-node spline",
+    }
+    selectivity = selectivity_labels[row["selectivity"]]
     if row["tau_grouping"] == "program-informed":
         tau = "tau 3 strata/native"
     elif row["tau_grouping"] == "off":
@@ -497,6 +529,7 @@ def payload_for(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
             "independent_fit": True,
             "inputs_frozen": True,
             "campaign_size": 116,
+            "supplemental_sensitivity": row["sensitivity_id"] in {"117", "118"},
             "container": "tuna-flow v2.6",
             "mfcl_sha256": (
                 "13f5b1b6a8873cfd9afc850b3bdcb46d5bb62d28dcc70604362e4c89b29fb682"
@@ -572,12 +605,25 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-workers", type=int, default=12)
+    parser.add_argument(
+        "--supplemental-f33-5node",
+        action="store_true",
+        help=(
+            "Submit sensitivities 117-118: job 16594 settings with F33 changed "
+            "from logistic to an independent five-node cubic spline, paired "
+            "with fixed and late-estimated M."
+        ),
+    )
     args = parser.parse_args()
 
     config = load_config()
     validate_task_config(config)
-    validate_science_inputs()
-    rows = build_grid()
+    if args.supplemental_f33_5node:
+        validate_science_inputs((SUPPLEMENTAL_F33_FIVE_NODE_STEP,))
+        rows = supplemental_f33_five_node_rows()
+    else:
+        validate_science_inputs()
+        rows = build_grid()
     summary = {
         "total": len(rows),
         "fixed_m": sum(row["estimate_m"] == "false" for row in rows),
@@ -659,7 +705,18 @@ def main() -> int:
         },
         indent=2,
     ))
-    if failures or len(already) + len(results) != 116:
+    complete = (
+        all(
+            sensitivity_id in already or any(
+                result["sensitivity_id"] == sensitivity_id
+                for result in results
+            )
+            for sensitivity_id in ("117", "118")
+        )
+        if args.supplemental_f33_5node
+        else len(already) + len(results) == 116
+    )
+    if failures or not complete:
         raise SystemExit("Campaign submission or post-submission verification was incomplete.")
     return 0
 

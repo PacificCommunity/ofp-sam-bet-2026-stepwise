@@ -691,6 +691,21 @@ apply_f33_asymptotic_selectivity <- function(lines) {
   )
 }
 
+apply_f33_five_node_selectivity <- function(lines) {
+  # Match the cubic-spline form and node count used by the independent
+  # Region 3 and Region 4 indices (F31/F32), while retaining F33's own
+  # selectivity and catchability groups.
+  lines <- remove_exact_doitall_controls(lines, "-33 61 4")
+  set_control_flag_in_phase(
+    lines,
+    "-33",
+    61L,
+    5L,
+    1L,
+    "F33 independent five-node cubic-spline selectivity"
+  )
+}
+
 apply_common_tag_tau <- function(lines) {
   phase10_command <- grep("<<PHASE10[[:space:]]*$", lines)
   if (length(phase10_command) != 1L) {
@@ -1204,6 +1219,30 @@ apply_f33_asymptotic_display_map <- function(path) {
   invisible(TRUE)
 }
 
+apply_f33_five_node_display_map <- function(path) {
+  eol <- file_eol(path)
+  lines <- readLines(path, warn = FALSE)
+  marker <- grep(
+    "fishery_map$selectivity_name[c(7, 9)]",
+    lines,
+    fixed = TRUE
+  )
+  if (length(marker) != 1L) {
+    stop(
+      "Expected one F7/F9 selectivity-name assignment in ",
+      path,
+      call. = FALSE
+    )
+  }
+  lines <- append(
+    lines,
+    'fishery_map$selectivity_name[33] <- "Index R5 (independent 5-node spline)"',
+    after = marker
+  )
+  writeLines(lines, path, sep = eol, useBytes = TRUE)
+  invisible(TRUE)
+}
+
 # Supersedes the legacy broad sensitivity writer above. The public
 # sequence deliberately excludes OPR and length-bin selectivity controls.
 write_doitall <- function(from, to, mix_from_ini = FALSE,
@@ -1216,6 +1255,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           r1_f2_f3_f29_shared_selectivity = FALSE,
                           selectivity_stability_map = FALSE,
                           f33_asymptotic_selectivity = FALSE,
+                          f33_five_node_selectivity = FALSE,
                           common_tag_tau = FALSE,
                           opr = FALSE,
                           tag_return_likelihood_weight = NA_integer_,
@@ -1298,6 +1338,13 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     }
     lines <- apply_selectivity_stability_map(lines)
   }
+  if (isTRUE(f33_asymptotic_selectivity) &&
+      isTRUE(f33_five_node_selectivity)) {
+    stop(
+      "F33 cannot use asymptotic and five-node spline selectivity together",
+      call. = FALSE
+    )
+  }
   if (isTRUE(f33_asymptotic_selectivity)) {
     if (!isTRUE(selectivity_stability_map)) {
       stop(
@@ -1307,6 +1354,16 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       )
     }
     lines <- apply_f33_asymptotic_selectivity(lines)
+  }
+  if (isTRUE(f33_five_node_selectivity)) {
+    if (!isTRUE(selectivity_stability_map)) {
+      stop(
+        "The F33 five-node sensitivity requires the independent-index ",
+        "selectivity-stability map.",
+        call. = FALSE
+      )
+    }
+    lines <- apply_f33_five_node_selectivity(lines)
   }
   if (isTRUE(opr)) {
     lines <- apply_opr(lines)

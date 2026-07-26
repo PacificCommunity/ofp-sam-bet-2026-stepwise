@@ -360,6 +360,8 @@ expected_weighting_parents <- c(
     "S03-CommonTagTau-MIX015",
   "S06-CommonTagTauSplineOPR-MIX015" =
     "S04-CommonTagTauSpline-MIX015",
+  "S07-CommonTagTauF335Node-MIX015" =
+    "S03-CommonTagTau-MIX015",
   "21b-R1F2F3F29Shared-MIX005" =
     "21a-R1F2F3F29Shared-MIX015",
   "22a-R1F2F3F29Shared-MIX015-TAGW500" =
@@ -810,7 +812,8 @@ for (i in seq_len(nrow(models))) {
     "S03-CommonTagTau-MIX015",
     "S04-CommonTagTauSpline-MIX015",
     "S05-CommonTagTauOPR-MIX015",
-    "S06-CommonTagTauSplineOPR-MIX015"
+    "S06-CommonTagTauSplineOPR-MIX015",
+    "S07-CommonTagTauF335Node-MIX015"
   )
   final_dm_models <- c(
     "20c-DMG8Nmax25",
@@ -825,7 +828,8 @@ for (i in seq_len(nrow(models))) {
     "S03-CommonTagTau-MIX015",
     "S04-CommonTagTauSpline-MIX015",
     "S05-CommonTagTauOPR-MIX015",
-    "S06-CommonTagTauSplineOPR-MIX015"
+    "S06-CommonTagTauSplineOPR-MIX015",
+    "S07-CommonTagTauF335Node-MIX015"
   )
   if (model_id %in% final_dm_models) {
     required_dm_controls <- if (model_id %in% common_tau_models) {
@@ -1070,7 +1074,8 @@ for (i in seq_len(nrow(models))) {
       "S03-CommonTagTau-MIX015",
       "S04-CommonTagTauSpline-MIX015",
       "S05-CommonTagTauOPR-MIX015",
-      "S06-CommonTagTauSplineOPR-MIX015"
+      "S06-CommonTagTauSplineOPR-MIX015",
+      "S07-CommonTagTauF335Node-MIX015"
     )
     if (model_id %in% current_tag_sensitivity_ids) {
       expected_ini_sha256 <-
@@ -1251,7 +1256,8 @@ for (i in seq_len(nrow(models))) {
         "S03-CommonTagTau-MIX015",
         "S04-CommonTagTauSpline-MIX015",
         "S05-CommonTagTauOPR-MIX015",
-        "S06-CommonTagTauSplineOPR-MIX015"
+        "S06-CommonTagTauSplineOPR-MIX015",
+        "S07-CommonTagTauF335Node-MIX015"
       )
       if (current_mfcl_header) {
         active_lines <- readLines(active_path, warn = FALSE)
@@ -1399,12 +1405,17 @@ for (i in seq_len(nrow(models))) {
       "S03-CommonTagTau-MIX015",
       "S04-CommonTagTauSpline-MIX015",
       "S05-CommonTagTauOPR-MIX015",
-      "S06-CommonTagTauSplineOPR-MIX015"
+      "S06-CommonTagTauSplineOPR-MIX015",
+      "S07-CommonTagTauF335Node-MIX015"
     )
     f33_asymptotic <- model_id %in% c(
       "S02-F33Asymptotic-MIX015",
       "S03-CommonTagTau-MIX015",
       "S05-CommonTagTauOPR-MIX015"
+    )
+    f33_five_node <- identical(
+      model_id,
+      "S07-CommonTagTauF335Node-MIX015"
     )
     r1_shared_selectivity <- model_id %in% c(
       "21a-R1F2F3F29Shared-MIX015",
@@ -1520,7 +1531,9 @@ for (i in seq_len(nrow(models))) {
     }
     if (selectivity_stability) {
       four_node_fisheries <- c(1L, 2L, 3L, 5L, 29L)
-      if (!f33_asymptotic) four_node_fisheries <- c(four_node_fisheries, 33L)
+      if (!f33_asymptotic && !f33_five_node) {
+        four_node_fisheries <- c(four_node_fisheries, 33L)
+      }
       for (fishery in four_node_fisheries) {
         check_flag(
           flags, -fishery, 61L, 4L, model_id,
@@ -1550,6 +1563,21 @@ for (i in seq_len(nrow(models))) {
             "F33 logistic sensitivity must not retain a fish-specific spline-node override."
           )
         }
+      } else if (f33_five_node) {
+        for (fishery in 31:32) {
+          check_flag(
+            flags, -fishery, 61L, 5L, model_id,
+            paste0("F", fishery, " five-node cubic-spline reference")
+          )
+        }
+        check_flag(
+          flags, -33L, 57L, 3L, model_id,
+          "F33 independent cubic-spline selectivity"
+        )
+        check_flag(
+          flags, -33L, 61L, 5L, model_id,
+          "F33 independent five-node curve matching F31/F32"
+        )
       } else {
         check_flag(
           flags, -33L, 57L, 3L, model_id,
@@ -1986,6 +2014,18 @@ compare_flags_after_filter(
       )) |
       (flags$scope <= -1L & flags$scope >= -33L &
          flags$flag %in% c(43L, 44L))
+  }
+)
+compare_model_hashes_except(
+  "S03-CommonTagTau-MIX015",
+  "S07-CommonTagTauF335Node-MIX015",
+  c("doitall.sh", "fishery_map.R")
+)
+compare_flags_after_filter(
+  "S03-CommonTagTau-MIX015",
+  "S07-CommonTagTauF335Node-MIX015",
+  function(flags) {
+    flags$scope == -33L & flags$flag %in% c(57L, 61L)
   }
 )
 compare_model_hashes_except(

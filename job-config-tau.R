@@ -11,7 +11,8 @@ stepwise_models <- stepwise_models[
     "S03-CommonTagTau-MIX015",
     "S04-CommonTagTauSpline-MIX015",
     "S05-CommonTagTauOPR-MIX015",
-    "S06-CommonTagTauSplineOPR-MIX015"
+    "S06-CommonTagTauSplineOPR-MIX015",
+    "S07-CommonTagTauF335Node-MIX015"
   ),
   ,
   drop = FALSE

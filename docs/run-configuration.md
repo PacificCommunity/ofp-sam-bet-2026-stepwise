@@ -63,6 +63,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `S04-CommonTagTauSpline-MIX015` | `TRUE` | S04-CommonTagTauSpline | S04 | estimate one common tag-recapture overdispersion parameter while retaining the independent Region 5 index spline | Common tag-overdispersion sensitivity; F33 spline; K=0.15 | S04 Tag-overdispersion sensitivity \| F33 independent spline | `s04-common-tag-tau-spline-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `S05-CommonTagTauOPR-MIX015` | `TRUE` | S05-CommonTagTauOPR | S05 | apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure with F33 asymptotic selectivity | Common tag overdispersion; OPR; F33 asymptotic; K=0.15 | S05 OPR tag-overdispersion sensitivity \| F33 asymptotic | `s05-common-tag-tau-opr-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `S06-CommonTagTauSplineOPR-MIX015` | `TRUE` | S06-CommonTagTauSplineOPR | S06 | apply the BET 2026 72-01-50-50 orthogonal-polynomial recruitment structure with the independent F33 spline | Common tag overdispersion; OPR; F33 spline; K=0.15 | S06 OPR tag-overdispersion sensitivity \| F33 spline | `s06-common-tag-tau-spline-opr-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `S07-CommonTagTauF335Node-MIX015` | `TRUE` | S07-CommonTagTauF335Node | S07 | replace only the independent F33 logistic curve with a five-node cubic spline | Common tag overdispersion; F33 5-node spline; K=0.15 | S07 Supplemental sensitivity \| F33 independent 5-node spline | `s07-common-tag-tau-f33-5node-mix015` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -106,6 +107,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `S04-CommonTagTauSpline-MIX015` | `steps/S04-CommonTagTauSpline-MIX015/model` | `exists` |
 | `S05-CommonTagTauOPR-MIX015` | `steps/S05-CommonTagTauOPR-MIX015/model` | `exists` |
 | `S06-CommonTagTauSplineOPR-MIX015` | `steps/S06-CommonTagTauSplineOPR-MIX015/model` | `exists` |
+| `S07-CommonTagTauF335Node-MIX015` | `steps/S07-CommonTagTauF335Node-MIX015/model` | `exists` |
 
 
 ## Useful Kflow Config
