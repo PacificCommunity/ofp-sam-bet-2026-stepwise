@@ -23,10 +23,10 @@ env:
   CONFIG_R: job-config-mixing-period-sensitivity.R
   STEP_SELECT: MIX-K015-TAGF2-1
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "Mixing sensitivity | SC22 K=0.15 | RR post-mix only (tag2=1) | base 16594"
+  JOB_TITLE: "05. SC22 K=0.15 | RR post-mix only (tag2=1) | Mixing sensitivity | base 16594"
   JOB_DESCRIPTION: "Exact Job 16594 inputs; change only tag_flags(:,1:2)."
-  MODEL_LABEL: "SC22 K=0.15 | RR post-mix only (tag2=1)"
-  JOB_KEY: mix-k015-tagf2-1
+  MODEL_LABEL: "05. SC22 K=0.15 | RR post-mix only (tag2=1)"
+  JOB_KEY: mix-05-k015-rr-post
   RUN_MODE: doitall
   TAG_TAU_GROUPING: common
   TAG_TAU_LOWER_BOUND: default

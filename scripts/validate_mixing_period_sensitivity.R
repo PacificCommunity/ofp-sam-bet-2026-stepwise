@@ -120,6 +120,17 @@ if (!is.data.frame(models) || nrow(models) != 20L) fail("Expected exactly 20 mod
 if (anyDuplicated(models$step_id) || anyDuplicated(models$job_key)) {
   fail("Sensitivity step IDs and job keys must be unique.")
 }
+if (!identical(as.integer(models$plot_order), 1:20) ||
+    !identical(
+      substr(models$model_label, 1L, 3L),
+      sprintf("%02d.", 1:20)
+    ) ||
+    !identical(
+      substr(models$job_key, 1L, 6L),
+      sprintf("mix-%02d", 1:20)
+    )) {
+  fail("Model labels and job keys must retain the fixed 01-20 plotting order.")
+}
 if (!identical(sort(unique(models$mixing_key)), sort(c(expected_columns[-1L], "ALL2")))) {
   fail("Sensitivity grid must contain nine SC22 K vectors plus ALL2.")
 }

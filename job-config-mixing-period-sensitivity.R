@@ -17,14 +17,15 @@ mixing_levels <- data.frame(
   stringsAsFactors = FALSE
 )
 
-mixing_row <- function(mixing_key, mixing_label, tag_flag2) {
+mixing_row <- function(mixing_key, mixing_label, tag_flag2, plot_order) {
   step_id <- paste0("MIX-", mixing_key, "-TAGF2-", tag_flag2)
   rr_label <- if (identical(as.integer(tag_flag2), 1L)) {
     "RR post-mix only (tag2=1)"
   } else {
     "RR all periods (tag2=0)"
   }
-  label <- paste0(mixing_label, " | ", rr_label)
+  label <- sprintf("%02d. %s | %s", plot_order, mixing_label, rr_label)
+  rr_key <- if (identical(as.integer(tag_flag2), 1L)) "rr-post" else "rr-all"
   data.frame(
     step_id = step_id,
     STEP_SELECT = step_id,
@@ -39,8 +40,11 @@ mixing_row <- function(mixing_key, mixing_label, tag_flag2) {
       "; tag_flags(:,3:10), M, length-weight, RR and all other controls unchanged."
     ),
     model_label = label,
-    job_title = paste0("Mixing sensitivity | ", label, " | base 16594"),
-    job_key = tolower(paste0("mix-", mixing_key, "-tagf2-", tag_flag2)),
+    job_title = paste0(label, " | Mixing sensitivity | base 16594"),
+    job_key = tolower(sprintf("mix-%02d-%s-%s", plot_order, mixing_key, rr_key)),
+    plot_order = as.integer(plot_order),
+    plot_group = mixing_key,
+    rr_mode = if (identical(as.integer(tag_flag2), 1L)) "post-mix-only" else "all-periods",
     run_mode = "doitall",
     source_dir = "steps/S03-CommonTagTau-MIX015/model",
     mixing_key = mixing_key,
@@ -62,8 +66,8 @@ stepwise_models <- do.call(
   lapply(seq_len(nrow(mixing_levels)), function(index) {
     level <- mixing_levels[index, , drop = FALSE]
     rbind(
-      mixing_row(level$mixing_key, level$mixing_label, 1L),
-      mixing_row(level$mixing_key, level$mixing_label, 0L)
+      mixing_row(level$mixing_key, level$mixing_label, 1L, 2L * index - 1L),
+      mixing_row(level$mixing_key, level$mixing_label, 0L, 2L * index)
     )
   })
 )
