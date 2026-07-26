@@ -9,17 +9,22 @@ mixing_levels <- data.frame(
     "K030", "K035", "K040", "K045", "ALL2"
   ),
   mixing_label = c(
-    "SC22-IP10 K=0.05", "SC22-IP10 K=0.10", "SC22-IP10 K=0.15",
-    "SC22-IP10 K=0.20", "SC22-IP10 K=0.25", "SC22-IP10 K=0.30",
-    "SC22-IP10 K=0.35", "SC22-IP10 K=0.40", "SC22-IP10 K=0.45",
-    "all release-group mixing periods = 2"
+    "SC22 K=0.05", "SC22 K=0.10", "SC22 K=0.15",
+    "SC22 K=0.20", "SC22 K=0.25", "SC22 K=0.30",
+    "SC22 K=0.35", "SC22 K=0.40", "SC22 K=0.45",
+    "Mix=2 all releases"
   ),
   stringsAsFactors = FALSE
 )
 
 mixing_row <- function(mixing_key, mixing_label, tag_flag2) {
   step_id <- paste0("MIX-", mixing_key, "-TAGF2-", tag_flag2)
-  label <- paste0(mixing_label, " | tag flag 2=", tag_flag2)
+  rr_label <- if (identical(as.integer(tag_flag2), 1L)) {
+    "RR post-mix only (tag2=1)"
+  } else {
+    "RR all periods (tag2=0)"
+  }
+  label <- paste0(mixing_label, " | ", rr_label)
   data.frame(
     step_id = step_id,
     STEP_SELECT = step_id,
@@ -34,7 +39,7 @@ mixing_row <- function(mixing_key, mixing_label, tag_flag2) {
       "; tag_flags(:,3:10), M, length-weight, RR and all other controls unchanged."
     ),
     model_label = label,
-    job_title = paste0("BET mixing sensitivity | ", label, " | base Job 16594"),
+    job_title = paste0("Mixing sensitivity | ", label, " | base 16594"),
     job_key = tolower(paste0("mix-", mixing_key, "-tagf2-", tag_flag2)),
     run_mode = "doitall",
     source_dir = "steps/S03-CommonTagTau-MIX015/model",
