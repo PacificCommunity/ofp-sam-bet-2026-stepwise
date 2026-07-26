@@ -7,6 +7,15 @@ parameter, tau, for either all active recapture fisheries combined or three
 programme-informed recapture-fishery strata. Larger tau implies greater
 extra-Poisson variation and less effective influence from that stratum.
 
+Tau and parest flag 177 act at different levels. Tau defines the variance
+within the negative-binomial tag likelihood (parest flag 111=4), whereas flag
+177 multiplies the complete tag likelihood after it has been evaluated:
+\(L_{\mathrm{tag}}^{*}=wL_{\mathrm{tag}}\), where \(w=1\) when flag 177 is
+zero and \(w=\mathrm{flag}\ 177/1000\) otherwise. They can therefore be used
+together, but the combined setting both estimates tag overdispersion and
+reduces the tag component relative to other data. It is treated as a
+sensitivity rather than an alternative estimate of tau.
+
 The programme-informed configuration separates (i) F1, F12 and F13, which
 contain 141 of 151 post-mixing JPTP recaptures (93.4%); (ii) F25-F28, which
 contain 2,239 of 2,405 post-mixing recaptures from PTTP Region 4 releases
@@ -17,7 +26,7 @@ and recapture processes, and tau differences should not be interpreted as
 differences in tuna behaviour. The complete executable mapping is recorded in
 `config/tag-tau-program-informed-map.csv`.
 
-The 96 independent fits cross the tag-dispersion structure with Region 5 index
+The first 96 independent fits cross the tag-dispersion structure with Region 5 index
 selectivity, regional recruitment-distribution coefficient, standard or
 orthogonal-polynomial recruitment (OPR), the OPR composition effective-sample-
 size upper bound, and fixed or late-estimated natural mortality. The native
@@ -35,6 +44,16 @@ Fits 73-96 repeat the 24 fixed-M, Nmax-25 combinations with parest flag
 primary fits retain the full likelihood weight through the special flag value
 zero. This targeted comparison evaluates tag influence without adding
 interactions with M estimation or Nmax 1,000.
+
+Fits 97-116 comprise ten matched pairs in which no tau parameters are
+estimated. Each pair retains the inherited negative-binomial tau values and
+compares the full tag likelihood with parest flag 177=500. The latter
+multiplies the complete tag likelihood by 0.50 after the negative-binomial
+likelihood has been evaluated. These pairs therefore separate external tag
+weighting from estimation of tag overdispersion. They cover both recruitment
+structures, both F33 selectivity forms, coefficients 0.1 and 0.2 at Nmax 25,
+and the two OPR/F33 forms at Nmax 1,000 and coefficient 0.1. M is fixed in all
+ten pairs.
 
 | Sensitivity | Recruitment | F33 selectivity | Recruitment coefficient | Nmax |
 |---:|---|---|---:|---:|
@@ -54,6 +73,9 @@ interactions with M estimation or Nmax 1,000.
 | 79-84 | Standard, tag weight 50% | Four-node spline | 0.1-0.2 | 25 |
 | 85-90 | OPR, tag weight 50% | Asymptotic | 0.1-0.2 | 25 |
 | 91-96 | OPR, tag weight 50% | Four-node spline | 0.1-0.2 | 25 |
+| 97-104 | Standard, tau not estimated; paired tag weights | Both | 0.1-0.2 | 25 |
+| 105-112 | OPR, tau not estimated; paired tag weights | Both | 0.1-0.2 | 25 |
+| 113-116 | OPR, tau not estimated; paired tag weights | Both | 0.1 | 1,000 |
 
 All fits retain the SC22-IP10 K=0.15 mixing periods, reporting-rate groups and
 priors, Dirichlet-multinomial eight-group composition structure, CPUE settings,

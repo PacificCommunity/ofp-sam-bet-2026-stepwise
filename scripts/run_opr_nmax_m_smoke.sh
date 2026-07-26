@@ -6,6 +6,7 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 model_root="$repo_root/steps/S05-CommonTagTauOPR-MIX015/model"
 output_root=${TAG_TAU_OPR_SMOKE_OUTPUT:-"$repo_root/outputs/tag-tau-opr-smoke"}
 smoke_evaluations=${TAG_TAU_OPR_SMOKE_EVALUATIONS:-3}
+smoke_grouping=${TAG_TAU_OPR_SMOKE_GROUPING:-program-informed}
 
 if [ ! -x "$program_path" ]; then
   echo "Native MFCL executable is unavailable: $program_path" >&2
@@ -15,6 +16,12 @@ case "$smoke_evaluations" in
   *[!0-9]*|"") echo "TAG_TAU_OPR_SMOKE_EVALUATIONS must be a positive integer." >&2; exit 1 ;;
 esac
 [ "$smoke_evaluations" -gt 0 ] || exit 1
+case "$smoke_grouping" in
+  off) expected_tau_count=0 ;;
+  common) expected_tau_count=1 ;;
+  program-informed) expected_tau_count=3 ;;
+  *) echo "TAG_TAU_OPR_SMOKE_GROUPING must be off, common, or program-informed." >&2; exit 1 ;;
+esac
 
 mkdir -p "$output_root"
 for file in bet.frq bet.ini bet.tag bet.age_length bet.reg_scaling mfcl.cfg doitall.sh; do
@@ -32,7 +39,7 @@ chmod +x "$output_root/doitall.sh"
   cd "$output_root"
   PROGRAM_PATH="$program_path" \
   BET_PHASE10_11_CONVERGENCE=-1 \
-  TAG_TAU_GROUPING=program-informed \
+  TAG_TAU_GROUPING="$smoke_grouping" \
   TAG_TAU_LOWER_BOUND=default \
   REGIONAL_RECRUITMENT_PENALTY=0.2 \
   DM_NMAX=default \
@@ -64,7 +71,7 @@ ageflag()
 [ "$(ageflag 71)" = 0 ]
 [ "$(ageflag 110)" = 2 ]
 [ "$(ageflag 178)" = 0 ]
-[ "$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' "$indepvar")" = 3 ]
+[ "$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' "$indepvar")" = "$expected_tau_count" ]
 [ "$(awk '$2 ~ /^age_pars[(]5[)]/ {n++} END {print n+0}' "$indepvar")" = 1 ]
 
 printf '%s\n' \
@@ -73,5 +80,5 @@ printf '%s\n' \
   "regional recruitment coefficient 0.2 (age flag 110=2): passed" \
   "MFCL default DM Nmax (parest flag 342=0): passed" \
   "tag-recapture likelihood multiplier 0.50 (parest flag 177=500): passed" \
-  "programme-informed three-tau mapping from Phase 10: passed" \
+  "requested tau-estimation mode from Phase 10 ($smoke_grouping; $expected_tau_count parameter(s)): passed" \
   "late Lorenzen M estimation from Phase 11: passed"

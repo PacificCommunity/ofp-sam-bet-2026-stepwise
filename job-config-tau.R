@@ -3,6 +3,8 @@
 # and lower-2 bounds plus a three-stratum programme-informed recapture-fishery
 # configuration, regional recruitment coefficients 0.1 and 0.2, and fixed
 # versus Phase 11-12 estimated M. OPR rows additionally use Nmax 25 or default.
+# The custom campaign launcher also adds matched full/half tag-likelihood pairs
+# with tau estimation disabled; these remain runtime variants of the same rows.
 source("job-config.R", local = TRUE)
 stepwise_models <- stepwise_models[
   stepwise_models$step_id %in% c(

@@ -7,7 +7,7 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/bet-2026-tag-dispersion-opr-nmax-m-20260726
 name: bet-2026-tag-dispersion-opr-nmax-m-20260726
-description: "Run 96 BET sensitivities: 72 primary tag-dispersion, selectivity, recruitment, Nmax and M combinations, plus 24 matched fixed-M and Nmax-25 fits with the tag-recapture likelihood weighted by 0.50."
+description: "Run 116 BET sensitivities: 72 primary tag-dispersion combinations, 24 estimated-tau fits with the tag likelihood weighted by 0.50, and 20 paired no-tau-estimation fits comparing full and 0.50 tag likelihood weights."
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
