@@ -8,7 +8,13 @@ grid_path <- file.path(root, "config", "sc22-ip10-mixing-period-grid.csv")
 config_path <- file.path(root, "job-config-mixing-period-sensitivity.R")
 patch_path <- file.path(root, "R", "apply_mixing_period_sensitivity.R")
 task_path <- file.path(root, "kflow-mixing-period-sensitivity.yaml")
+doitall_path <- file.path(
+  root, "steps", "S03-CommonTagTau-MIX015", "model", "doitall.sh"
+)
+tau_template_path <- file.path(root, "templates", "common-tag-tau-tail.sh")
 expected_baseline_sha256 <- "4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a"
+expected_doitall_sha256 <- "f81e2d7ec11297c7279f89e0be67fc07b5baa4fcbe4ce42371990a33a4eede53"
+expected_tau_template_sha256 <- "d9b9955fafc2643e905c8ab8c03fb28bc45f86d9d5ccd7a9a752c942e07f6ab2"
 
 fail <- function(...) stop(..., call. = FALSE)
 
@@ -58,11 +64,20 @@ parse_tag_flags <- function(lines) {
   do.call(rbind, values)
 }
 
-required <- c(baseline_path, grid_path, config_path, patch_path, task_path)
+required <- c(
+  baseline_path, grid_path, config_path, patch_path, task_path,
+  doitall_path, tau_template_path
+)
 missing <- required[!file.exists(required)]
 if (length(missing)) fail("Missing sensitivity files: ", paste(missing, collapse = ", "))
 if (!identical(sha256_file(baseline_path), expected_baseline_sha256)) {
   fail("Baseline bet.ini is not the exact Job 16594 input.")
+}
+if (!identical(sha256_file(doitall_path), expected_doitall_sha256)) {
+  fail("S03 doitall.sh is not the tau-off implementation verified by Job 16699.")
+}
+if (!identical(sha256_file(tau_template_path), expected_tau_template_sha256)) {
+  fail("Common-tau template differs from the tau-off implementation verified by Job 16699.")
 }
 
 baseline_lines <- readLines(baseline_path, warn = FALSE)
@@ -116,27 +131,42 @@ if (!identical(as.integer(grid$K015), as.integer(baseline_flags[, 1L]))) {
 config_env <- new.env(parent = baseenv())
 sys.source(config_path, envir = config_env)
 models <- get("stepwise_models", envir = config_env)
-if (!is.data.frame(models) || nrow(models) != 20L) fail("Expected exactly 20 model rows.")
+if (!is.data.frame(models) || nrow(models) != 40L) fail("Expected exactly 40 model rows.")
 if (anyDuplicated(models$step_id) || anyDuplicated(models$job_key)) {
   fail("Sensitivity step IDs and job keys must be unique.")
 }
-if (!identical(as.integer(models$plot_order), 1:20) ||
+if (!identical(as.integer(models$plot_order), 1:40) ||
     !identical(
       substr(models$model_label, 1L, 3L),
-      sprintf("%02d.", 1:20)
+      sprintf("%02d.", 1:40)
     ) ||
     !identical(
       substr(models$job_key, 1L, 6L),
-      sprintf("mix-%02d", 1:20)
+      sprintf("mix-%02d", 1:40)
     )) {
-  fail("Model labels and job keys must retain the fixed 01-20 plotting order.")
+  fail("Model labels and job keys must retain the fixed 01-40 plotting order.")
 }
 if (!identical(sort(unique(models$mixing_key)), sort(c(expected_columns[-1L], "ALL2")))) {
   fail("Sensitivity grid must contain nine SC22 K vectors plus ALL2.")
 }
-pair_counts <- table(models$mixing_key, models$tag_flags_it2)
-if (!identical(dim(pair_counts), c(10L, 2L)) || any(pair_counts != 1L)) {
-  fail("Every mixing vector must have exactly one tag-flag-2=0 and one tag-flag-2=1 row.")
+if (!identical(models$tag_tau_grouping[1:20], rep("common", 20L)) ||
+    !identical(models$tag_tau_grouping[21:40], rep("off", 20L))) {
+  fail("Rows 1-20 must estimate common tau and rows 21-40 must not estimate tau.")
+}
+if (any(grepl("-TAUOFF$", models$step_id[1:20])) ||
+    any(!grepl("-TAUOFF$", models$step_id[21:40]))) {
+  fail("Only tau-off rows 21-40 may use the -TAUOFF step suffix.")
+}
+design_counts <- table(
+  models$mixing_key,
+  models$tag_flags_it2,
+  models$tag_tau_grouping
+)
+if (!identical(dim(design_counts), c(10L, 2L, 2L)) || any(design_counts != 1L)) {
+  fail(
+    "Every mixing vector must have one tag-flag-2=0 and one tag-flag-2=1 row ",
+    "under each tau treatment."
+  )
 }
 
 summary_rows <- vector("list", nrow(models))
@@ -215,6 +245,7 @@ for (index in seq_len(nrow(models))) {
     step_id = row$step_id[[1L]],
     mixing_key = row$mixing_key[[1L]],
     tag_flag2 = expected_tag2,
+    tau_grouping = row$tag_tau_grouping[[1L]],
     changed_mixing_release_groups = sum(expected_mixing != baseline_flags[, 1L]),
     n_mix0 = sum(expected_mixing == 0L),
     n_mix1 = sum(expected_mixing == 1L),
@@ -250,7 +281,8 @@ if (length(missing_task_lines)) {
 summary <- do.call(rbind, summary_rows)
 write.csv(summary, stdout(), row.names = FALSE)
 message(
-  "PASS: 20 variants; only tag_flags(:,1:2) differ from Job 16594. ",
-  "M, length-weight, all five RR matrices, tag_flags(:,3:10), ",
-  "runtime image/resources and all other source inputs are frozen."
+  "PASS: 40 variants. Rows 1-20 change only tag_flags(:,1:2); rows 21-40 ",
+  "repeat the same grid with tau estimation disabled by the Job 16699 method. ",
+  "M, length-weight, all five RR matrices, tag_flags(:,3:10), runtime ",
+  "image/resources and all other source inputs are frozen."
 )

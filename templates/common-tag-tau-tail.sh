@@ -59,9 +59,22 @@ esac
 
 tag_tau_grouping=${TAG_TAU_GROUPING:-common}
 case "$tag_tau_grouping" in
+  off)
+    # Retain the inherited negative-binomial tag likelihood and fish_pars(4)
+    # values, but do not estimate any tag-overdispersion parameter.
+    expected_tau_count=0
+    tag_tau_grouping_label=not-estimated
+    tag_tau_parest305=0
+    tag_tau_lower_bound=not-applicable
+    tag_tau_effective_lower=not-applicable
+    tag_tau_start=not-estimated
+    tag_tau_start_theta=0
+    tag_tau_flag306=0
+    ;;
   common)
     expected_tau_count=1
     tag_tau_grouping_label=common-F1-F28
+    tag_tau_parest305=1
     ;;
   program-informed)
     # MFCL tau is indexed by recapture fishery, not release programme.
@@ -71,9 +84,10 @@ case "$tag_tau_grouping" in
     # and all other active recapture fisheries form the reference stratum.
     expected_tau_count=3
     tag_tau_grouping_label=program-informed-recapture-strata
+    tag_tau_parest305=1
     ;;
   *)
-    echo "TAG_TAU_GROUPING must be common or program-informed." >&2
+    echo "TAG_TAU_GROUPING must be off, common, or program-informed." >&2
     exit 42
     ;;
 esac
@@ -86,6 +100,9 @@ tag_tau_group_for_fishery()
     return
   fi
   case "$tag_tau_grouping" in
+    off)
+      echo 0
+      ;;
     common)
       echo 1
       ;;
@@ -102,7 +119,9 @@ tag_tau_group_for_fishery()
 tag_tau_group_controls=$(
   fishery=1
   while [ "$fishery" -le 33 ]; do
-    if [ "$fishery" -le 28 ]; then
+    if [ "$tag_tau_grouping" = off ]; then
+      printf '  -%s 43 0 -%s 44 0\n' "$fishery" "$fishery"
+    elif [ "$fishery" -le 28 ]; then
       group=$(tag_tau_group_for_fishery "$fishery")
       printf '  -%s 43 1 -%s 44 %s\n' "$fishery" "$fishery" "$group"
     else
@@ -121,7 +140,10 @@ echo "Lorenzen M estimation in Phases 11-12: $estimate_m_final"
 
 # Set only fishery-parameter row 4 in the Phase 10 input. Phases 0-9 retain
 # the complete selected selectivity-form and recruitment-penalty sequence.
-awk -v theta="$tag_tau_start_theta" '
+if [ "$tag_tau_grouping" = off ]; then
+  cp 09.par 09.tau.par
+else
+  awk -v theta="$tag_tau_start_theta" '
   BEGIN { in_fish = 0; fish_row = 0; changed = 0 }
   /^# extra fishery parameters/ { in_fish = 1; print; next }
   in_fish && /^#/ { print; next }
@@ -149,6 +171,7 @@ awk -v theta="$tag_tau_start_theta" '
     }
   }
 ' 09.par > 09.tau.par
+fi
 
 $program_path bet.frq 09.tau.par 10.par -file - <<PHASE10
   1 111 4    # negative-binomial tag-recapture likelihood
@@ -156,7 +179,7 @@ $program_path bet.frq 09.tau.par 10.par -file - <<PHASE10
   1 239 0    # serial tag-return implementation supporting direct tau
   1 249 0    # standard tag-return likelihood
   1 101 0    # standard tag-return calculation
-  1 305 1    # direct parameterization: tau = 1 + exp(fish_pars(4))
+  1 305 $tag_tau_parest305  # selected negative-binomial tau treatment
   1 306 $tag_tau_flag306  # selected direct-tau lower-bound control
   1 358 0    # retain the default upper-bound rule
   2 100 0    # standard tag-return calculation
@@ -212,7 +235,10 @@ if [ "$(wc -l < tag-tau-map-final.txt)" -ne 33 ]; then
   exit 45
 fi
 while read -r fishery active group; do
-  if [ "$fishery" -le 28 ]; then
+  if [ "$tag_tau_grouping" = off ]; then
+    expected_active=0
+    expected_group=0
+  elif [ "$fishery" -le 28 ]; then
     expected_active=1
     expected_group=$(tag_tau_group_for_fishery "$fishery")
   else
@@ -236,7 +262,7 @@ parest_342=$(awk '/^# The parest_flags/{getline; print $342; exit}' "$final_par"
 parest_358=$(awk '/^# The parest_flags/{getline; print $358; exit}' "$final_par")
 if [ "$parest_111" != 4 ] ||
    [ "$parest_177" != "$tag_likelihood_weight" ] || [ "$parest_239" != 0 ] ||
-   [ "$parest_249" != 0 ] || [ "$parest_305" != 1 ] ||
+   [ "$parest_249" != 0 ] || [ "$parest_305" != "$tag_tau_parest305" ] ||
    [ "$parest_306" != "$tag_tau_flag306" ] ||
    [ "$parest_342" != "$dm_nmax_flag" ] || [ "$parest_358" != 0 ]; then
   echo "Final parameter file did not retain the required direct-tau or tag-weight controls." >&2

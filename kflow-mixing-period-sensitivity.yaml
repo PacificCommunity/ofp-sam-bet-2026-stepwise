@@ -1,5 +1,5 @@
 name: bet-2026-sc22-ip10-mixing-tagflag-grid-20260727
-description: "Run 20 independent BET fits from the exact Job 16594 model: nine SC22-IP10 K mixing-period vectors and one all-2 vector, each paired with tag_flags(:,2) fixed to 1 or 0."
+description: "Run 40 independent BET fits from the exact Job 16594 model: nine SC22-IP10 K mixing-period vectors and one all-2 vector, each paired with tag_flags(:,2) fixed to 1 or 0; rows 21-40 repeat the grid with tau estimation disabled exactly as in Job 16699."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: sensitivity/sc22-ip10-mixing-tagflag-grid-20260727
@@ -88,7 +88,7 @@ metadata:
   mixing_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   mixing_source_branch: SC22-IP10-based
   mixing_source_commit: 5b2fb6053e34a58ef61275a68d8a67ec988833c1
-  changed_fields: "bet.ini tag_flags(:,1:2) only"
+  changed_fields: "rows 1-20: bet.ini tag_flags(:,1:2) only; rows 21-40: the same changes plus tau estimation off"
   inputs_frozen: true
   independent_fit: true
   container: tuna-flow v2.6
