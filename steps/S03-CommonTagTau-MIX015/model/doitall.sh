@@ -252,7 +252,9 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -8 75 2  # F8 youngest age classes fixed at zero selectivity
   -9 75 2  # F9 youngest age classes fixed at zero selectivity
   -10 75 2  # F10 youngest age classes fixed at zero selectivity
-# Old18 split into HL.ID.2 and HL.PH.2.
+# Old18 split into HL.ID.2 and HL.PH.2. This sensitivity restores the
+# inherited youngest-five-age constraint to both split fisheries.
+  -14 75 5  # F14 HL.ID.2 youngest age classes fixed at zero selectivity
   -15 75 5  # F15 youngest age classes fixed at zero selectivity
 # Age-based spline constraints mapped from old fishery recipes.
   -19 16 0 -19 3 25  # F19 selected revised fishery-specific specification: selectivity-form penalty off
