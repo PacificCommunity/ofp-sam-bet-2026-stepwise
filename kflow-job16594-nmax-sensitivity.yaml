@@ -1,0 +1,122 @@
+name: bet-2026-job16594-dm-nmax10-15-40-50-20260727
+description: "Run four independent fits from the exact Job 16594 model, changing only the Dirichlet-multinomial effective-sample-size upper asymptote Nmax from 25 to 10, 15, 40, or 50."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job16594-dm-nmax10-15-40-50-20260727
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job16594_nmax_sensitivity.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job16594-nmax-sensitivity.R
+  STEP_SELECT: JOB16594-NMAX10
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "01. Job 16594 | DM G8 Nmax=10 | common tau | Nmax sensitivity"
+  JOB_DESCRIPTION: "Exact Job 16594 inputs and controls; change only MFCL parest flag 342 from Nmax 25 to Nmax 10."
+  MODEL_LABEL: "01. Job 16594 | DM G8 Nmax=10 | common tau"
+  JOB_KEY: job16594-nmax-10
+  RUN_MODE: doitall
+  DM_NMAX: "10"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  ESTIMATE_M_FINAL: "false"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job16594-dm-nmax10-15-40-50-20260727
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 16594 DM Nmax sensitivity
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  PAR_SOURCE_JOB: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  KFLOW_INPUT_JOBS: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: ""
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: dm-nmax-sensitivity
+  base_job: "16594"
+
+metadata:
+  base_job: "16594"
+  base_source_commit: 1035b6ce6942309599acf7643b0b22bbec840c0b
+  base_ini_sha256: 4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a
+  reference_dm_nmax: 25
+  sensitivity_dm_nmax: [10, 15, 40, 50]
+  changed_fields: "MFCL parest flag 342 only; Nmax 25 changes to the row-specific value"
+  inputs_frozen: true
+  independent_fit: true
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job16594-nmax-sensitivity.R
+  execution: independent-concurrent
+  inputs: frozen
+  scientific_parent: metadata-only
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - DM_NMAX
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT

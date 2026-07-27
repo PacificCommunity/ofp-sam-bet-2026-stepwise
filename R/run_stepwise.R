@@ -1160,6 +1160,8 @@ for (i in seq_len(nrow(step_table))) {
     "phase-process-summary.csv",
     "doitall-switches.csv",
     "post-switch-summary.csv",
+    "tag-tau-audit.csv",
+    "tag-tau-map-final.txt",
     "mixing-period-audit.csv"
   ))
   for (file in keep) {
