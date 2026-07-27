@@ -63,10 +63,10 @@ sha256_file()
 
 read_par_flag()
 {
-  awk -v header="$1" -v index="$2" '
+  awk -v header="$1" -v field_no="$2" '
     $0 == header {
       getline
-      print $index
+      print $field_no
       exit
     }
   ' "$3"

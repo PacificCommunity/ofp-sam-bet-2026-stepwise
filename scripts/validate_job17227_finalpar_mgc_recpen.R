@@ -129,6 +129,8 @@ required_continuation <- c(
   "convergence_exponent=${BET_PHASE10_11_CONVERGENCE:--5}",
   "regional_recruitment_penalty=${REGIONAL_RECRUITMENT_PENALTY:-0.1}",
   "expected_source_par_sha256=${EXPECTED_SOURCE_PAR_SHA256:-}",
+  'awk -v header="$1" -v field_no="$2" ',
+  "      print $field_no",
   '"  1 50 $convergence_exponent  # MGC threshold = 10^exponent"',
   '"  2 110 $regional_recruitment_penalty_flag  # default 0.1 when 0; positive values are divided by 10"',
   '"$program_path" "$frq" "$input_par" "$final_par" -file "$control_file"',
@@ -142,6 +144,9 @@ missing_continuation <- required_continuation[
 ]
 if (length(missing_continuation)) {
   fail("Continuation controls are incomplete: ", paste(missing_continuation, collapse = " | "))
+}
+if (any(grepl('awk -v header="$1" -v index=', continuation, fixed = TRUE))) {
+  fail("Continuation awk uses reserved built-in name index as a variable.")
 }
 
 doitall <- readLines(file.path(source_dir, "doitall.sh"), warn = FALSE)
