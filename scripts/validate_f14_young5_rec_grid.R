@@ -215,6 +215,16 @@ for (i in seq_len(nrow(models))) {
     MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
     OPR_MODE = models$opr_mode[[i]]
   )
+  # Kflow supplies the selected model row through the process environment.
+  # This validator deliberately stages every row, so each isolated patch test
+  # must expose that row's matching environment rather than the job's one
+  # selected-row values. Sys.setenv here affects only this validator process;
+  # the subsequent run.sh process retains the original Kflow job environment.
+  Sys.setenv(
+    F15_QC_MODE = models$f15_qc_mode[[i]],
+    MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
+    OPR_MODE = models$opr_mode[[i]]
+  )
   sys.source(patch_paths[[i]], envir = patch_env)
 
   f15_summary <- utils::read.csv(
