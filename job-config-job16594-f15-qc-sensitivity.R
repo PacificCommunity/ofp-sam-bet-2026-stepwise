@@ -1,23 +1,19 @@
 ## Job 16594 F15 length-frequency QC sensitivity.
 ##
 ## The Job 16594 Nmax=25 reference and the separately submitted unfiltered
-## Nmax=15 control are not rerun. These eight rows cross four data-QC variants
+## Nmax=15 control are not rerun. These four rows cross two data-QC variants
 ## with Nmax 25 and 15, while retaining every other Job 16594 input/control.
 
 f15_variants <- data.frame(
-  token = c("LT68", "LT70", "Q10", "LFOFF"),
-  mode = c("lt68", "lt70", "quarter_sub70_ge10", "lf_off"),
+  token = c("LT68", "LT70"),
+  mode = c("lt68", "lt70"),
   short_label = c(
     "F15 remove lengths <68 cm",
-    "F15 remove lengths <70 cm",
-    "F15 drop LF quarters with <70 cm fraction >=10%",
-    "F15 length compositions off"
+    "F15 remove lengths <70 cm"
   ),
   change_axis = c(
     "Set F15 length-bin counts below 68 cm to zero; retain the reduced sample total.",
-    "Set F15 length-bin counts below 70 cm to zero; retain the reduced sample total.",
-    "Remove the entire F15 LF composition for objectively selected quarters where the original <70 cm fraction is at least 10%.",
-    "Remove all F15 LF compositions while retaining F15 catch and effort."
+    "Set F15 length-bin counts below 70 cm to zero; retain the reduced sample total."
   ),
   stringsAsFactors = FALSE
 )
@@ -51,7 +47,7 @@ make_f15_row <- function(variant_index, nmax, plot_order) {
       "mixing, tag_flags(:,2)=1, one estimated common/native tau, fixed M, ",
       "regional recruitment penalty 0.1, tag likelihood 100%, selectivity, ",
       "growth, and all other controls remain unchanged. Removed LF counts are ",
-      "not renormalised."
+      "not renormalised. No complete quarter or complete fishery LF is removed."
     ),
     model_label = label,
     job_title = paste0(label, " | F15 LF data-QC sensitivity"),
