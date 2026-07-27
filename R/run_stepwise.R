@@ -272,8 +272,15 @@ is_latest_par_mode <- function(run_mode) {
   run_mode %in% c("last", "latest", "last_par", "latest_par", "par", "single", "single_par")
 }
 
+is_job_par_script_mode <- function(run_mode) {
+  mode_key(run_mode) %in% c("job_par_script", "previous_job_par_script")
+}
+
 is_job_par_mode <- function(run_mode) {
-  run_mode %in% c("job_par", "previous_job_par", "input_job_par", "kflow_job_par")
+  mode_key(run_mode) %in% c(
+    "job_par", "previous_job_par", "input_job_par", "kflow_job_par",
+    "job_par_script", "previous_job_par_script"
+  )
 }
 
 truthy <- function(x, default = TRUE) {
@@ -1001,8 +1008,12 @@ for (i in seq_len(nrow(step_table))) {
     staged <- stage_previous_job_par(model_dir, step_id, par_source_job, root = root, work_dir = work_dir)
     input_par <- staged$input_par
     par_source_par <- staged$source_par
-    run_mode <- "single_par"
-    if (!nzchar(output_par)) output_par <- "final.par"
+    if (is_job_par_script_mode(requested_run_mode)) {
+      run_mode <- "script"
+    } else {
+      run_mode <- "single_par"
+      if (!nzchar(output_par)) output_par <- "final.par"
+    }
     message(
       "  previous job par: ",
       relative_display_path(par_source_par, root),
@@ -1161,7 +1172,9 @@ for (i in seq_len(nrow(step_table))) {
     "doitall-switches.csv",
     "post-switch-summary.csv",
     "f15-lf-qc-audit.csv",
-    "f15-lf-qc-summary.csv"
+    "f15-lf-qc-summary.csv",
+    "job-par-control.txt",
+    "job-par-continuation-audit.csv"
   ))
   for (file in keep) {
     src <- file.path(model_dir, file)

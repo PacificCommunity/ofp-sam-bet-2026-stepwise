@@ -1,0 +1,149 @@
+name: bet-2026-job17227-finalpar-mgc-recpen-20260728
+description: "Two controlled Job 17227 follow-ups: continue its verified final PAR to MGC 1e-5 with recruitment penalty 0.1, and independently rerun doitall to MGC 1e-4 with recruitment penalty 0.2."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job17227-finalpar-mgc-recpen-20260728
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job17227_finalpar_mgc_recpen.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job17227-finalpar-mgc-recpen.R
+  STEP_SELECT: F15-LT70-NMAX25
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "01. Job17227 final PAR continuation | rec 0.1 | MGC 1e-5"
+  JOB_DESCRIPTION: "Continue the checksum-verified Job 17227 final PAR to MGC 1e-5 while retaining recruitment penalty 0.1."
+  MODEL_LABEL: "01. Job17227 final PAR | rec penalty 0.1 | MGC 1e-5"
+  JOB_KEY: job17227-finalpar-rec01-mgc1e5
+  RUN_MODE: job_par_script
+  F15_QC_MODE: lt70
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  ESTIMATE_M_FINAL: "false"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-5"
+  PAR_SOURCE_JOB: "17227"
+  KFLOW_INPUT_JOBS: "17227"
+  EXPECTED_SOURCE_PAR_SHA256: "30e5122ade18200daba7fb1b4fe7126c830684785beb90d827648fd611d03ce7"
+  JOB_PAR_MAX_EVALUATIONS: "10000"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job17227-finalpar-mgc-recpen-20260728
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 17227 convergence and recruitment-penalty sensitivities
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: final.par
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: job17227-convergence-recruitment-penalty
+  base_job: "17227"
+
+metadata:
+  base_job: "17227"
+  base_source_commit: a6beaa7d0fa0897a3caf4252fddd98509245faec
+  source_final_par_sha256: 30e5122ade18200daba7fb1b4fe7126c830684785beb90d827648fd611d03ce7
+  source_final_objective: "9.10893089083281e+04"
+  source_final_max_gradient: "9.18721520847071e-05"
+  source_final_parest50: -4
+  source_final_age_flag110: 0
+  source_final_regional_recruitment_penalty: 0.1
+  source_patched_frq_sha256: 3abf83821f8d696b36f020a80f48f99445f9e15046bdb3741adfac778c82ad60
+  source_ini_sha256: 4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a
+  source_tag_sha256: b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f
+  source_age_length_sha256: 426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c
+  source_reg_scaling_sha256: 6330fb6a36d63424c18f81cbc620c1d9607c2a5c43d0308d19941f12938ec9a1
+  source_reg_scaling_full_sha256: dea4c281f7dc46a7412b7ad2e78906ee57b51b62cf1a18c4609381132bf752ed
+  source_job17227_hessian_negative_eigenvalues: 1
+  source_job17227_most_negative_eigenvalue: -0.009903
+  source_job17227_negative_direction: recruitment_deviations
+  continuation_control: "Job 17227 exact final PAR; age flag 110=0; parest flag 50=-5; max 10000 evaluations"
+  independent_control: "doitall from frozen source; F15 <70 cm; Nmax=25; age flag 110=2; parest flag 50=-4"
+  model_count: 2
+  inputs_frozen: true
+  common_tag_tau_estimated: true
+  natural_mortality_fixed: true
+  f15_qc_mode: lt70
+  dm_nmax: 25
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job17227-finalpar-mgc-recpen.R
+  execution: independent-concurrent
+  inputs: mixed-by-row
+  scientific_parent: mixed-by-row
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DM_NMAX
+    - REGIONAL_RECRUITMENT_PENALTY
+    - BET_PHASE10_11_CONVERGENCE
+    - PAR_SOURCE_JOB
+    - KFLOW_INPUT_JOBS
+    - EXPECTED_SOURCE_PAR_SHA256
+    - JOB_PAR_MAX_EVALUATIONS
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT

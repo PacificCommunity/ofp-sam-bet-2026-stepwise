@@ -132,6 +132,17 @@ def truthy(value: Any) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def split_job_refs(value: Any) -> list[str]:
+    text = str(value or "").strip()
+    if not text or text.lower() in {"0", "false", "no", "off", "none", "skip"}:
+        return []
+    return [
+        token.lstrip("#")
+        for token in re.split(r"[\s,]+", text)
+        if token.strip()
+    ]
+
+
 def read_model_rows(repo_root: Path, config: dict[str, Any]) -> list[dict[str, str]]:
     campaign = config.get("model_campaign") or {}
     if not isinstance(campaign, dict) or not campaign:
@@ -236,12 +247,15 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
     payloads: list[dict[str, Any]] = []
     for index, row in enumerate(rows):
         parent = scientific_parent(rows, index)
-        description = (
-            f"Independent frozen-input fit {index + 1} of {count}: "
-            f"{row['model_label']} ({row['step_id']})."
-        )
+        parent_mode = row.get("scientific_parent_mode") or "metadata-only"
+        independent_fit = truthy(row.get("independent_fit", "true"))
+        run_kind = "Independent frozen-input fit" if independent_fit else "Final-PAR continuation"
+        description = f"{run_kind} {index + 1} of {count}: {row['model_label']} ({row['step_id']})."
         if parent:
-            description += f" Scientific parent {parent} is provenance metadata only."
+            if parent_mode == "par-input":
+                description += f" Final PAR from {parent} is attached as the optimisation starting point."
+            else:
+                description += f" Scientific parent {parent} is provenance metadata only."
         env = {
             **base_env,
             "STEP_SELECT": row["step_id"],
@@ -258,12 +272,18 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             ("input_par", "INPUT_PAR"),
             ("frq", "FRQ"),
             ("output_par", "OUTPUT_PAR"),
+            ("par_source_job", "PAR_SOURCE_JOB"),
+            ("kflow_input_jobs", "KFLOW_INPUT_JOBS"),
+            ("expected_source_par_sha256", "EXPECTED_SOURCE_PAR_SHA256"),
+            ("job_par_max_evaluations", "JOB_PAR_MAX_EVALUATIONS"),
+            ("phase10_11_convergence", "BET_PHASE10_11_CONVERGENCE"),
+            ("regional_recruitment_penalty", "REGIONAL_RECRUITMENT_PENALTY"),
             ("mfcl_program_path", "PROGRAM_PATH"),
             ("tag_tau_grouping", "TAG_TAU_GROUPING"),
             ("dm_nmax", "DM_NMAX"),
             ("f15_qc_mode", "F15_QC_MODE"),
         ):
-            if row.get(column):
+            if column in row:
                 env[env_name] = row[column]
         metadata = {
             **dict(config.get("metadata") or {}),
@@ -271,8 +291,9 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             "campaign_row_count": count,
             "job_description": description,
             "scientific_parent": parent,
-            "scientific_parent_mode": "metadata-only",
+            "scientific_parent_mode": parent_mode,
             "inputs_frozen": True,
+            "independent_fit": independent_fit,
             "major_step": row.get("major_step", ""),
             "substep": row.get("substep", ""),
             "change_axis": row.get("change_axis", ""),
@@ -289,7 +310,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
                 "disk": resources["disk"],
                 "batch_name": str(base_env.get("FLOW_GROUP") or "BET stepwise independent fits"),
                 "output_patterns": list(config["output_patterns"]),
-                "input_jobs": [],
+                "input_jobs": split_job_refs(row.get("kflow_input_jobs")),
                 "env": env,
                 "tags": {
                     **dict(config.get("tags") or {}),
@@ -297,8 +318,10 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
                     "step": row["step_id"],
                     "job_key": row["job_key"],
                     "model_label": row["model_label"],
-                    "independent_fit": "true",
+                    "independent_fit": str(independent_fit).lower(),
                     "inputs_frozen": "true",
+                    "requested_mgc": row.get("phase10_11_convergence", ""),
+                    "regional_recruitment_penalty": row.get("regional_recruitment_penalty", ""),
                 },
                 "metadata": {key: value for key, value in metadata.items() if value not in (None, "")},
                 "triggers": {},
@@ -322,12 +345,13 @@ def build_payload(
     metadata = dict(config.get("metadata") or {})
     rows = rows or []
     if rows:
+        campaign = dict(config.get("model_campaign") or {})
         metadata["model_campaign"] = {
-            **dict(config.get("model_campaign") or {}),
+            **campaign,
             "model_count": len(rows),
-            "execution": "independent-concurrent",
-            "inputs": "frozen",
-            "scientific_parent": "metadata-only",
+            "execution": campaign.get("execution") or "independent-concurrent",
+            "inputs": campaign.get("inputs") or "frozen",
+            "scientific_parent": campaign.get("scientific_parent") or "metadata-only",
         }
         metadata["model_rows"] = [
             {
@@ -337,6 +361,8 @@ def build_payload(
                 "model_label": row["model_label"],
                 "memory": row.get("kflow_memory") or resources.get("memory"),
                 "scientific_parent": scientific_parent(rows, index),
+                "scientific_parent_mode": row.get("scientific_parent_mode") or "metadata-only",
+                "independent_fit": truthy(row.get("independent_fit", "true")),
             }
             for index, row in enumerate(rows)
         ]
@@ -353,7 +379,7 @@ def build_payload(
         "name": task_name,
         "description": (
             f"{str(config.get('description') or '').rstrip()} "
-            f"Configured from {len(rows)} enabled independent model rows."
+            f"Configured from {len(rows)} enabled model rows."
             if rows
             else config.get("description", "")
         ),
