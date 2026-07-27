@@ -26,18 +26,13 @@ sys.source(config_path, envir = cfg)
 models <- get("stepwise_models", envir = cfg)
 expected_steps <- c(
   "F15-LT68-NMAX25", "F15-LT70-NMAX25",
-  "F15-Q10-NMAX25", "F15-LFOFF-NMAX25",
-  "F15-LT68-NMAX15", "F15-LT70-NMAX15",
-  "F15-Q10-NMAX15", "F15-LFOFF-NMAX15"
+  "F15-LT68-NMAX15", "F15-LT70-NMAX15"
 )
-expected_modes <- rep(
-  c("lt68", "lt70", "quarter_sub70_ge10", "lf_off"),
-  2L
-)
-expected_nmax <- c(rep("25", 4L), rep("15", 4L))
+expected_modes <- rep(c("lt68", "lt70"), 2L)
+expected_nmax <- c(rep("25", 2L), rep("15", 2L))
 
-if (!is.data.frame(models) || nrow(models) != 8L) {
-  fail("Expected exactly eight F15 QC sensitivity rows.")
+if (!is.data.frame(models) || nrow(models) != 4L) {
+  fail("Expected exactly four F15 QC sensitivity rows.")
 }
 if (!identical(models$step_id, expected_steps)) {
   fail("Unexpected F15 QC step order: ", paste(models$step_id, collapse = ", "))
@@ -48,13 +43,13 @@ if (!identical(as.character(models$f15_qc_mode), expected_modes)) {
 if (!identical(as.character(models$dm_nmax), expected_nmax)) {
   fail("Nmax rows must be four Nmax=25 followed by four Nmax=15.")
 }
-if (!identical(models$tag_tau_grouping, rep("common", 8L)) ||
-    !identical(models$tau_mode, rep("estimated-common", 8L))) {
+if (!identical(models$tag_tau_grouping, rep("common", 4L)) ||
+    !identical(models$tau_mode, rep("estimated-common", 4L))) {
   fail("Every F15 QC sensitivity must estimate one common tag tau.")
 }
 if (!identical(
   models$source_dir,
-  rep("steps/S03-CommonTagTau-MIX015/model", 8L)
+  rep("steps/S03-CommonTagTau-MIX015/model", 4L)
 )) {
   fail("Every F15 QC row must stage the exact Job 16594 S03 source model.")
 }
@@ -159,9 +154,9 @@ required_task <- c(
   "  BET_PHASE10_11_CONVERGENCE: \"-4\"",
   "  base_job: \"16594\"",
   "  unfiltered_nmax15_reference_job: \"17222\"",
-  "  f15_qc_modes: [lt68, lt70, quarter_sub70_ge10, lf_off]",
+  "  f15_qc_modes: [lt68, lt70]",
   "  dm_nmax_values: [25, 15]",
-  "  model_count: 8",
+  "  model_count: 4",
   "  removed_counts_renormalised: false",
   "  catch_effort_changed: false"
 )
@@ -175,16 +170,14 @@ test_root <- tempfile("job16594-f15-qc-validation-")
 dir.create(test_root, recursive = TRUE)
 on.exit(unlink(test_root, recursive = TRUE, force = TRUE), add = TRUE)
 expected_mode_results <- data.frame(
-  mode = c("lt68", "lt70", "quarter_sub70_ge10", "lf_off"),
+  mode = c("lt68", "lt70"),
   output_sha256 = c(
     "7cc230a126b67d96b305cb9af8e61eb346554cc6974d75e76ec5c8645f2e5990",
-    "3abf83821f8d696b36f020a80f48f99445f9e15046bdb3741adfac778c82ad60",
-    "1e7dd285c57edd193dad97099651ccd25a5f1e1399c03ea7cc0407773283f8a4",
-    "2e74160628c92563bb5e99d3b18b249793ab5e1fa740caa8b66d11cb10a0b57e"
+    "3abf83821f8d696b36f020a80f48f99445f9e15046bdb3741adfac778c82ad60"
   ),
-  affected = c(61L, 66L, 8L, 135L),
-  rows_after = c(135L, 135L, 127L, 0L),
-  removed = c(867, 1057, 3008, 41908),
+  affected = c(61L, 66L),
+  rows_after = c(135L, 135L),
+  removed = c(867, 1057),
   stringsAsFactors = FALSE
 )
 source_frq <- file.path(source_dir, "bet.frq")
@@ -208,23 +201,12 @@ for (i in seq_len(nrow(expected_mode_results))) {
   if (!all(checks)) fail("Unexpected deterministic F15 QC result for ", expectation$mode, ".")
 }
 
-q10 <- utils::read.csv(
-  file.path(test_root, "quarter_sub70_ge10", "f15-lf-qc-summary.csv"),
-  stringsAsFactors = FALSE
-)
-expected_q10_periods <- paste(
-  c("1999Q1", "2011Q4", "2012Q1", "2013Q1", "2014Q4", "2015Q2", "2015Q3", "2023Q4"),
-  collapse = ";"
-)
-if (!identical(q10$affected_periods[[1L]], expected_q10_periods)) {
-  fail("The objective >=10% F15 quarter rule selected unexpected periods.")
-}
 if (!identical(sha256(source_frq), expected_source_hashes[["bet.frq"]])) {
   fail("Validation modified the frozen Job 16594 source FRQ.")
 }
 
 cat(
-  "Validated Job 16594 F15 LF QC campaign: eight independent rows; ",
+  "Validated Job 16594 F15 LF QC campaign: four independent rows; ",
   "exact frozen inputs; deterministic F15-only edits; Nmax 25/15; ",
   "common estimated tau; no renormalisation; catch and effort unchanged.\n",
   sep = ""

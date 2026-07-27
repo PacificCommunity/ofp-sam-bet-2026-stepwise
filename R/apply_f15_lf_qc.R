@@ -59,7 +59,7 @@ apply_f15_lf_qc <- function(
   frq_name = "bet.frq",
   expected_source_sha256 = "d77f97c348409f845f1f0fc801af808d15b6cb119349d1f083308cfc9d4fba8c"
 ) {
-  allowed_modes <- c("lt68", "lt70", "quarter_sub70_ge10", "lf_off")
+  allowed_modes <- c("lt68", "lt70")
   mode <- trimws(tolower(as.character(mode[[1L]])))
   if (!mode %in% allowed_modes) {
     stop(
@@ -167,40 +167,23 @@ apply_f15_lf_qc <- function(
     tokens <- tokenised[[line_index]]
     lf <- as.numeric(tokens[lf_start:lf_end])
 
-    if (mode %in% c("lt68", "lt70")) {
-      threshold <- if (identical(mode, "lt68")) 68 else 70
-      remove_bins <- lengths < threshold
-      removed <- sum(lf[remove_bins])
-      if (removed > 0) {
-        lf[remove_bins] <- 0
-        if (sum(lf) <= 0) {
-          stop(
-            "Filtering <", threshold, " cm would empty F15 ", audit$period[[j]],
-            "; refusing to create an invalid composition.",
-            call. = FALSE
-          )
-        }
-        tokens[lf_start:lf_end] <- format(lf, scientific = FALSE, trim = TRUE)
-        lines_after[[line_index]] <- paste(tokens, collapse = " ")
-        audit$action[[j]] <- paste0("zero_bins_lt", threshold)
-        audit$total_after[[j]] <- sum(lf)
-        audit$removed_count[[j]] <- removed
-        affected[[j]] <- TRUE
+    threshold <- if (identical(mode, "lt68")) 68 else 70
+    remove_bins <- lengths < threshold
+    removed <- sum(lf[remove_bins])
+    if (removed > 0) {
+      lf[remove_bins] <- 0
+      if (sum(lf) <= 0) {
+        stop(
+          "Filtering <", threshold, " cm would empty F15 ", audit$period[[j]],
+          "; refusing to create an invalid composition.",
+          call. = FALSE
+        )
       }
-    } else if (identical(mode, "quarter_sub70_ge10")) {
-      qualifies <- audit$below70_fraction[[j]] + 1e-12 >= 0.10
-      if (isTRUE(qualifies)) {
-        lines_after[[line_index]] <- paste(c(tokens[seq_len(7L)], "-1", "-1"), collapse = " ")
-        audit$action[[j]] <- "remove_entire_lf_sub70_fraction_ge_0.10"
-        audit$total_after[[j]] <- 0
-        audit$removed_count[[j]] <- audit$total_before[[j]]
-        affected[[j]] <- TRUE
-      }
-    } else if (identical(mode, "lf_off")) {
-      lines_after[[line_index]] <- paste(c(tokens[seq_len(7L)], "-1", "-1"), collapse = " ")
-      audit$action[[j]] <- "remove_entire_f15_lf"
-      audit$total_after[[j]] <- 0
-      audit$removed_count[[j]] <- audit$total_before[[j]]
+      tokens[lf_start:lf_end] <- format(lf, scientific = FALSE, trim = TRUE)
+      lines_after[[line_index]] <- paste(tokens, collapse = " ")
+      audit$action[[j]] <- paste0("zero_bins_lt", threshold)
+      audit$total_after[[j]] <- sum(lf)
+      audit$removed_count[[j]] <- removed
       affected[[j]] <- TRUE
     }
   }
@@ -230,13 +213,7 @@ apply_f15_lf_qc <- function(
     f15_fishery_rows = length(f15_rows),
     f15_lf_rows_before = length(f15_comp_rows),
     f15_lf_rows_affected = sum(affected),
-    f15_lf_rows_after = if (identical(mode, "lf_off")) {
-      0L
-    } else if (identical(mode, "quarter_sub70_ge10")) {
-      length(f15_comp_rows) - sum(affected)
-    } else {
-      length(f15_comp_rows)
-    },
+    f15_lf_rows_after = length(f15_comp_rows),
     f15_count_before = sum(audit$total_before),
     f15_count_after = sum(audit$total_after),
     removed_count = sum(audit$removed_count),
