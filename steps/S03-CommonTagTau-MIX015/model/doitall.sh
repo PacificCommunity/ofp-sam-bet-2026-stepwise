@@ -27,8 +27,12 @@ case "$regional_recruitment_penalty" in
     # MFCL stores ten times this coefficient in age flag 110.
     regional_recruitment_penalty_flag=2
     ;;
+  0.3)
+    # MFCL stores ten times this coefficient in age flag 110.
+    regional_recruitment_penalty_flag=3
+    ;;
   *)
-    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1 or 0.2." >&2
+    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1, 0.2, or 0.3." >&2
     exit 39
     ;;
 esac

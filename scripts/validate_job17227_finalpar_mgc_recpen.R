@@ -156,6 +156,8 @@ doitall <- readLines(file.path(source_dir, "doitall.sh"), warn = FALSE)
 required_doitall <- c(
   "regional_recruitment_penalty=${REGIONAL_RECRUITMENT_PENALTY:-0.1}",
   "    regional_recruitment_penalty_flag=2",
+  "    regional_recruitment_penalty_flag=3",
+  '    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1, 0.2, or 0.3." >&2',
   "  2 110 $regional_recruitment_penalty_flag  # regional recruitment-distribution penalty coefficient",
   "  1 342 $dm_nmax_flag  # selected DM effective-sample-size upper bound",
   "  1 50 $phase10_11_convergence"
@@ -224,8 +226,8 @@ if (any(grepl("^input_jobs:", task))) {
 cat(
   "Validated two Job 17227 follow-ups: exact-PAR rec0.1 continuation to 1e-5; ",
   "independent rec0.2 doitall to 1e-4; row-specific Job 17227 attachment; ",
-  "F15 <70 cm; Nmax=25; common estimated tau; fixed M. The final-PAR ",
-  "continuation also supports the separate rec0.3 sensitivity through an ",
-  "explicit age flag 110=3 runtime override.\n",
+  "F15 <70 cm; Nmax=25; common estimated tau; fixed M. Both the final-PAR ",
+  "continuation and independent doitall paths support the separate rec0.3 ",
+  "sensitivity through an explicit age flag 110=3 runtime override.\n",
   sep = ""
 )
