@@ -278,6 +278,8 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             ("job_par_max_evaluations", "JOB_PAR_MAX_EVALUATIONS"),
             ("phase10_11_convergence", "BET_PHASE10_11_CONVERGENCE"),
             ("regional_recruitment_penalty", "REGIONAL_RECRUITMENT_PENALTY"),
+            ("movement_prior_penalty", "MOVEMENT_PRIOR_PENALTY"),
+            ("opr_mode", "OPR_MODE"),
             ("mfcl_program_path", "PROGRAM_PATH"),
             ("tag_tau_grouping", "TAG_TAU_GROUPING"),
             ("dm_nmax", "DM_NMAX"),
@@ -297,6 +299,8 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             "major_step": row.get("major_step", ""),
             "substep": row.get("substep", ""),
             "change_axis": row.get("change_axis", ""),
+            "movement_prior_penalty": row.get("movement_prior_penalty", ""),
+            "opr_mode": row.get("opr_mode", ""),
         }
         payloads.append(
             {
@@ -322,6 +326,8 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
                     "inputs_frozen": "true",
                     "requested_mgc": row.get("phase10_11_convergence", ""),
                     "regional_recruitment_penalty": row.get("regional_recruitment_penalty", ""),
+                    "movement_prior_penalty": row.get("movement_prior_penalty", ""),
+                    "opr_mode": row.get("opr_mode", ""),
                 },
                 "metadata": {key: value for key, value in metadata.items() if value not in (None, "")},
                 "triggers": {},
