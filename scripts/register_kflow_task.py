@@ -261,6 +261,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             ("mfcl_program_path", "PROGRAM_PATH"),
             ("tag_tau_grouping", "TAG_TAU_GROUPING"),
             ("dm_nmax", "DM_NMAX"),
+            ("f15_qc_mode", "F15_QC_MODE"),
         ):
             if row.get(column):
                 env[env_name] = row[column]

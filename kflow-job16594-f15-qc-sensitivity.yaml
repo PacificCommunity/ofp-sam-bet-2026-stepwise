@@ -1,0 +1,130 @@
+name: bet-2026-job16594-f15-length-qc-dm15-25-20260727
+description: "Eight independent fits from exact Job 16594 inputs: four F15 (15.HL.PH.2) length-frequency QC variants crossed with Dirichlet-multinomial Nmax 25 and 15."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job16594-f15-length-qc-dm15-25-20260727
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job16594_f15_qc_sensitivity.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job16594-f15-qc-sensitivity.R
+  STEP_SELECT: F15-LT68-NMAX25
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "01. Job16594 F15 QC | remove <68 cm | DM Nmax=25"
+  JOB_DESCRIPTION: "Exact Job 16594 controls; modify only F15 length-composition data according to the selected QC rule and optionally Nmax 25 to 15."
+  MODEL_LABEL: "01. Job16594 F15 QC | remove <68 cm | DM Nmax=25"
+  JOB_KEY: job16594-f15-lt68-nmax25
+  RUN_MODE: doitall
+  F15_QC_MODE: lt68
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  ESTIMATE_M_FINAL: "false"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job16594-f15-length-qc-dm15-25-20260727
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 16594 F15 length-frequency QC sensitivity
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  PAR_SOURCE_JOB: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  KFLOW_INPUT_JOBS: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: ""
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: f15-length-qc-sensitivity
+  base_job: "16594"
+
+metadata:
+  base_job: "16594"
+  unfiltered_nmax15_reference_job: "17222"
+  base_source_commit: 1035b6ce6942309599acf7643b0b22bbec840c0b
+  base_ini_sha256: 4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a
+  base_frq_sha256: d77f97c348409f845f1f0fc801af808d15b6cb119349d1f083308cfc9d4fba8c
+  f15_fishery: "15.HL.PH.2"
+  f15_qc_modes: [lt68, lt70, quarter_sub70_ge10, lf_off]
+  dm_nmax_values: [25, 15]
+  model_count: 8
+  changed_fields: "F15 length-frequency fields only; plus MFCL parest flag 342 for the Nmax=15 block"
+  inputs_frozen: true
+  independent_fit: true
+  removed_counts_renormalised: false
+  catch_effort_changed: false
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job16594-f15-qc-sensitivity.R
+  execution: independent-concurrent
+  inputs: frozen
+  scientific_parent: metadata-only
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DM_NMAX
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT
