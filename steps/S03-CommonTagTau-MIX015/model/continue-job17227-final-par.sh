@@ -36,8 +36,13 @@ case "$regional_recruitment_penalty" in
     # values, the source implements penalty = age_flags(110) / 10.
     regional_recruitment_penalty_flag=2
     ;;
+  0.3)
+    # Additional upper sensitivity: MFCL interprets age flag 110=3 as
+    # a regional recruitment-distribution penalty coefficient of 0.3.
+    regional_recruitment_penalty_flag=3
+    ;;
   *)
-    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1 or 0.2." >&2
+    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1, 0.2, or 0.3." >&2
     exit 63
     ;;
 esac

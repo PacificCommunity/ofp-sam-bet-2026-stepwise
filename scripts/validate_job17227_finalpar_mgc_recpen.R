@@ -129,6 +129,9 @@ required_continuation <- c(
   "convergence_exponent=${BET_PHASE10_11_CONVERGENCE:--5}",
   "regional_recruitment_penalty=${REGIONAL_RECRUITMENT_PENALTY:-0.1}",
   "expected_source_par_sha256=${EXPECTED_SOURCE_PAR_SHA256:-}",
+  "  0.3)",
+  "    regional_recruitment_penalty_flag=3",
+  '    echo "REGIONAL_RECRUITMENT_PENALTY must be 0.1, 0.2, or 0.3." >&2',
   'awk -v header="$1" -v field_no="$2" ',
   "      print $field_no",
   '"  1 50 $convergence_exponent  # MGC threshold = 10^exponent"',
@@ -221,6 +224,8 @@ if (any(grepl("^input_jobs:", task))) {
 cat(
   "Validated two Job 17227 follow-ups: exact-PAR rec0.1 continuation to 1e-5; ",
   "independent rec0.2 doitall to 1e-4; row-specific Job 17227 attachment; ",
-  "F15 <70 cm; Nmax=25; common estimated tau; fixed M.\n",
+  "F15 <70 cm; Nmax=25; common estimated tau; fixed M. The final-PAR ",
+  "continuation also supports the separate rec0.3 sensitivity through an ",
+  "explicit age flag 110=3 runtime override.\n",
   sep = ""
 )
