@@ -84,6 +84,6 @@ stepwise_models <- do.call(rbind, rows)
 stepwise_run <- list(
   default_step_select = "F15-LT68-NMAX25",
   model_rows = nrow(stepwise_models),
-  flow_group = "bet-2026-job16594-f15-length-qc-dm15-25-20260727",
+  flow_group = "bet-2026-job16594-f15-lt68-lt70-dm15-25-20260727",
   trigger_next = FALSE
 )

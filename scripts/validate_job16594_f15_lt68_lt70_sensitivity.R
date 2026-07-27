@@ -1,8 +1,8 @@
 fail <- function(...) stop(..., call. = FALSE)
 
 root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
-config_path <- file.path(root, "job-config-job16594-f15-qc-sensitivity.R")
-task_path <- file.path(root, "kflow-job16594-f15-qc-sensitivity.yaml")
+config_path <- file.path(root, "job-config-job16594-f15-lt68-lt70-sensitivity.R")
+task_path <- file.path(root, "kflow-job16594-f15-lt68-lt70-sensitivity.yaml")
 source_dir <- file.path(root, "steps", "S03-CommonTagTau-MIX015", "model")
 apply_path <- file.path(root, "R", "apply_f15_lf_qc.R")
 runner_path <- file.path(root, "R", "run_stepwise.R")
@@ -108,7 +108,7 @@ if (length(bad_hashes)) {
 doitall <- readLines(file.path(source_dir, "doitall.sh"), warn = FALSE)
 required_doitall <- c(
   'dm_nmax=${DM_NMAX:-25}',
-  '  10|15|25|40|50)',
+  '  15|25)',
   '    dm_nmax_flag=$dm_nmax',
   'tag_tau_grouping=${TAG_TAU_GROUPING:-common}',
   '    expected_tau_count=1',
@@ -132,6 +132,14 @@ for (mapping in c(
   }
 }
 runner <- readLines(runner_path, warn = FALSE)
+for (staging_control in c(
+  'copy_raw_mfcl_inputs <- function(from, to, staged_from = "")',
+  "      staged_from = model_dir"
+)) {
+  if (!any(grepl(staging_control, runner, fixed = TRUE))) {
+    fail("Stepwise runner will not archive the actual patched FRQ: ", staging_control)
+  }
+}
 for (artifact in c('"f15-lf-qc-audit.csv"', '"f15-lf-qc-summary.csv"')) {
   if (!any(grepl(artifact, runner, fixed = TRUE))) {
     fail("Stepwise runner will not preserve ", artifact, ".")
@@ -140,10 +148,10 @@ for (artifact in c('"f15-lf-qc-audit.csv"', '"f15-lf-qc-summary.csv"')) {
 
 task <- readLines(task_path, warn = FALSE)
 required_task <- c(
-  "name: bet-2026-job16594-f15-length-qc-dm15-25-20260727",
-  "branch: sensitivity/job16594-f15-length-qc-dm15-25-20260727",
-  "command: Rscript --vanilla scripts/validate_job16594_f15_qc_sensitivity.R && bash run.sh",
-  "  CONFIG_R: job-config-job16594-f15-qc-sensitivity.R",
+  "name: bet-2026-job16594-f15-lt68-lt70-dm15-25-20260727",
+  "branch: sensitivity/job16594-f15-lt68-lt70-dm15-25-20260727",
+  "command: Rscript --vanilla scripts/validate_job16594_f15_lt68_lt70_sensitivity.R && bash run.sh",
+  "  CONFIG_R: job-config-job16594-f15-lt68-lt70-sensitivity.R",
   "  F15_QC_MODE: lt68",
   "  DM_NMAX: \"25\"",
   "  TAG_TAU_GROUPING: common",

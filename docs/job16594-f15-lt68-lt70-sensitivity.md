@@ -1,4 +1,4 @@
-# Job 16594 F15 length-frequency QC sensitivity
+# Job 16594 F15 <68 cm / <70 cm sensitivity
 
 This campaign tests whether the strong biomass-profile signal from
 `15.HL.PH.2` is robust to pre-specified data-QC treatments motivated by the

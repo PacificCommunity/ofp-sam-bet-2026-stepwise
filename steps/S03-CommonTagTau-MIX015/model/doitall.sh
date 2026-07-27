@@ -36,9 +36,9 @@ echo "Regional recruitment-distribution penalty: $regional_recruitment_penalty (
 
 dm_nmax=${DM_NMAX:-25}
 case "$dm_nmax" in
-  25)
-    dm_nmax_flag=25
-    dm_nmax_effective=25
+  15|25)
+    dm_nmax_flag=$dm_nmax
+    dm_nmax_effective=$dm_nmax
     ;;
   default|1000)
     # A zero flag invokes the MFCL no-random-effects DM default Nmax=1000.
@@ -46,7 +46,7 @@ case "$dm_nmax" in
     dm_nmax_effective=1000
     ;;
   *)
-    echo "DM_NMAX must be 25, default, or 1000." >&2
+    echo "DM_NMAX must be 15, 25, default, or 1000." >&2
     exit 38
     ;;
 esac
