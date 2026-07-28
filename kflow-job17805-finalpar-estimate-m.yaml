@@ -1,0 +1,159 @@
+name: bet-2026-job17805-finalpar-estimate-m-20260729
+description: "Continue the checksum-verified Job 17805 final PAR, opening only the Lorenzen natural-mortality intercept in staged MGC 1e-3 and 1e-4 optimisations."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job17805-finalpar-estimate-m-20260729
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job17805_finalpar_estimate_m.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job17805-finalpar-estimate-m.R
+  STEP_SELECT: F14-Y5-REC01
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "Job 17805 final PAR | estimate M | MGC 1e-4"
+  JOB_DESCRIPTION: "Continue the exact Job 17805 final PAR and estimate only the Lorenzen natural-mortality intercept, staged at MGC 1e-3 then 1e-4."
+  MODEL_LABEL: "Job 17805 final PAR | estimate Lorenzen M intercept"
+  JOB_KEY: job17805-finalpar-estimate-m
+  RUN_MODE: job_par_script
+  F15_QC_MODE: lt70
+  DOM_QC_MODE: gt90_midpoint
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  MOVEMENT_PRIOR_PENALTY: "0.1"
+  OPR_MODE: "off"
+  ESTIMATE_M_FINAL: "true"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  M_STAGE_A_MAX_EVALUATIONS: "3000"
+  PAR_SOURCE_JOB: "17805"
+  KFLOW_INPUT_JOBS: "17805"
+  EXPECTED_SOURCE_PAR_SHA256: "f68bb0eb7441fed6f32151c196fced94a1c19205ec8fd7b8bd750a5355b31a04"
+  JOB_PAR_MAX_EVALUATIONS: "10000"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job17805-finalpar-estimate-m-20260729
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 17805 final-PAR estimated-M sensitivity
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: final.par
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: job17805-finalpar-estimate-m
+  base_job: "17805"
+
+metadata:
+  base_job: "17805"
+  base_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
+  base_output_archive_sha256: 26cbe34085b34e0d5956be0344ebbf46807287438cbec674082dc9ec42dd0c99
+  source_final_par_sha256: f68bb0eb7441fed6f32151c196fced94a1c19205ec8fd7b8bd750a5355b31a04
+  source_final_objective: "8.91812368492645e+04"
+  source_final_max_gradient: "5.44357498330648e-05"
+  source_final_parameter_count: 1989
+  source_final_m_intercept: "-2.54930339768360"
+  source_final_parest50: -4
+  source_final_parest121: 0
+  estimate_m_parest121: 1
+  expected_final_parameter_count: 1990
+  estimated_m_parameter: "one Lorenzen natural-mortality intercept, age_pars(5)"
+  fixed_m_component: "Lorenzen length slope remains fixed"
+  stage_a: "MGC 1e-3, maximum 3000 evaluations"
+  stage_b: "MGC 1e-4, maximum 10000 evaluations, indepvar.rpt"
+  source_patched_frq_sha256: 9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3
+  source_ini_sha256: 4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a
+  source_tag_sha256: b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f
+  source_age_length_sha256: 426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c
+  source_reg_scaling_sha256: 6330fb6a36d63424c18f81cbc620c1d9607c2a5c43d0308d19941f12938ec9a1
+  source_reg_scaling_full_sha256: dea4c281f7dc46a7412b7ad2e78906ee57b51b62cf1a18c4609381132bf752ed
+  unchanged_controls: "Job 17805 data, K=0.15 mixing, standard recruitment, rec 0.1, movement 0.1, Nmax25, common estimated tau, F14/F15 young5"
+  model_count: 1
+  inputs_frozen: true
+  common_tag_tau_estimated: true
+  natural_mortality_estimated: true
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job17805-finalpar-estimate-m.R
+  execution: final-par-continuation
+  inputs: attached-job-17805
+  scientific_parent: par-input
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DOM_QC_MODE
+    - DM_NMAX
+    - REGIONAL_RECRUITMENT_PENALTY
+    - MOVEMENT_PRIOR_PENALTY
+    - OPR_MODE
+    - ESTIMATE_M_FINAL
+    - BET_PHASE10_11_CONVERGENCE
+    - PAR_SOURCE_JOB
+    - KFLOW_INPUT_JOBS
+    - EXPECTED_SOURCE_PAR_SHA256
+    - JOB_PAR_MAX_EVALUATIONS
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT
