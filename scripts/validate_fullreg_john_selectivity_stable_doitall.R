@@ -147,7 +147,7 @@ required_task_text <- c(
   "  MOVEMENT_PRIOR_PENALTY: \"0.1\"",
   "  ESTIMATE_M_FINAL: \"false\"",
   "  BET_PHASE10_11_CONVERGENCE: \"-4\"",
-  "  MFCL_LIVE_LOG: \"false\""
+  "  MFCL_LIVE_LOG: \"true\""
 )
 missing_task <- required_task_text[!required_task_text %in% task]
 if (length(missing_task)) {

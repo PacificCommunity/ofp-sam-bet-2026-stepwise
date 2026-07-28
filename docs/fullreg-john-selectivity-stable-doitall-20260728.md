@@ -97,6 +97,10 @@ added only after a complete interacting block is open. This is faster than
 forcing every transient model to 1e-2 or 1e-3 and is more stable than carrying
 a poorly solved SRR surface directly into tau.
 
+MFCL stdout is tee-streamed to the Kflow job log (`MFCL_LIVE_LOG=true`) while
+the complete phase logs are retained in the output archive. This permits live
+inspection of objective values, MGC and phase progress.
+
 ### Why this parameter order
 
 1. **Selectivity first.** It directly controls the LF prediction surface and

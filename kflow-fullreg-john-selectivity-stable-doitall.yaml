@@ -68,9 +68,8 @@ env:
   STEPWISE_PUSH_FINAL_PARS: "false"
   STEPWISE_PUBLISH_REQUIRED: "false"
   STEPWISE_SINGLE_PAR_REPORT: "true"
-  # MFCL output is still saved to outputs/logs, but avoiding line-by-line
-  # streaming removes substantial Kflow UI/network overhead for long fits.
-  MFCL_LIVE_LOG: "false"
+  # Stream MFCL output to Kflow while retaining the same output log files.
+  MFCL_LIVE_LOG: "true"
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
   KFLOW_RUNTIME_UPDATE: never
   TUNA_FLOW_RUNTIME_UPDATE: never
@@ -98,7 +97,7 @@ metadata:
   mfcl_manual_review_commit: 4503c2abd234f3be95ec73e4375cf19df69859e2
   execution: "two independent doitall fits from bet.ini"
   numerical_schedule: "open recruitment, REGW, index CPUE, movement and growth separately; gradient-rescaled same-dimension stabilization; native final MGC 1e-4"
-  runtime_optimization: "two concurrent jobs; MGC early stopping; MFCL stdout saved to file without live tee streaming"
+  runtime_optimization: "two concurrent jobs; MGC early stopping; MFCL stdout retained and streamed live to Kflow"
   parest_flag_152_rule: "used only when the immediately preceding phase has the same active-parameter dimension"
   selectivity_f2_f3_group: 2
   selectivity_f2_f3_fish_flag16: 1
