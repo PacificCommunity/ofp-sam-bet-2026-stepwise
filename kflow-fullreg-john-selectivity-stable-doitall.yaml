@@ -1,0 +1,169 @@
+name: bet-2026-fullreg-john-selectivity-stable-doitall-20260728
+description: "Two independent full-period regional-scaling doitall fits with F15 <70 cm and DOM midpoint >90 cm LF QC, F14/F15 youngest-five-age constraints, F2/F3 shared non-decreasing spline selectivity, F33 unconstrained four-node spline selectivity, rec and movement penalties fixed at 0.1, and a source/manual-audited staged optimizer schedule; standard and OPR 72-01-50-50 end2 recruitment are compared."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/fullreg-john-selectivity-stable-doitall-20260728
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_fullreg_john_selectivity_stable_doitall.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-fullreg-john-selectivity-stable-doitall.R
+  STEP_SELECT: FULLREG-JOHN-SEL-STD
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "01. Full REG | F2/F3 nondec | F33 spline4 | stable doitall | standard"
+  JOB_DESCRIPTION: "Independent doitall from frozen S03 inputs; recent full-reg/QC controls retained; F2/F3 shared non-decreasing selectivity and F33 unconstrained four-node spline; staged numerical optimization; standard recruitment."
+  MODEL_LABEL: "01. Full REG | John selectivity | F2/F3 non-decreasing | F33 spline4 | stable doitall | standard recruitment"
+  JOB_KEY: fullreg-john-sel-stable-doitall-standard
+  RUN_MODE: doitall
+  F15_QC_MODE: lt70
+  DOM_QC_MODE: gt90_midpoint
+  REG_SCALING_MODE: full_period
+  SELECTIVITY_MODE: f2f3-nondecreasing-f33-spline4
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  MOVEMENT_PRIOR_PENALTY: "0.1"
+  OPR_MODE: "off"
+  ESTIMATE_M_FINAL: "false"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  PAR_SOURCE_JOB: ""
+  KFLOW_INPUT_JOBS: ""
+  EXPECTED_SOURCE_PAR_SHA256: ""
+  JOB_PAR_MAX_EVALUATIONS: ""
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-fullreg-john-selectivity-stable-doitall-20260728
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 full-reg John selectivity stable-doitall sensitivities
+  PLOT_MAX_FISHERIES: "33"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: ""
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  # MFCL output is still saved to outputs/logs, but avoiding line-by-line
+  # streaming removes substantial Kflow UI/network overhead for long fits.
+  MFCL_LIVE_LOG: "false"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: fullreg-john-selectivity-stable-doitall
+  recruitment_modes: standard,opr-end2
+
+metadata:
+  branch_base_commit: 5abe93099c6fad998dc8b6defc9a84a103c90977
+  mfcl_executable_source_commit: a5a83cd6e8aef512d22890234c40b0fa465843eb
+  mfcl_source_review_commit: aad7241ca72634ef7509038e1bcb5fcfb957df04
+  mfcl_manual_review_commit: 4503c2abd234f3be95ec73e4375cf19df69859e2
+  execution: "two independent doitall fits from bet.ini"
+  numerical_schedule: "open recruitment, REGW, index CPUE, movement and growth separately; gradient-rescaled same-dimension stabilization; native final MGC 1e-4"
+  runtime_optimization: "two concurrent jobs; MGC early stopping; MFCL stdout saved to file without live tee streaming"
+  parest_flag_152_rule: "used only when the immediately preceding phase has the same active-parameter dimension"
+  selectivity_f2_f3_group: 2
+  selectivity_f2_f3_fish_flag16: 1
+  selectivity_f2_f3_fish_flag57: 3
+  selectivity_f2_f3_fish_flag61: 4
+  selectivity_f2_f3_fish_flag75: 2
+  selectivity_f33_fish_flag16: 0
+  selectivity_f33_fish_flag57: 3
+  selectivity_f33_fish_flag61: 4
+  selectivity_f33_fish_flag75: 2
+  f14_fish_flag75: 5
+  f15_qc_mode: lt70
+  f15_fish_flag75: 5
+  dom_qc_mode: gt90_midpoint
+  dom_fisheries: "21.DOM.ID.2,22.DOM.PH.2,23.DOM.VN.2"
+  regional_scaling_mode: full_period
+  regional_scaling_source_data_rows: 292
+  regional_scaling_active_data_rows: 290
+  regional_scaling_periods: "3-292 (1952Q3-2024Q4)"
+  regional_scaling_flag79: 290
+  regional_scaling_flag80: 0
+  dm_nmax: 25
+  phase10_11_convergence: "1e-4"
+  common_tag_tau_estimated: true
+  natural_mortality_fixed: true
+  recruitment_penalty: 0.1
+  movement_prior_penalty: 0.1
+  recruitment_modes: "standard,OPR 72-01-50-50 end2"
+  model_count: 2
+  inputs_frozen: true
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-fullreg-john-selectivity-stable-doitall.R
+  execution: independent-concurrent
+  inputs: frozen-repository
+  scientific_parent: metadata-only
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DOM_QC_MODE
+    - REG_SCALING_MODE
+    - SELECTIVITY_MODE
+    - DM_NMAX
+    - REGIONAL_RECRUITMENT_PENALTY
+    - MOVEMENT_PRIOR_PENALTY
+    - OPR_MODE
+    - BET_PHASE10_11_CONVERGENCE
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT
