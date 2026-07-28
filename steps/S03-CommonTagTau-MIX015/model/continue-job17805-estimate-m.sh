@@ -4,6 +4,7 @@ set -eu
 program_path=${PROGRAM_PATH:-}
 frq=${FRQ:-bet.frq}
 input_par=previous-job.par
+start_par=m-start-minus3.par
 stage_a_par=m-open-1e3.par
 final_par=final.par
 stage_a_control=estimate-m-stage-a-control.txt
@@ -13,6 +14,7 @@ final_convergence_exponent=${BET_PHASE10_11_CONVERGENCE:--4}
 stage_a_evaluations=${M_STAGE_A_MAX_EVALUATIONS:-3000}
 final_evaluations=${JOB_PAR_MAX_EVALUATIONS:-10000}
 expected_source_par_sha256=${EXPECTED_SOURCE_PAR_SHA256:-}
+expected_start_par_sha256=16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b
 estimate_m_final=${ESTIMATE_M_FINAL:-false}
 
 if [ -z "$program_path" ] || [ ! -x "$program_path" ]; then
@@ -139,6 +141,64 @@ if ! awk -v observed="$source_m" 'BEGIN {
   exit 70
 fi
 
+awk '
+  BEGIN {in_age=0; row=0; changed=0}
+  /^# age_pars/ || /^# age-class related parameters [(]age_pars[)]/ {
+    in_age=1
+    print
+    next
+  }
+  in_age && /^#/ {
+    print
+    next
+  }
+  in_age && NF {
+    row++
+    line=$0
+    if (row == 5) {
+      sub(/^[[:space:]]*[^[:space:]]+/, " -3.00000000000000e+00", line)
+      changed=1
+      in_age=0
+    }
+    print line
+    next
+  }
+  {print}
+  END {
+    if (changed != 1) {
+      print "Could not set age_pars(5) M intercept to -3." > "/dev/stderr"
+      exit 1
+    }
+  }
+' "$input_par" > "$start_par"
+if [ ! -s "$start_par" ]; then
+  echo "Could not create the M=-3 starting PAR." >&2
+  exit 71
+fi
+start_par_sha256=$(sha256_file "$start_par")
+if [ "$start_par_sha256" != "$expected_start_par_sha256" ]; then
+  echo "M=-3 starting PAR checksum is not the verified one-field edit." >&2
+  echo "expected=$expected_start_par_sha256 observed=$start_par_sha256" >&2
+  exit 72
+fi
+starting_m=$(read_age_pars5 "$start_par")
+if ! awk -v observed="$starting_m" 'BEGIN {
+  difference = observed - (-3)
+  if (difference < 0) difference = -difference
+  exit(difference <= 1e-12 ? 0 : 1)
+}'; then
+  echo "The modified starting M intercept is $starting_m; expected -3." >&2
+  exit 73
+fi
+for flag in 50 111 121 177 239 249 305 306 342 358; do
+  start_value=$(read_par_flag "# The parest_flags" "$flag" "$start_par")
+  source_value=$(read_par_flag "# The parest_flags" "$flag" "$input_par")
+  if [ "$start_value" != "$source_value" ]; then
+    echo "Setting M=-3 unexpectedly changed parest flag $flag." >&2
+    exit 74
+  fi
+done
+
 {
   printf '%s\n' \
     "  1 1 $stage_a_evaluations  # stabilize the newly opened M intercept" \
@@ -161,37 +221,38 @@ fi
 
 echo "Opening the Lorenzen M intercept from the verified Job 17805 final PAR."
 echo "  source PAR SHA256: $source_par_sha256"
+echo "  starting M intercept: $source_m -> $starting_m"
 echo "  Stage A: MGC 1e-3; maximum evaluations $stage_a_evaluations"
-"$program_path" "$frq" "$input_par" "$stage_a_par" -file "$stage_a_control"
+"$program_path" "$frq" "$start_par" "$stage_a_par" -file "$stage_a_control"
 if [ ! -s "$stage_a_par" ]; then
   echo "MFCL did not create $stage_a_par." >&2
-  exit 71
+  exit 75
 fi
 if [ "$(read_par_flag "# The parest_flags" 50 "$stage_a_par")" != -3 ] ||
    [ "$(read_par_flag "# The parest_flags" 121 "$stage_a_par")" != 1 ]; then
   echo "Stage A did not open M with parest flags 50=-3 and 121=1." >&2
-  exit 72
+  exit 76
 fi
 
 echo "  Stage B: MGC 1e-4; maximum evaluations $final_evaluations"
 "$program_path" "$frq" "$stage_a_par" "$final_par" -file "$stage_b_control"
 if [ ! -s "$final_par" ]; then
   echo "MFCL did not create $final_par." >&2
-  exit 73
+  exit 77
 fi
 
 output_parest50=$(read_par_flag "# The parest_flags" 50 "$final_par")
 output_parest121=$(read_par_flag "# The parest_flags" 121 "$final_par")
 if [ "$output_parest50" != -4 ] || [ "$output_parest121" != 1 ]; then
   echo "Final PAR did not retain parest flags 50=-4 and 121=1." >&2
-  exit 74
+  exit 78
 fi
 for flag in 111 177 239 249 305 306 342 358; do
   source_value=$(read_par_flag "# The parest_flags" "$flag" "$input_par")
   output_value=$(read_par_flag "# The parest_flags" "$flag" "$final_par")
   if [ "$source_value" != "$output_value" ]; then
     echo "M continuation changed parest flag $flag: $source_value -> $output_value." >&2
-    exit 75
+    exit 79
   fi
 done
 if [ "$(read_par_flag "# age flags" 27 "$final_par")" != "$source_age27" ] ||
@@ -199,17 +260,17 @@ if [ "$(read_par_flag "# age flags" 27 "$final_par")" != "$source_age27" ] ||
    [ "$(read_fish_flag 14 75 "$final_par")" != "$source_f14_flag75" ] ||
    [ "$(read_fish_flag 15 75 "$final_par")" != "$source_f15_flag75" ]; then
   echo "M continuation changed rec, movement, or young-age controls." >&2
-  exit 76
+  exit 80
 fi
 if [ ! -s indepvar.rpt ]; then
   echo "M continuation did not write indepvar.rpt." >&2
-  exit 77
+  exit 81
 fi
 estimated_m_count=$(awk '$2 ~ /^age_pars[(]5[)]/ {n++} END {print n+0}' indepvar.rpt)
 estimated_tau_count=$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' indepvar.rpt)
 if [ "$estimated_m_count" -ne 1 ] || [ "$estimated_tau_count" -ne 1 ]; then
   echo "Expected one estimated M intercept and one common tag tau; found $estimated_m_count and $estimated_tau_count." >&2
-  exit 78
+  exit 82
 fi
 
 source_objective=$(read_footer_value "# Objective function value" "$input_par")
@@ -223,22 +284,22 @@ if [ -z "$output_objective" ] || [ -z "$output_max_gradient" ] ||
    [ -z "$final_m" ] || [ "$source_npars" -ne 1989 ] ||
    [ "$output_npars" -ne 1990 ]; then
   echo "Could not verify objective, gradient, M, or the expected 1989 -> 1990 parameter count." >&2
-  exit 79
+  exit 83
 fi
 if ! awk -v gradient="$output_max_gradient" 'BEGIN {
   if (gradient < 0) gradient = -gradient
   exit(gradient <= 1e-4 ? 0 : 1)
 }'; then
   echo "Final maximum gradient $output_max_gradient did not reach 1e-4." >&2
-  exit 80
+  exit 84
 fi
 
 output_par_sha256=$(sha256_file "$final_par")
 {
   printf '%s\n' \
-    "source_job,source_par_sha256,output_par_sha256,source_objective,output_objective,source_max_gradient,output_max_gradient,source_npars,output_npars,source_m,final_m,source_parest121,output_parest121,estimated_m_count,estimated_tau_count,stage_a_evaluations,final_evaluations,status"
+    "source_job,source_par_sha256,output_par_sha256,source_objective,output_objective,source_max_gradient,output_max_gradient,source_npars,output_npars,source_m,starting_m,final_m,source_parest121,output_parest121,estimated_m_count,estimated_tau_count,stage_a_evaluations,final_evaluations,status"
   printf '%s\n' \
-    "17805,$source_par_sha256,$output_par_sha256,$source_objective,$output_objective,$source_max_gradient,$output_max_gradient,$source_npars,$output_npars,$source_m,$final_m,$source_parest121,$output_parest121,$estimated_m_count,$estimated_tau_count,$stage_a_evaluations,$final_evaluations,passed"
+    "17805,$source_par_sha256,$output_par_sha256,$source_objective,$output_objective,$source_max_gradient,$output_max_gradient,$source_npars,$output_npars,$source_m,$starting_m,$final_m,$source_parest121,$output_parest121,$estimated_m_count,$estimated_tau_count,$stage_a_evaluations,$final_evaluations,passed"
 } > "$audit_file"
 
 echo "Job 17805 final-PAR M-estimation audit passed."

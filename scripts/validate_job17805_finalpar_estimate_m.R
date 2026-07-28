@@ -141,21 +141,25 @@ if (!identical(sha256(file.path(test_dir, "doitall.sh")),
 continuation <- readLines(continuation_path, warn = FALSE)
 required_continuation <- c(
   "input_par=previous-job.par",
+  "start_par=m-start-minus3.par",
   "stage_a_par=m-open-1e3.par",
   "final_par=final.par",
   "final_convergence_exponent=${BET_PHASE10_11_CONVERGENCE:--4}",
   "stage_a_evaluations=${M_STAGE_A_MAX_EVALUATIONS:-3000}",
   "final_evaluations=${JOB_PAR_MAX_EVALUATIONS:-10000}",
   "expected_source_par_sha256=${EXPECTED_SOURCE_PAR_SHA256:-}",
+  "expected_start_par_sha256=16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b",
   "estimate_m_final=${ESTIMATE_M_FINAL:-false}",
   '"  1 50 -3  # initial M-opening convergence target"',
   '"  1 121 1  # estimate one natural-mortality age_pars(5) coefficient"',
   '"  1 50 $final_convergence_exponent  # final MGC target"',
   '"  1 121 1  # retain estimation of one Lorenzen M intercept"',
-  '"$program_path" "$frq" "$input_par" "$stage_a_par" -file "$stage_a_control"',
   '"$program_path" "$frq" "$stage_a_par" "$final_par" -file "$stage_b_control"',
   'if [ "$source_par_sha256" != "$expected_source_par_sha256" ]; then',
   'source_parest121=$(read_par_flag "# The parest_flags" 121 "$input_par")',
+  'sub(/^[[:space:]]*[^[:space:]]+/, " -3.00000000000000e+00", line)',
+  'starting_m=$(read_age_pars5 "$start_par")',
+  '"$program_path" "$frq" "$start_par" "$stage_a_par" -file "$stage_a_control"',
   'estimated_m_count=$(awk \'$2 ~ /^age_pars[(]5[)]/ {n++} END {print n+0}\' indepvar.rpt)',
   'estimated_tau_count=$(awk \'$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}\' indepvar.rpt)',
   '[ "$source_npars" -ne 1989 ]',
@@ -222,6 +226,8 @@ required_task <- c(
   "  JOB_PAR_MAX_EVALUATIONS: \"10000\"",
   "  model_count: 1",
   "  source_final_parameter_count: 1989",
+  "  requested_starting_m_intercept: \"-3.0\"",
+  "  verified_starting_par_sha256: 16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b",
   "  expected_final_parameter_count: 1990",
   "  common_tag_tau_estimated: true",
   "  natural_mortality_estimated: true"
@@ -237,8 +243,8 @@ if (any(grepl("^input_jobs:", task))) {
 
 cat(
   "Validated one exact Job 17805 final-PAR continuation: attached PAR SHA ",
-  "f68bb0eb...; open only parest flag 121 (one age_pars(5) Lorenzen M ",
-  "intercept) at MGC 1e-3 then 1e-4; expected parameter count 1989 -> 1990; ",
+  "f68bb0eb...; set the age_pars(5) M-intercept start to -3, then open only ",
+  "parest flag 121 at MGC 1e-3 and 1e-4; expected parameter count 1989 -> 1990; ",
   "all Job 17805 data, mixing, rec, movement, Nmax and tag-tau controls retained.\n",
   sep = ""
 )

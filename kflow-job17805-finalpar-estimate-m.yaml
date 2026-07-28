@@ -1,5 +1,5 @@
 name: bet-2026-job17805-finalpar-estimate-m-20260729
-description: "Continue the checksum-verified Job 17805 final PAR, opening only the Lorenzen natural-mortality intercept in staged MGC 1e-3 and 1e-4 optimisations."
+description: "Continue the checksum-verified Job 17805 final PAR after setting the Lorenzen M-intercept starting value to -3, then estimate it in staged MGC 1e-3 and 1e-4 optimisations."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: sensitivity/job17805-finalpar-estimate-m-20260729
@@ -23,10 +23,10 @@ env:
   CONFIG_R: job-config-job17805-finalpar-estimate-m.R
   STEP_SELECT: F14-Y5-REC01
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "Job 17805 final PAR | estimate M | MGC 1e-4"
-  JOB_DESCRIPTION: "Continue the exact Job 17805 final PAR and estimate only the Lorenzen natural-mortality intercept, staged at MGC 1e-3 then 1e-4."
-  MODEL_LABEL: "Job 17805 final PAR | estimate Lorenzen M intercept"
-  JOB_KEY: job17805-finalpar-estimate-m
+  JOB_TITLE: "Job 17805 final PAR | M start -3 | estimate M | MGC 1e-4"
+  JOB_DESCRIPTION: "Continue the exact Job 17805 final PAR, set the M-intercept start to -3, and estimate it at MGC 1e-3 then 1e-4."
+  MODEL_LABEL: "Job 17805 final PAR | M start -3 | estimate M"
+  JOB_KEY: job17805-finalpar-mstart3-estimate-m
   RUN_MODE: job_par_script
   F15_QC_MODE: lt70
   DOM_QC_MODE: gt90_midpoint
@@ -97,6 +97,8 @@ metadata:
   source_final_max_gradient: "5.44357498330648e-05"
   source_final_parameter_count: 1989
   source_final_m_intercept: "-2.54930339768360"
+  requested_starting_m_intercept: "-3.0"
+  verified_starting_par_sha256: 16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b
   source_final_parest50: -4
   source_final_parest121: 0
   estimate_m_parest121: 1

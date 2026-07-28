@@ -11,18 +11,19 @@ stepwise_models <- data.frame(
   independent_fit = FALSE,
   change_axis = paste(
     "Continue the checksum-verified Job 17805 final PAR.",
-    "Change only parest flag 121 from 0 to 1, estimating one Lorenzen",
-    "natural-mortality intercept age_pars(5); retain the length slope fixed."
+    "Set the starting age_pars(5) M intercept to -3, then change only",
+    "parest flag 121 from 0 to 1 to estimate that Lorenzen intercept;",
+    "retain the length slope fixed."
   ),
   control_notes = paste(
     "Attach only Job 17805. Reproduce its F15 <70 cm plus DOM midpoint >90 cm",
     "FRQ, F14/F15 youngest-five-age controls, standard recruitment, rec and",
     "movement penalties 0.1, Nmax=25, common estimated tag tau, and K=0.15.",
-    "Open M at MGC 1e-3, then finish at MGC 1e-4."
+    "Start the M intercept at -3, open it at MGC 1e-3, then finish at 1e-4."
   ),
-  model_label = "Job 17805 final PAR | estimate Lorenzen M intercept",
-  job_title = "Job 17805 final PAR | estimate M | MGC 1e-4",
-  job_key = "job17805-finalpar-estimate-m",
+  model_label = "Job 17805 final PAR | M start -3 | estimate M",
+  job_title = "Job 17805 final PAR | M start -3 | estimate M | MGC 1e-4",
+  job_key = "job17805-finalpar-mstart3-estimate-m",
   plot_order = 1L,
   f14_youngest_zero = "5",
   f15_qc_mode = "lt70",
