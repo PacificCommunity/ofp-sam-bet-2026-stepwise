@@ -286,6 +286,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             ("f15_qc_mode", "F15_QC_MODE"),
             ("dom_qc_mode", "DOM_QC_MODE"),
             ("mixing_period_mode", "MIXING_PERIOD_MODE"),
+            ("estimate_m_final", "ESTIMATE_M_FINAL"),
         ):
             if column in row:
                 env[env_name] = row[column]
