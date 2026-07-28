@@ -7,6 +7,7 @@ source_dir <- file.path(root, "steps", "S03-CommonTagTau-MIX015", "model")
 doitall_path <- file.path(source_dir, "doitall.sh")
 f15_apply_path <- file.path(root, "R", "apply_f15_lf_qc.R")
 dom_apply_path <- file.path(root, "R", "apply_dom_lf_qc.R")
+full_reg_apply_path <- file.path(root, "R", "apply_full_period_reg_scaling.R")
 movement_apply_path <- file.path(root, "R", "apply_movement_prior_penalty.R")
 opr_apply_path <- file.path(root, "R", "apply_opr_sensitivity.R")
 registrar_path <- file.path(root, "scripts", "register_kflow_task.py")
@@ -28,7 +29,8 @@ source_input_names <- c(
 
 required_files <- c(
   config_path, task_path, registrar_path, patch_paths,
-  f15_apply_path, dom_apply_path, movement_apply_path, opr_apply_path,
+  f15_apply_path, dom_apply_path, full_reg_apply_path,
+  movement_apply_path, opr_apply_path,
   file.path(root, "R", c("prepare_common.R", "prepare_doitall.R")),
   file.path(source_dir, source_input_names)
 )
@@ -71,9 +73,10 @@ if (!identical(models$phase10_11_convergence, rep("-4", 8)) ||
 }
 if (!identical(models$f15_qc_mode, rep("lt70", 8)) ||
     !identical(models$dom_qc_mode, rep("gt90_midpoint", 8)) ||
+    !identical(models$regional_scaling_mode, rep("full_period", 8)) ||
     !identical(models$tag_tau_grouping, rep("common", 8)) ||
     !identical(models$tau_mode, rep("estimated-common", 8))) {
-  fail("F15/DOM QC or tag-tau controls differ between rows.")
+  fail("F15/DOM QC, full-period regional scaling or tag-tau controls differ between rows.")
 }
 for (field in c(
   "input_par", "output_par", "par_source_job", "kflow_input_jobs",
@@ -101,6 +104,13 @@ expected_full_patch <- c(
   '  stop("DOM_QC_MODE environment/config mismatch.", call. = FALSE)',
   '}',
   'apply_dom_lf_qc(model_dir, config$DOM_QC_MODE)',
+  'source(file.path(getwd(), "R", "apply_full_period_reg_scaling.R"), local = TRUE)',
+  'env_reg_scaling_mode <- Sys.getenv("REG_SCALING_MODE", "")',
+  'if (nzchar(env_reg_scaling_mode) &&',
+  '    !identical(env_reg_scaling_mode, config$REG_SCALING_MODE)) {',
+  '  stop("REG_SCALING_MODE environment/config mismatch.", call. = FALSE)',
+  '}',
+  'apply_full_period_reg_scaling(model_dir, config$REG_SCALING_MODE)',
   'source(file.path(getwd(), "R", "apply_movement_prior_penalty.R"), local = TRUE)',
   'env_movement <- Sys.getenv("MOVEMENT_PRIOR_PENALTY", "")',
   'if (nzchar(env_movement) && !identical(env_movement, config$MOVEMENT_PRIOR_PENALTY)) {',
@@ -221,6 +231,7 @@ for (i in seq_len(nrow(models))) {
   patch_env$config <- list(
     F15_QC_MODE = models$f15_qc_mode[[i]],
     DOM_QC_MODE = models$dom_qc_mode[[i]],
+    REG_SCALING_MODE = models$regional_scaling_mode[[i]],
     MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
     OPR_MODE = models$opr_mode[[i]]
   )
@@ -232,6 +243,7 @@ for (i in seq_len(nrow(models))) {
   Sys.setenv(
     F15_QC_MODE = models$f15_qc_mode[[i]],
     DOM_QC_MODE = models$dom_qc_mode[[i]],
+    REG_SCALING_MODE = models$regional_scaling_mode[[i]],
     MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
     OPR_MODE = models$opr_mode[[i]]
   )
@@ -293,13 +305,48 @@ for (i in seq_len(nrow(models))) {
   }
   staged_dom_hashes[[i]] <- sha256(file.path(model_dir, "bet.frq"))
 
-  for (name in setdiff(names(expected_hashes), c("bet.frq", "doitall.sh"))) {
+  for (name in setdiff(
+    names(expected_hashes),
+    c("bet.frq", "bet.reg_scaling", "doitall.sh")
+  )) {
     if (!identical(sha256(file.path(model_dir, name)), expected_hashes[[name]])) {
       fail("Patch unexpectedly changed ", name, " for ", models$step_id[[i]], ".")
     }
   }
 
   staged <- readLines(file.path(model_dir, "doitall.sh"), warn = FALSE)
+  full_reg_summary <- utils::read.csv(
+    file.path(model_dir, "regional-scaling-full-period-summary.csv"),
+    stringsAsFactors = FALSE
+  )
+  staged_reg_lines <- readLines(
+    file.path(model_dir, "bet.reg_scaling"), warn = FALSE
+  )
+  full_reg_lines <- readLines(
+    file.path(model_dir, "bet.reg_scaling.full"), warn = FALSE
+  )
+  if (nrow(full_reg_summary) != 1L ||
+      !identical(full_reg_summary$mode[[1L]], "full_period") ||
+      !identical(full_reg_summary$output_sha256[[1L]],
+                 "4c43bf2c0853b02626047bd84d54a0b62942f9316bed8734f43b696fbe84c1b5") ||
+      !identical(as.integer(full_reg_summary$source_data_rows[[1L]]), 292L) ||
+      !identical(as.integer(full_reg_summary$active_data_rows[[1L]]), 290L) ||
+      !identical(as.integer(full_reg_summary$start_period[[1L]]), 3L) ||
+      !identical(as.integer(full_reg_summary$end_period[[1L]]), 292L) ||
+      !identical(as.integer(full_reg_summary$parest_flag_79[[1L]]), 290L) ||
+      !identical(as.integer(full_reg_summary$parest_flag_80[[1L]]), 0L) ||
+      length(staged_reg_lines) != 291L ||
+      !identical(staged_reg_lines[[1L]], "1952 8 2024 11") ||
+      !identical(trimws(staged_reg_lines[-1L]), trimws(full_reg_lines[3:292])) ||
+      !identical(sha256(file.path(model_dir, "bet.reg_scaling")),
+                 "4c43bf2c0853b02626047bd84d54a0b62942f9316bed8734f43b696fbe84c1b5") ||
+      sum(grepl("^\\s*1\\s+79\\s+290\\s+", staged)) != 1L ||
+      sum(grepl("^\\s*1\\s+80\\s+0\\s+", staged)) != 1L ||
+      sum(grepl("^\\s*1\\s+77\\s+100\\s+", staged)) != 1L ||
+      sum(grepl("^\\s*1\\s+78\\s+1\\s+", staged)) != 1L ||
+      sum(grepl("^\\s*1\\s+81\\s+1\\s+", staged)) != 1L) {
+    fail("Full-period regional-scaling staging failed for ", models$step_id[[i]], ".")
+  }
   expected_flag <- if (identical(models$movement_prior_penalty[[i]], "0.1")) "-1" else "-2"
   movement_line <- paste0(
     "2 27 ", expected_flag, "  # penalty wt ",
@@ -367,6 +414,7 @@ for (mapping in c(
   '("movement_prior_penalty", "MOVEMENT_PRIOR_PENALTY")',
   '("opr_mode", "OPR_MODE")',
   '("dom_qc_mode", "DOM_QC_MODE")',
+  '("regional_scaling_mode", "REG_SCALING_MODE")',
   '"input_jobs": split_job_refs(row.get("kflow_input_jobs"))'
 )) {
   if (!any(grepl(mapping, registrar, fixed = TRUE))) {
@@ -376,14 +424,15 @@ for (mapping in c(
 
 task <- readLines(task_path, warn = FALSE)
 required_task <- c(
-  "name: bet-2026-f14-young5-domgt90-rec-opr-grid-20260728",
-  "branch: sensitivity/f14-young5-domgt90-rec-opr-grid-20260728",
+  "name: bet-2026-f14-young5-domgt90-fullreg-rec-opr-grid-20260728",
+  "branch: sensitivity/f14-young5-domgt90-fullreg-rec-opr-grid-20260728",
   "command: Rscript --vanilla scripts/validate_f14_young5_rec_grid.R && bash run.sh",
   "  CONFIG_R: job-config-f14-young5-rec-grid.R",
   "  STEP_SELECT: F14-Y5-REC01",
   "  RUN_MODE: doitall",
   "  F15_QC_MODE: lt70",
   "  DOM_QC_MODE: gt90_midpoint",
+  "  REG_SCALING_MODE: full_period",
   "  DM_NMAX: \"25\"",
   "  REGIONAL_RECRUITMENT_PENALTY: \"0.1\"",
   "  MOVEMENT_PRIOR_PENALTY: \"0.1\"",
@@ -392,6 +441,11 @@ required_task <- c(
   "  model_count: 8",
   "  dom_qc_mode: gt90_midpoint",
   "  dom_selectivity_changed: false",
+  "  regional_scaling_mode: full_period",
+  "  regional_scaling_source_data_rows: 292",
+  "  regional_scaling_active_data_rows: 290",
+  "  regional_scaling_flag79: 290",
+  "  regional_scaling_flag80: 0",
   "  movement_prior_penalties: \"0.1,0.2\"",
   "  recruitment_structures: \"standard,OPR 72-01-50-50 end2\"",
   "  common_tag_tau_estimated: true",
@@ -410,7 +464,8 @@ cat(
   "Validated eight independent F14 youngest-five-age doitall sensitivities: ",
   "rec 0.1/0.2 x movement prior 0.1/0.2 x standard/OPR 72-01-50-50 end2; ",
   "all rows use the identical verified F15 <70 cm + DOM midpoint >90 cm QC FRQ, ",
-  "with unchanged selectivity, Nmax=25, MGC 1e-4, ",
+  "F14/F15 youngest-five-age selectivity fixed at zero, regional scaling over ",
+  "the full index-supported periods 3-292 (1952Q3-2024Q4), Nmax=25, MGC 1e-4, ",
   "common estimated tag tau, fixed M, and no previous PAR inputs.\n",
   sep = ""
 )

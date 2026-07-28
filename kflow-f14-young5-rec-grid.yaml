@@ -1,8 +1,8 @@
-name: bet-2026-f14-young5-domgt90-rec-opr-grid-20260728
-description: "Eight independent doitall sensitivities retaining F15 <70 cm QC and excluding DOM F21-F23 LF intervals with midpoint >90 cm, while crossing recruitment penalties 0.1/0.2, movement-prior penalties 0.1/0.2, and standard versus OPR 72-01-50-50 end2 recruitment."
+name: bet-2026-f14-young5-domgt90-fullreg-rec-opr-grid-20260728
+description: "Eight additional independent doitall sensitivities retaining F15 <70 cm QC, excluding DOM F21-F23 LF intervals with midpoint >90 cm, fixing the youngest five F14/F15 selectivity ages at zero, and applying regional scaling over the full mutually supported index period 3-292 (the complete 292-row source is retained), while crossing recruitment penalties 0.1/0.2, movement-prior penalties 0.1/0.2, and standard versus OPR 72-01-50-50 end2 recruitment."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
-branch: sensitivity/f14-young5-domgt90-rec-opr-grid-20260728
+branch: sensitivity/f14-young5-domgt90-fullreg-rec-opr-grid-20260728
 remote_host: suva
 remote_user: kyuhank
 remote_base_dir: /home/kyuhank/KflowOutput
@@ -23,13 +23,14 @@ env:
   CONFIG_R: job-config-f14-young5-rec-grid.R
   STEP_SELECT: F14-Y5-REC01
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "01. DOM >90 excluded | F14 Y5 | standard | rec 0.1 | move 0.1"
-  JOB_DESCRIPTION: "Independent doitall from frozen S03 inputs; F15 <70 cm and DOM midpoint >90 cm LF exclusions; selectivity unchanged; F14 fish flag 75=5; rec penalty 0.1."
-  MODEL_LABEL: "01. DOM >90 excluded | F14 youngest 5 fixed | doitall | rec penalty 0.1"
-  JOB_KEY: f14-young5-domgt90-doitall-rec01
+  JOB_TITLE: "01. Full REG | DOM >90 excluded | F14 Y5 | standard | rec 0.1 | move 0.1"
+  JOB_DESCRIPTION: "Additional independent doitall from frozen S03 inputs; F15 <70 cm and DOM midpoint >90 cm LF exclusions; F14/F15 youngest-five-age selectivity fixed at zero; regional scaling over the full index-supported period 1952Q3-2024Q4; rec penalty 0.1."
+  MODEL_LABEL: "01. Full REG | DOM >90 excluded | F14 youngest 5 fixed | doitall | rec penalty 0.1"
+  JOB_KEY: f14-young5-domgt90-fullreg-doitall-rec01
   RUN_MODE: doitall
   F15_QC_MODE: lt70
   DOM_QC_MODE: gt90_midpoint
+  REG_SCALING_MODE: full_period
   DM_NMAX: "25"
   TAG_TAU_GROUPING: common
   TAG_TAU_LOWER_BOUND: default
@@ -44,11 +45,11 @@ env:
   EXPECTED_SOURCE_PAR_SHA256: ""
   JOB_PAR_MAX_EVALUATIONS: ""
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-f14-young5-domgt90-rec-opr-grid-20260728
+  FLOW_GROUP: bet-2026-f14-young5-domgt90-fullreg-rec-opr-grid-20260728
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
-  PLOT_TITLE: BET 2026 F14 youngest-age DOM >90 cm QC sensitivities
+  PLOT_TITLE: BET 2026 F14 youngest-age DOM >90 cm QC full-period regional-scaling sensitivities
   PLOT_MAX_FISHERIES: "18"
   REPORT_QMD: assessment-report.qmd
   REPORT_FILE_STEM: bet-2026-report
@@ -84,7 +85,7 @@ env:
 
 tags:
   species: BET
-  stage: f14-youngest-age-domgt90-sensitivity
+  stage: f14-youngest-age-domgt90-fullreg-sensitivity
   comparison_jobs: "17227,17513"
 
 metadata:
@@ -106,6 +107,13 @@ metadata:
   dom_cutoff_cm: 90
   dom_bin_rule: "remove 2-cm LF intervals with midpoint >90 cm (lower bound >=90 cm)"
   dom_selectivity_changed: false
+  regional_scaling_mode: full_period
+  regional_scaling_source_data_rows: 292
+  regional_scaling_active_data_rows: 290
+  regional_scaling_periods: "3-292 (1952Q3-2024Q4)"
+  regional_scaling_start_reason: "Index fishery 32 starts in period 3; MFCL rejects a period-1 start"
+  regional_scaling_flag79: 290
+  regional_scaling_flag80: 0
   dm_nmax: 25
   phase10_11_convergence: "1e-4"
   common_tag_tau_estimated: true
@@ -144,6 +152,7 @@ job_config:
     - RUN_MODE
     - F15_QC_MODE
     - DOM_QC_MODE
+    - REG_SCALING_MODE
     - DM_NMAX
     - REGIONAL_RECRUITMENT_PENALTY
     - MOVEMENT_PRIOR_PENALTY

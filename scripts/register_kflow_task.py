@@ -285,6 +285,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             ("dm_nmax", "DM_NMAX"),
             ("f15_qc_mode", "F15_QC_MODE"),
             ("dom_qc_mode", "DOM_QC_MODE"),
+            ("regional_scaling_mode", "REG_SCALING_MODE"),
         ):
             if column in row:
                 env[env_name] = row[column]
@@ -303,6 +304,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             "movement_prior_penalty": row.get("movement_prior_penalty", ""),
             "opr_mode": row.get("opr_mode", ""),
             "dom_qc_mode": row.get("dom_qc_mode", ""),
+            "regional_scaling_mode": row.get("regional_scaling_mode", ""),
         }
         payloads.append(
             {
