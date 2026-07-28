@@ -1,0 +1,153 @@
+name: bet-2026-job17805-joe-regionmean-k015-k020-20260729
+description: "Two independent doitall sensitivities matching Job 17805 except for release-group tag-mixing periods: Joe all-region mean at K=0.15 and the SC22-IP10 K=0.20 vector."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job17805-joe-regionmean-k015-k020-20260729
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job17805_joe_regionmean_mixing.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job17805-joe-regionmean.R
+  STEP_SELECT: F14-Y5-REC01-JOE-K015
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "01. Job 17805 | Joe region mean | mixing K=0.15"
+  JOB_DESCRIPTION: "Independent doitall matching Job 17805 except for tag_flags(:,1): Joe all-region mean K=0.15."
+  MODEL_LABEL: "Job 17805 controls | Joe all-region mean | K=0.15"
+  JOB_KEY: job17805-joe-regionmean-k015
+  RUN_MODE: doitall
+  F15_QC_MODE: lt70
+  DOM_QC_MODE: gt90_midpoint
+  MIXING_PERIOD_MODE: joe-regionmean-k015
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  MOVEMENT_PRIOR_PENALTY: "0.1"
+  OPR_MODE: "off"
+  ESTIMATE_M_FINAL: "false"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  PAR_SOURCE_JOB: ""
+  KFLOW_INPUT_JOBS: ""
+  EXPECTED_SOURCE_PAR_SHA256: ""
+  JOB_PAR_MAX_EVALUATIONS: ""
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job17805-joe-regionmean-k015-k020-20260729
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 17805 Joe region-mean mixing sensitivity
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: ""
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: job17805-joe-regionmean-mixing-sensitivity
+  comparison_jobs: "17805"
+
+metadata:
+  scientific_parent_job: "17805"
+  scientific_parent_mode: metadata-only
+  parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
+  parent_output_archive_sha256: 26cbe34085b34e0d5956be0344ebbf46807287438cbec674082dc9ec42dd0c99
+  ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
+  ini_source_branch: SC22-IP10-regionMean
+  ini_source_commit: efe3107c72774ee73b5e6dc45e44cf51f0fc20e8
+  execution: "two independent doitall fits from the exact frozen Job 17805 source inputs"
+  only_change: "bet.ini tag_flags(:,1), selected per model row"
+  k015_change_from_job17805: "37 Region-1 release groups, all 2 to 4"
+  k020_change_from_job17805: "32 release groups using the SC22-IP10 K=0.20 vector"
+  f14_fish_flag75: 5
+  f15_qc_mode: lt70
+  f15_fish_flag75: 5
+  dom_qc_mode: gt90_midpoint
+  dom_selectivity_changed: false
+  dm_nmax: 25
+  regional_recruitment_penalty: 0.1
+  movement_prior_penalty: 0.1
+  recruitment_structure: standard
+  phase10_11_convergence: "1e-4"
+  common_tag_tau_estimated: true
+  natural_mortality_fixed: true
+  model_count: 2
+  inputs_frozen: true
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job17805-joe-regionmean.R
+  execution: independent-concurrent
+  inputs: frozen-repository
+  scientific_parent: metadata-only
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DOM_QC_MODE
+    - MIXING_PERIOD_MODE
+    - DM_NMAX
+    - REGIONAL_RECRUITMENT_PENALTY
+    - MOVEMENT_PRIOR_PENALTY
+    - OPR_MODE
+    - BET_PHASE10_11_CONVERGENCE
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT
