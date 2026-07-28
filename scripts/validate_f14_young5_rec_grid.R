@@ -6,6 +6,7 @@ task_path <- file.path(root, "kflow-f14-young5-rec-grid.yaml")
 source_dir <- file.path(root, "steps", "S03-CommonTagTau-MIX015", "model")
 doitall_path <- file.path(source_dir, "doitall.sh")
 f15_apply_path <- file.path(root, "R", "apply_f15_lf_qc.R")
+dom_apply_path <- file.path(root, "R", "apply_dom_lf_qc.R")
 movement_apply_path <- file.path(root, "R", "apply_movement_prior_penalty.R")
 opr_apply_path <- file.path(root, "R", "apply_opr_sensitivity.R")
 registrar_path <- file.path(root, "scripts", "register_kflow_task.py")
@@ -27,7 +28,7 @@ source_input_names <- c(
 
 required_files <- c(
   config_path, task_path, registrar_path, patch_paths,
-  f15_apply_path, movement_apply_path, opr_apply_path,
+  f15_apply_path, dom_apply_path, movement_apply_path, opr_apply_path,
   file.path(root, "R", c("prepare_common.R", "prepare_doitall.R")),
   file.path(source_dir, source_input_names)
 )
@@ -69,9 +70,10 @@ if (!identical(models$phase10_11_convergence, rep("-4", 8)) ||
   fail("Expected F14=5, Nmax=25 and MGC=1e-4 in all eight rows.")
 }
 if (!identical(models$f15_qc_mode, rep("lt70", 8)) ||
+    !identical(models$dom_qc_mode, rep("gt90_midpoint", 8)) ||
     !identical(models$tag_tau_grouping, rep("common", 8)) ||
     !identical(models$tau_mode, rep("estimated-common", 8))) {
-  fail("F15 QC or tag-tau controls differ between rows.")
+  fail("F15/DOM QC or tag-tau controls differ between rows.")
 }
 for (field in c(
   "input_par", "output_par", "par_source_job", "kflow_input_jobs",
@@ -93,6 +95,12 @@ expected_full_patch <- c(
   '  stop("F15_QC_MODE environment/config mismatch.", call. = FALSE)',
   '}',
   'apply_f15_lf_qc(model_dir, config$F15_QC_MODE)',
+  'source(file.path(getwd(), "R", "apply_dom_lf_qc.R"), local = TRUE)',
+  'env_dom_mode <- Sys.getenv("DOM_QC_MODE", "")',
+  'if (nzchar(env_dom_mode) && !identical(env_dom_mode, config$DOM_QC_MODE)) {',
+  '  stop("DOM_QC_MODE environment/config mismatch.", call. = FALSE)',
+  '}',
+  'apply_dom_lf_qc(model_dir, config$DOM_QC_MODE)',
   'source(file.path(getwd(), "R", "apply_movement_prior_penalty.R"), local = TRUE)',
   'env_movement <- Sys.getenv("MOVEMENT_PRIOR_PENALTY", "")',
   'if (nzchar(env_movement) && !identical(env_movement, config$MOVEMENT_PRIOR_PENALTY)) {',
@@ -196,7 +204,7 @@ required_opr_phase3 <- c(
 test_root <- tempfile("f14-young5-grid-validation-")
 dir.create(test_root, recursive = TRUE)
 on.exit(unlink(test_root, recursive = TRUE, force = TRUE), add = TRUE)
-staged_f15_hashes <- character(nrow(models))
+staged_dom_hashes <- character(nrow(models))
 staged_movement_flags <- character(nrow(models))
 for (i in seq_len(nrow(models))) {
   model_dir <- file.path(test_root, models$step_id[[i]])
@@ -212,6 +220,7 @@ for (i in seq_len(nrow(models))) {
   patch_env$model_dir <- normalizePath(model_dir, mustWork = TRUE)
   patch_env$config <- list(
     F15_QC_MODE = models$f15_qc_mode[[i]],
+    DOM_QC_MODE = models$dom_qc_mode[[i]],
     MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
     OPR_MODE = models$opr_mode[[i]]
   )
@@ -222,6 +231,7 @@ for (i in seq_len(nrow(models))) {
   # the subsequent run.sh process retains the original Kflow job environment.
   Sys.setenv(
     F15_QC_MODE = models$f15_qc_mode[[i]],
+    DOM_QC_MODE = models$dom_qc_mode[[i]],
     MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
     OPR_MODE = models$opr_mode[[i]]
   )
@@ -242,7 +252,46 @@ for (i in seq_len(nrow(models))) {
       !identical(f15_summary$catch_or_effort_changed[[1L]], FALSE)) {
     fail("F15 <70 cm QC audit failed for ", models$step_id[[i]], ".")
   }
-  staged_f15_hashes[[i]] <- sha256(file.path(model_dir, "bet.frq"))
+  dom_summary <- utils::read.csv(
+    file.path(model_dir, "dom-lf-qc-summary.csv"),
+    stringsAsFactors = FALSE
+  )
+  dom_audit <- utils::read.csv(
+    file.path(model_dir, "dom-lf-qc-audit.csv"),
+    stringsAsFactors = FALSE
+  )
+  if (nrow(dom_summary) != 3L ||
+      !identical(as.integer(dom_summary$fishery), 21:23) ||
+      !identical(dom_summary$fishery_label,
+                 c("21.DOM.ID.2", "22.DOM.PH.2", "23.DOM.VN.2")) ||
+      !identical(dom_summary$mode, rep("gt90_midpoint", 3)) ||
+      !identical(dom_summary$source_sha256, rep(
+        "3abf83821f8d696b36f020a80f48f99445f9e15046bdb3741adfac778c82ad60", 3
+      )) ||
+      !identical(dom_summary$output_sha256, rep(
+        "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3", 3
+      )) ||
+      !identical(as.integer(dom_summary$lf_rows_before), c(40L, 138L, 21L)) ||
+      !identical(as.integer(dom_summary$lf_rows_affected), c(3L, 123L, 16L)) ||
+      !identical(as.integer(dom_summary$lf_rows_removed_as_empty), c(1L, 0L, 0L)) ||
+      !identical(as.integer(dom_summary$lf_rows_after), c(39L, 138L, 21L)) ||
+      !isTRUE(all.equal(dom_summary$count_before, c(2130, 108385, 50146))) ||
+      !isTRUE(all.equal(dom_summary$removed_count, c(56, 6146, 1702))) ||
+      !isTRUE(all.equal(dom_summary$count_after, c(2074, 102239, 48444))) ||
+      !identical(dom_summary$renormalised, rep(FALSE, 3)) ||
+      !identical(dom_summary$catch_or_effort_changed, rep(FALSE, 3)) ||
+      !identical(dom_summary$selectivity_changed, rep(FALSE, 3)) ||
+      nrow(dom_audit) != 199L ||
+      sum(dom_audit$removed_count) != 7904 ||
+      sum(dom_audit$removed_count > 0) != 142L ||
+      sum(dom_audit$action == "remove_empty_lf_composition") != 1L ||
+      !identical(
+        dom_audit$period[dom_audit$action == "remove_empty_lf_composition"],
+        "2010Q3"
+      )) {
+    fail("DOM >90 cm LF QC audit failed for ", models$step_id[[i]], ".")
+  }
+  staged_dom_hashes[[i]] <- sha256(file.path(model_dir, "bet.frq"))
 
   for (name in setdiff(names(expected_hashes), c("bet.frq", "doitall.sh"))) {
     if (!identical(sha256(file.path(model_dir, name)), expected_hashes[[name]])) {
@@ -301,11 +350,11 @@ for (i in seq_len(nrow(models))) {
     }
   }
 }
-if (!identical(staged_f15_hashes, rep(
-  "3abf83821f8d696b36f020a80f48f99445f9e15046bdb3741adfac778c82ad60",
+if (!identical(staged_dom_hashes, rep(
+  "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3",
   8
 ))) {
-  fail("All eight rows must stage the identical verified F15 <70 cm FRQ.")
+  fail("All eight rows must stage the identical verified F15+DOM-QC FRQ.")
 }
 if (!identical(staged_movement_flags, c("-1", "-1", "-2", "-2", "-1", "-1", "-2", "-2"))) {
   fail("Staged movement flags do not match the 2 x 2 x 2 grid.")
@@ -317,6 +366,7 @@ for (mapping in c(
   '("regional_recruitment_penalty", "REGIONAL_RECRUITMENT_PENALTY")',
   '("movement_prior_penalty", "MOVEMENT_PRIOR_PENALTY")',
   '("opr_mode", "OPR_MODE")',
+  '("dom_qc_mode", "DOM_QC_MODE")',
   '"input_jobs": split_job_refs(row.get("kflow_input_jobs"))'
 )) {
   if (!any(grepl(mapping, registrar, fixed = TRUE))) {
@@ -326,19 +376,22 @@ for (mapping in c(
 
 task <- readLines(task_path, warn = FALSE)
 required_task <- c(
-  "name: bet-2026-f14-young5-rec-grid-20260728",
-  "branch: sensitivity/job17513-f14-young5-rec-grid-20260728",
+  "name: bet-2026-f14-young5-domgt90-rec-opr-grid-20260728",
+  "branch: sensitivity/f14-young5-domgt90-rec-opr-grid-20260728",
   "command: Rscript --vanilla scripts/validate_f14_young5_rec_grid.R && bash run.sh",
   "  CONFIG_R: job-config-f14-young5-rec-grid.R",
   "  STEP_SELECT: F14-Y5-REC01",
   "  RUN_MODE: doitall",
   "  F15_QC_MODE: lt70",
+  "  DOM_QC_MODE: gt90_midpoint",
   "  DM_NMAX: \"25\"",
   "  REGIONAL_RECRUITMENT_PENALTY: \"0.1\"",
   "  MOVEMENT_PRIOR_PENALTY: \"0.1\"",
   "  OPR_MODE: \"off\"",
   "  BET_PHASE10_11_CONVERGENCE: \"-4\"",
   "  model_count: 8",
+  "  dom_qc_mode: gt90_midpoint",
+  "  dom_selectivity_changed: false",
   "  movement_prior_penalties: \"0.1,0.2\"",
   "  recruitment_structures: \"standard,OPR 72-01-50-50 end2\"",
   "  common_tag_tau_estimated: true",
@@ -356,7 +409,8 @@ if (any(grepl("^input_jobs:", task))) {
 cat(
   "Validated eight independent F14 youngest-five-age doitall sensitivities: ",
   "rec 0.1/0.2 x movement prior 0.1/0.2 x standard/OPR 72-01-50-50 end2; ",
-  "all rows use the identical verified F15 <70 cm FRQ, Nmax=25, MGC 1e-4, ",
+  "all rows use the identical verified F15 <70 cm + DOM midpoint >90 cm QC FRQ, ",
+  "with unchanged selectivity, Nmax=25, MGC 1e-4, ",
   "common estimated tag tau, fixed M, and no previous PAR inputs.\n",
   sep = ""
 )

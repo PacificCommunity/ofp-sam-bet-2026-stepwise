@@ -284,6 +284,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             ("tag_tau_grouping", "TAG_TAU_GROUPING"),
             ("dm_nmax", "DM_NMAX"),
             ("f15_qc_mode", "F15_QC_MODE"),
+            ("dom_qc_mode", "DOM_QC_MODE"),
         ):
             if column in row:
                 env[env_name] = row[column]
@@ -301,6 +302,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
             "change_axis": row.get("change_axis", ""),
             "movement_prior_penalty": row.get("movement_prior_penalty", ""),
             "opr_mode": row.get("opr_mode", ""),
+            "dom_qc_mode": row.get("dom_qc_mode", ""),
         }
         payloads.append(
             {
@@ -328,6 +330,7 @@ def model_job_payloads(config: dict[str, Any], rows: list[dict[str, str]]) -> li
                     "regional_recruitment_penalty": row.get("regional_recruitment_penalty", ""),
                     "movement_prior_penalty": row.get("movement_prior_penalty", ""),
                     "opr_mode": row.get("opr_mode", ""),
+                    "dom_qc_mode": row.get("dom_qc_mode", ""),
                 },
                 "metadata": {key: value for key, value in metadata.items() if value not in (None, "")},
                 "triggers": {},

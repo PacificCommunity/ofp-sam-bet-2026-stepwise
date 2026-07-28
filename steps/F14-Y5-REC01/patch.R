@@ -4,6 +4,12 @@ if (nzchar(env_mode) && !identical(env_mode, config$F15_QC_MODE)) {
   stop("F15_QC_MODE environment/config mismatch.", call. = FALSE)
 }
 apply_f15_lf_qc(model_dir, config$F15_QC_MODE)
+source(file.path(getwd(), "R", "apply_dom_lf_qc.R"), local = TRUE)
+env_dom_mode <- Sys.getenv("DOM_QC_MODE", "")
+if (nzchar(env_dom_mode) && !identical(env_dom_mode, config$DOM_QC_MODE)) {
+  stop("DOM_QC_MODE environment/config mismatch.", call. = FALSE)
+}
+apply_dom_lf_qc(model_dir, config$DOM_QC_MODE)
 source(file.path(getwd(), "R", "apply_movement_prior_penalty.R"), local = TRUE)
 env_movement <- Sys.getenv("MOVEMENT_PRIOR_PENALTY", "")
 if (nzchar(env_movement) && !identical(env_movement, config$MOVEMENT_PRIOR_PENALTY)) {
