@@ -1,5 +1,5 @@
 name: bet-2026-job17805-joe-regionmean-k015-k020-estm-20260729
-description: "Two independent doitall sensitivities using Joe region-mean K=0.15 and K=0.20 tag mixing, with the Lorenzen natural-mortality intercept estimated directly in Phases 11-12."
+description: "Two independent doitall sensitivities using Joe region-mean K=0.15 and K=0.20 tag mixing, starting the Lorenzen M intercept at -3 and estimating it directly in Phases 11-12."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: sensitivity/job17805-joe-regionmean-k015-k020-estm-20260729
@@ -21,7 +21,7 @@ exclude_slots: []
 
 env:
   CONFIG_R: job-config-job17805-joe-regionmean-estm.R
-  STEP_SELECT: F14-Y5-REC01-JOE-K015
+  STEP_SELECT: F14-Y5-REC01-JOE-K015-ESTM
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
   JOB_TITLE: "01. Joe region mean | K=0.15 | doitall | estimate M"
   JOB_DESCRIPTION: "Independent doitall using Joe region-mean K=0.15 mixing and estimating one Lorenzen M intercept in Phases 11-12."
@@ -38,6 +38,7 @@ env:
   MOVEMENT_PRIOR_PENALTY: "0.1"
   OPR_MODE: "off"
   ESTIMATE_M_FINAL: "true"
+  M_START_INTERCEPT: "-3"
   TAG_LIKELIHOOD_WEIGHT: "0"
   BET_PHASE10_11_CONVERGENCE: "-4"
   PAR_SOURCE_JOB: ""
@@ -100,6 +101,9 @@ metadata:
   execution: "two independent doitall fits from the exact frozen Job 17805 source inputs"
   mixing_change: "bet.ini tag_flags(:,1), selected per model row"
   m_change: "parest flag 121=1 in Phases 11-12; estimate one age_pars(5) Lorenzen M intercept"
+  requested_starting_m_intercept: "-3.0"
+  staged_k015_ini_sha256: 0c50476c8287862e451c19bf51bb1fce3332f4146cbac6c88e6f1ef67b98f6ae
+  staged_k020_ini_sha256: f22599c8767204a8e789c1c68249abfad24740fb220df8c7e4fe196a9ac4bdc4
   m_phase10_fixed: true
   m_phases11_12_estimated: true
   lorenzen_length_slope_fixed: true
@@ -155,6 +159,7 @@ job_config:
     - MOVEMENT_PRIOR_PENALTY
     - OPR_MODE
     - ESTIMATE_M_FINAL
+    - M_START_INTERCEPT
     - BET_PHASE10_11_CONVERGENCE
     - MFCL_LIVE_LOG
     - TRIGGER_NEXT
