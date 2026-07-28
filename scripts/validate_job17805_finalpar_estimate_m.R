@@ -141,25 +141,26 @@ if (!identical(sha256(file.path(test_dir, "doitall.sh")),
 continuation <- readLines(continuation_path, warn = FALSE)
 required_continuation <- c(
   "input_par=previous-job.par",
-  "start_par=m-start-minus3.par",
-  "stage_a_par=m-open-1e3.par",
+  "stage_a_par=m-open-legacy-scale-1e3.par",
   "final_par=final.par",
   "final_convergence_exponent=${BET_PHASE10_11_CONVERGENCE:--4}",
   "stage_a_evaluations=${M_STAGE_A_MAX_EVALUATIONS:-3000}",
   "final_evaluations=${JOB_PAR_MAX_EVALUATIONS:-10000}",
   "expected_source_par_sha256=${EXPECTED_SOURCE_PAR_SHA256:-}",
-  "expected_start_par_sha256=16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b",
   "estimate_m_final=${ESTIMATE_M_FINAL:-false}",
   '"  1 50 -3  # initial M-opening convergence target"',
   '"  1 121 1  # estimate one natural-mortality age_pars(5) coefficient"',
+  '"  1 387 1  # legacy independent-variable scaling for the initial bridge only"',
   '"  1 50 $final_convergence_exponent  # final MGC target"',
   '"  1 121 1  # retain estimation of one Lorenzen M intercept"',
+  '"  1 387 0  # restore the current default independent-variable scaling"',
   '"$program_path" "$frq" "$stage_a_par" "$final_par" -file "$stage_b_control"',
   'if [ "$source_par_sha256" != "$expected_source_par_sha256" ]; then',
   'source_parest121=$(read_par_flag "# The parest_flags" 121 "$input_par")',
-  'sub(/^[[:space:]]*[^[:space:]]+/, " -3.00000000000000e+00", line)',
-  'starting_m=$(read_age_pars5 "$start_par")',
-  '"$program_path" "$frq" "$start_par" "$stage_a_par" -file "$stage_a_control"',
+  'source_parest387=$(read_par_flag "# The parest_flags" 387 "$input_par")',
+  '"$program_path" "$frq" "$input_par" "$stage_a_par" -file "$stage_a_control"',
+  'bridge_m=$(read_age_pars5 "$stage_a_par")',
+  'output_parest387=$(read_par_flag "# The parest_flags" 387 "$final_par")',
   'estimated_m_count=$(awk \'$2 ~ /^age_pars[(]5[)]/ {n++} END {print n+0}\' indepvar.rpt)',
   'estimated_tau_count=$(awk \'$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}\' indepvar.rpt)',
   '[ "$source_npars" -ne 1989 ]',
@@ -178,6 +179,10 @@ if (length(missing_continuation)) {
 }
 if (any(grepl("1 121 0", continuation, fixed = TRUE))) {
   fail("The M-continuation script may not refix natural mortality.")
+}
+if (sum(grepl("1 387 1", continuation, fixed = TRUE)) != 1L ||
+    sum(grepl("1 387 0", continuation, fixed = TRUE)) != 1L) {
+  fail("The M-continuation must use one legacy-scaling bridge and one default-scaling final stage.")
 }
 
 runner <- readLines(runner_path, warn = FALSE)
@@ -226,8 +231,10 @@ required_task <- c(
   "  JOB_PAR_MAX_EVALUATIONS: \"10000\"",
   "  model_count: 1",
   "  source_final_parameter_count: 1989",
-  "  requested_starting_m_intercept: \"-3.0\"",
-  "  verified_starting_par_sha256: 16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b",
+  "  requested_starting_m_intercept: \"-2.54930339768360 (unchanged from Job 17805 final PAR)\"",
+  "  source_final_parest387: 0",
+  "  bridge_parest387: 1",
+  "  final_parest387: 0",
   "  expected_final_parameter_count: 1990",
   "  common_tag_tau_estimated: true",
   "  natural_mortality_estimated: true"
@@ -243,8 +250,9 @@ if (any(grepl("^input_jobs:", task))) {
 
 cat(
   "Validated one exact Job 17805 final-PAR continuation: attached PAR SHA ",
-  "f68bb0eb...; set the age_pars(5) M-intercept start to -3, then open only ",
-  "parest flag 121 at MGC 1e-3 and 1e-4; expected parameter count 1989 -> 1990; ",
+  "f68bb0eb...; retain the fitted age_pars(5) M-intercept start, open it with ",
+  "parest 387=1 at MGC 1e-3, restore 387=0 for the final MGC 1e-4 fit; ",
+  "expected parameter count 1989 -> 1990; ",
   "all Job 17805 data, mixing, rec, movement, Nmax and tag-tau controls retained.\n",
   sep = ""
 )

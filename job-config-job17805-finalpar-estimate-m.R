@@ -11,19 +11,20 @@ stepwise_models <- data.frame(
   independent_fit = FALSE,
   change_axis = paste(
     "Continue the checksum-verified Job 17805 final PAR.",
-    "Set the starting age_pars(5) M intercept to -3, then change only",
-    "parest flag 121 from 0 to 1 to estimate that Lorenzen intercept;",
-    "retain the length slope fixed."
+    "Keep its fitted age_pars(5) M intercept as the starting value, open only",
+    "that Lorenzen intercept with legacy scaling (parest 387=1), then return",
+    "to the current default scaling (parest 387=0) for the final fit."
   ),
   control_notes = paste(
     "Attach only Job 17805. Reproduce its F15 <70 cm plus DOM midpoint >90 cm",
     "FRQ, F14/F15 youngest-five-age controls, standard recruitment, rec and",
     "movement penalties 0.1, Nmax=25, common estimated tag tau, and K=0.15.",
-    "Start the M intercept at -3, open it at MGC 1e-3, then finish at 1e-4."
+    "Use 387=1 only as the M-opening bridge at MGC 1e-3, then restore 387=0",
+    "and finish at MGC 1e-4."
   ),
-  model_label = "Job 17805 final PAR | M start -3 | estimate M",
-  job_title = "Job 17805 final PAR | M start -3 | estimate M | MGC 1e-4",
-  job_key = "job17805-finalpar-mstart3-estimate-m",
+  model_label = "Job 17805 final PAR | estimate M | 387 bridge to default",
+  job_title = "Job 17805 final PAR | estimate M | 387=1 bridge, final 387=0",
+  job_key = "job17805-finalpar-estimate-m-scale-bridge",
   plot_order = 1L,
   f14_youngest_zero = "5",
   f15_qc_mode = "lt70",

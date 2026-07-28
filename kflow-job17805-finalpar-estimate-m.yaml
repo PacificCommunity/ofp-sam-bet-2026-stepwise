@@ -1,5 +1,5 @@
 name: bet-2026-job17805-finalpar-estimate-m-20260729
-description: "Continue the checksum-verified Job 17805 final PAR after setting the Lorenzen M-intercept starting value to -3, then estimate it in staged MGC 1e-3 and 1e-4 optimisations."
+description: "Continue the checksum-verified Job 17805 final PAR from its fitted M intercept, use parest 387=1 only as an initial M-estimation bridge, then restore the current default parest 387=0 for the final MGC 1e-4 fit."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: sensitivity/job17805-finalpar-estimate-m-20260729
@@ -23,10 +23,10 @@ env:
   CONFIG_R: job-config-job17805-finalpar-estimate-m.R
   STEP_SELECT: F14-Y5-REC01
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "Job 17805 final PAR | M start -3 | estimate M | MGC 1e-4"
-  JOB_DESCRIPTION: "Continue the exact Job 17805 final PAR, set the M-intercept start to -3, and estimate it at MGC 1e-3 then 1e-4."
-  MODEL_LABEL: "Job 17805 final PAR | M start -3 | estimate M"
-  JOB_KEY: job17805-finalpar-mstart3-estimate-m
+  JOB_TITLE: "Job 17805 final PAR | estimate M | 387=1 bridge, final 387=0"
+  JOB_DESCRIPTION: "Continue the exact Job 17805 final PAR from its fitted M intercept, open M under legacy scaling at MGC 1e-3, then restore default scaling and finish at MGC 1e-4."
+  MODEL_LABEL: "Job 17805 final PAR | estimate M | 387 bridge to default"
+  JOB_KEY: job17805-finalpar-estimate-m-scale-bridge
   RUN_MODE: job_par_script
   F15_QC_MODE: lt70
   DOM_QC_MODE: gt90_midpoint
@@ -97,16 +97,18 @@ metadata:
   source_final_max_gradient: "5.44357498330648e-05"
   source_final_parameter_count: 1989
   source_final_m_intercept: "-2.54930339768360"
-  requested_starting_m_intercept: "-3.0"
-  verified_starting_par_sha256: 16dda7c09f94919cc87c8cc30b350a68eb5017542b502f2dbfa491a72cd65a9b
+  requested_starting_m_intercept: "-2.54930339768360 (unchanged from Job 17805 final PAR)"
   source_final_parest50: -4
   source_final_parest121: 0
+  source_final_parest387: 0
   estimate_m_parest121: 1
+  bridge_parest387: 1
+  final_parest387: 0
   expected_final_parameter_count: 1990
   estimated_m_parameter: "one Lorenzen natural-mortality intercept, age_pars(5)"
   fixed_m_component: "Lorenzen length slope remains fixed"
-  stage_a: "MGC 1e-3, maximum 3000 evaluations"
-  stage_b: "MGC 1e-4, maximum 10000 evaluations, indepvar.rpt"
+  stage_a: "Open M with legacy independent-variable scaling (parest 387=1), MGC 1e-3, maximum 3000 evaluations"
+  stage_b: "Restore current default scaling (parest 387=0), MGC 1e-4, maximum 10000 evaluations, indepvar.rpt"
   source_patched_frq_sha256: 9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3
   source_ini_sha256: 4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a
   source_tag_sha256: b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f
