@@ -107,10 +107,10 @@ expected_full_patch <- c(
   'source(file.path(getwd(), "R", "apply_full_period_reg_scaling.R"), local = TRUE)',
   'env_reg_scaling_mode <- Sys.getenv("REG_SCALING_MODE", "")',
   'if (nzchar(env_reg_scaling_mode) &&',
-  '    !identical(env_reg_scaling_mode, config$REG_SCALING_MODE)) {',
+  '    !identical(env_reg_scaling_mode, config$REGIONAL_SCALING_MODE)) {',
   '  stop("REG_SCALING_MODE environment/config mismatch.", call. = FALSE)',
   '}',
-  'apply_full_period_reg_scaling(model_dir, config$REG_SCALING_MODE)',
+  'apply_full_period_reg_scaling(model_dir, config$REGIONAL_SCALING_MODE)',
   'source(file.path(getwd(), "R", "apply_movement_prior_penalty.R"), local = TRUE)',
   'env_movement <- Sys.getenv("MOVEMENT_PRIOR_PENALTY", "")',
   'if (nzchar(env_movement) && !identical(env_movement, config$MOVEMENT_PRIOR_PENALTY)) {',
@@ -231,7 +231,7 @@ for (i in seq_len(nrow(models))) {
   patch_env$config <- list(
     F15_QC_MODE = models$f15_qc_mode[[i]],
     DOM_QC_MODE = models$dom_qc_mode[[i]],
-    REG_SCALING_MODE = models$regional_scaling_mode[[i]],
+    REGIONAL_SCALING_MODE = models$regional_scaling_mode[[i]],
     MOVEMENT_PRIOR_PENALTY = models$movement_prior_penalty[[i]],
     OPR_MODE = models$opr_mode[[i]]
   )
