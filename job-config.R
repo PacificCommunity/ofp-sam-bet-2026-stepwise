@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 26 independent models unless STEP_SELECT is supplied.
+  # Run all 30 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 22L,
-  model_rows = 26L,
+  numbered_groups = 23L,
+  model_rows = 30L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -247,6 +247,42 @@ stepwise_models <- do.call(
       "22b MIX0.2 | mean over KS",
       "22b-mix020-mean-over-ks",
       "Sensitivity cloned from Step 21. Only tag_flags(:,1) is replaced from PacificCommunity/ofp-sam-2026-BET-YFT-build-ini@5b2fb6053e34a58ef61275a68d8a67ec988833c1, BET/ini.mix-period/bet.2026.mix-0.2.ini. The other nine tag-flag columns, all other INI fields, every non-INI model input, DM G8/Nmax25 controls, reporting rates, selectivity, regional scaling, and biology are unchanged. The audit changes 32 of 98 release groups relative to Step 21. At K=0.2, its 98 integer mixing periods are identical to the main-branch mean-over-period implementation."
+    ),
+    model_row(
+      "23a-20c-CommonTagTau", "23-CommonTagTau", "20c-DMG8Nmax25",
+      FALSE, "stop",
+      "estimate exactly one common tag-recapture tau while retaining the complete 20c model and runtime state",
+      "20c with one common tag tau",
+      "23a 20c | estimate one common tag tau",
+      "23a-20c-common-tag-tau",
+      "Clone Step 20c byte-for-byte and change only the tau-estimation controls in doitall.sh from Phase 10 onward. Use the recommended negative-binomial tag likelihood (parest 111=4), direct tau parameterization (305=1), native transformed bounds (306=0), and one shared group across tag-recapture fisheries F1-F28 (fish flags 43=1 and 44=1); F29-F33 have no tag recaptures and remain inactive. M, DM G8/Nmax25, reporting rates, mixing periods, selectivity, regional scaling, data, executable and Phases 0-9 are unchanged."
+    ),
+    model_row(
+      "23b-MIX015-SC22IP10-CommonTagTau", "23-CommonTagTau", "21-MIX015-SC22IP10Cutoff",
+      FALSE, "stop",
+      "estimate exactly one common tag-recapture tau while retaining the complete Step 21 K=0.15 cutoff model and runtime state",
+      "K=0.15 cutoff with one common tag tau",
+      "23b MIX0.15 cutoff | estimate one common tag tau",
+      "23b-mix015-cutoff-common-tag-tau",
+      "Clone Step 21 byte-for-byte and change only the tau-estimation controls in doitall.sh from Phase 10 onward. Use the same one-common-tau specification as Step 23a. The SC22-IP10 K=0.15 mixing periods, M, DM G8/Nmax25, reporting rates, selectivity, regional scaling, data, executable and Phases 0-9 are unchanged."
+    ),
+    model_row(
+      "23c-MIX020-MeanOverPeriod-CommonTagTau", "23-CommonTagTau", "22a-MIX020-MeanOverPeriod",
+      FALSE, "stop",
+      "estimate exactly one common tag-recapture tau while retaining the complete Step 22a K=0.2 mean-over-period model and runtime state",
+      "K=0.2 mean over period with one common tag tau",
+      "23c MIX0.2 mean over period | estimate one common tag tau",
+      "23c-mix020-period-common-tag-tau",
+      "Clone Step 22a byte-for-byte and change only the tau-estimation controls in doitall.sh from Phase 10 onward. Use the same one-common-tau specification as Step 23a. The main-branch K=0.2 mixing periods, M, DM G8/Nmax25, reporting rates, selectivity, regional scaling, data, executable and Phases 0-9 are unchanged."
+    ),
+    model_row(
+      "23d-MIX020-MeanOverKS-CommonTagTau", "23-CommonTagTau", "22b-MIX020-MeanOverKS",
+      FALSE, "stop",
+      "estimate exactly one common tag-recapture tau while retaining the complete Step 22b K=0.2 mean-over-KS model and runtime state",
+      "K=0.2 mean over KS with one common tag tau",
+      "23d MIX0.2 mean over KS | estimate one common tag tau",
+      "23d-mix020-ks-common-tag-tau",
+      "Clone Step 22b byte-for-byte and change only the tau-estimation controls in doitall.sh from Phase 10 onward. Use the same one-common-tau specification as Step 23a. The SC22-IP10 K=0.2 mixing periods, M, DM G8/Nmax25, reporting rates, selectivity, regional scaling, data, executable and Phases 0-9 are unchanged. Its current mixing-period vector is identical to Step 23c, while source-method provenance remains distinct."
     )
   )
 )
@@ -282,7 +318,11 @@ stepwise_report_change <- c(
   "20c-DMG8Nmax25" = "Dirichlet-multinomial (DM) composition weighting",
   "21-MIX015-SC22IP10Cutoff" = "SC22-IP10 release-group mixing periods at K = 0.15",
   "22a-MIX020-MeanOverPeriod" = "Main-branch mean-over-period mixing periods at K = 0.2",
-  "22b-MIX020-MeanOverKS" = "SC22-IP10 mean-over-KS mixing periods at K = 0.2"
+  "22b-MIX020-MeanOverKS" = "SC22-IP10 mean-over-KS mixing periods at K = 0.2",
+  "23a-20c-CommonTagTau" = "One common tag-recapture tau estimated from the Step 20c state",
+  "23b-MIX015-SC22IP10-CommonTagTau" = "One common tag-recapture tau estimated from the Step 21 K = 0.15 cutoff state",
+  "23c-MIX020-MeanOverPeriod-CommonTagTau" = "One common tag-recapture tau estimated from the Step 22a K = 0.2 mean-over-period state",
+  "23d-MIX020-MeanOverKS-CommonTagTau" = "One common tag-recapture tau estimated from the Step 22b K = 0.2 mean-over-KS state"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -310,7 +350,11 @@ stepwise_report_purpose <- c(
   "20c-DMG8Nmax25" = "Estimate length-composition overdispersion internally using eight fishery groups and an effective-sample-size upper asymptote of 25.",
   "21-MIX015-SC22IP10Cutoff" = "Isolate the effect of the SC22-IP10 cutoff implementation by changing only the first tag-flag column in the actual Job 15062 fitted-input state.",
   "22a-MIX020-MeanOverPeriod" = "Evaluate K = 0.2 using the main-branch mean-over-period assignment while retaining the complete Step 21 fitted-input state.",
-  "22b-MIX020-MeanOverKS" = "Evaluate K = 0.2 using the SC22-IP10 mean-over-KS assignment while retaining the complete Step 21 fitted-input state."
+  "22b-MIX020-MeanOverKS" = "Evaluate K = 0.2 using the SC22-IP10 mean-over-KS assignment while retaining the complete Step 21 fitted-input state.",
+  "23a-20c-CommonTagTau" = "Isolate the effect of estimating one common native-bound tag-recapture overdispersion parameter from the Step 20c state.",
+  "23b-MIX015-SC22IP10-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 21 K = 0.15 cutoff state.",
+  "23c-MIX020-MeanOverPeriod-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 22a K = 0.2 mean-over-period state.",
+  "23d-MIX020-MeanOverKS-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 22b K = 0.2 mean-over-KS state."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -340,7 +384,11 @@ path_stage <- c(
   "20c-DMG8Nmax25" = 20L,
   "21-MIX015-SC22IP10Cutoff" = 21L,
   "22a-MIX020-MeanOverPeriod" = 22L,
-  "22b-MIX020-MeanOverKS" = 22L
+  "22b-MIX020-MeanOverKS" = 22L,
+  "23a-20c-CommonTagTau" = 23L,
+  "23b-MIX015-SC22IP10-CommonTagTau" = 23L,
+  "23c-MIX020-MeanOverPeriod-CommonTagTau" = 23L,
+  "23d-MIX020-MeanOverKS-CommonTagTau" = 23L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -356,14 +404,20 @@ stepwise_models$dm_grouping <- ""
 stepwise_models$dm_grouping[
   stepwise_models$step_id %in% c(
     "20c-DMG8Nmax25", "21-MIX015-SC22IP10Cutoff",
-    "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS"
+    "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS",
+    "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
+    "23c-MIX020-MeanOverPeriod-CommonTagTau",
+    "23d-MIX020-MeanOverKS-CommonTagTau"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
 stepwise_models$dm_nmax[
   stepwise_models$step_id %in% c(
     "20c-DMG8Nmax25", "21-MIX015-SC22IP10Cutoff",
-    "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS"
+    "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS",
+    "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
+    "23c-MIX020-MeanOverPeriod-CommonTagTau",
+    "23d-MIX020-MeanOverKS-CommonTagTau"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -383,13 +437,24 @@ stepwise_models$tail_compression_percent <- ifelse(
   stepwise_models$path_stage >= 9L &
     !stepwise_models$step_id %in% c(
       "20c-DMG8Nmax25", "21-MIX015-SC22IP10Cutoff",
-      "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS"
+      "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS",
+      "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
+      "23c-MIX020-MeanOverPeriod-CommonTagTau",
+      "23d-MIX020-MeanOverKS-CommonTagTau"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 16L
 stepwise_models$all_selectivity_forms_relaxed <- stepwise_models$path_stage >= 16L
+stepwise_models$tag_tau_grouping <- ""
+stepwise_models$tag_tau_grouping[
+  stepwise_models$step_id %in% c(
+    "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
+    "23c-MIX020-MeanOverPeriod-CommonTagTau",
+    "23d-MIX020-MeanOverKS-CommonTagTau"
+  )
+] <- "one common tau (F1-F28)"
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 22L
+stepwise_run$numbered_groups <- 23L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

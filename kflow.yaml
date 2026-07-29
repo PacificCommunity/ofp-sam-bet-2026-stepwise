@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-step22-mix020-methods-20260730
-name: bet-2026-step22-mix020-methods-20260730
-description: Run two isolated K=0.2 tag-mixing sensitivities from the frozen Step 21 state. Step 22a uses the main-branch mean-over-period source and Step 22b uses the SC22-IP10 mean-over-KS source; only tag_flags(:,1) changes, and the two current K=0.2 vectors are identical.
+#   /api/job/bet-2026-step23-common-tag-tau-20260730
+name: bet-2026-step23-common-tag-tau-20260730
+description: Run four isolated common-tag-tau sensitivities from the exact Step 20c, Step 21, Step 22a and Step 22b states. Each comparison retains its parent's MFCL inputs, executable image, M, DM, reporting rates and mixing periods; only the doitall tag-tau estimation controls change.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot

@@ -54,6 +54,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `21-MIX015-SC22IP10Cutoff` | `TRUE` | 21-TagMixingCutoff | 21 | replace only the 98 release-group mixing periods with the SC22-IP10 K=0.15 cutoff implementation | SC22-IP10 MIX0.15 cutoff sensitivity | 21 MIX0.15 with SC22-IP10 cutoff method | `21-mix015-sc22ip10-cutoff` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `22a-MIX020-MeanOverPeriod` | `TRUE` | 22-TagMixingMethod | 22a | replace only the 98 release-group mixing periods with the main-branch K=0.2 mean-over-period implementation | K=0.2 mean-over-period mixing | 22a MIX0.2 \| mean over period | `22a-mix020-mean-over-period` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `22b-MIX020-MeanOverKS` | `TRUE` | 22-TagMixingMethod | 22b | replace only the 98 release-group mixing periods with the SC22-IP10 K=0.2 mean-over-KS implementation | K=0.2 mean-over-KS mixing | 22b MIX0.2 \| mean over KS | `22b-mix020-mean-over-ks` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `23a-20c-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23a | estimate exactly one common tag-recapture tau while retaining the complete 20c model and runtime state | 20c with one common tag tau | 23a 20c \| estimate one common tag tau | `23a-20c-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `23b-MIX015-SC22IP10-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23b | estimate exactly one common tag-recapture tau while retaining the complete Step 21 K=0.15 cutoff model and runtime state | K=0.15 cutoff with one common tag tau | 23b MIX0.15 cutoff \| estimate one common tag tau | `23b-mix015-cutoff-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `23c-MIX020-MeanOverPeriod-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23c | estimate exactly one common tag-recapture tau while retaining the complete Step 22a K=0.2 mean-over-period model and runtime state | K=0.2 mean over period with one common tag tau | 23c MIX0.2 mean over period \| estimate one common tag tau | `23c-mix020-period-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `23d-MIX020-MeanOverKS-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23d | estimate exactly one common tag-recapture tau while retaining the complete Step 22b K=0.2 mean-over-KS model and runtime state | K=0.2 mean over KS with one common tag tau | 23d MIX0.2 mean over KS \| estimate one common tag tau | `23d-mix020-ks-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -88,6 +92,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `21-MIX015-SC22IP10Cutoff` | `steps/21-MIX015-SC22IP10Cutoff/model` | `exists` |
 | `22a-MIX020-MeanOverPeriod` | `steps/22a-MIX020-MeanOverPeriod/model` | `exists` |
 | `22b-MIX020-MeanOverKS` | `steps/22b-MIX020-MeanOverKS/model` | `exists` |
+| `23a-20c-CommonTagTau` | `steps/23a-20c-CommonTagTau/model` | `exists` |
+| `23b-MIX015-SC22IP10-CommonTagTau` | `steps/23b-MIX015-SC22IP10-CommonTagTau/model` | `exists` |
+| `23c-MIX020-MeanOverPeriod-CommonTagTau` | `steps/23c-MIX020-MeanOverPeriod-CommonTagTau/model` | `exists` |
+| `23d-MIX020-MeanOverKS-CommonTagTau` | `steps/23d-MIX020-MeanOverKS-CommonTagTau/model` | `exists` |
 
 
 ## Useful Kflow Config
