@@ -1,0 +1,166 @@
+name: bet-2026-job18393-finalpar-fix-estimated-m-20260729
+description: "Continue the checksum-verified Job 18393 final PAR, fix its fitted Lorenzen M intercept at -2.44602044920584, and re-optimise every remaining active parameter to MGC 1e-4."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job18393-finalpar-fix-estimated-m-20260729
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job18393_finalpar_fix_m.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job18393-finalpar-fix-m.R
+  STEP_SELECT: F14-Y5-REC01
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "Job 18393 final PAR | fix M=-2.44602044920584"
+  JOB_DESCRIPTION: "Continue the exact Job 18393 final PAR, fix only its fitted Lorenzen M intercept, and re-optimise all remaining parameters at MGC 1e-4."
+  MODEL_LABEL: "Job 18393 final PAR | M fixed at estimated value"
+  JOB_KEY: job18393-finalpar-fix-estimated-m
+  RUN_MODE: job_par_script
+  F15_QC_MODE: lt70
+  DOM_QC_MODE: gt90_midpoint
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  MOVEMENT_PRIOR_PENALTY: "0.1"
+  OPR_MODE: "off"
+  ESTIMATE_M_FINAL: "false"
+  FIX_M_FINAL: "true"
+  FIXED_M_INTERCEPT: "-2.44602044920584"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  PAR_SOURCE_JOB: "18393"
+  KFLOW_INPUT_JOBS: "18393"
+  EXPECTED_SOURCE_PAR_SHA256: "542190593c28f904a32ebab1262726d8d61a2b40b6b1df1f6ac74819aba3baf5"
+  JOB_PAR_MAX_EVALUATIONS: "10000"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job18393-finalpar-fix-estimated-m-20260729
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 18393 final-PAR fixed-M sensitivity
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: final.par
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: job18393-finalpar-fix-estimated-m
+  base_job: "18393"
+  m_mode: fixed-at-job18393-mle
+
+metadata:
+  base_job: "18393"
+  base_source_commit: 16d7f6072e95d65a03bea2a96fca48df690c1526
+  base_output_archive_sha256: ebfd9bf7b45e7cf26d6a2bfc3a3149257aad76633f0b00ef1a71a52dec38b444
+  source_final_par_sha256: 542190593c28f904a32ebab1262726d8d61a2b40b6b1df1f6ac74819aba3baf5
+  source_final_objective: "8.91628379504086e+04"
+  source_final_max_gradient: "6.39679732089092e-05"
+  source_final_parameter_count: 1990
+  source_final_m_intercept: "-2.44602044920584"
+  requested_fixed_m_intercept: "-2.44602044920584"
+  source_final_parest50: -4
+  source_final_parest121: 1
+  source_final_parest387: 0
+  final_parest121: 0
+  final_parest387: 0
+  expected_final_parameter_count: 1989
+  fixed_m_parameter: "one Lorenzen natural-mortality intercept, age_pars(5)"
+  fixed_m_component: "Lorenzen length slope remains fixed as in Job 18393"
+  optimisation: "Fix M at the Job 18393 MLE and re-optimise remaining parameters at MGC 1e-4, maximum 10000 evaluations"
+  source_patched_frq_sha256: 9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3
+  source_ini_sha256: 4bd5c08a2b79b722725a7940beee57bb4cf227dc62440afccca486aea9d42e8a
+  source_tag_sha256: b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f
+  source_age_length_sha256: 426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c
+  source_reg_scaling_sha256: 6330fb6a36d63424c18f81cbc620c1d9607c2a5c43d0308d19941f12938ec9a1
+  source_reg_scaling_full_sha256: dea4c281f7dc46a7412b7ad2e78906ee57b51b62cf1a18c4609381132bf752ed
+  unchanged_controls: "Job 18393 data, K=0.15 mixing, standard recruitment, rec 0.1, movement 0.1, Nmax25, common estimated tau, F14/F15 young5"
+  model_count: 1
+  inputs_frozen: true
+  common_tag_tau_estimated: true
+  natural_mortality_estimated: false
+  natural_mortality_fixed_at_job18393_mle: true
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job18393-finalpar-fix-m.R
+  execution: final-par-continuation
+  inputs: attached-job-18393
+  scientific_parent: par-input
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DOM_QC_MODE
+    - DM_NMAX
+    - REGIONAL_RECRUITMENT_PENALTY
+    - MOVEMENT_PRIOR_PENALTY
+    - OPR_MODE
+    - ESTIMATE_M_FINAL
+    - FIX_M_FINAL
+    - FIXED_M_INTERCEPT
+    - BET_PHASE10_11_CONVERGENCE
+    - PAR_SOURCE_JOB
+    - KFLOW_INPUT_JOBS
+    - EXPECTED_SOURCE_PAR_SHA256
+    - JOB_PAR_MAX_EVALUATIONS
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT
