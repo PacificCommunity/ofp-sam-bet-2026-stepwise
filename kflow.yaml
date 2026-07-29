@@ -86,7 +86,8 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@2c931ebd20fd04286fb4ff476c774ec036c49bb9,mfclshiny=PacificCommunity/mfclshiny@dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@2c931ebd20fd04286fb4ff476c774ec036c49bb9,mfclshiny=PacificCommunity/mfclshiny@dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
   MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
   MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
@@ -121,6 +122,7 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
+      FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
       MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
       MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
       MFCLSHINY_AUTO_LOAD: "true"
@@ -298,6 +300,10 @@ local_apps:
         invisible(TRUE)
       }
       ensure_github_package(
+        "FLR4MFCL", "ofp-sam-flr4mfcl",
+        Sys.getenv("FLR4MFCL_GITHUB_REF", "master"), "FLR4MFCL_GITHUB_REF"
+      )
+      ensure_github_package(
         "mfclkit", "ofp-sam-mfclkit",
         Sys.getenv("MFCLKIT_GITHUB_REF", "main"), "MFCLKIT_GITHUB_REF"
       )
@@ -465,6 +471,7 @@ job_config:
     - KFLOW_REPO_RUNTIME_UPDATE
     - KFLOW_RUNTIME_PACKAGES
     - KFLOW_REPO_RUNTIME_PACKAGES
+    - FLR4MFCL_GITHUB_REF
     - MFCLKIT_GITHUB_REF
     - MFCLSHINY_GITHUB_REF
     - KFLOW_RUNTIME_GITHUB_AUTH
