@@ -84,7 +84,7 @@ set +e
   BET_PHASE10_11_CONVERGENCE="${BET_PHASE10_11_CONVERGENCE:--4}" \
   JOB_PAR_MAX_EVALUATIONS="${JOB_PAR_MAX_EVALUATIONS:-10000}" \
     bash ./continue-job18400-dmfix.sh
-) 2>&1 | tee "${log_output}/mfcl.log"
+) 2>&1 | tee "${log_output}/mfcl.log" >&2
 mfcl_status=${PIPESTATUS[0]}
 set -e
 [[ "${mfcl_status}" -eq 0 ]] ||
