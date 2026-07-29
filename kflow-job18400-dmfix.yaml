@@ -1,0 +1,157 @@
+name: bet-2026-job18400-dmfix-20260729
+description: "Continue Job 18400 final PAR, fix its eight grouped length-DM concentration intercepts at their fitted upper-bound values, and re-optimise all remaining parameters to MGC 1e-4."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job18400-dmfix-profile-20260729
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: Rscript --vanilla scripts/validate_job18400_dmfix.R && bash run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  CONFIG_R: job-config-job18400-dmfix.R
+  STEP_SELECT: F14-Y5-REC01
+  STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
+  JOB_TITLE: "Job 18400 final PAR | fix 8 DM concentration parameters"
+  JOB_DESCRIPTION: "Continue the exact Job 18400 final PAR, fix only grouped fish_pars(22) through fish flag 69=0, and re-optimise all remaining parameters at MGC 1e-4."
+  MODEL_LABEL: "Job 18400 | DM concentration fixed"
+  JOB_KEY: job18400-dmfix
+  RUN_MODE: job_par_script
+  F15_QC_MODE: lt70
+  DOM_QC_MODE: gt90_midpoint
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  MOVEMENT_PRIOR_PENALTY: "0.1"
+  OPR_MODE: "off"
+  ESTIMATE_M_FINAL: "false"
+  FIX_M_FINAL: "true"
+  FIXED_M_INTERCEPT: "-2.44602044920584"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  PAR_SOURCE_JOB: "18400"
+  KFLOW_INPUT_JOBS: "18400"
+  EXPECTED_SOURCE_PAR_SHA256: "23f8f45e43369fb5df4b797846f975221dc155113518327498906c424e35b86b"
+  JOB_PAR_MAX_EVALUATIONS: "10000"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job18400-dmfix-20260729
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 18400 DM-fixed sensitivity
+  PLOT_MAX_FISHERIES: "18"
+  REPORT_QMD: assessment-report.qmd
+  REPORT_FILE_STEM: bet-2026-report
+  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  STEPWISE_BASE_INPUT_JOB: ""
+  STEPWISE_CHECK_INPUT_JOBS: ""
+  ATTACH_CHECK_TYPES: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: final.par
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
+  MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
+  MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_REPORT_COMMIT_GENERATED: "false"
+  KFLOW_REPORT_PUSH_GENERATED: "false"
+  KFLOW_REPORT_PUBLISH_REQUIRED: "false"
+
+tags:
+  species: BET
+  stage: job18400-dmfix
+  base_job: "18400"
+  dm_mode: fish-pars22-fixed
+
+metadata:
+  base_job: "18400"
+  source_final_par_sha256: 23f8f45e43369fb5df4b797846f975221dc155113518327498906c424e35b86b
+  source_final_objective: "8.91628379503885e+04"
+  source_final_max_gradient: "6.39680558376186e-05"
+  source_final_parameter_count: 1989
+  source_dm_groups: 8
+  source_dm_fish_pars22: "all eight groups 6.999999994 to 7.000000000"
+  final_fish_flag69: 0
+  final_fish_flag89: 1
+  expected_final_parameter_count: 1981
+  dm_likelihood: "DM-noRE retained (parest 141=11)"
+  dm_nmax: 25
+  dm_fixed_parameter: "eight grouped fish_pars(22) length-DM log concentration intercepts"
+  dm_covariate_parameter: "fish_pars(23) remains estimated through fish flag 89"
+  profile_followup: "75 to 125 inclusive at increments of 5"
+  fixed_m_intercept: "-2.44602044920584"
+  optimisation: "Final-PAR continuation at MGC 1e-4, maximum 10000 evaluations"
+  unchanged_controls: "Job 18400 data and model structure; K=0.15; standard recruitment; rec 0.1; movement 0.1; Nmax25; fixed M; common estimated tau; F14/F15 young5"
+  model_count: 1
+  inputs_frozen: true
+  common_tag_tau_estimated: true
+  natural_mortality_estimated: false
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/saved-pars.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+local_apps_from: kflow.yaml
+triggers: {}
+
+model_campaign:
+  rows_source: job-config-job18400-dmfix.R
+  execution: final-par-continuation
+  inputs: attached-job-18400
+  scientific_parent: par-input
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - F15_QC_MODE
+    - DOM_QC_MODE
+    - DM_NMAX
+    - REGIONAL_RECRUITMENT_PENALTY
+    - MOVEMENT_PRIOR_PENALTY
+    - OPR_MODE
+    - ESTIMATE_M_FINAL
+    - FIX_M_FINAL
+    - FIXED_M_INTERCEPT
+    - BET_PHASE10_11_CONVERGENCE
+    - PAR_SOURCE_JOB
+    - KFLOW_INPUT_JOBS
+    - EXPECTED_SOURCE_PAR_SHA256
+    - JOB_PAR_MAX_EVALUATIONS
+    - MFCL_LIVE_LOG
+    - TRIGGER_NEXT
