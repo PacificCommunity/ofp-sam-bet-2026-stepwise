@@ -397,6 +397,7 @@ specs <- lapply(parts, function(part) {
 lib <- Sys.getenv("R_LIBS_USER", "")
 .libPaths(unique(c(lib, .libPaths())))
 declared_refs <- c(
+  FLR4MFCL = Sys.getenv("FLR4MFCL_GITHUB_REF", ""),
   mfclkit = Sys.getenv("MFCLKIT_GITHUB_REF", ""),
   mfclshiny = Sys.getenv("MFCLSHINY_GITHUB_REF", "")
 )
@@ -406,8 +407,9 @@ for (spec in specs) {
     problems <- c(problems, paste0(spec$package, " ref is not a full SHA: ", spec$ref))
     next
   }
-  declared <- unname(declared_refs[[spec$package]])
-  if (!is.null(declared) && !identical(tolower(declared), tolower(spec$ref))) {
+  declared <- unname(declared_refs[spec$package])
+  if (length(declared) && !is.na(declared) && nzchar(declared) &&
+      !identical(tolower(declared), tolower(spec$ref))) {
     problems <- c(problems, paste0(spec$package, " env ref does not match package spec"))
   }
   desc <- tryCatch(
