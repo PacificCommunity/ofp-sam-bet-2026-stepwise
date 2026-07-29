@@ -52,6 +52,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `20b-Francis` | `TRUE` | 20-CompositionWeighting | 20b | apply the independent Francis composition-data weighting comparison | Francis reweighting | 20b Francis length-composition reweighting | `20b-francis` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `20c-DMG8Nmax25` | `TRUE` | 20-CompositionWeighting | 20c | branch directly from Step 19 and use a Dirichlet-multinomial likelihood with G8 grouping and Nmax 25 | DM weighting | 20c Final DM weighting model (Job 14363 settings) | `20c-dm-length-composition-weighting` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `21-MIX015-SC22IP10Cutoff` | `TRUE` | 21-TagMixingCutoff | 21 | replace only the 98 release-group mixing periods with the SC22-IP10 K=0.15 cutoff implementation | SC22-IP10 MIX0.15 cutoff sensitivity | 21 MIX0.15 with SC22-IP10 cutoff method | `21-mix015-sc22ip10-cutoff` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `22a-MIX020-MeanOverPeriod` | `TRUE` | 22-TagMixingMethod | 22a | replace only the 98 release-group mixing periods with the main-branch K=0.2 mean-over-period implementation | K=0.2 mean-over-period mixing | 22a MIX0.2 \| mean over period | `22a-mix020-mean-over-period` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `22b-MIX020-MeanOverKS` | `TRUE` | 22-TagMixingMethod | 22b | replace only the 98 release-group mixing periods with the SC22-IP10 K=0.2 mean-over-KS implementation | K=0.2 mean-over-KS mixing | 22b MIX0.2 \| mean over KS | `22b-mix020-mean-over-ks` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -84,6 +86,8 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `20b-Francis` | `steps/20b-Francis/model` | `exists` |
 | `20c-DMG8Nmax25` | `steps/20c-DMG8Nmax25/model` | `exists` |
 | `21-MIX015-SC22IP10Cutoff` | `steps/21-MIX015-SC22IP10Cutoff/model` | `exists` |
+| `22a-MIX020-MeanOverPeriod` | `steps/22a-MIX020-MeanOverPeriod/model` | `exists` |
+| `22b-MIX020-MeanOverKS` | `steps/22b-MIX020-MeanOverKS/model` | `exists` |
 
 
 ## Useful Kflow Config

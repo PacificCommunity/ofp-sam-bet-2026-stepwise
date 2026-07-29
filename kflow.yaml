@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-stepwise-pathway-v2
-name: bet-2026-stepwise-pathway-v2
-description: Fit the reordered 23-model BET 2026 pathway with separate time-varying CPUE uncertainty and CPUE observation-error calibration steps, 1% LF tail compression on the normal-likelihood pathway, the Job 14363 fleet-specific selectivity choice with form penalties off, an isolated reporting-rate exclusion step, and a final DM model with flag 313 reset to 0 and DM support controlled by flag 320.
+#   /api/job/bet-2026-step22-mix020-methods-20260730
+name: bet-2026-step22-mix020-methods-20260730
+description: Run two isolated K=0.2 tag-mixing sensitivities from the frozen Step 21 state. Step 22a uses the main-branch mean-over-period source and Step 22b uses the SC22-IP10 mean-over-KS source; only tag_flags(:,1) changes, and the two current K=0.2 vectors are identical.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
