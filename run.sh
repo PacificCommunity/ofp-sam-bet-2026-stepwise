@@ -185,7 +185,16 @@ download_github_archive <- function(repo, ref) {
   }
   curl <- Sys.which("curl")
   if (nzchar(curl)) {
-    args <- c("-sSL", "--retry", "3", "--retry-delay", "2", "-w", "%{http_code}", "-o", archive)
+    args <- c(
+      "-sSL",
+      "--connect-timeout", "15",
+      "--max-time", "90",
+      "--retry", "3",
+      "--retry-all-errors",
+      "--retry-delay", "2",
+      "-w", "%{http_code}",
+      "-o", archive
+    )
     if (nzchar(token)) {
       args <- c(
         "-H", paste("Authorization: Bearer", token),
@@ -231,7 +240,7 @@ clone_github_source <- function(repo, ref) {
     Sys.chmod(askpass, mode = "0700")
     on.exit(unlink(askpass), add = TRUE)
   }
-  run_git <- function(args) {
+  run_git_once <- function(args) {
     env <- character()
     if (nzchar(askpass)) {
       env <- c(
@@ -240,8 +249,18 @@ clone_github_source <- function(repo, ref) {
         paste0("KFLOW_GIT_ASKPASS_TOKEN=", token)
       )
     }
-    status <- system2(git, args, env = env, stdout = FALSE, stderr = FALSE)
+    timeout <- Sys.which("timeout")
+    command <- if (nzchar(timeout)) timeout else git
+    command_args <- if (nzchar(timeout)) c("90", git, args) else args
+    status <- system2(command, command_args, env = env, stdout = FALSE, stderr = FALSE)
     identical(as.integer(status), 0L)
+  }
+  run_git <- function(args, attempts = 3L) {
+    for (attempt in seq_len(attempts)) {
+      if (run_git_once(args)) return(TRUE)
+      if (attempt < attempts) Sys.sleep(2 * attempt)
+    }
+    FALSE
   }
   if (!run_git(c("clone", "--quiet", "--depth", "50", git_url, source_dir))) {
     stop("git clone failed for ", repo, call. = FALSE)
