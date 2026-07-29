@@ -16,7 +16,8 @@ resources:
   memory: 8GB
   disk: 8GB
 
-exclude_machines: []
+exclude_machines:
+  - suvofpcand16
 exclude_slots: []
 
 env:
