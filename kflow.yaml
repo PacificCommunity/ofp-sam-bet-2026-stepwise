@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-step23-common-tag-tau-20260730
-name: bet-2026-step23-common-tag-tau-20260730
-description: Run four isolated common-tag-tau sensitivities from the exact Step 20c, Step 21, Step 22a and Step 22b states. Each comparison retains its parent's MFCL inputs, executable image, M, DM, reporting rates and mixing periods; only the doitall tag-tau estimation controls change.
+#   /api/job/bet-2026-step24-tunaflow26-exe-20260730
+name: bet-2026-step24-tunaflow26-exe-20260730
+description: Rerun the four exact Step 23 common-tag-tau states with the immutable tuna-flow v2.6 MFCL executable. The only input compatibility edit is the required 1965-02 to 1969-11 calendar header in bet.reg_scaling; its 20-by-5 values and every other scientific control remain unchanged.
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -20,9 +20,10 @@ slot_requirements: 'regexp("^suvofp", Machine)'
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
 
-# Immutable digest resolved for tuna-flow:v2.2. Never replace this with a tag
-# for a campaign run.
-docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+# Immutable digest resolved from tuna-flow:v2.6 on 2026-07-30. It contains
+# MFCL 2.6.0-tag-premixing-reporting-rate-fix, executable SHA256
+# 13f5b1b6a8873cfd9afc850b3bdcb46d5bb62d28dcc70604362e4c89b29fb682.
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
 
 # HTCondor resource request. Increase memory/disk before increasing CPUs unless
 # the MFCL command itself can use more threads.
@@ -40,12 +41,12 @@ env:
   # A public-task launch is safe by default: exactly one model is selected.
   # Campaign rows override all four identity fields together. Local sequential
   # runs must explicitly set STEPWISE_ALLOW_SEQUENTIAL_ALL=true.
-  STEP_SELECT: 01-Diag2023
+  STEP_SELECT: 24a-20c-CommonTagTau-TF26
   STEPWISE_ALLOW_SEQUENTIAL_ALL: "false"
-  JOB_TITLE: "BET 2026 stepwise | 01 2023 diagnostic rerun"
-  JOB_DESCRIPTION: "Run one independently frozen BET 2026 stepwise model from the corrected public campaign."
-  MODEL_LABEL: 2023 diagnostic rerun
-  JOB_KEY: 01-diag2023
+  JOB_TITLE: "24a 20c common tau | MFCL 2.6"
+  JOB_DESCRIPTION: "Rerun the exact Step 23a state with the pinned tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header."
+  MODEL_LABEL: 20c common tau with MFCL 2.6
+  JOB_KEY: 24a-20c-common-tag-tau-tf26
   TRIGGER_NEXT: "false"
   FLOW_GROUP: bet-2026-stepwise-pathway
   FLOW_SPECIES: BET

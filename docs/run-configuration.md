@@ -11,7 +11,7 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
 | `flow_group` | `bet-2026-stepwise-pathway` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `false` | Whether command-line Kflow submissions keep the downstream results/report chain. |
-| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360` | Docker image used by Kflow and local Docker runs. |
+| `docker_image` | `ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
 | `stepwise_save_final_par` | `false` | Optional: copy the final `.par` back into `steps/<step_id>/model/`. Off by default; Kflow outputs always include `outputs/models/<step_id>/final.par`. |
 | `stepwise_save_raw_mfcl_inputs` | `true` | Preserve the full raw MFCL input folder under `outputs/models/<step_id>/mfcl-inputs/` for native-style auditability. |
@@ -58,6 +58,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `23b-MIX015-SC22IP10-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23b | estimate exactly one common tag-recapture tau while retaining the complete Step 21 K=0.15 cutoff model and runtime state | K=0.15 cutoff with one common tag tau | 23b MIX0.15 cutoff \| estimate one common tag tau | `23b-mix015-cutoff-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `23c-MIX020-MeanOverPeriod-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23c | estimate exactly one common tag-recapture tau while retaining the complete Step 22a K=0.2 mean-over-period model and runtime state | K=0.2 mean over period with one common tag tau | 23c MIX0.2 mean over period \| estimate one common tag tau | `23c-mix020-period-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `23d-MIX020-MeanOverKS-CommonTagTau` | `TRUE` | 23-CommonTagTau | 23d | estimate exactly one common tag-recapture tau while retaining the complete Step 22b K=0.2 mean-over-KS model and runtime state | K=0.2 mean over KS with one common tag tau | 23d MIX0.2 mean over KS \| estimate one common tag tau | `23d-mix020-ks-common-tag-tau` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `24a-20c-CommonTagTau-TF26` | `TRUE` | 24-Executable | 24a | rerun Step 23a with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header | 20c common tau with MFCL 2.6 | 24a 20c common tau \| MFCL 2.6 | `24a-20c-common-tag-tau-tf26` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `24b-MIX015-SC22IP10-CommonTagTau-TF26` | `TRUE` | 24-Executable | 24b | rerun Step 23b with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header | K=0.15 cutoff common tau with MFCL 2.6 | 24b MIX0.15 cutoff common tau \| MFCL 2.6 | `24b-mix015-cutoff-common-tag-tau-tf26` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `24c-MIX020-MeanOverPeriod-CommonTagTau-TF26` | `TRUE` | 24-Executable | 24c | rerun Step 23c with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header | K=0.2 mean over period common tau with MFCL 2.6 | 24c MIX0.2 mean over period common tau \| MFCL 2.6 | `24c-mix020-period-common-tag-tau-tf26` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `24d-MIX020-MeanOverKS-CommonTagTau-TF26` | `TRUE` | 24-Executable | 24d | rerun Step 23d with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header | K=0.2 mean over KS common tau with MFCL 2.6 | 24d MIX0.2 mean over KS common tau \| MFCL 2.6 | `24d-mix020-ks-common-tag-tau-tf26` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -96,6 +100,10 @@ This file keeps the operational Kflow/local-run details out of the root README.
 | `23b-MIX015-SC22IP10-CommonTagTau` | `steps/23b-MIX015-SC22IP10-CommonTagTau/model` | `exists` |
 | `23c-MIX020-MeanOverPeriod-CommonTagTau` | `steps/23c-MIX020-MeanOverPeriod-CommonTagTau/model` | `exists` |
 | `23d-MIX020-MeanOverKS-CommonTagTau` | `steps/23d-MIX020-MeanOverKS-CommonTagTau/model` | `exists` |
+| `24a-20c-CommonTagTau-TF26` | `steps/24a-20c-CommonTagTau-TF26/model` | `exists` |
+| `24b-MIX015-SC22IP10-CommonTagTau-TF26` | `steps/24b-MIX015-SC22IP10-CommonTagTau-TF26/model` | `exists` |
+| `24c-MIX020-MeanOverPeriod-CommonTagTau-TF26` | `steps/24c-MIX020-MeanOverPeriod-CommonTagTau-TF26/model` | `exists` |
+| `24d-MIX020-MeanOverKS-CommonTagTau-TF26` | `steps/24d-MIX020-MeanOverKS-CommonTagTau-TF26/model` | `exists` |
 
 
 ## Useful Kflow Config

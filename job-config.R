@@ -5,10 +5,10 @@
 # dependency. Select one or more rows with the exact values in STEP_SELECT.
 
 stepwise_run <- list(
-  # Run all 30 independent models unless STEP_SELECT is supplied.
+  # Run all 34 independent models unless STEP_SELECT is supplied.
   default_step_select = "all",
-  numbered_groups = 23L,
-  model_rows = 30L,
+  numbered_groups = 24L,
+  model_rows = 34L,
   selected_path_models = 20L,
 
   # Short Kflow group label for one stepwise -> results -> report chain.
@@ -283,6 +283,42 @@ stepwise_models <- do.call(
       "23d MIX0.2 mean over KS | estimate one common tag tau",
       "23d-mix020-ks-common-tag-tau",
       "Clone Step 22b byte-for-byte and change only the tau-estimation controls in doitall.sh from Phase 10 onward. Use the same one-common-tau specification as Step 23a. The SC22-IP10 K=0.2 mixing periods, M, DM G8/Nmax25, reporting rates, selectivity, regional scaling, data, executable and Phases 0-9 are unchanged. Its current mixing-period vector is identical to Step 23c, while source-method provenance remains distinct."
+    ),
+    model_row(
+      "24a-20c-CommonTagTau-TF26", "24-Executable", "23a-20c-CommonTagTau",
+      FALSE, "stop",
+      "rerun Step 23a with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header",
+      "20c common tau with MFCL 2.6",
+      "24a 20c common tau | MFCL 2.6",
+      "24a-20c-common-tag-tau-tf26",
+      "Clone Step 23a exactly. Change only the immutable tuna-flow v2.6 runtime/contained MFCL executable and prepend the required `1965 2 1969 11` compatibility header to bet.reg_scaling. The following 20-by-5 values and bet.reg_scaling.full remain byte-identical. Tau, M, DM G8/Nmax25, mixing periods, reporting rates, selectivity, data and the complete doitall phase/evaluation structure are unchanged."
+    ),
+    model_row(
+      "24b-MIX015-SC22IP10-CommonTagTau-TF26", "24-Executable", "23b-MIX015-SC22IP10-CommonTagTau",
+      FALSE, "stop",
+      "rerun Step 23b with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header",
+      "K=0.15 cutoff common tau with MFCL 2.6",
+      "24b MIX0.15 cutoff common tau | MFCL 2.6",
+      "24b-mix015-cutoff-common-tag-tau-tf26",
+      "Clone Step 23b exactly. Change only the immutable tuna-flow v2.6 runtime/contained MFCL executable and prepend the required `1965 2 1969 11` compatibility header to bet.reg_scaling. The following 20-by-5 values and bet.reg_scaling.full remain byte-identical. Tau, M, DM G8/Nmax25, K=0.15 mixing periods, reporting rates, selectivity, data and the complete doitall phase/evaluation structure are unchanged."
+    ),
+    model_row(
+      "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26", "24-Executable", "23c-MIX020-MeanOverPeriod-CommonTagTau",
+      FALSE, "stop",
+      "rerun Step 23c with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header",
+      "K=0.2 mean over period common tau with MFCL 2.6",
+      "24c MIX0.2 mean over period common tau | MFCL 2.6",
+      "24c-mix020-period-common-tag-tau-tf26",
+      "Clone Step 23c exactly. Change only the immutable tuna-flow v2.6 runtime/contained MFCL executable and prepend the required `1965 2 1969 11` compatibility header to bet.reg_scaling. The following 20-by-5 values and bet.reg_scaling.full remain byte-identical. Tau, M, DM G8/Nmax25, K=0.2 mean-over-period mixing periods, reporting rates, selectivity, data and the complete doitall phase/evaluation structure are unchanged."
+    ),
+    model_row(
+      "24d-MIX020-MeanOverKS-CommonTagTau-TF26", "24-Executable", "23d-MIX020-MeanOverKS-CommonTagTau",
+      FALSE, "stop",
+      "rerun Step 23d with the tuna-flow v2.6 MFCL executable and its required regional-scaling calendar header",
+      "K=0.2 mean over KS common tau with MFCL 2.6",
+      "24d MIX0.2 mean over KS common tau | MFCL 2.6",
+      "24d-mix020-ks-common-tag-tau-tf26",
+      "Clone Step 23d exactly. Change only the immutable tuna-flow v2.6 runtime/contained MFCL executable and prepend the required `1965 2 1969 11` compatibility header to bet.reg_scaling. The following 20-by-5 values and bet.reg_scaling.full remain byte-identical. Tau, M, DM G8/Nmax25, K=0.2 mean-over-KS mixing periods, reporting rates, selectivity, data and the complete doitall phase/evaluation structure are unchanged."
     )
   )
 )
@@ -322,7 +358,11 @@ stepwise_report_change <- c(
   "23a-20c-CommonTagTau" = "One common tag-recapture tau estimated from the Step 20c state",
   "23b-MIX015-SC22IP10-CommonTagTau" = "One common tag-recapture tau estimated from the Step 21 K = 0.15 cutoff state",
   "23c-MIX020-MeanOverPeriod-CommonTagTau" = "One common tag-recapture tau estimated from the Step 22a K = 0.2 mean-over-period state",
-  "23d-MIX020-MeanOverKS-CommonTagTau" = "One common tag-recapture tau estimated from the Step 22b K = 0.2 mean-over-KS state"
+  "23d-MIX020-MeanOverKS-CommonTagTau" = "One common tag-recapture tau estimated from the Step 22b K = 0.2 mean-over-KS state",
+  "24a-20c-CommonTagTau-TF26" = "Step 23a rerun with MFCL 2.6",
+  "24b-MIX015-SC22IP10-CommonTagTau-TF26" = "Step 23b rerun with MFCL 2.6",
+  "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26" = "Step 23c rerun with MFCL 2.6",
+  "24d-MIX020-MeanOverKS-CommonTagTau-TF26" = "Step 23d rerun with MFCL 2.6"
 )
 stepwise_report_purpose <- c(
   "01-Diag2023" = "Provide a reproducible reference for subsequent comparisons.",
@@ -354,7 +394,11 @@ stepwise_report_purpose <- c(
   "23a-20c-CommonTagTau" = "Isolate the effect of estimating one common native-bound tag-recapture overdispersion parameter from the Step 20c state.",
   "23b-MIX015-SC22IP10-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 21 K = 0.15 cutoff state.",
   "23c-MIX020-MeanOverPeriod-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 22a K = 0.2 mean-over-period state.",
-  "23d-MIX020-MeanOverKS-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 22b K = 0.2 mean-over-KS state."
+  "23d-MIX020-MeanOverKS-CommonTagTau" = "Isolate the effect of the same common-tau estimate from the Step 22b K = 0.2 mean-over-KS state.",
+  "24a-20c-CommonTagTau-TF26" = "Isolate the executable-version effect from Step 23a; the regional-scaling calendar header is the required input-format compatibility change.",
+  "24b-MIX015-SC22IP10-CommonTagTau-TF26" = "Isolate the executable-version effect from Step 23b; the regional-scaling calendar header is the required input-format compatibility change.",
+  "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26" = "Isolate the executable-version effect from Step 23c; the regional-scaling calendar header is the required input-format compatibility change.",
+  "24d-MIX020-MeanOverKS-CommonTagTau-TF26" = "Isolate the executable-version effect from Step 23d; the regional-scaling calendar header is the required input-format compatibility change."
 )
 stepwise_models$report_change <- unname(
   stepwise_report_change[stepwise_models$step_id]
@@ -388,7 +432,11 @@ path_stage <- c(
   "23a-20c-CommonTagTau" = 23L,
   "23b-MIX015-SC22IP10-CommonTagTau" = 23L,
   "23c-MIX020-MeanOverPeriod-CommonTagTau" = 23L,
-  "23d-MIX020-MeanOverKS-CommonTagTau" = 23L
+  "23d-MIX020-MeanOverKS-CommonTagTau" = 23L,
+  "24a-20c-CommonTagTau-TF26" = 24L,
+  "24b-MIX015-SC22IP10-CommonTagTau-TF26" = 24L,
+  "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26" = 24L,
+  "24d-MIX020-MeanOverKS-CommonTagTau-TF26" = 24L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -407,7 +455,11 @@ stepwise_models$dm_grouping[
     "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS",
     "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
     "23c-MIX020-MeanOverPeriod-CommonTagTau",
-    "23d-MIX020-MeanOverKS-CommonTagTau"
+    "23d-MIX020-MeanOverKS-CommonTagTau",
+    "24a-20c-CommonTagTau-TF26",
+    "24b-MIX015-SC22IP10-CommonTagTau-TF26",
+    "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26",
+    "24d-MIX020-MeanOverKS-CommonTagTau-TF26"
   )
 ] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
@@ -417,7 +469,11 @@ stepwise_models$dm_nmax[
     "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS",
     "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
     "23c-MIX020-MeanOverPeriod-CommonTagTau",
-    "23d-MIX020-MeanOverKS-CommonTagTau"
+    "23d-MIX020-MeanOverKS-CommonTagTau",
+    "24a-20c-CommonTagTau-TF26",
+    "24b-MIX015-SC22IP10-CommonTagTau-TF26",
+    "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26",
+    "24d-MIX020-MeanOverKS-CommonTagTau-TF26"
   )
 ] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
@@ -440,7 +496,11 @@ stepwise_models$tail_compression_percent <- ifelse(
       "22a-MIX020-MeanOverPeriod", "22b-MIX020-MeanOverKS",
       "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
       "23c-MIX020-MeanOverPeriod-CommonTagTau",
-      "23d-MIX020-MeanOverKS-CommonTagTau"
+      "23d-MIX020-MeanOverKS-CommonTagTau",
+      "24a-20c-CommonTagTau-TF26",
+      "24b-MIX015-SC22IP10-CommonTagTau-TF26",
+      "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26",
+      "24d-MIX020-MeanOverKS-CommonTagTau-TF26"
     ), 1, 0
 )
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 13L
@@ -451,10 +511,14 @@ stepwise_models$tag_tau_grouping[
   stepwise_models$step_id %in% c(
     "23a-20c-CommonTagTau", "23b-MIX015-SC22IP10-CommonTagTau",
     "23c-MIX020-MeanOverPeriod-CommonTagTau",
-    "23d-MIX020-MeanOverKS-CommonTagTau"
+    "23d-MIX020-MeanOverKS-CommonTagTau",
+    "24a-20c-CommonTagTau-TF26",
+    "24b-MIX015-SC22IP10-CommonTagTau-TF26",
+    "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26",
+    "24d-MIX020-MeanOverKS-CommonTagTau-TF26"
   )
 ] <- "one common tau (F1-F28)"
 rownames(stepwise_models) <- NULL
-stepwise_run$numbered_groups <- 23L
+stepwise_run$numbered_groups <- 24L
 stepwise_run$model_rows <- nrow(stepwise_models)
 stepwise_run$selected_path_models <- sum(stepwise_models$selected & stepwise_models$enabled)

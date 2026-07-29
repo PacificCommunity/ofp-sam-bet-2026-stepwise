@@ -1062,7 +1062,33 @@ for (i in seq_len(nrow(models))) {
     } else {
       active_lock <- lock_by_role_name("regional_scaling", "ACTIVE20X5")
       full_lock <- lock_by_role_name("regional_scaling", "FULL292X5")
-      if (!is.null(active_lock) && !identical(sha256_file(active_path), trim_character(active_lock$prepared_sha256[[1L]]))) add_failure(model_id, "active regional-scaling SHA256 differs from the locked 20x5 matrix.")
+      current_mfcl_header <- model_id %in% c(
+        "24a-20c-CommonTagTau-TF26",
+        "24b-MIX015-SC22IP10-CommonTagTau-TF26",
+        "24c-MIX020-MeanOverPeriod-CommonTagTau-TF26",
+        "24d-MIX020-MeanOverKS-CommonTagTau-TF26"
+      )
+      if (current_mfcl_header) {
+        active_lines <- readLines(active_path, warn = FALSE)
+        full_lines <- readLines(full_path, warn = FALSE)
+        if (length(active_lines) != 21L ||
+            !identical(trimws(active_lines[[1L]]), "1965 2 1969 11") ||
+            !identical(active_lines[-1L], full_lines[53:72])) {
+          add_failure(
+            model_id,
+            paste0(
+              "MFCL 2.6 regional-scaling input must contain header ",
+              "`1965 2 1969 11` followed by the locked active periods 53-72."
+            )
+          )
+        }
+      } else if (!is.null(active_lock) &&
+                 !identical(
+                   sha256_file(active_path),
+                   trim_character(active_lock$prepared_sha256[[1L]])
+                 )) {
+        add_failure(model_id, "active regional-scaling SHA256 differs from the locked 20x5 matrix.")
+      }
       if (!is.null(full_lock) && !identical(sha256_file(full_path), trim_character(full_lock$prepared_sha256[[1L]]))) add_failure(model_id, "full regional-scaling SHA256 differs from the locked 292x5 matrix.")
     }
     regw <- suppressWarnings(as.numeric(row_value(row, "regional_scaling_weight", sub(".*REGW([0-9]+).*", "\\1", token))))
