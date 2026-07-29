@@ -1,5 +1,5 @@
-name: bet-2026-job18400-dmfix-20260729
-description: "Continue Job 18400 final PAR, fix its eight grouped length-DM concentration intercepts at their fitted upper-bound values, and re-optimise all remaining parameters to MGC 1e-4."
+name: bet-2026-job18400-dmfix-direct-20260729
+description: "Continue the exact Job 18400 final PAR, fix its eight grouped length-DM concentration intercepts at their fitted upper-bound values, and re-optimise all remaining parameters to MGC 1e-4 without runtime package installation."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: sensitivity/job18400-dmfix-profile-20260729
@@ -8,7 +8,7 @@ remote_user: kyuhank
 remote_base_dir: /home/kyuhank/KflowOutput
 slot_requirements: 'regexp("^suvofp", Machine)'
 
-command: Rscript --vanilla scripts/validate_job18400_dmfix.R && bash run.sh
+command: bash scripts/run_job18400_dmfix_standalone.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
 
 resources:
@@ -16,8 +16,7 @@ resources:
   memory: 8GB
   disk: 8GB
 
-exclude_machines:
-  - suvofpcand16
+exclude_machines: []
 exclude_slots: []
 
 env:
@@ -47,7 +46,7 @@ env:
   EXPECTED_SOURCE_PAR_SHA256: "23f8f45e43369fb5df4b797846f975221dc155113518327498906c424e35b86b"
   JOB_PAR_MAX_EVALUATIONS: "10000"
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-job18400-dmfix-20260729
+  FLOW_GROUP: bet-2026-job18400-dmfix-direct-20260729
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -55,7 +54,7 @@ env:
   PLOT_MAX_FISHERIES: "18"
   REPORT_QMD: assessment-report.qmd
   REPORT_FILE_STEM: bet-2026-report
-  STEPWISE_BUILD_PAYLOAD: "true"
+  STEPWISE_BUILD_PAYLOAD: "false"
   STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
   INPUT_PAR: ""
   STEPWISE_PAR_SOURCE_DIR: ""
@@ -70,24 +69,24 @@ env:
   STEPWISE_PUBLISH_REQUIRED: "false"
   STEPWISE_SINGLE_PAR_REPORT: "true"
   MFCL_LIVE_LOG: "true"
-  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "false"
   KFLOW_RUNTIME_UPDATE: never
   TUNA_FLOW_RUNTIME_UPDATE: never
-  KFLOW_REPO_RUNTIME_UPDATE: auto
+  KFLOW_REPO_RUNTIME_UPDATE: never
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739,mfclkit=PacificCommunity/ofp-sam-mfclkit@a0fe04baa9c119353123367e5a652bb73d909b84,mfclshiny=PacificCommunity/mfclshiny@760e2824701de39c212cc264696889146c277417
+  KFLOW_REPO_RUNTIME_PACKAGES: none
   FLR4MFCL_GITHUB_REF: 3faaf84a4867175bfea50d89e4d518c085e84739
   MFCLKIT_GITHUB_REF: a0fe04baa9c119353123367e5a652bb73d909b84
   MFCLSHINY_GITHUB_REF: 760e2824701de39c212cc264696889146c277417
-  KFLOW_RUNTIME_GITHUB_AUTH: "true"
-  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_RUNTIME_GITHUB_AUTH: "false"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "false"
   KFLOW_REPORT_COMMIT_GENERATED: "false"
   KFLOW_REPORT_PUSH_GENERATED: "false"
   KFLOW_REPORT_PUBLISH_REQUIRED: "false"
 
 tags:
   species: BET
-  stage: job18400-dmfix
+  stage: job18400-dmfix-direct
   base_job: "18400"
   dm_mode: fish-pars22-fixed
 
@@ -108,7 +107,7 @@ metadata:
   dm_covariate_parameter: "fish_pars(23) remains estimated through fish flag 89"
   profile_followup: "75 to 125 inclusive at increments of 5"
   fixed_m_intercept: "-2.44602044920584"
-  optimisation: "Final-PAR continuation at MGC 1e-4, maximum 10000 evaluations"
+  optimisation: "Standalone final-PAR continuation at MGC 1e-4, maximum 10000 evaluations; no runtime R-package installation"
   unchanged_controls: "Job 18400 data and model structure; K=0.15; standard recruitment; rec 0.1; movement 0.1; Nmax25; fixed M; common estimated tau; F14/F15 young5"
   model_count: 1
   inputs_frozen: true
@@ -119,9 +118,12 @@ metadata:
 output_patterns:
   - outputs/selected-steps.csv
   - outputs/model-index.csv
-  - outputs/saved-pars.csv
+  - outputs/job18400-dmfix-audit.csv
   - outputs/models/**
   - outputs/logs/**
+
+input_jobs:
+  - "18400"
 
 local_apps_from: kflow.yaml
 triggers: {}
