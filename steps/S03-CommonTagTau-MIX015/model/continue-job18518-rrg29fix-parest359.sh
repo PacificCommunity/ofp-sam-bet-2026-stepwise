@@ -18,6 +18,8 @@ bridge_evaluations=${PAREST359_BRIDGE_MAX_EVALUATIONS:-10000}
 final_evaluations=${JOB_PAR_MAX_EVALUATIONS:-10000}
 penalty_flag=${SELECTIVITY_LOWER_BOUND_PENALTY:-1000}
 expected_source_par_sha256=${EXPECTED_SOURCE_PAR_SHA256:-}
+expected_source_m=${EXPECTED_SOURCE_M_INTERCEPT:--2.44602044920584}
+fixed_m_intercept=${FIXED_M_INTERCEPT:--2.5493033976836}
 
 fail()
 {
@@ -95,6 +97,49 @@ read_indepvar_value()
   awk -v parameter="$1" '$2 == parameter {print $3; exit}' "$2"
 }
 
+same_number()
+{
+  awk -v observed="$1" -v expected="$2" 'BEGIN {
+    difference = observed - expected
+    if (difference < 0) difference = -difference
+    scale = expected
+    if (scale < 0) scale = -scale
+    if (scale < 1) scale = 1
+    exit(difference <= 1e-12 * scale ? 0 : 1)
+  }'
+}
+
+set_age_pars5()
+{
+  input_file=$1
+  output_file=$2
+  target_value=$3
+  awk -v target="$target_value" '
+    /^# age_pars/ || /^# age-class related parameters [(]age_pars[)]/ {
+      in_age=1
+      print
+      next
+    }
+    in_age && /^#/ {
+      print
+      next
+    }
+    in_age && NF {
+      row++
+      if (row == 5) {
+        $1 = sprintf("%.14e", target)
+        changed++
+      }
+      print
+      next
+    }
+    {print}
+    END {
+      if (changed != 1) exit 42
+    }
+  ' "$input_file" > "$output_file"
+}
+
 source_sha256=$(sha256_file "$input_par")
 [ "$source_sha256" = "$expected_source_par_sha256" ] ||
   fail "Attached PAR is not the checksum-verified Job 18518 final PAR."
@@ -103,6 +148,8 @@ source_npars=$(read_footer_value "# The number of parameters" "$input_par")
 source_obj=$(read_footer_value "# Objective function value" "$input_par")
 source_grad=$(read_footer_value "# Maximum magnitude gradient value" "$input_par")
 source_m=$(read_age_pars5 "$input_par")
+same_number "$source_m" "$expected_source_m" ||
+  fail "Job 18518 source M intercept $source_m does not match $expected_source_m."
 [ "$(read_par_flag "# The parest_flags" 50 "$input_par")" = -4 ] &&
 [ "$(read_par_flag "# The parest_flags" 121 "$input_par")" = 0 ] &&
 [ "$(read_par_flag "# The parest_flags" 141 "$input_par")" = 11 ] &&
@@ -134,6 +181,13 @@ source_rr29=$(read_indepvar_value "tag_fish_rep(29)" "$source_indepvar")
 python3 "$reporting_fix_script" apply "$input_par" "$fixed_start_par"
 [ -s "$fixed_start_par" ] ||
   fail "The reporting-rate fix did not create $fixed_start_par."
+fixed_start_tmp="${fixed_start_par}.m-tmp"
+set_age_pars5 "$fixed_start_par" "$fixed_start_tmp" "$fixed_m_intercept" ||
+  fail "Could not set age_pars(5) to the requested fixed M intercept."
+mv "$fixed_start_tmp" "$fixed_start_par"
+fixed_start_m=$(read_age_pars5 "$fixed_start_par")
+same_number "$fixed_start_m" "$fixed_m_intercept" ||
+  fail "The fixed-start M intercept is $fixed_start_m, expected $fixed_m_intercept."
 
 {
   printf '%s\n' \
@@ -148,16 +202,20 @@ python3 "$reporting_fix_script" apply "$input_par" "$fixed_start_par"
     "  1 186 0"
 } > "$bridge_control_file"
 
-echo "Continuing Job 18518 with two targeted stability changes."
+echo "Continuing Job 18518 with the RR/selectivity changes and the historical fixed M sensitivity."
 echo "  source PAR SHA256: $source_sha256"
 echo "  tag reporting-rate group 29: $source_rr29 estimated -> 0 fixed"
 echo "  group 29 prior penalty: disabled because MFCL applies it independently of the active flag"
 echo "  parest flag 359: 0 -> 1000 (0.1 soft penalty below spline coefficient -15)"
-echo "  DM fish_pars(22) remain fixed; M remains fixed at $source_m"
+echo "  DM fish_pars(22) remain fixed"
+echo "  fixed M intercept: $source_m -> $fixed_m_intercept"
 echo "  Stage A: MGC 1e-5 bridge; maximum evaluations $bridge_evaluations"
 "$program_path" "$frq" "$fixed_start_par" "$bridge_par" -file "$bridge_control_file"
 [ -s "$bridge_par" ] || fail "MFCL did not create $bridge_par."
 python3 "$reporting_fix_script" check "$bridge_par"
+bridge_m=$(read_age_pars5 "$bridge_par")
+same_number "$bridge_m" "$fixed_m_intercept" ||
+  fail "The fixed M intercept changed during Stage A: $bridge_m."
 
 bridge_obj=$(read_footer_value "# Objective function value" "$bridge_par")
 bridge_grad=$(read_footer_value "# Maximum magnitude gradient value" "$bridge_par")
@@ -206,8 +264,9 @@ while [ "$fishery" -le 33 ]; do
   fishery=$((fishery + 1))
 done
 
-[ "$(read_age_pars5 "$final_par")" = "$source_m" ] ||
-  fail "The fixed natural-mortality intercept changed."
+output_m=$(read_age_pars5 "$final_par")
+same_number "$output_m" "$fixed_m_intercept" ||
+  fail "The fixed natural-mortality intercept changed: $output_m."
 
 dm22_count=$(awk '$2 ~ /^fish_pars[(]22[)]/ {n++} END {print n+0}' indepvar.rpt)
 dm23_count=$(awk '$2 ~ /^fish_pars[(]23[)]/ {n++} END {print n+0}' indepvar.rpt)
@@ -246,13 +305,14 @@ remaining_lower_bounds=$(awk \
 output_sha256=$(sha256_file "$final_par")
 {
   printf '%s\n' \
-    "source_job,source_par_sha256,output_par_sha256,source_objective,bridge_objective,output_objective,source_max_gradient,bridge_max_gradient,output_max_gradient,source_npars,output_npars,source_parest359,output_parest359,source_reporting_group29,output_reporting_group29,reporting_group29_active,reporting_group29_prior_active,source_sel14_terminal,output_sel14_terminal,source_sel22_terminal,output_sel22_terminal,remaining_terminal_lower_bounds,dm22_active,dm23_active,m_active,tau_active,status"
+    "source_job,source_par_sha256,output_par_sha256,source_objective,bridge_objective,output_objective,source_max_gradient,bridge_max_gradient,output_max_gradient,source_npars,output_npars,source_m,fixed_m,source_parest359,output_parest359,source_reporting_group29,output_reporting_group29,reporting_group29_active,reporting_group29_prior_active,source_sel14_terminal,output_sel14_terminal,source_sel22_terminal,output_sel22_terminal,remaining_terminal_lower_bounds,dm22_active,dm23_active,m_active,tau_active,status"
   printf '%s\n' \
-    "18518,$source_sha256,$output_sha256,$source_obj,$bridge_obj,$output_obj,$source_grad,$bridge_grad,$output_grad,$source_npars,$output_npars,0,1000,$source_rr29,0,0,0,$source_sel14,$output_sel14,$source_sel22,$output_sel22,$remaining_lower_bounds,$dm22_count,$dm23_count,$m_count,$tau_count,passed"
+    "18518,$source_sha256,$output_sha256,$source_obj,$bridge_obj,$output_obj,$source_grad,$bridge_grad,$output_grad,$source_npars,$output_npars,$source_m,$output_m,0,1000,$source_rr29,0,0,0,$source_sel14,$output_sel14,$source_sel22,$output_sel22,$remaining_lower_bounds,$dm22_count,$dm23_count,$m_count,$tau_count,passed"
 } > "$audit_file"
 
 echo "Job 18518 reporting-rate/selectivity-penalty continuation audit passed."
 echo "  reporting-rate group 29: $source_rr29 estimated -> 0 fixed"
+echo "  fixed M intercept: $source_m -> $output_m"
 echo "  active reporting-rate parameters: 12 -> $rr_total_count"
 echo "  terminal spline group 14: $source_sel14 -> $output_sel14"
 echo "  terminal spline group 22: $source_sel22 -> $output_sel22"

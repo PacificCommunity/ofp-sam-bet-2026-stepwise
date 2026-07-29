@@ -1,8 +1,8 @@
-name: bet-2026-job18518-rrg29fix-parest359-20260730
-description: "Continue the checksum-verified Job 18518 final PAR, fix lower-bound tag reporting-rate group 29 at zero, enable MFCL parest flag 359=1000 for the spline-selectivity lower-tail penalty, and re-optimise to MGC 1e-4."
+name: bet-2026-job18518-rrg29fix-parest359-m2549303-20260730
+description: "Repeat the Job 18584 specification with only the fixed Lorenzen M intercept changed from -2.44602044920584 to the verified Job 17805 value -2.5493033976836."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
-branch: sensitivity/job18518-rrg29fix-parest359-20260730
+branch: sensitivity/job18518-rrg29fix-parest359-m2549303-20260730
 remote_host: suva
 remote_user: kyuhank
 remote_base_dir: /home/kyuhank/KflowOutput
@@ -21,10 +21,10 @@ exclude_slots: []
 
 env:
   STEP_SELECT: F14-Y5-REC01
-  JOB_TITLE: "Job 18518 final PAR | RR group 29 fixed zero | parest 359=1000"
-  JOB_DESCRIPTION: "Continue the exact Job 18518 final PAR, fix the lower-bound reporting-rate group 29 at zero, and enable the MFCL soft spline-selectivity penalty below coefficient -15."
-  MODEL_LABEL: "Job 18518 | RR29 fixed zero + spline penalty"
-  JOB_KEY: job18518-rrg29fix-parest359
+  JOB_TITLE: "Job 18518 final PAR | M=-2.5493033976836 | RR group 29 fixed zero | parest 359=1000"
+  JOB_DESCRIPTION: "Repeat Job 18584 with only the fixed Lorenzen M intercept changed to the verified Job 17805 value."
+  MODEL_LABEL: "Job 18518 | M=-2.5493033976836 | RR29 fixed zero + spline penalty"
+  JOB_KEY: job18518-rrg29fix-parest359-m2549303
   RUN_MODE: job_par_script
   F15_QC_MODE: lt70
   DOM_QC_MODE: gt90_midpoint
@@ -36,7 +36,8 @@ env:
   OPR_MODE: "off"
   ESTIMATE_M_FINAL: "false"
   FIX_M_FINAL: "true"
-  FIXED_M_INTERCEPT: "-2.44602044920584"
+  EXPECTED_SOURCE_M_INTERCEPT: "-2.44602044920584"
+  FIXED_M_INTERCEPT: "-2.5493033976836"
   TAG_LIKELIHOOD_WEIGHT: "0"
   BET_PHASE10_11_CONVERGENCE: "-4"
   SELECTIVITY_LOWER_BOUND_PENALTY: "1000"
@@ -47,11 +48,11 @@ env:
   EXPECTED_SOURCE_PAR_SHA256: "2077bf1c29ab432063e87e438cd529f97c259e5d2ba3d4ff0d693aa987292dd0"
   JOB_PAR_MAX_EVALUATIONS: "10000"
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-job18518-rrg29fix-parest359-20260730
+  FLOW_GROUP: bet-2026-job18518-rrg29fix-parest359-m2549303-20260730
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
-  PLOT_TITLE: BET 2026 Job 18518 reporting-rate and selectivity-penalty sensitivity
+  PLOT_TITLE: BET 2026 Job 18518 fixed-M reporting-rate and selectivity-penalty sensitivity
   STEPWISE_BUILD_PAYLOAD: "false"
   STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
   INPUT_PAR: ""
@@ -79,6 +80,7 @@ tags:
   base_job: "18518"
   reporting_rate_group29: fixed-zero
   selectivity_penalty: "parest359-1000"
+  fixed_m_intercept: "-2.5493033976836"
 
 metadata:
   base_job: "18518"
@@ -97,9 +99,12 @@ metadata:
   source_terminal_group22: "-19.999881"
   dm_concentration_fixed: true
   expected_final_parameter_count: 1980
-  fixed_m_intercept: "-2.44602044920584"
+  source_fixed_m_intercept: "-2.44602044920584"
+  fixed_m_intercept: "-2.5493033976836"
+  fixed_m_source: "Job 17805 final PAR"
   optimisation: "MGC 1e-5 bridge after the two targeted stability changes, followed by final output at MGC 1e-4; maximum 10000 evaluations per stage"
-  unchanged_controls: "All Job 18518 data and settings except reporting-rate group 29 and parest flag 359; DM concentration remains fixed, M fixed, common tau estimated, rec 0.1, movement 0.1, and Nmax25"
+  comparison_to_job18584: "Only age_pars(5), the fixed Lorenzen M intercept, changes: -2.44602044920584 to -2.5493033976836."
+  unchanged_controls: "All Job 18584 settings are retained: Job 18518 source PAR, reporting-rate group 29 fixed at zero, parest flag 359=1000, DM concentration fixed, common tau estimated, rec 0.1, movement 0.1, Nmax25, executable, continuation schedule, evaluation limits, and final MGC."
   model_count: 1
   inputs_frozen: true
   container: tuna-flow v2.6

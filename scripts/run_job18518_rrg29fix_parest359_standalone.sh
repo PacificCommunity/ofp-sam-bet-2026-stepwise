@@ -87,6 +87,8 @@ set +e
   cd "${work_root}/model"
   PROGRAM_PATH="${program_path}" \
   EXPECTED_SOURCE_PAR_SHA256="${expected_source_sha256}" \
+  EXPECTED_SOURCE_M_INTERCEPT="${EXPECTED_SOURCE_M_INTERCEPT:--2.44602044920584}" \
+  FIXED_M_INTERCEPT="${FIXED_M_INTERCEPT:--2.5493033976836}" \
   SELECTIVITY_LOWER_BOUND_PENALTY="${SELECTIVITY_LOWER_BOUND_PENALTY:-1000}" \
   PAREST359_BRIDGE_CONVERGENCE="${PAREST359_BRIDGE_CONVERGENCE:--5}" \
   PAREST359_BRIDGE_MAX_EVALUATIONS="${PAREST359_BRIDGE_MAX_EVALUATIONS:-10000}" \
@@ -109,12 +111,12 @@ mkdir -p "${model_output}/mfcl-inputs"
 cp -a "${input_dir}/." "${model_output}/mfcl-inputs/"
 
 printf '%s\n' \
-  'model_id,model_label,model_dir,source_job,fit_mode,parest359,dm_fixed,m_fixed,bridge_mgc,final_mgc' \
-  "${model_id},Job 18518 | RR group 29 fixed zero + spline penalty,models/${model_id},18518,final-PAR continuation,1000,true,true,1e-5,1e-4" \
+  'model_id,model_label,model_dir,source_job,fit_mode,parest359,dm_fixed,m_fixed,m_intercept,bridge_mgc,final_mgc' \
+  "${model_id},Job 18518 | M=-2.5493033976836 | RR group 29 fixed zero + spline penalty,models/${model_id},18518,final-PAR continuation,1000,true,true,-2.5493033976836,1e-5,1e-4" \
   > "${output_base}/model-index.csv"
 printf '%s\n' \
   'step_id,model_label,source_job,change_axis' \
-  "${model_id},Job 18518 | RR29=0 + parest359=1000,18518,Fix tag reporting-rate group 29 at zero and enable the MFCL spline-selectivity soft penalty below coefficient -15" \
+  "${model_id},Job 18518 | M=-2.5493033976836 | RR29=0 + parest359=1000,18518,Change only the fixed M intercept from -2.44602044920584 to the Job 17805 value -2.5493033976836 relative to Job 18584" \
   > "${output_base}/selected-steps.csv"
 cp "${work_root}/model/job18518-rrg29fix-parest359-audit.csv" \
   "${output_base}/job18518-rrg29fix-parest359-audit.csv"
