@@ -1,0 +1,135 @@
+name: bet-2026-job18518-rrg29fix-parest359-20260730
+description: "Continue the checksum-verified Job 18518 final PAR, fix lower-bound tag reporting-rate group 29 at zero, enable MFCL parest flag 359=1000 for the spline-selectivity lower-tail penalty, and re-optimise to MGC 1e-4."
+
+repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
+branch: sensitivity/job18518-rrg29fix-parest359-20260730
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+
+command: bash scripts/run_job18518_rrg29fix_parest359_standalone.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+
+resources:
+  cpus: 2
+  memory: 8GB
+  disk: 8GB
+
+exclude_machines: []
+exclude_slots: []
+
+env:
+  STEP_SELECT: F14-Y5-REC01
+  JOB_TITLE: "Job 18518 final PAR | RR group 29 fixed zero | parest 359=1000"
+  JOB_DESCRIPTION: "Continue the exact Job 18518 final PAR, fix the lower-bound reporting-rate group 29 at zero, and enable the MFCL soft spline-selectivity penalty below coefficient -15."
+  MODEL_LABEL: "Job 18518 | RR29 fixed zero + spline penalty"
+  JOB_KEY: job18518-rrg29fix-parest359
+  RUN_MODE: job_par_script
+  F15_QC_MODE: lt70
+  DOM_QC_MODE: gt90_midpoint
+  DM_NMAX: "25"
+  TAG_TAU_GROUPING: common
+  TAG_TAU_LOWER_BOUND: default
+  REGIONAL_RECRUITMENT_PENALTY: "0.1"
+  MOVEMENT_PRIOR_PENALTY: "0.1"
+  OPR_MODE: "off"
+  ESTIMATE_M_FINAL: "false"
+  FIX_M_FINAL: "true"
+  FIXED_M_INTERCEPT: "-2.44602044920584"
+  TAG_LIKELIHOOD_WEIGHT: "0"
+  BET_PHASE10_11_CONVERGENCE: "-4"
+  SELECTIVITY_LOWER_BOUND_PENALTY: "1000"
+  PAREST359_BRIDGE_CONVERGENCE: "-5"
+  PAREST359_BRIDGE_MAX_EVALUATIONS: "10000"
+  PAR_SOURCE_JOB: "18518"
+  KFLOW_INPUT_JOBS: "18518"
+  EXPECTED_SOURCE_PAR_SHA256: "2077bf1c29ab432063e87e438cd529f97c259e5d2ba3d4ff0d693aa987292dd0"
+  JOB_PAR_MAX_EVALUATIONS: "10000"
+  TRIGGER_NEXT: "false"
+  FLOW_GROUP: bet-2026-job18518-rrg29fix-parest359-20260730
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  PLOT_TITLE: BET 2026 Job 18518 reporting-rate and selectivity-penalty sensitivity
+  STEPWISE_BUILD_PAYLOAD: "false"
+  STEPWISE_SAVE_RAW_MFCL_INPUTS: "true"
+  INPUT_PAR: ""
+  STEPWISE_PAR_SOURCE_DIR: ""
+  FRQ: bet.frq
+  OUTPUT_PAR: final.par
+  STEPWISE_SAVE_FINAL_PAR: "false"
+  STEPWISE_COMMIT_FINAL_PARS: "false"
+  STEPWISE_PUSH_FINAL_PARS: "false"
+  STEPWISE_PUBLISH_REQUIRED: "false"
+  STEPWISE_SINGLE_PAR_REPORT: "true"
+  MFCL_LIVE_LOG: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "false"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: never
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: none
+  KFLOW_RUNTIME_GITHUB_AUTH: "false"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "false"
+
+tags:
+  species: BET
+  stage: job18518-rrg29fix-parest359
+  base_job: "18518"
+  reporting_rate_group29: fixed-zero
+  selectivity_penalty: "parest359-1000"
+
+metadata:
+  base_job: "18518"
+  source_final_par_sha256: 2077bf1c29ab432063e87e438cd529f97c259e5d2ba3d4ff0d693aa987292dd0
+  source_final_objective: "8.91628379378823e+04"
+  source_final_max_gradient: "6.19683122928385e-05"
+  source_final_parameter_count: 1981
+  source_parest359: 0
+  output_parest359: 1000
+  penalty_definition: "0.1 * (coefficient + 15)^2 for spline coefficients <= -15"
+  source_reporting_rate_group29: "0.00100001974900511"
+  output_reporting_rate_group29: "0"
+  reporting_rate_group29_cells: "74 cells: release rows 62-98, fisheries 25 and 27"
+  reporting_rate_group29_action: "rate=0, active flags=0, and prior penalties=0"
+  source_terminal_group14: "-20"
+  source_terminal_group22: "-19.999881"
+  dm_concentration_fixed: true
+  expected_final_parameter_count: 1980
+  fixed_m_intercept: "-2.44602044920584"
+  optimisation: "MGC 1e-5 bridge after the two targeted stability changes, followed by final output at MGC 1e-4; maximum 10000 evaluations per stage"
+  unchanged_controls: "All Job 18518 data and settings except reporting-rate group 29 and parest flag 359; DM concentration remains fixed, M fixed, common tau estimated, rec 0.1, movement 0.1, and Nmax25"
+  model_count: 1
+  inputs_frozen: true
+  container: tuna-flow v2.6
+
+output_patterns:
+  - outputs/selected-steps.csv
+  - outputs/model-index.csv
+  - outputs/job18518-rrg29fix-parest359-audit.csv
+  - outputs/models/**
+  - outputs/logs/**
+
+input_jobs:
+  - "18518"
+
+triggers: {}
+
+job_config:
+  optional:
+    - STEP_SELECT
+    - JOB_TITLE
+    - JOB_DESCRIPTION
+    - JOB_KEY
+    - MODEL_LABEL
+    - RUN_MODE
+    - SELECTIVITY_LOWER_BOUND_PENALTY
+    - PAREST359_BRIDGE_CONVERGENCE
+    - PAREST359_BRIDGE_MAX_EVALUATIONS
+    - BET_PHASE10_11_CONVERGENCE
+    - PAR_SOURCE_JOB
+    - KFLOW_INPUT_JOBS
+    - EXPECTED_SOURCE_PAR_SHA256
+    - JOB_PAR_MAX_EVALUATIONS
+    - MFCL_LIVE_LOG
