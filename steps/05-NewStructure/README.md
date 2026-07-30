@@ -22,6 +22,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 | 7 | Applies Diagnostic natural-mortality estimate fixed from the 01-Diag2023 mgc=-5 diagnostic final par while retaining the 5-region `.ini` structure. |
 | 8 | Sets total population scaling factor LN(R0) to 17. |
 | 9 | Uses bias-corrected BET 2026 L-W parameters a=3.073533e-05, b=2.932410. |
+| 10 | Primarily remaps the preceding selectivity settings to the 33-fishery structure; the explicit fishery-specific selectivity revision is deferred to Step 15. |
 
 ## Inputs
 

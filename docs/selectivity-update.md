@@ -4,6 +4,19 @@ This note records the cumulative change from `14b-SUB075` to
 `15-SelectivityUpdate`. The Step 15 controls reproduce the selectivity
 specification used by Kflow Job 18717.
 
+## Selectivity at the five-region transition
+
+The conversion from 9 regions and 41 fisheries to 5 regions and 33 fisheries
+at Step 05 was treated primarily as a structural remapping, rather than as a
+new selectivity hypothesis. Selectivity forms, sharing assumptions, and
+young- and terminal-age constraints were carried forward from the preceding
+model wherever the source-fishery mapping allowed. Fisheries split from the
+same source initially shared selectivity, compatible source fisheries retained
+their previous grouping, and the five regional index fisheries shared one
+curve. This reduced the risk of confounding the effect of the new spatial and
+fishery structure with a simultaneous change in selectivity. Step 15 is the
+subsequent, explicit revision of the fishery-specific selectivity assumptions.
+
 ## Scope
 
 | Item | Step 14b to Step 15 |
