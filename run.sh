@@ -5,6 +5,14 @@ model=${MODEL:-K015-tau-estimated}
 program_path=${PROGRAM_PATH:-/home/mfcl/mfclo64}
 output_root=${OUTPUT_DIR:-outputs}
 
+truthy()
+{
+  case "${1:-}" in
+    1|true|TRUE|yes|YES|on|ON|always|ALWAYS) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 case "$model" in
   K005-tau-estimated|K005-tau-not-estimated|\
   K010-tau-estimated|K010-tau-not-estimated|\
@@ -24,6 +32,17 @@ if [[ ! -x "$program_path" ]]; then
 fi
 
 bash scripts/validate-inputs.sh
+
+if truthy "${BUILD_MODEL_PAYLOAD:-false}"; then
+  runtime_library=${R_LIBS_USER:-${KFLOW_RUNTIME_LIBRARY:-"$PWD/.R-library"}}
+  if ! mkdir -p "$runtime_library" 2>/dev/null || [[ ! -w "$runtime_library" ]]; then
+    runtime_library="$PWD/.R-library"
+    mkdir -p "$runtime_library"
+  fi
+  export R_LIBS_USER="$runtime_library"
+  export KFLOW_RUNTIME_LIBRARY="$runtime_library"
+  Rscript scripts/prepare-runtime-packages.R
+fi
 
 source_dir="explorations/$model"
 run_dir="$output_root/$model"
@@ -65,6 +84,10 @@ printf '%s\n' \
   'model,source_dir,final_stage,final_par_sha256,status' \
   "$model,$source_dir,$final_stage,$final_sha,completed" \
   > "$run_dir/run-summary.csv"
+
+if truthy "${BUILD_MODEL_PAYLOAD:-false}"; then
+  Rscript scripts/build-model-payload.R "$run_dir"
+fi
 
 echo "Completed: $run_dir/final.par"
 echo "SHA256: $final_sha"

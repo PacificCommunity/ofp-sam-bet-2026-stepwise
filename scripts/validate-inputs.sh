@@ -174,5 +174,35 @@ fi
   28318dca237682a20fc40209bfac94e3f5e619e042823b174582206656403412 ]] ||
   fail "Job 18518 completed-run audit provenance drift"
 
+expected_image='ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360'
+expected_mfclkit=25103916446d0395286afae28b5404bf361670fc
+expected_mfclshiny=1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+grep -Fqx "docker_image: $expected_image" kflow.yaml ||
+  fail "Kflow tuna-flow v2.5 image pin changed"
+[[ $(grep -Fc "$expected_mfclkit" kflow.yaml) -ge 3 ]] ||
+  fail "Kflow mfclkit package pin is incomplete"
+[[ $(grep -Fc "$expected_mfclshiny" kflow.yaml) -ge 3 ]] ||
+  fail "Kflow mfclshiny package pin is incomplete"
+grep -Fqx '    - MFCLKIT_GITHUB_REF' kflow.yaml ||
+  fail "Kflow mfclkit version override is not exposed"
+grep -Fqx '    - MFCLSHINY_GITHUB_REF' kflow.yaml ||
+  fail "Kflow mfclshiny version override is not exposed"
+grep -Fqx '        ref_env: MFCLKIT_GITHUB_REF' kflow.yaml ||
+  fail "MFCL Shiny local app does not resolve the configured mfclkit ref"
+grep -Fqx '        ref_env: MFCLSHINY_GITHUB_REF' kflow.yaml ||
+  fail "MFCL Shiny local app does not resolve the configured mfclshiny ref"
+grep -Fqx '  BUILD_MODEL_PAYLOAD: "true"' kflow.yaml ||
+  fail "Kflow payload construction is not enabled"
+grep -Fqx '    runner: local-docker-ssh' kflow.yaml ||
+  fail "Kflow MFCL Shiny local app is missing"
+grep -Fq 'Rscript scripts/prepare-runtime-packages.R' run.sh ||
+  fail "run.sh does not prepare the pinned R packages"
+grep -Fq 'Rscript scripts/build-model-payload.R "$run_dir"' run.sh ||
+  fail "run.sh does not build the MFCL Shiny payload"
+Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "scripts/build-model-payload.R")' \
+  >/dev/null ||
+  fail "R helper syntax check failed"
+
 echo "Validated 12 self-contained exploration folders."
 echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
+echo "Pinned tuna-flow v2.5, mfclkit, mfclshiny, payload, and local-app checks passed."

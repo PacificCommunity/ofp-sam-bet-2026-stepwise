@@ -93,5 +93,29 @@ Results are written to
 The default is `MODEL=K015-tau-estimated`. Override `MODEL` with one of the
 12 exploration directory names to submit each grid member independently.
 
+The model job installs and verifies the current package snapshots from
+2026-07-30 at exact commits:
+
+- `mfclkit@25103916446d0395286afae28b5404bf361670fc`
+- `mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a`
+
+They are used after the MFCL fit to build `model_payload.rds`; the same exact
+commits are declared as authenticated Kflow local-app package sources for the
+MFCL Shiny viewer. The image and package commits are intentionally pinned
+separately: tuna-flow v2.5 supplies the MFCL executable, while the R packages
+are installed at run time for reproducible post-processing.
+
+These two package commits are defaults, not permanent constraints. At Kflow
+submission, set `MFCLKIT_GITHUB_REF` and `MFCLSHINY_GITHUB_REF` to different
+full 40-character commit SHAs to test later package versions. The run-time
+installer treats those two values as authoritative, verifies the installed
+`RemoteSha` values, and records the versions in
+`runtime-package-versions.csv`. This preserves the existing Kflow
+version-override workflow without making the MFCL executable mutable.
+
+The actual 20c model fit, Kflow Job 15062 (`20c-DMG8Nmax25`), used this same
+tuna-flow v2.5 image digest. Job 15203 is the later Hessian merge/check derived
+from that model, not the original 20c model fit.
+
 No final-exploration MFCL or Kflow job was launched while preparing this
 branch.

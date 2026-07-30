@@ -28,6 +28,19 @@ env:
   TAG_TAU_LOWER_BOUND: default
   ESTIMATE_M_FINAL: "false"
   TAG_LIKELIHOOD_WEIGHT: "0"
+  BUILD_MODEL_PAYLOAD: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: never
+  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_REPO_RUNTIME_UPDATE: always
+  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@25103916446d0395286afae28b5404bf361670fc,mfclshiny=PacificCommunity/mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
+  MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  MFCLSHINY_PAYLOAD_OBJECT_CACHE: all
+  MFCLSHINY_PAYLOAD_ARTIFACTS: core
 
 tags:
   species: BET
@@ -38,6 +51,7 @@ metadata:
   scientific_parent_job: "17805"
   verified_k015_job: "18386"
   dm_fix_reference_job: "18518"
+  step20c_model_job: "15062"
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
@@ -54,9 +68,68 @@ metadata:
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"
   regional_scaling: "Job 17805 active 20x5 matrix with v2.6 header removed for v2.5"
   container: "tuna-flow v2.5 pinned by digest"
+  runtime_mfclkit_default: 25103916446d0395286afae28b5404bf361670fc
+  runtime_mfclshiny_default: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  runtime_package_refs: "overrideable at Kflow submission with full commit SHAs"
 
 output_patterns:
   - outputs/**
+
+local_apps:
+  - key: mfclshiny
+    label: MFCL Shiny
+    icon: chart-no-axes-combined
+    runner: local-docker-ssh
+    container_port: 3838
+    memory: 8g
+    archive_sources:
+      - outputs
+    package_sources:
+      - name: mfclkit
+        type: github
+        repo: PacificCommunity/ofp-sam-mfclkit
+        ref_env: MFCLKIT_GITHUB_REF
+      - name: mfclshiny
+        type: github
+        repo: PacificCommunity/mfclshiny
+        ref_env: MFCLSHINY_GITHUB_REF
+    env:
+      MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
+      MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+      MFCLSHINY_AUTO_LOAD: "true"
+      MFCLSHINY_INITIAL_RENDER: "true"
+      MFCLSHINY_LIVE_UPDATE: "false"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    command: |
+      Rscript - <<'RS'
+      lib <- Sys.getenv("KFLOW_LOCAL_APP_R_LIBS", "/kflow/package-cache/R-library")
+      .libPaths(unique(c(lib, .libPaths())))
+      roots <- c(
+        Sys.getenv("KFLOW_LOCAL_APP_OUTPUT_DIR", "/kflow/outputs"),
+        Sys.getenv("KFLOW_LOCAL_APP_INPUT_DIR", "/kflow/inputs")
+      )
+      payloads <- unique(unlist(lapply(roots, function(root) {
+        if (!dir.exists(root)) return(character())
+        list.files(
+          root,
+          pattern = "^model_payload[.]rds$",
+          recursive = TRUE,
+          full.names = TRUE
+        )
+      }), use.names = FALSE))
+      if (length(payloads) != 1L) {
+        stop("Expected one final-exploration model payload; found ", length(payloads))
+      }
+      mfclshiny::run_mfclshiny(
+        model_dir = dirname(payloads[[1L]]),
+        export_dir = "/kflow/work/export",
+        host = "0.0.0.0",
+        port = as.integer(Sys.getenv("PORT", "3838")),
+        launch.browser = FALSE
+      )
+      RS
 
 triggers: {}
 
@@ -64,3 +137,11 @@ job_config:
   optional:
     - MODEL
     - BET_PHASE10_11_CONVERGENCE
+    - MFCLKIT_GITHUB_REF
+    - MFCLSHINY_GITHUB_REF
+    - KFLOW_REPO_RUNTIME_PACKAGES
+    - KFLOW_REPO_RUNTIME_UPDATE
+    - KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES
+    - KFLOW_RUNTIME_GITHUB_AUTH
+    - KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME
+    - BUILD_MODEL_PAYLOAD
