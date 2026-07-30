@@ -158,7 +158,7 @@ stepwise_models <- do.call(rbind, list(
   model_row(
     "15-SelectivityUpdate", "15-SelectivityUpdate", "14b-SUB075",
     TRUE, "carry", "revise fishery-specific selectivity",
-    "Parsimonious fishery selectivity", "15 Parsimonious fishery-specific selectivity",
+    "Selectivity update", "15 Selectivity update",
     "15-selectivity-update"
   ),
   model_row(
@@ -211,7 +211,7 @@ stepwise_report_change <- c(
   "13-NewAgeData" = "New CAAL data with weight 0.75",
   "14a-REG075" = "Regional CAAL reweighting",
   "14b-SUB075" = "Sub-basin CAAL reweighting with regions 3 and 4 combined",
-  "15-SelectivityUpdate" = "Parsimonious fishery-specific selectivity",
+  "15-SelectivityUpdate" = "Revised fishery-specific selectivity",
   "16-MIX020" = "Release-group-specific K=0.20 tag-mixing periods",
   "17-TagReportingExclusion" = "Pre-mixing reporting-rate exclusion",
   "18-EffortCreep" = "Effort-creep adjustment",
@@ -234,7 +234,7 @@ stepwise_report_purpose <- c(
   "13-NewAgeData" = "Use the 2023 BET age-data weighting as the reference treatment.",
   "14a-REG075" = "Test region-level spatial CAAL weighting.",
   "14b-SUB075" = "Apply the selected sub-basin CAAL weighting.",
-  "15-SelectivityUpdate" = "Apply the Job 18717 parsimonious selectivity controls, with F14/F15 youngest-five-age constraints.",
+  "15-SelectivityUpdate" = "Align selectivity specifications with the revised 33-fishery structure using the Job 18717 controls.",
   "16-MIX020" = "Assign Joe's region-mean release-group mixing periods at K=0.20.",
   "17-TagReportingExclusion" = "Avoid applying reporting rates in pre-mixing windows.",
   "18-EffortCreep" = "Account for gradual changes in fishing efficiency.",

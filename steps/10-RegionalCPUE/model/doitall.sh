@@ -152,14 +152,14 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 44 0  # group all tags for variance estimation if = 1
 # Grouping of fisheries for tag return data, mapped from BET_PHrev_FNL.xlsx.
 # New labels with region 4 in the workbook are treated as region 5 here.
-   -1 32 1   # LL.WEST.1, old1
-   -2 32 2   # LL.EAST.1, old2
+   -1 32 1   # LL.WEST.ALL.1, old1
+   -2 32 2   # LL.EAST.ALL.1, old2
    -3 32 3   # LL.US.1, old3
    -4 32 4   # LL.ALL.2, old7
    -5 32 5   # LL.OS.2, old6
    -6 32 6   # LL.ARCH.3, old8
    -7 32 7   # LL.WEST.3, old4
-   -8 32 8   # LL.EAST.3, old9
+   -8 32 8   # LL.EAST.4, old9
    -9 32 9   # LL.OS.3, old5
   -10 32 10  # LL.ALL.5, old11 + old12 + old29
   -11 32 11  # LL.AU.5, old10 + old27
@@ -176,10 +176,10 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -22 32 14  # DOM.PH.2, old17
   -23 32 17  # DOM.VN.2, old32
   -24 32 18  # PL.ALL.WEST.3, old21 + old22
-  -25 32 19  # PS.ASS.WEST.3, old13 + old25
-  -26 32 20  # PS.ASS.EAST.3, old15
-  -27 32 19  # PS.UNA.WEST.3, old14 + old26
-  -28 32 20  # PS.UNA.EAST.3, old16
+  -25 32 19  # PS.ASSOC.WEST.3, old13 + old25
+  -26 32 20  # PS.ASSOC.EAST.4, old15
+  -27 32 19  # PS.UNASSOC.WEST.3, old14 + old26
+  -28 32 20  # PS.UNASSOC.EAST.4, old16
   -29 32 21  # Index R1
   -30 32 21  # Index R2
   -31 32 21  # Index R3
@@ -192,14 +192,14 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 61 5  # with 5 nodes for cubic spline
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.
 # The old 29 groups become 25 groups here: 24 extraction groups + 1 index group.
-   -1 24 1   # LL.WEST.1, old1
-   -2 24 2   # LL.EAST.1, old2
+   -1 24 1   # LL.WEST.ALL.1, old1
+   -2 24 2   # LL.EAST.ALL.1, old2
    -3 24 3   # LL.US.1, old3
    -4 24 4   # LL.ALL.2, old7
    -5 24 5   # LL.OS.2, old6
    -6 24 6   # LL.ARCH.3, old8
    -7 24 7   # LL.WEST.3, old4
-   -8 24 8   # LL.EAST.3, old9
+   -8 24 8   # LL.EAST.4, old9
    -9 24 9   # LL.OS.3, old5
   -10 24 10  # LL.ALL.5, old11 + old12 + old29
   -11 24 11  # LL.AU.5, old10 + old27
@@ -210,16 +210,16 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -16 24 15  # PL.ALL.2, old28
   -17 24 16  # PS.ID.2, split old24
   -18 24 16  # PS.PH.2, split old24
-  -19 24 17  # PS.ASS.2, old30; share with PS.ASS.WEST.3
-  -20 24 18  # PS.UNA.2, old31; share with PS.UNA.WEST.3
+  -19 24 17  # PS.ASS.2, old30; share with PS.ASSOC.WEST.3
+  -20 24 18  # PS.UNA.2, old31; share with PS.UNASSOC.WEST.3
   -21 24 19  # DOM.ID.2, old23
   -22 24 20  # DOM.PH.2, old17
   -23 24 21  # DOM.VN.2, old32
   -24 24 22  # PL.ALL.WEST.3, old21 + old22
-  -25 24 17  # PS.ASS.WEST.3, old13 + old25
-  -26 24 23  # PS.ASS.EAST.3, old15
-  -27 24 18  # PS.UNA.WEST.3, old14 + old26
-  -28 24 24  # PS.UNA.EAST.3, old16
+  -25 24 17  # PS.ASSOC.WEST.3, old13 + old25
+  -26 24 23  # PS.ASSOC.EAST.4, old15
+  -27 24 18  # PS.UNASSOC.WEST.3, old14 + old26
+  -28 24 24  # PS.UNASSOC.EAST.4, old16
   -29 24 25  # Index R1
   -30 24 25  # Index R2
   -31 24 25  # Index R3
@@ -240,11 +240,11 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -15 75 5  # F15 PH/ID youngest five ages fixed at zero after the Step 09 size-data rule
 # Age-based spline constraints mapped from old fishery recipes.
   -19 16 2  -19 3 25  # PS.ASS.2, old30
-  -25 16 2  -25 3 25  # PS.ASS.WEST.3, old13 + old25
-  -26 16 2  -26 3 25  # PS.ASS.EAST.3, old15
+  -25 16 2  -25 3 25  # PS.ASSOC.WEST.3, old13 + old25
+  -26 16 2  -26 3 25  # PS.ASSOC.EAST.4, old15
   -20 16 2  -20 3 30  # PS.UNA.2, old31
-  -27 16 2  -27 3 30  # PS.UNA.WEST.3, old14 + old26
-  -28 16 2  -28 3 30  # PS.UNA.EAST.3, old16
+  -27 16 2  -27 3 30  # PS.UNASSOC.WEST.3, old14 + old26
+  -28 16 2  -28 3 30  # PS.UNASSOC.EAST.4, old16
   -17 16 2  -17 3 12  # PS.ID.2, split old24
   -18 16 2  -18 3 12  # PS.PH.2, split old24
   -12 16 2  -12 3 25  # PS.JP.1, old19

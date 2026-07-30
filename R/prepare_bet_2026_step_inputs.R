@@ -858,7 +858,7 @@ write_sequence_step <- function(
     regional_scaling = FALSE,
     regional_scaling_weight = NA_integer_,
     tail_compression_1pct = FALSE,
-    parsimonious_selectivity = FALSE,
+    selectivity_update = FALSE,
     ph_id_young5_selectivity = FALSE,
     time_varying_cv = FALSE,
     effort_creep = FALSE,
@@ -873,7 +873,7 @@ write_sequence_step <- function(
   controls <- list2env(
     list(
       regional_cpue = regional_cpue,
-      parsimonious_selectivity = parsimonious_selectivity,
+      selectivity_update = selectivity_update,
       ph_id_young5_selectivity = ph_id_young5_selectivity,
       tail_compression_1pct = tail_compression_1pct,
       time_varying_cv = time_varying_cv,
@@ -924,8 +924,8 @@ write_sequence_step <- function(
       if (!is.na(regional_scaling_weight)) paste0("Regional-scaling weight is ", regional_scaling_weight, "."),
       if (tail_compression_1pct && !nzchar(dm_grouping)) "Length-frequency parest flag 313 is 1, activating 1% tail aggregation; flags 311/301 remain 1 and weight-frequency flag 303 remains 0.",
       if (nzchar(dm_grouping)) "Length-frequency parest flag 313 is reset to 0 because the DM likelihood does not read the percentage threshold; this also avoids unrelated percentage-tail preprocessing, while parest flag 320 controls DM support.",
-      if (parsimonious_selectivity) paste0(
-        "The Job 18717 parsimonious selectivity specification shares F2/F3 and F7/F9, ",
+      if (selectivity_update) paste0(
+        "The Job 18717 selectivity update shares F2/F3 and F7/F9, ",
         "retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic ",
         "curve for F33, and keeps the documented F14/F15 youngest-five-age constraints."
       ),
@@ -968,6 +968,13 @@ write_sequence_step <- function(
     ),
     run_notes = c(
       "No preliminary parameter file or scientific-parent model folder is read at runtime.",
+      if (selectivity_update) {
+        paste0(
+          "The fishery definitions and tag-recapture groups in `fishery_map.R` are unchanged; ",
+          "only its selectivity-group metadata changes. See ",
+          "[the Step 15 comparison](../../docs/selectivity-update.md)."
+        )
+      },
       if (fixed_cpue_sigma) "cpue_mle_sigma_audit.csv records the archived source commit/path/SHA256, preliminary maximum-likelihood observation-error estimates, and executed flag-92 values."
     ),
     outstanding = character(),
@@ -1024,7 +1031,7 @@ common_late_step <- function(
     regional_scaling = regional_cpue,
     regional_scaling_weight = if (regional_cpue) 100L else NA_integer_,
     ph_id_young5_selectivity = TRUE,
-    parsimonious_selectivity = selectivity,
+    selectivity_update = selectivity,
     time_varying_cv = time_varying_cv,
     effort_creep = effort_creep,
     size_data_qc = TRUE,
@@ -1086,10 +1093,10 @@ for (age_spec in list(
   )
 }
 common_late_step(
-  "15-SelectivityUpdate", "15 Parsimonious fishery selectivity", "14b-SUB075",
+  "15-SelectivityUpdate", "15 Selectivity update", "14b-SUB075",
   paste(
-    "Apply the parsimonious selectivity controls used by Job 18717, with the",
-    "documented F14/F15 youngest-five-age constraints."
+    "Revise fishery-specific selectivity to align with the 33-fishery structure,",
+    "using the Job 18717 controls and documented F14/F15 youngest-five-age constraints."
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,

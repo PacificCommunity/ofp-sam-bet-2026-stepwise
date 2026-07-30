@@ -619,7 +619,7 @@ apply_regional_scaling_phase5 <- function(lines, weight = 100L,
   append_phase_controls(lines, 5L, block)
 }
 
-apply_parsimonious_selectivity_phase5 <- function(lines) {
+apply_selectivity_update_phase5 <- function(lines) {
   groups <- c(
     1L, 2L, 2L, 3L, 4L, 5L, 6L, 7L, 6L, 8L, 9L, 10L, 11L,
     12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L,
@@ -627,16 +627,16 @@ apply_parsimonious_selectivity_phase5 <- function(lines) {
   )
   fishery_order <- c(29:33, 1:28)
   block <- c(
-    "# STAGED MFCL RUN 5: retain the parsimonious extraction sharing and separate regional indices.",
+    "# STAGED MFCL RUN 5: retain the Step 15 extraction sharing and separate regional indices.",
     sprintf(
-      "  -%d 24 %d  # F%d parsimonious selectivity-stability group",
+      "  -%d 24 %d  # F%d Step 15 selectivity-stability group",
       fishery_order, groups[fishery_order], fishery_order
     )
   )
   append_phase_controls(lines, 5L, block)
 }
 
-apply_parsimonious_selectivity_update <- function(lines) {
+apply_selectivity_update <- function(lines) {
   phase1_groups <- c(
     1L, 2L, 2L, 3L, 4L, 5L, 6L, 7L, 6L, 8L, 9L, 10L, 11L,
     12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L,
@@ -648,12 +648,12 @@ apply_parsimonious_selectivity_update <- function(lines) {
   )
   if (length(old_group_comment) == 1L) {
     lines[[old_group_comment]] <-
-      "# Job 18717 parsimonious selectivity shares F2/F3 and F7/F9 while keeping the five regional indices separate."
+      "# Job 18717 selectivity update shares F2/F3 and F7/F9 while keeping the five regional indices separate."
   }
   for (fishery in seq_len(33L)) {
     lines <- set_or_add_control_flag(
       lines, paste0("-", fishery), 24L, phase1_groups[[fishery]], 1L,
-      paste0("F", fishery, " parsimonious selectivity-stability group")
+      paste0("F", fishery, " Step 15 selectivity-stability group")
     )
   }
 
@@ -727,7 +727,7 @@ apply_parsimonious_selectivity_update <- function(lines) {
   for (fishery in c(1L, 2L, 3L, 5L, 29L)) {
     lines <- set_or_add_control_flag(
       lines, paste0("-", fishery), 61L, 4L, 1L,
-      paste0("F", fishery, " retained four-node parsimonious selectivity")
+      paste0("F", fishery, " retained four-node Step 15 selectivity")
     )
   }
   lines <- set_or_add_control_flag(
@@ -1031,7 +1031,7 @@ apply_dm_likelihood <- function(lines, grouping, nmax,
   )
 }
 
-apply_parsimonious_selectivity_map <- function(path) {
+apply_selectivity_update_map <- function(path) {
   eol <- file_eol(path)
   lines <- readLines(path, warn = FALSE)
   marker <- grep(
@@ -1048,7 +1048,7 @@ apply_parsimonious_selectivity_map <- function(path) {
     "fishery_map$selectivity_group <- seq_len(nrow(fishery_map))",
     "fishery_map$selectivity_name <- fishery_map$fishery_name",
     "",
-    "# Job 18717 parsimonious selectivity: extraction-based sharing only.",
+    "# Job 18717 selectivity update: extraction-based sharing only.",
     "fishery_map$selectivity_group <- c(",
     "  1, 2, 2, 3, 4, 5, 6, 7, 6, 8, 9, 10, 11, 12, 13, 14,",
     "  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,",
@@ -1057,7 +1057,7 @@ apply_parsimonious_selectivity_map <- function(path) {
     "fishery_map$selectivity_name <- sub(",
     "  \"^[0-9]+[.]\", \"\", fishery_map$fishery_name",
     ")",
-    "fishery_map$selectivity_name[c(2, 3)] <- \"LL.EAST.1 + LL.US.1\"",
+    "fishery_map$selectivity_name[c(2, 3)] <- \"LL.EAST.ALL.1 + LL.US.1\"",
     "fishery_map$selectivity_name[c(7, 9)] <- \"LL.WEST.3 + LL.OS.3\"",
     "fishery_map$selectivity_name[33] <- \"Index R5 (independent logistic)\""
   )
@@ -1074,7 +1074,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_scaling_periods = 292L,
                           regional_scaling_start_period = reg_scaling_active_start_period,
                           regional_scaling_end_period = reg_scaling_active_end_period,
-                          parsimonious_selectivity = FALSE,
+                          selectivity_update = FALSE,
                           ph_id_young5_selectivity = FALSE,
                           tail_compression_1pct = FALSE,
                           time_varying_cv = FALSE,
@@ -1115,14 +1115,14 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
       end_period = regional_scaling_end_period
     )
   }
-  if (isTRUE(parsimonious_selectivity)) {
-    lines <- apply_parsimonious_selectivity_update(lines)
+  if (isTRUE(selectivity_update)) {
+    lines <- apply_selectivity_update(lines)
     lines <- remove_exact_doitall_controls(
       lines,
       legacy_selectivity_controls_to_remove
     )
     lines <- apply_all_selectivity_form_relaxation(lines)
-    lines <- apply_parsimonious_selectivity_phase5(lines)
+    lines <- apply_selectivity_update_phase5(lines)
   }
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)
   if (isTRUE(dom_divisor200)) lines <- apply_dom_lf_divisors(lines)

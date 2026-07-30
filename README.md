@@ -8,17 +8,20 @@ The selected path ends at the treatment used by Kflow Job 18717:
 
 - K = 0.20 region-mean tag-mixing periods.
 - Original 2023 negative-binomial tag likelihood; tau is not estimated.
-- Parsimonious fishery selectivity, with shared F2/F3 and F7/F9 curves,
+- Revised fishery-specific selectivity from Job 18717, with shared F2/F3 and F7/F9 curves,
   retained four-node curves for F1/F2/F3/F5/F29, an independent logistic
   curve for F33, and the youngest five ages fixed at zero for F14 and F15.
+  The exact Step 14b-to-Step 15 changes are listed in
+  [the selectivity-update note](docs/selectivity-update.md).
 - Dirichlet-multinomial length-composition likelihood, G8, `Nmax=25`.
 - `fish_pars(22)` is written as 7 before Phase 1 and fixed with flag 69=0;
   grouped `fish_pars(23)` is estimated from Phase 2.
 - Lorenzen natural-mortality intercept fixed at `-2.54930339768360`.
 
-The final MFCL inputs and reporting-rate map are byte-identical to the public
-Job 18717 model folder on `final-exploration`. The generated fishery audit map
-uses the same parsimonious groups with stepwise-specific labels.
+The final numerical MFCL inputs are byte-identical to the public Job 18717
+model folder on `final-exploration`. The fishery and reporting-rate audit maps
+retain the same numerical groups while using the agreed current 2026 fishery
+labels, including `DOM` in place of the source-table label `MISC`.
 
 ## Step sequence
 
@@ -39,7 +42,7 @@ uses the same parsimonious groups with stepwise-specific labels.
 | 13 | `13-NewAgeData` | Add new CAAL data with weight 0.75. | Selected |
 | 14a | `14a-REG075` | Apply all-five-region CAAL reweighting. | Alternative |
 | 14b | `14b-SUB075` | Apply selected sub-basin CAAL reweighting, combining regions 3 and 4. | Selected |
-| 15 | `15-SelectivityUpdate` | Apply parsimonious fishery-specific selectivity. | Selected |
+| 15 | `15-SelectivityUpdate` | Apply revised fishery-specific selectivity. | Selected |
 | 16 | `16-MIX020` | Apply release-group-specific K=0.20 mixing periods. | Selected |
 | 17 | `17-TagReportingExclusion` | Exclude reporting rates within pre-mixing windows. | Selected |
 | 18 | `18-EffortCreep` | Apply effort creep to regional CPUE indices. | Selected |
@@ -94,7 +97,7 @@ make validate
 
 The validator checks the full parent graph, all manifests and transition
 isolation, fixed M, size-data edits, reporting rates, K=0.20 mixing, tau mode,
-parsimonious selectivity, DM controls, the headerless v2.5 scaling file, and
+the selectivity update, DM controls, the headerless v2.5 scaling file, and
 final Job 18717 hashes.
 
 ## Kflow runtime

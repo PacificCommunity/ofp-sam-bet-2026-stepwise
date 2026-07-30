@@ -172,14 +172,14 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -999 44 0  # group all tags for variance estimation if = 1
 # Grouping of fisheries for tag return data, mapped from BET_PHrev_FNL.xlsx.
 # New labels with region 4 in the workbook are treated as region 5 here.
-   -1 32 1   # LL.WEST.1, old1
-   -2 32 2   # LL.EAST.1, old2
+   -1 32 1   # LL.WEST.ALL.1, old1
+   -2 32 2   # LL.EAST.ALL.1, old2
    -3 32 3   # LL.US.1, old3
    -4 32 4   # LL.ALL.2, old7
    -5 32 5   # LL.OS.2, old6
    -6 32 6   # LL.ARCH.3, old8
    -7 32 7   # LL.WEST.3, old4
-   -8 32 8   # LL.EAST.3, old9
+   -8 32 8   # LL.EAST.4, old9
    -9 32 9   # LL.OS.3, old5
   -10 32 10  # LL.ALL.5, old11 + old12 + old29
   -11 32 11  # LL.AU.5, old10 + old27
@@ -196,10 +196,10 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -22 32 14  # DOM.PH.2, old17
   -23 32 17  # DOM.VN.2, old32
   -24 32 18  # PL.ALL.WEST.3, old21 + old22
-  -25 32 19  # PS.ASS.WEST.3, old13 + old25
-  -26 32 20  # PS.ASS.EAST.3, old15
-  -27 32 19  # PS.UNA.WEST.3, old14 + old26
-  -28 32 20  # PS.UNA.EAST.3, old16
+  -25 32 19  # PS.ASSOC.WEST.3, old13 + old25
+  -26 32 20  # PS.ASSOC.EAST.4, old15
+  -27 32 19  # PS.UNASSOC.WEST.3, old14 + old26
+  -28 32 20  # PS.UNASSOC.EAST.4, old16
   -29 32 21  # Index R1
   -30 32 21  # Index R2
   -31 32 21  # Index R3
@@ -211,40 +211,40 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -999 57 3  # cubic-spline selectivity
   -999 61 5  # five cubic-spline coefficients by default
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.
-# Job 18717 parsimonious selectivity shares F2/F3 and F7/F9 while keeping the five regional indices separate.
-  -1 24 1  # F1 parsimonious selectivity-stability group
-  -2 24 2  # F2 parsimonious selectivity-stability group
-  -3 24 2  # F3 parsimonious selectivity-stability group
-  -4 24 3  # F4 parsimonious selectivity-stability group
-  -5 24 4  # F5 parsimonious selectivity-stability group
-  -6 24 5  # F6 parsimonious selectivity-stability group
-  -7 24 6  # F7 parsimonious selectivity-stability group
-  -8 24 7  # F8 parsimonious selectivity-stability group
-  -9 24 6  # F9 parsimonious selectivity-stability group
-  -10 24 8  # F10 parsimonious selectivity-stability group
-  -11 24 9  # F11 parsimonious selectivity-stability group
-  -12 24 10  # F12 parsimonious selectivity-stability group
-  -13 24 11  # F13 parsimonious selectivity-stability group
-  -14 24 12  # F14 parsimonious selectivity-stability group
-  -15 24 13  # F15 parsimonious selectivity-stability group
-  -16 24 14  # F16 parsimonious selectivity-stability group
-  -17 24 15  # F17 parsimonious selectivity-stability group
-  -18 24 16  # F18 parsimonious selectivity-stability group
-  -19 24 17  # F19 parsimonious selectivity-stability group
-  -20 24 18  # F20 parsimonious selectivity-stability group
-  -21 24 19  # F21 parsimonious selectivity-stability group
-  -22 24 20  # F22 parsimonious selectivity-stability group
-  -23 24 21  # F23 parsimonious selectivity-stability group
-  -24 24 22  # F24 parsimonious selectivity-stability group
-  -25 24 23  # F25 parsimonious selectivity-stability group
-  -26 24 24  # F26 parsimonious selectivity-stability group
-  -27 24 25  # F27 parsimonious selectivity-stability group
-  -28 24 26  # F28 parsimonious selectivity-stability group
-  -29 24 27  # F29 parsimonious selectivity-stability group
-  -30 24 28  # F30 parsimonious selectivity-stability group
-  -31 24 29  # F31 parsimonious selectivity-stability group
-  -32 24 30  # F32 parsimonious selectivity-stability group
-  -33 24 31  # F33 parsimonious selectivity-stability group
+# Job 18717 selectivity update shares F2/F3 and F7/F9 while keeping the five regional indices separate.
+  -1 24 1  # F1 Step 15 selectivity-stability group
+  -2 24 2  # F2 Step 15 selectivity-stability group
+  -3 24 2  # F3 Step 15 selectivity-stability group
+  -4 24 3  # F4 Step 15 selectivity-stability group
+  -5 24 4  # F5 Step 15 selectivity-stability group
+  -6 24 5  # F6 Step 15 selectivity-stability group
+  -7 24 6  # F7 Step 15 selectivity-stability group
+  -8 24 7  # F8 Step 15 selectivity-stability group
+  -9 24 6  # F9 Step 15 selectivity-stability group
+  -10 24 8  # F10 Step 15 selectivity-stability group
+  -11 24 9  # F11 Step 15 selectivity-stability group
+  -12 24 10  # F12 Step 15 selectivity-stability group
+  -13 24 11  # F13 Step 15 selectivity-stability group
+  -14 24 12  # F14 Step 15 selectivity-stability group
+  -15 24 13  # F15 Step 15 selectivity-stability group
+  -16 24 14  # F16 Step 15 selectivity-stability group
+  -17 24 15  # F17 Step 15 selectivity-stability group
+  -18 24 16  # F18 Step 15 selectivity-stability group
+  -19 24 17  # F19 Step 15 selectivity-stability group
+  -20 24 18  # F20 Step 15 selectivity-stability group
+  -21 24 19  # F21 Step 15 selectivity-stability group
+  -22 24 20  # F22 Step 15 selectivity-stability group
+  -23 24 21  # F23 Step 15 selectivity-stability group
+  -24 24 22  # F24 Step 15 selectivity-stability group
+  -25 24 23  # F25 Step 15 selectivity-stability group
+  -26 24 24  # F26 Step 15 selectivity-stability group
+  -27 24 25  # F27 Step 15 selectivity-stability group
+  -28 24 26  # F28 Step 15 selectivity-stability group
+  -29 24 27  # F29 Step 15 selectivity-stability group
+  -30 24 28  # F30 Step 15 selectivity-stability group
+  -31 24 29  # F31 Step 15 selectivity-stability group
+  -32 24 30  # F32 Step 15 selectivity-stability group
+  -33 24 31  # F33 Step 15 selectivity-stability group
 # Non-decreasing selectivity for the old6-derived longline fishery.
 # Selected old-derived longline fisheries set to zero for first two age classes.
   -2 75 2  # F2 youngest age classes fixed at zero selectivity
@@ -303,11 +303,11 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -31 75 2  # Index R3 youngest age classes fixed at zero selectivity
   -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
   -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
-  -1 61 4  # F1 retained four-node parsimonious selectivity
-  -2 61 4  # F2 retained four-node parsimonious selectivity
-  -3 61 4  # F3 retained four-node parsimonious selectivity
-  -5 61 4  # F5 retained four-node parsimonious selectivity
-  -29 61 4  # F29 retained four-node parsimonious selectivity
+  -1 61 4  # F1 retained four-node Step 15 selectivity
+  -2 61 4  # F2 retained four-node Step 15 selectivity
+  -3 61 4  # F3 retained four-node Step 15 selectivity
+  -5 61 4  # F5 retained four-node Step 15 selectivity
+  -29 61 4  # F29 retained four-node Step 15 selectivity
   -33 57 1  # Index R5 independent asymptotic logistic selectivity
   1 320 5  # use tail-compressed DM when the first-to-last-positive observed span contains at least five bins
   1 342 25  # DM effective-sample-size upper asymptote Nmax=25
@@ -408,40 +408,40 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -31 94 0  # Index R3; separate flag-99 group now supplies its own flag-92 error scale
   -32 94 0  # Index R4; separate flag-99 group now supplies its own flag-92 error scale
   -33 94 0  # Index R5; separate flag-99 group now supplies its own flag-92 error scale
-# STAGED MFCL RUN 5: retain the parsimonious extraction sharing and separate regional indices.
-  -29 24 27  # F29 parsimonious selectivity-stability group
-  -30 24 28  # F30 parsimonious selectivity-stability group
-  -31 24 29  # F31 parsimonious selectivity-stability group
-  -32 24 30  # F32 parsimonious selectivity-stability group
-  -33 24 31  # F33 parsimonious selectivity-stability group
-  -1 24 1  # F1 parsimonious selectivity-stability group
-  -2 24 2  # F2 parsimonious selectivity-stability group
-  -3 24 2  # F3 parsimonious selectivity-stability group
-  -4 24 3  # F4 parsimonious selectivity-stability group
-  -5 24 4  # F5 parsimonious selectivity-stability group
-  -6 24 5  # F6 parsimonious selectivity-stability group
-  -7 24 6  # F7 parsimonious selectivity-stability group
-  -8 24 7  # F8 parsimonious selectivity-stability group
-  -9 24 6  # F9 parsimonious selectivity-stability group
-  -10 24 8  # F10 parsimonious selectivity-stability group
-  -11 24 9  # F11 parsimonious selectivity-stability group
-  -12 24 10  # F12 parsimonious selectivity-stability group
-  -13 24 11  # F13 parsimonious selectivity-stability group
-  -14 24 12  # F14 parsimonious selectivity-stability group
-  -15 24 13  # F15 parsimonious selectivity-stability group
-  -16 24 14  # F16 parsimonious selectivity-stability group
-  -17 24 15  # F17 parsimonious selectivity-stability group
-  -18 24 16  # F18 parsimonious selectivity-stability group
-  -19 24 17  # F19 parsimonious selectivity-stability group
-  -20 24 18  # F20 parsimonious selectivity-stability group
-  -21 24 19  # F21 parsimonious selectivity-stability group
-  -22 24 20  # F22 parsimonious selectivity-stability group
-  -23 24 21  # F23 parsimonious selectivity-stability group
-  -24 24 22  # F24 parsimonious selectivity-stability group
-  -25 24 23  # F25 parsimonious selectivity-stability group
-  -26 24 24  # F26 parsimonious selectivity-stability group
-  -27 24 25  # F27 parsimonious selectivity-stability group
-  -28 24 26  # F28 parsimonious selectivity-stability group
+# STAGED MFCL RUN 5: retain the Step 15 extraction sharing and separate regional indices.
+  -29 24 27  # F29 Step 15 selectivity-stability group
+  -30 24 28  # F30 Step 15 selectivity-stability group
+  -31 24 29  # F31 Step 15 selectivity-stability group
+  -32 24 30  # F32 Step 15 selectivity-stability group
+  -33 24 31  # F33 Step 15 selectivity-stability group
+  -1 24 1  # F1 Step 15 selectivity-stability group
+  -2 24 2  # F2 Step 15 selectivity-stability group
+  -3 24 2  # F3 Step 15 selectivity-stability group
+  -4 24 3  # F4 Step 15 selectivity-stability group
+  -5 24 4  # F5 Step 15 selectivity-stability group
+  -6 24 5  # F6 Step 15 selectivity-stability group
+  -7 24 6  # F7 Step 15 selectivity-stability group
+  -8 24 7  # F8 Step 15 selectivity-stability group
+  -9 24 6  # F9 Step 15 selectivity-stability group
+  -10 24 8  # F10 Step 15 selectivity-stability group
+  -11 24 9  # F11 Step 15 selectivity-stability group
+  -12 24 10  # F12 Step 15 selectivity-stability group
+  -13 24 11  # F13 Step 15 selectivity-stability group
+  -14 24 12  # F14 Step 15 selectivity-stability group
+  -15 24 13  # F15 Step 15 selectivity-stability group
+  -16 24 14  # F16 Step 15 selectivity-stability group
+  -17 24 15  # F17 Step 15 selectivity-stability group
+  -18 24 16  # F18 Step 15 selectivity-stability group
+  -19 24 17  # F19 Step 15 selectivity-stability group
+  -20 24 18  # F20 Step 15 selectivity-stability group
+  -21 24 19  # F21 Step 15 selectivity-stability group
+  -22 24 20  # F22 Step 15 selectivity-stability group
+  -23 24 21  # F23 Step 15 selectivity-stability group
+  -24 24 22  # F24 Step 15 selectivity-stability group
+  -25 24 23  # F25 Step 15 selectivity-stability group
+  -26 24 24  # F26 Step 15 selectivity-stability group
+  -27 24 25  # F27 Step 15 selectivity-stability group
+  -28 24 26  # F28 Step 15 selectivity-stability group
 PHASE5
 
 # ---------

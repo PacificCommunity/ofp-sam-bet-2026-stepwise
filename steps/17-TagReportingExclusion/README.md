@@ -58,7 +58,7 @@ Set tag_flags(:,2)=1 so reporting rates are excluded only in pre-mixing windows.
 | --- | --- |
 | 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | The Job 18717 parsimonious selectivity specification shares F2/F3 and F7/F9, retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic curve for F33, and keeps the documented F14/F15 youngest-five-age constraints. |
+| 3 | The Job 18717 selectivity update shares F2/F3 and F7/F9, retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic curve for F33, and keeps the documented F14/F15 youngest-five-age constraints. |
 | 4 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 | 5 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 6 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
@@ -70,7 +70,8 @@ Set tag_flags(:,2)=1 so reporting rates are excluded only in pre-mixing windows.
 | # | Note |
 | --- | --- |
 | 1 | No preliminary parameter file or scientific-parent model folder is read at runtime. |
-| 2 | cpue_mle_sigma_audit.csv records the archived source commit/path/SHA256, preliminary maximum-likelihood observation-error estimates, and executed flag-92 values. |
+| 2 | The fishery definitions and tag-recapture groups in `fishery_map.R` are unchanged; only its selectivity-group metadata changes. See [the Step 15 comparison](../../docs/selectivity-update.md). |
+| 3 | cpue_mle_sigma_audit.csv records the archived source commit/path/SHA256, preliminary maximum-likelihood observation-error estimates, and executed flag-92 values. |
 
 ## Checks
 

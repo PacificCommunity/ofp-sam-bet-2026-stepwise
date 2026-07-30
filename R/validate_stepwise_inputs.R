@@ -409,7 +409,7 @@ for (id in expected_ids[15:20]) {
          "selected SUB075 CAAL input was not carried forward")
 }
 
-## Exact Job 18717 parsimonious-selectivity signature.
+## Exact Job 18717 selectivity-update signature.
 selectivity_signature <- function(path) {
   lines <- read_text(path)
   phase <- -1L
@@ -436,9 +436,9 @@ expected_selectivity_sha <- "0f5e9e3cd1911e5fcc19d7731a949908c5350712a282522f549
 for (id in expected_ids[16:20]) {
   signature <- selectivity_signature(file.path(model_dir(id), "doitall.sh"))
   assert(length(strsplit(trimws(signature), "\n")[[1L]]) == 128L, id,
-         "parsimonious-selectivity signature must contain 128 Phase 1/5 controls")
+         "selectivity-update signature must contain 128 Phase 1/5 controls")
   assert(identical(sha256_text(signature), expected_selectivity_sha), id,
-         "parsimonious selectivity differs from Job 18717")
+         "selectivity update differs from Job 18717")
 }
 
 ## Tag mixing and reporting-rate isolation.
@@ -564,6 +564,51 @@ for (transition in transitions) {
   )
 }
 
+## The Step 15 map may change selectivity metadata, but never fishery identity.
+read_fishery_map <- function(step_id) {
+  env <- new.env(parent = baseenv())
+  sys.source(file.path(model_dir(step_id), "fishery_map.R"), envir = env)
+  env$fishery_map
+}
+expected_five_region_names <- c(
+  "01.LL.WEST.ALL.1", "02.LL.EAST.ALL.1", "03.LL.US.1",
+  "04.LL.ALL.2", "05.LL.OS.2", "06.LL.ARCH.3", "07.LL.WEST.3",
+  "08.LL.EAST.4", "09.LL.OS.3", "10.LL.ALL.5", "11.LL.AU.5",
+  "12.PS.JP.1", "13.PL.JP.1", "14.HL.ID.2", "15.HL.PH.2",
+  "16.PL.ALL.2", "17.PS.ID.2", "18.PS.PH.2", "19.PS.ASS.2",
+  "20.PS.UNA.2", "21.DOM.ID.2", "22.DOM.PH.2", "23.DOM.VN.2",
+  "24.PL.ALL.WEST.3", "25.PS.ASSOC.WEST.3", "26.PS.ASSOC.EAST.4",
+  "27.PS.UNASSOC.WEST.3", "28.PS.UNASSOC.EAST.4",
+  paste0(sprintf("%02d", 29:33), ".Index R", 1:5)
+)
+expected_five_region_regions <- c(
+  1L, 1L, 1L, 2L, 2L, 3L, 3L, 4L, 3L, 5L, 5L,
+  1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+  3L, 3L, 4L, 3L, 4L, 1L, 2L, 3L, 4L, 5L
+)
+five_region_steps <- expected_ids[
+  match("05-NewStructure", expected_ids):length(expected_ids)
+]
+base_map <- read_fishery_map("05-NewStructure")
+assert(identical(base_map$fishery_name, expected_five_region_names),
+       "05-NewStructure", "fishery display names differ from the approved 2026 map")
+assert(identical(base_map$fishery, seq_len(33L)),
+       "05-NewStructure", "fishery IDs differ from the approved 2026 map")
+assert(identical(as.integer(base_map$region), expected_five_region_regions),
+       "05-NewStructure", "fishery regions differ from the approved 2026 map")
+identity_fields <- c(
+  "fishery_name", "fishery", "region", "group", "source_recipe",
+  "tag_recapture_group", "tag_recapture_name"
+)
+for (step_id in five_region_steps) {
+  current_map <- read_fishery_map(step_id)
+  assert(
+    identical(current_map[identity_fields], base_map[identity_fields]),
+    step_id,
+    "fishery identity or tag-recapture metadata changed after Step 05"
+  )
+}
+
 ## Final targets must match Job 18717 inputs and the stepwise-named audit map.
 job18717_aligned_hashes <- c(
   "bet.frq" = "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3",
@@ -572,8 +617,8 @@ job18717_aligned_hashes <- c(
   "bet.age_length" = "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
   "bet.reg_scaling" = "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
   "mfcl.cfg" = "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
-  "tag_rep_map.R" = "e1bddfe316a8b3e39333d0792f58db8f070d3f6f370770507e2f500f9d88786c",
-  "fishery_map.R" = "fafa22e2f1aa5823ef40a86e4f8d24c2f711d30801497f4ac2cacca289318e0a"
+  "tag_rep_map.R" = "96bdd0e9e75bc0794036385edc08e7219942d3c23fe4839be5986c4d77f96085",
+  "fishery_map.R" = "af75e51bed5fcbc752aa1a2534ef7c742daee88048a964e7e9e4b91223118717"
 )
 for (file in names(job18717_aligned_hashes)) {
   assert(identical(sha256_file(file.path(model_dir(final_id), file)),
@@ -588,7 +633,7 @@ if (length(failures)) {
 
 cat(
   "Validated 20 frozen models / 19 cumulative steps.\n",
-  "Final: Job 18717 treatment; K=0.20, tau not estimated, parsimonious selectivity, ",
+  "Final: Job 18717 treatment; K=0.20, tau not estimated, selectivity update, ",
   "DM G8 Nmax25, fish_pars(22)=7 fixed.\n",
   "Runtime: Suva, immutable tuna-flow v2.5, pinned mfclkit/mfclshiny.\n",
   sep = ""

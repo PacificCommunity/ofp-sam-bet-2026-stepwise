@@ -187,11 +187,11 @@ stepwise_dm_groups <- data.frame(
     "F29-F33"
   ),
   series = c(
-    "LL.WEST.1; LL.EAST.1; LL.US.1; LL.ALL.2; LL.ARCH.3; LL.WEST.3; LL.EAST.3; LL.ALL.5; LL.AU.5",
+    "LL.WEST.ALL.1; LL.EAST.ALL.1; LL.US.1; LL.ALL.2; LL.ARCH.3; LL.WEST.3; LL.EAST.4; LL.ALL.5; LL.AU.5",
     "LL.OS.2; LL.OS.3",
     "PS.JP.1; PS.ID.2; PS.PH.2",
-    "PS.ASS.2; PS.ASS.WEST.3; PS.ASS.EAST.3",
-    "PS.UNA.2; PS.UNA.WEST.3; PS.UNA.EAST.3",
+    "PS.ASS.2; PS.ASSOC.WEST.3; PS.ASSOC.EAST.4",
+    "PS.UNA.2; PS.UNASSOC.WEST.3; PS.UNASSOC.EAST.4",
     "HL.ID.2; HL.PH.2",
     "PL.JP.1; PL.ALL.2; DOM.ID.2; DOM.PH.2; DOM.VN.2; PL.ALL.WEST.3",
     "Index R1; Index R2; Index R3; Index R4; Index R5"
