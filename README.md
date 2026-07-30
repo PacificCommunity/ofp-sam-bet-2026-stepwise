@@ -8,12 +8,12 @@ It does not depend on the deleted stepwise `steps/` tree.
 
 ## Exploration grid
 
-| Model pattern | Selectivity | K values | Tag likelihood | Estimated tau parameters |
-| --- | --- | --- | --- | ---: |
-| `K*-tau-estimated` | Selected final controls | 0.05-0.30 | Negative binomial (`parest 111=4`) | One common F1-F28 tau |
-| `K*-tau-not-estimated` | Selected final controls | 0.05-0.30 | Negative binomial (`parest 111=4`) | Zero |
-| `K*-tau-estimated-sel20c` | Job 15062 20c controls + F14 age constraint | 0.05-0.30 | Negative binomial (`parest 111=4`) | One common F1-F28 tau |
-| `K*-tau-not-estimated-sel20c` | Job 15062 20c controls + F14 age constraint | 0.05-0.30 | Negative binomial (`parest 111=4`) | Zero |
+| Internal model pattern | Public label | K values | Tag likelihood | Tau treatment |
+| --- | --- | --- | --- | --- |
+| `K*-tau-estimated` | Tau estimated · Parsimonious selectivity | 0.05-0.30 | Negative binomial (`parest 111=4`) | One common F1-F28 tau |
+| `K*-tau-not-estimated` | Tau not estimated (original) · Parsimonious selectivity | 0.05-0.30 | Negative binomial (`parest 111=4`) | Not estimated |
+| `K*-tau-estimated-sel20c` | Tau estimated · Flexible selectivity | 0.05-0.30 | Negative binomial (`parest 111=4`) | One common F1-F28 tau |
+| `K*-tau-not-estimated-sel20c` | Tau not estimated (original) · Flexible selectivity | 0.05-0.30 | Negative binomial (`parest 111=4`) | Not estimated |
 
 The second mode is not Poisson and does not switch off tag data. It retains
 the negative-binomial tag likelihood, keeps fish flags 43/44 inactive, and
@@ -21,11 +21,11 @@ does not open `fish_pars(4)` as an estimated parameter.
 
 ## Selectivity treatments
 
-The original 12 folders retain the selected final controls, including F2/F3
+The 12 parsimonious folders retain the recent controls, including F2/F3
 and F7/F9 sharing, the later spline-node choices, independent asymptotic F33
 selectivity, and the F14/F15 youngest-five-age constraints.
 
-The 12 `-sel20c` folders instead use the selectivity controls from the actual
+The 12 flexible folders use the selectivity controls from the actual
 Job 15062 `20c-DMG8Nmax25` `doitall.sh`: F1-F28 start in separate groups,
 F29-F33 share in Phase 1 and separate in Phase 5, the default five spline
 nodes are retained for F1/F2/F3/F5/F29, and F33 remains cubic-spline. The one
@@ -115,6 +115,11 @@ Results are written to
 The default is `MODEL=K015-tau-estimated`. Override `MODEL` with one of the
 24 exploration directory names to submit each grid member independently.
 
+The public Kflow labels are:
+
+- `K=<value> | Tau estimated | Parsimonious/Flexible selectivity`
+- `K=<value> | Tau not estimated (original) | Parsimonious/Flexible selectivity`
+
 The model job installs and verifies the current package snapshots from
 2026-07-30 at exact commits:
 
@@ -138,9 +143,16 @@ The job also archives those exact installed packages in
 library and rechecks its SHAs, so the viewer uses the same package versions
 selected for that individual Kflow run rather than the branch defaults.
 
-The actual 20c model fit, Kflow Job 15062 (`20c-DMG8Nmax25`), used this same
-tuna-flow v2.5 image digest. Job 15203 is the later Hessian merge/check derived
-from that model, not the original 20c model fit.
+## Dependent profiles
 
-No final-exploration MFCL or Kflow job was launched while preparing this
-branch.
+Each fitted model has a dependent total-average-biomass profile. The exact
+settings are in [`profile.env`](profile.env): 60-140% in 2.5-point steps,
+two `robust_fast` continuation chains, a fitted 100% anchor, and no jagged
+retry or repair. The profile jobs use the same pinned tuna-flow v2.5 image and
+the package commits listed above. They additionally pin
+`FLR4MFCL@3faaf84a4867175bfea50d89e4d518c085e84739`, the version used by
+completed profile merge Job 18608 (33/33 profile points successful).
+
+The 24 model jobs were submitted to the public Kflow task
+`bet-2026-final-exploration-v25-20260730` as Jobs 18703-18726. Their dependent
+profile chains and merges are Jobs 18727-18798.

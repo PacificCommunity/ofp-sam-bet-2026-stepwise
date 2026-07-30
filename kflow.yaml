@@ -1,5 +1,5 @@
-name: bet-2026-final-exploration-v25
-description: "BET 2026 tuna-flow v2.5 exploration with Job 18518-style fixed DM concentration; select mixing K, tag-tau treatment, and optional Job 15062-based 20c selectivity with F14/F15 youngest-five-age constraints."
+name: BET 2026 final exploration - tuna-flow v2.5
+description: "BET 2026 exploration of tag-mixing K, estimated versus original non-estimated tau, and parsimonious versus flexible selectivity. All models retain negative-binomial tags, fixed M, and DM concentration 7 with Nmax 25."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: final-exploration
@@ -65,7 +65,7 @@ metadata:
   dm_groups: 8
   dm_fish_pars_22: "fixed at 7"
   dm_fish_pars_23: "estimated"
-  selectivity_treatments: "selected-final controls; Job 15062 20c doitall controls with F14/F15 youngest-five-age constraints"
+  selectivity_treatments: "parsimonious; flexible with F14/F15 youngest-five-age constraints"
   natural_mortality_fixed: true
   tag_likelihood: negative-binomial
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"
@@ -148,6 +148,9 @@ triggers: {}
 job_config:
   optional:
     - MODEL
+    - KFLOW_JOB_KEY
+    - KFLOW_JOB_TITLE
+    - KFLOW_JOB_DESCRIPTION
     - BET_PHASE10_11_CONVERGENCE
     - MFCLKIT_GITHUB_REF
     - MFCLSHINY_GITHUB_REF

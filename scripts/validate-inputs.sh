@@ -10,6 +10,51 @@ fail()
   exit 1
 }
 
+[[ -s profile.env ]] || fail "missing profile.env"
+python3 - <<'PY' || fail "invalid dependent profile configuration"
+from pathlib import Path
+
+values = {}
+for raw in Path("profile.env").read_text().splitlines():
+    line = raw.strip()
+    if not line or line.startswith("#"):
+        continue
+    key, value = line.split("=", 1)
+    values[key] = value.strip().strip('"')
+
+grid = [float(value) for value in values["PROFILE_VALUES"].split()]
+expected = [60 + 2.5 * index for index in range(33)]
+assert grid == expected
+assert values["KFLOW_DOCKER_IMAGE"] == (
+    "ghcr.io/pacificcommunity/tuna-flow:v2.5@"
+    "sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360"
+)
+assert values["PROGRAM_PATH"] == "/home/mfcl/mfclo64"
+assert values["MODEL_SOURCE_REF"] == "632bb945d350343b76ec6fba2f95c49a224cb2bb"
+packages = values["KFLOW_REPO_RUNTIME_PACKAGES"]
+assert "FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@3faaf84a4867175bfea50d89e4d518c085e84739" in packages
+assert "mfclkit=PacificCommunity/ofp-sam-mfclkit@25103916446d0395286afae28b5404bf361670fc" in packages
+assert "mfclshiny=PacificCommunity/mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a" in packages
+assert values["PROFILE_PRESET"] == "robust_fast"
+assert values["PROFILE_PARALLEL_MODE"] == "chains"
+assert values["PROFILE_EXECUTION_MODE"] == "continuation"
+for key in (
+    "PROFILE_RETRY_JAGGED",
+    "PROFILE_UNIT_RETRY_JAGGED",
+    "PROFILE_REVERSE_ONCE",
+    "PROFILE_UNIT_REVERSE_ONCE",
+    "PROFILE_POST_MERGE_REPAIR",
+):
+    assert values[key] == "false"
+for key in (
+    "PROFILE_JAGGED_REPAIR_PASSES",
+    "PROFILE_UNIT_JAGGED_REPAIR_PASSES",
+    "PROFILE_MAX_JAGGED_REPAIRS",
+    "PROFILE_UNIT_MAX_JAGGED_REPAIRS",
+):
+    assert values[key] == "0"
+PY
+
 read_m()
 {
   awk '
