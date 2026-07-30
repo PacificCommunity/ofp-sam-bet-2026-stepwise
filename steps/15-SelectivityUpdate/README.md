@@ -1,6 +1,6 @@
-# 15 Selectivity update
+# 15 Flexible selectivity update
 
-Revise fishery-specific selectivity to align with the 33-fishery structure, using the Job 18717 controls and documented F14/F15 youngest-five-age constraints.
+Apply the Job 18718 flexible fishery-specific selectivity to the 33-fishery structure, retaining the documented F14/F15 youngest-five-age constraints.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Revise fishery-specific selectivity to align with the 33-fishery structure, usin
 
 | # | Change |
 | --- | --- |
-| 1 | Revise fishery-specific selectivity to align with the 33-fishery structure, using the Job 18717 controls and documented F14/F15 youngest-five-age constraints. |
+| 1 | Apply the Job 18718 flexible fishery-specific selectivity to the 33-fishery structure, retaining the documented F14/F15 youngest-five-age constraints. |
 | 2 | F15 bins below 70 cm are zeroed without renormalisation. |
 | 3 | F21-F23 intervals with midpoint above 90 cm are removed. |
 | 4 | F14 and F15 youngest five ages are fixed at zero selectivity. |
@@ -39,7 +39,7 @@ Revise fishery-specific selectivity to align with the 33-fishery structure, usin
 | `.ini` | rrpttp26 reporting-rate matrices; tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Revise fishery-specific selectivity to align with the 33-fishery structure, using the Job 18717 controls and documented F14/F15 youngest-five-age constraints. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Apply the Job 18718 flexible fishery-specific selectivity to the 33-fishery structure, retaining the documented F14/F15 youngest-five-age constraints. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -58,7 +58,7 @@ Revise fishery-specific selectivity to align with the 33-fishery structure, usin
 | --- | --- |
 | 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | The Job 18717 selectivity update shares F2/F3 and F7/F9, retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic curve for F33, and keeps the documented F14/F15 youngest-five-age constraints. |
+| 3 | The Job 18718 flexible selectivity update keeps F1-F28 independent, separates F29-F33 in staged run 5, retains the flexible spline forms, and keeps the documented F14/F15 youngest-five-age constraints. |
 | 4 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 | 5 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 6 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |

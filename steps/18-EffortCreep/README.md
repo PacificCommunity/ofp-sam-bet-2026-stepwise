@@ -58,7 +58,7 @@ Apply the BET 2026 effort-creep series only to positive F29-F33 effort.
 | --- | --- |
 | 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 | 2 | Regional-scaling weight is 100. |
-| 3 | The Job 18717 selectivity update shares F2/F3 and F7/F9, retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic curve for F33, and keeps the documented F14/F15 youngest-five-age constraints. |
+| 3 | The Job 18718 flexible selectivity update keeps F1-F28 independent, separates F29-F33 in staged run 5, retains the flexible spline forms, and keeps the documented F14/F15 youngest-five-age constraints. |
 | 4 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
 | 5 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
 | 6 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
