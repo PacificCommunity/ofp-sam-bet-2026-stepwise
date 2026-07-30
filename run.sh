@@ -87,6 +87,8 @@ printf '%s\n' \
 
 if truthy "${BUILD_MODEL_PAYLOAD:-false}"; then
   Rscript scripts/build-model-payload.R "$run_dir"
+  tar -C "$R_LIBS_USER" -czf "$run_dir/runtime-package-library.tar.gz" \
+    mfclkit mfclshiny
 fi
 
 echo "Completed: $run_dir/final.par"

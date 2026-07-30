@@ -84,18 +84,7 @@ local_apps:
     memory: 8g
     archive_sources:
       - outputs
-    package_sources:
-      - name: mfclkit
-        type: github
-        repo: PacificCommunity/ofp-sam-mfclkit
-        ref_env: MFCLKIT_GITHUB_REF
-      - name: mfclshiny
-        type: github
-        repo: PacificCommunity/mfclshiny
-        ref_env: MFCLSHINY_GITHUB_REF
     env:
-      MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
-      MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "true"
       MFCLSHINY_LIVE_UPDATE: "false"
@@ -104,8 +93,6 @@ local_apps:
       MKL_NUM_THREADS: "1"
     command: |
       Rscript - <<'RS'
-      lib <- Sys.getenv("KFLOW_LOCAL_APP_R_LIBS", "/kflow/package-cache/R-library")
-      .libPaths(unique(c(lib, .libPaths())))
       roots <- c(
         Sys.getenv("KFLOW_LOCAL_APP_OUTPUT_DIR", "/kflow/outputs"),
         Sys.getenv("KFLOW_LOCAL_APP_INPUT_DIR", "/kflow/inputs")
@@ -122,8 +109,30 @@ local_apps:
       if (length(payloads) != 1L) {
         stop("Expected one final-exploration model payload; found ", length(payloads))
       }
+      model_dir <- dirname(payloads[[1L]])
+      package_archive <- file.path(model_dir, "runtime-package-library.tar.gz")
+      version_file <- file.path(model_dir, "runtime-package-versions.csv")
+      if (!file.exists(package_archive) || !file.exists(version_file)) {
+        stop("The model output does not contain its pinned R package library.")
+      }
+      runtime_lib <- "/kflow/work/runtime-library"
+      unlink(runtime_lib, recursive = TRUE, force = TRUE)
+      dir.create(runtime_lib, recursive = TRUE, showWarnings = FALSE)
+      utils::untar(package_archive, exdir = runtime_lib)
+      .libPaths(unique(c(runtime_lib, .libPaths())))
+      expected <- utils::read.csv(version_file, stringsAsFactors = FALSE)
+      for (index in seq_len(nrow(expected))) {
+        description <- utils::packageDescription(
+          expected$package[[index]],
+          lib.loc = runtime_lib
+        )
+        observed <- tolower(as.character(description[["RemoteSha"]][[1L]]))
+        if (!identical(observed, tolower(expected$remote_sha[[index]]))) {
+          stop("Local-app package SHA mismatch for ", expected$package[[index]])
+        }
+      }
       mfclshiny::run_mfclshiny(
-        model_dir = dirname(payloads[[1L]]),
+        model_dir = model_dir,
         export_dir = "/kflow/work/export",
         host = "0.0.0.0",
         port = as.integer(Sys.getenv("PORT", "3838")),

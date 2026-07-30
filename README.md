@@ -99,11 +99,10 @@ The model job installs and verifies the current package snapshots from
 - `mfclkit@25103916446d0395286afae28b5404bf361670fc`
 - `mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a`
 
-They are used after the MFCL fit to build `model_payload.rds`; the same exact
-commits are declared as authenticated Kflow local-app package sources for the
-MFCL Shiny viewer. The image and package commits are intentionally pinned
-separately: tuna-flow v2.5 supplies the MFCL executable, while the R packages
-are installed at run time for reproducible post-processing.
+They are used after the MFCL fit to build `model_payload.rds`. The image and
+package commits are intentionally pinned separately: tuna-flow v2.5 supplies
+the MFCL executable, while the R packages are installed at run time for
+reproducible post-processing.
 
 These two package commits are defaults, not permanent constraints. At Kflow
 submission, set `MFCLKIT_GITHUB_REF` and `MFCLSHINY_GITHUB_REF` to different
@@ -112,6 +111,10 @@ installer treats those two values as authoritative, verifies the installed
 `RemoteSha` values, and records the versions in
 `runtime-package-versions.csv`. This preserves the existing Kflow
 version-override workflow without making the MFCL executable mutable.
+The job also archives those exact installed packages in
+`runtime-package-library.tar.gz`. The MFCL Shiny local app loads that archived
+library and rechecks its SHAs, so the viewer uses the same package versions
+selected for that individual Kflow run rather than the branch defaults.
 
 The actual 20c model fit, Kflow Job 15062 (`20c-DMG8Nmax25`), used this same
 tuna-flow v2.5 image digest. Job 15203 is the later Hessian merge/check derived

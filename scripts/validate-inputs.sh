@@ -187,10 +187,6 @@ grep -Fqx '    - MFCLKIT_GITHUB_REF' kflow.yaml ||
   fail "Kflow mfclkit version override is not exposed"
 grep -Fqx '    - MFCLSHINY_GITHUB_REF' kflow.yaml ||
   fail "Kflow mfclshiny version override is not exposed"
-grep -Fqx '        ref_env: MFCLKIT_GITHUB_REF' kflow.yaml ||
-  fail "MFCL Shiny local app does not resolve the configured mfclkit ref"
-grep -Fqx '        ref_env: MFCLSHINY_GITHUB_REF' kflow.yaml ||
-  fail "MFCL Shiny local app does not resolve the configured mfclshiny ref"
 grep -Fqx '  BUILD_MODEL_PAYLOAD: "true"' kflow.yaml ||
   fail "Kflow payload construction is not enabled"
 grep -Fqx '    runner: local-docker-ssh' kflow.yaml ||
@@ -199,6 +195,10 @@ grep -Fq 'Rscript scripts/prepare-runtime-packages.R' run.sh ||
   fail "run.sh does not prepare the pinned R packages"
 grep -Fq 'Rscript scripts/build-model-payload.R "$run_dir"' run.sh ||
   fail "run.sh does not build the MFCL Shiny payload"
+grep -Fq '"$run_dir/runtime-package-library.tar.gz"' run.sh ||
+  fail "run.sh does not archive the selected R package versions"
+grep -Fq 'runtime-package-library.tar.gz' kflow.yaml ||
+  fail "MFCL Shiny local app does not load the job-specific R package library"
 Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "scripts/build-model-payload.R")' \
   >/dev/null ||
   fail "R helper syntax check failed"
