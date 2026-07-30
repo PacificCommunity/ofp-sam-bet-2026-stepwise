@@ -134,6 +134,27 @@ utils::write.csv(rows, stdout(), row.names = FALSE, na = "")
         {str(key): str(value or "").strip() for key, value in row.items()}
         for row in csv.DictReader(io.StringIO(result.stdout))
     ]
+    include_steps = campaign.get("include_steps")
+    if include_steps is not None:
+        if isinstance(include_steps, str):
+            requested_steps = [
+                value.strip() for value in include_steps.split(",") if value.strip()
+            ]
+        elif isinstance(include_steps, list):
+            requested_steps = [str(value).strip() for value in include_steps if str(value).strip()]
+        else:
+            raise ValueError("model_campaign.include_steps must be a list or comma-separated string.")
+        if len(requested_steps) != len(set(requested_steps)):
+            raise ValueError("model_campaign.include_steps contains duplicate step IDs.")
+        available_steps = {row.get("step_id", "") for row in rows}
+        unknown_steps = [step for step in requested_steps if step not in available_steps]
+        if unknown_steps:
+            raise ValueError(
+                "model_campaign.include_steps contains unknown step IDs: "
+                + ", ".join(unknown_steps)
+            )
+        requested_set = set(requested_steps)
+        rows = [row for row in rows if row.get("step_id", "") in requested_set]
     required = ("step_id", "job_key", "job_title", "model_label")
     if not rows:
         raise ValueError("The model campaign has no enabled rows.")

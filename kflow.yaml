@@ -7,7 +7,7 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/bet-2026-final-stepwise-alt-v25
 name: bet-2026-final-stepwise-alt-v25
-description: Fit the alternative 19-step BET 2026 pathway as 20 independent models, ending at the Job 18718 treatment (K=0.20, tau not estimated, flexible selectivity, DM G8 Nmax25 with concentration 7).
+description: Fit only Steps 15-19 of the alternative BET 2026 pathway, ending at the Job 18718 treatment (K=0.20, tau not estimated, flexible selectivity, DM G8 Nmax25 with concentration 7).
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -411,6 +411,12 @@ triggers: {}
 # derived at registration/plan time; no model count is duplicated here.
 model_campaign:
   rows_source: job-config.R
+  include_steps:
+    - 15-SelectivityUpdate
+    - 16-MIX020
+    - 17-TagReportingExclusion
+    - 18-EffortCreep
+    - 19-DMG8Nmax25
   execution: independent-concurrent
   inputs: frozen
   scientific_parent: metadata-only

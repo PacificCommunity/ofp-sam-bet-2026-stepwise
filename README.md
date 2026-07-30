@@ -109,6 +109,7 @@ final Job 18718 hashes.
 ## Kflow runtime
 
 `kflow.yaml` is fixed to Suva and the immutable tuna-flow v2.5 image digest.
+The alternative task registers and submits only the changed Step 15-19 models.
 The main executable is `/home/mfcl/mfclo64`; Step 01 selects the archived
 2.2.2.0 diagnostic executable. `mfclkit` and `mfclshiny` are installed at
 runtime from the pinned working commits in `kflow.yaml`, so a later campaign
