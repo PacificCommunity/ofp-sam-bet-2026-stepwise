@@ -48,7 +48,9 @@ ini_repo_root <- input_repo_root(
 tag_repo_root <- input_repo_root(
   "ofp-sam-2026-BET-YFT-tag-prep", "BET_2026_TAG_REPO_ROOT"
 )
-age_repo_root <- input_repo_root("ofp-sam-2026-BET-YFT-age-length-build")
+age_repo_root <- input_repo_root(
+  "ofp-sam-2026-BET-YFT-age-length-build", "BET_2026_AGE_REPO_ROOT"
+)
 
 frq_root <- file.path(frq_repo_root, "BET")
 ini_root <- file.path(ini_repo_root, "BET")
@@ -228,6 +230,7 @@ for (module in c(
   "prepare_mfcl_inputs.R",
   "prepare_readme_manifest.R",
   "prepare_doitall.R",
+  "apply_size_data_qc.R",
   "prepare_step_builder.R"
 )) {
   source_prepare_module(module)
@@ -355,57 +358,63 @@ copy_model_core_files <- function(from_dir, to_dir) {
   }
 }
 
-write_02_newexe_step <- function() {
-  paths <- prepare_step_model_dir("02-NewExe1003")
+write_02_newexe_ini1007_step <- function() {
+  paths <- prepare_step_model_dir("02-NewExeIni1007")
   step01_model_dir <- file.path(root, "steps", "01-Diag2023", "model")
   copy_model_core_files(step01_model_dir, paths$model_dir)
+  ini_notes <- ensure_ini_1007_compatibility(
+    file.path(paths$model_dir, "bet.ini"),
+    file.path(paths$model_dir, "bet.tag"),
+    total_population_scalar = 25L,
+    retain_reporting_rates_during_mixing = TRUE
+  )
   write_generated_tag_rep_map(paths$model_dir)
   write_2023_newexe_doitall(
     file.path(step01_model_dir, "doitall.sh"),
     file.path(paths$model_dir, "doitall.sh"),
     fixm = FALSE,
-    mix_from_ini = FALSE
+    mix_from_ini = TRUE
   )
   write_manifest(paths$step_dir, list(
     list(role = "frq", file = "bet.frq", source = diagnostic_file("bet.frq"), note = "exact Step 01 diagnostic frequency/catch/size input"),
-    list(role = "ini", file = "bet.ini", source = diagnostic_file("bet.ini"), note = "exact Step 01 MFCL 1003 ini; not promoted in this substep"),
+    list(role = "ini", file = "bet.ini", source = diagnostic_file("bet.ini"), note = paste(ini_notes, collapse = "; ")),
     list(role = "tag", file = "bet.tag", source = diagnostic_file("bet.tag"), note = "exact Step 01 diagnostic tag input; tag reporting map regenerated from ini/tag"),
     list(role = "age_length", file = "bet.age_length", source = diagnostic_file("bet.age_length"), note = "exact Step 01 diagnostic CAAL input"),
-    list(role = "doitall", file = "doitall.sh", source = diagnostic_file("doitall.sh"), note = "Step 01 scientific controls retained exactly; only the PROGRAM_PATH/set -eu safety wrapper, existing convergence switch, and reporting-only indepvar.rpt compatibility control are added")
+    list(role = "doitall", file = "doitall.sh", source = diagnostic_file("doitall.sh"), note = "2.2.7.9 compatibility: F33-F41 flag-92 values converted to CV units and age_flags(128) changed from 10 to 100")
   ))
   write_readme(
     paths$step_dir,
-    "02 Updated executable",
-    "Step 01 inputs and scientific controls run with the current MFCL executable while keeping the MFCL 1003 ini.",
+    "02 New executable and INI 1007",
+    "Step 01 input data promoted to INI 1007 and run with the 2.2.7.9-based executable.",
     c(
       "Uses the generated Step 01 model files, sourced from `ofp-sam-bet-2023-diagnostic/MFCL`, as the exact comparison baseline.",
-      "Keeps `bet.ini` as version 1003 and retains every Step 01 scientific control so this is an executable-only comparison.",
-      "Preserves Step 01 F33-F41 CPUE flag-92 values `88, 53, 130, 109, 76, 93, 121, 77, 23` and global `2 94 1 2 128 10`.",
-      "Retains the `-9999 1 2` doitall tag-mixing override because MFCL 1003 inputs do not contain an explicit `# tag flags` block.",
-      "Only modernizes executable invocation/safety with `set -eu` and a PROGRAM_PATH guard; the existing PHASE 10/11 switch is retained and reporting-only `1 246 1` compatibility is added."
+      "Promotes `bet.ini` from format 1003 to 1007 in the same compatibility step.",
+      "Converts F33-F41 CPUE flag-92 values from legacy penalty units to `24, 31, 20, 21, 26, 23, 20, 25, 47`.",
+      "Changes global `2 94 1 2 128 10` to `2 94 1 2 128 100`; the 2.2.7.9-based code divides by 100, preserving initial Z = 1.0*M.",
+      "Reads tag mixing periods from the INI 1007 tag-flags block."
     ),
     c(
       "bet.frq" = "exact Step 01 diagnostic `.frq`; 9 regions, 41 fisheries, terminal year 2021",
-      "bet.ini" = "exact Step 01 diagnostic `.ini`; MFCL 1003, no explicit tag flags",
+      "bet.ini" = "Step 01 diagnostic values promoted to MFCL 1007",
       "bet.tag" = "exact Step 01 diagnostic `.tag`",
       "bet.age_length" = "exact Step 01 diagnostic `.age_length`",
       "input_manifest.csv" = "machine-readable source/input notes with source commits"
     ),
     c(
       "The current MFCL executable configured by the runtime is used.",
-      "This substep changes the executable invocation, not scientific controls, before changing the ini layout.",
+      "This step deliberately combines the executable and required INI-format update.",
       "The reporting-only `1 246 1` control requests `indepvar.rpt` and does not alter the fit.",
       "The 2023 nine-region GeoJSON asset remains display-only; it does not change MFCL inputs."
     ),
     c(
-      "Compare directly with 01-Diag2023 to isolate only the historical versus current executable.",
-      "Do not interpret this as a 1007 ini test; that is isolated in 03-Ini1007."
+      "Compare directly with 01-Diag2023 for the combined executable/format transition.",
+      "The CPUE and age_flags(128) conversions preserve the legacy scientific interpretation."
     ),
     "Ready for Kflow smoke runs; full MFCL fit not run here.",
     input_changes = input_change_table(
       c(".ini", ".frq", ".tag", ".age_length"),
-      c("No generated input edit; MFCL 1003 layout is retained.", "No generated edit.", "No generated edit.", "No generated edit."),
-      c("Step 01 diagnostic ini values.", "Step 01 diagnostic source file.", "Step 01 diagnostic source file.", "Step 01 diagnostic source file.")
+      c("Promoted to MFCL 1007 with explicit tag flags.", "No generated edit.", "No generated edit.", "No generated edit."),
+      c("Step 01 diagnostic numeric values.", "Step 01 diagnostic source file.", "Step 01 diagnostic source file.", "Step 01 diagnostic source file.")
     ),
     source_revisions = input_repo_revision_table()
   )
@@ -542,29 +551,22 @@ write_diagnostic_substep <- function(step_id, title, summary, source_step,
 }
 
 write_original_diagnostic_step()
-write_02_newexe_step()
+write_02_newexe_ini1007_step()
 write_diagnostic_substep(
-  "03-Ini1007",
-  "03 Updated INI format",
-  "Step 02 current-executable baseline promoted from MFCL 1003 to MFCL 1007 ini layout.",
-  source_step = "02-NewExe1003",
-  promote_1007 = TRUE
-)
-write_diagnostic_substep(
-  "04-FixM",
-  "04 Diagnostic natural-mortality estimate fixed",
+  "03-FixM",
+  "03 Diagnostic natural-mortality estimate fixed",
   paste0(
-    "Step 03 1007 INI baseline with Lorenzen natural-mortality scaling fixed ",
+    "Step 02 1007 INI baseline with Lorenzen natural-mortality scaling fixed ",
     "to the 2023 diagnostic-model estimate."
   ),
-  source_step = "03-Ini1007",
+  source_step = "02-NewExeIni1007",
   fixm = TRUE
 )
 write_diagnostic_substep(
-  "05-LengthWeight",
-  "05 Length-weight update",
-  "Step 04 fixed natural-mortality baseline with BET 2026 bias-corrected length-weight parameters.",
-  source_step = "04-FixM",
+  "04-LengthWeight",
+  "04 Length-weight update",
+  "Step 03 fixed natural-mortality baseline with BET 2026 bias-corrected length-weight parameters.",
+  source_step = "03-FixM",
   length_weight_parameters = bias_corrected_length_weight_parameters,
   fixm = TRUE
 )
@@ -573,8 +575,8 @@ old_age <- file.path(age_root, "bet.2023.new-structure.age_length")
 new_age <- file.path(age_root, "bet.2026.age_length")
 new_ini <- file.path(ini_root, "bet.2026.ini")
 new_tag <- file.path(tag_root, "bet.2026.low.recaps.removed.tag")
-mix015_ini <- file.path(
-  ini_root, "ini.mix-period", "bet.2026.mix-0.15.ini"
+mix020_ini <- file.path(
+  ini_root, "ini.mix-period", "bet.2026.mix-0.2.ini"
 )
 regfish_ini_source <- file.path(ini_root, "bet.2023.new.structure.ini")
 regfish_tag_source <- file.path(tag_root, "bet.2023.new.structure-low.recaps.removed.tag")
@@ -592,13 +594,14 @@ frq_regional_2024 <- first_existing(
   "2026 regional CPUE frq"
 )
 
-## 06-NewStructure is the first 5-region template. Cache the inherited template
+## 05-NewStructure is the first 5-region template. Cache the inherited template
 ## before overwriting the folder so the script is rerunnable after old folders
 ## have been removed.
-newstructure_dir <- file.path(root, "steps", "06-NewStructure")
+newstructure_dir <- file.path(root, "steps", "05-NewStructure")
 newstructure_model_dir <- file.path(newstructure_dir, "model")
 template_candidates <- c(
   newstructure_model_dir,
+  file.path(root, "steps", "06-NewStructure", "model"),
   file.path(root, "steps", "04-NewStructure", "model")
 )
 template_model_dir <- first_existing(
@@ -703,7 +706,7 @@ write_manifest(newstructure_dir, list(
 ))
 write_readme(
   newstructure_dir,
-  "06 NewStructure",
+  "05 NewStructure",
   "First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.",
   c(
     "Uses the new 5-region and new-fishery frequency source from the frq-build repo.",
@@ -743,7 +746,7 @@ write_readme(
     "input_manifest.csv" = "machine-readable source/input notes with source commits"
   ),
   c(
-    "This step is the 5-region control template for steps 07-19.",
+    "This step is the 5-region control template for steps 06-19.",
     "Generated `.frq` files include region locations for every fishery, including index fisheries.",
     "MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
@@ -778,15 +781,12 @@ write_readme(
 
 
 
-## Self-contained public 23-row / 20-stage sequence --------------------------
+## Self-contained public 20-row / 19-stage sequence --------------------------
 
-stepwise_5_region_template_step_id <- "06-NewStructure"
+stepwise_5_region_template_step_id <- "05-NewStructure"
 
-age_variant_root <- file.path(
-  dirname(root), "ofp-sam-bet-2026-exploration", "reference-inputs", "age-length-variants"
-)
-regional_age_075 <- file.path(age_variant_root, "bet.2026.regional.0.75.age_length")
-sub_basin_age_075 <- file.path(age_variant_root, "bet.2026.sub.basin.0.75.age_length")
+regional_age_075 <- file.path(age_root, "bet.2026.regional.0.75.age_length")
+sub_basin_age_075 <- file.path(age_root, "bet.2026.sub.basin.0.75.age_length")
 peatman_rr_ini <- new_ini
 
 # Step 13 carries the CPUE observation-error controls actually submitted and
@@ -841,51 +841,6 @@ cpue_sigma_calibration <- list(
   source_file = cpue_mle_sigma_path
 )
 
-francis_ta18_path <- file.path(root, "config", "francis-ta18-divisors.csv")
-francis_ta18_source_commit <- "a9d63b3111fb036b23fbe2803fcddf818420d09d"
-francis_ta18_source_path <- paste0(
-  "sensitivity/S009-TC1-NOCUT-FRANCIS-CPUEMLE-SUB075-MIX015-TAGF2ON-",
-  "REGW100-RRPTTP26/model/francis_weights.csv"
-)
-francis_ta18_source_note <- paste0(
-  "Exact audited TA1.8 CSV archived at PacificCommunity/",
-  "ofp-sam-bet-2026-exploration@", francis_ta18_source_commit, "/",
-  francis_ta18_source_path, ". The divisors were calculated from standardized ",
-  "mean-length residuals for 2,399 retained compositions in the robust-normal ",
-  "S022 fit (Kflow Job 12306; regional-scaling weight 11; F21-F23 stage-1 ",
-  "divisors 200)."
-)
-expected_francis_ta18_divisors <- c(
-  115L, 147L, 42L, 110L, 63L, 23L, 77L, 43L, 85L, 117L, 48L,
-  209L, 357L, 16L, 142L, 296L, 88L, 151L, 141L, 258L, 114L,
-  398L, 705L, 39L, 27L, 37L, 18L, 50L, 115L, 57L, 51L, 56L, 38L
-)
-
-read_francis_ta18_audit <- function(path) {
-  audit <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
-  expected_columns <- c(
-    "fishery", "fishery_name", "n_used", "old_divisor", "raw_multiplier",
-    "continuous_divisor", "recommended_divisor"
-  )
-  if (!identical(names(audit), expected_columns)) {
-    stop("Unexpected Francis TA1.8 audit columns in ", path, call. = FALSE)
-  }
-  if (nrow(audit) != 33L ||
-      !identical(as.integer(audit$fishery), seq_len(33L)) ||
-      any(!is.finite(audit$recommended_divisor)) ||
-      any(audit$recommended_divisor <= 0) ||
-      !identical(
-        as.integer(audit$recommended_divisor),
-        expected_francis_ta18_divisors
-      )) {
-    stop("Francis TA1.8 audit does not contain the validated F1-F33 vector", call. = FALSE)
-  }
-  audit
-}
-
-francis_ta18_audit <- read_francis_ta18_audit(francis_ta18_path)
-francis_lf_divisors <- as.integer(francis_ta18_audit$recommended_divisor)
-
 write_sequence_step <- function(
     step_id, title, parent, change,
     audit_notes = character(),
@@ -906,15 +861,16 @@ write_sequence_step <- function(
     index_selectivity = FALSE,
     selectivity_update_bundle = FALSE,
     all_selectivity_forms_relaxed = FALSE,
+    ph_id_young5_selectivity = FALSE,
     time_varying_cv = FALSE,
     effort_creep = FALSE,
+    size_data_qc = FALSE,
+    size_data_qc_source_sha256 = "",
     dom_divisor200 = FALSE,
     fixed_cpue_sigma = FALSE,
-    francis_divisors = numeric(),
-    francis_source = "",
-    francis_source_note = "",
     dm_grouping = "",
     dm_nmax = NA_integer_,
+    dm_fixed_concentration = NA_real_,
     status = "Ready for Kflow smoke runs; full MFCL fit not run here.") {
   controls <- list2env(
     list(
@@ -922,11 +878,13 @@ write_sequence_step <- function(
       index_selectivity = index_selectivity,
       selectivity_update_bundle = selectivity_update_bundle,
       all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
+      ph_id_young5_selectivity = ph_id_young5_selectivity,
       tail_compression_1pct = tail_compression_1pct,
       time_varying_cv = time_varying_cv,
       dom_divisor200 = dom_divisor200,
       dm_grouping = dm_grouping,
-      dm_nmax = dm_nmax
+      dm_nmax = dm_nmax,
+      dm_fixed_concentration = dm_fixed_concentration
     ),
     parent = emptyenv()
   )
@@ -937,6 +895,8 @@ write_sequence_step <- function(
     tag_source = tag_source,
     age_source = age_source,
     frq_transform = if (isTRUE(effort_creep)) "effort_creep" else NULL,
+    size_data_qc = size_data_qc,
+    size_data_qc_source_sha256 = size_data_qc_source_sha256,
     mix_from_ini = TRUE,
     retain_reporting_rates_during_mixing = TRUE,
     tag_reporting_source = tag_reporting_source,
@@ -949,9 +909,6 @@ write_sequence_step <- function(
     regional_scaling_weight = regional_scaling_weight,
     doitall_edits = controls,
     cpue_sigma_calibration = if (isTRUE(fixed_cpue_sigma)) cpue_sigma_calibration else NULL,
-    francis_divisors = francis_divisors,
-    francis_source = francis_source,
-    francis_source_note = francis_source_note,
     title = title,
     summary = change,
     bullets = c(
@@ -978,21 +935,20 @@ write_sequence_step <- function(
         "nodes, terminal age 25, dome flag 2, and youngest-tail flag 0."
       ),
       if (all_selectivity_forms_relaxed) paste0(
-        "The selected Job 14363 revised fishery-specific specification sets flag 16 to 0 ",
+        "The Job 15062 flexible-selectivity specification sets flag 16 to 0 ",
         "for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off."
       ),
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
-      if (length(francis_divisors)) paste0(
-        "Francis divisors are applied directly to all LF flag-49 values, including ",
-        "F21-F23 = ", paste(francis_divisors[21:23], collapse = "/"), "."
-      ),
       if (fixed_cpue_sigma) paste0(
         "Fixed CPUE observation-error scales (flag 92 integer percentages): ",
         paste(cpue_sigma_calibration$flag92, collapse = ", "), "."
       ),
       if (nzchar(dm_grouping)) paste0(
-        dm_grouping, " DM likelihood with effective-sample-size upper asymptote Nmax=", dm_nmax, "."
+        dm_grouping, " DM likelihood with effective-sample-size upper asymptote Nmax=", dm_nmax,
+        if (is.finite(dm_fixed_concentration)) {
+          paste0("; grouped fish_pars(22) fixed at ", dm_fixed_concentration, " as in Job 18518.")
+        } else "."
       )
     ),
     input_changes = input_change_table(
@@ -1002,7 +958,7 @@ write_sequence_step <- function(
         paste(
           c(
             if (nzchar(tag_reporting_source)) paste0(reporting_rate_variant, " reporting-rate matrices"),
-            if (nzchar(tag_mixing_source)) "MIX015 copied only into tag_flags(:,1)",
+            if (nzchar(tag_mixing_source)) "MIX020 copied only into tag_flags(:,1)",
             paste0("tag_flags(:,2)=", tag_flag_column2)
           ),
           collapse = "; "
@@ -1029,341 +985,172 @@ write_sequence_step <- function(
 }
 
 write_sequence_step(
-  "07-ConvertToLength", "07 Convert weight to length compositions", "06-NewStructure",
-  "Convert the existing weight-frequency compositions to length-frequency to evaluate the conversion effect.",
-  frq_source = frq_convert_length_2021,
-  ini_source = regfish_ini_source,
-  tag_source = regfish_tag_source,
-  reporting_rate_variant = "rrpttp26"
+  "06-ConvertToLength", "06 Convert weight to length", "05-NewStructure",
+  "Replace the reweighted weight compositions with their length-frequency conversion through 2021.",
+  frq_source = frq_convert_length_2021, ini_source = regfish_ini_source,
+  tag_source = regfish_tag_source, reporting_rate_variant = "rrpttp26"
 )
-
 write_sequence_step(
-  "08-AddLengthData", "08 Weight-as-length plus observed-length compositions", "07-ConvertToLength",
-  "Use observed length compositions where their catch coverage exceeds that of weight samples.",
-  frq_source = frq_length_plus_length_2021,
-  ini_source = regfish_ini_source,
-  tag_source = regfish_tag_source,
-  reporting_rate_variant = "rrpttp26"
+  "07-AddLengthData", "07 Add observed length data", "06-ConvertToLength",
+  "Add observed length compositions where their catch coverage exceeds that of weight samples.",
+  frq_source = frq_length_plus_length_2021, ini_source = regfish_ini_source,
+  tag_source = regfish_tag_source, reporting_rate_variant = "rrpttp26"
 )
-
-# Tail aggregation is introduced only after weight compositions have been
-# converted to length and observed length compositions have been incorporated.
 write_sequence_step(
-  "09-TailCompression1Pct", "09 One-percent LF tail compression", "08-AddLengthData",
-  "Activate 1% length-frequency tail aggregation by changing only parest flag 313 from 0 to 1.",
-  audit_notes = c(
-    "Held constant: flag 311 remains 1, length-frequency flag 301 remains 1, and weight-frequency flag 303 remains 0.",
-    "This setting is inherited by every subsequent model."
-  ),
-  frq_source = frq_length_plus_length_2021,
-  ini_source = regfish_ini_source,
-  tag_source = regfish_tag_source,
-  reporting_rate_variant = "rrpttp26",
-  tail_compression_1pct = TRUE
+  "08-DataTo2024", "08 Data through 2024", "07-AddLengthData",
+  "Extend data through 2024 except CAAL while retaining the same reporting-rate specification.",
+  reporting_rate_variant = "rrpttp26", tag_reporting_source = peatman_rr_ini
 )
 
-# The SC22 BET reporting-rate priors enter with the 33-fishery structure in
-# step 06. Step 10 remaps the same fishery-level specification to the two
-# additional 2026 tag-release rows.
-write_sequence_step(
-  "10-DataTo2024", "10 Data through 2024", "09-TailCompression1Pct",
-  "Extend data through 2024 while carrying the SC22 BET reporting-rate penalties.",
-  reporting_rate_variant = "rrpttp26",
-  tag_reporting_source = peatman_rr_ini,
-  tail_compression_1pct = TRUE
-)
+global_2024_raw_sha <- "21bf76372bbd8b7ef570f1f5dbd4c6821f00efd20e7b7174fc58a09fda34d78d"
+regional_2024_raw_sha <- "5e2520afef613c563b27ee794c402e192dfdb114edc52c130323fa80ae876152"
+effort_creep_raw_sha <- "d77f97c348409f845f1f0fc801af808d15b6cb119349d1f083308cfc9d4fba8c"
 
-# Regional CPUE and REGW100 are one scientific group; selectivity is unchanged.
-write_sequence_step(
-  "11-RegionalCPUE", "11 Regional CPUE likelihood and weighting", "10-DataTo2024",
-  "Add regional CPUE data and likelihood plus the REGW100 regional-scaling penalty.",
-  audit_notes = paste0(
-    "The authoritative regional CPUE replacement has two fewer F32 1952 ",
-    "quarterly records than Step 10; the source FRQ is copied without transformation."
-  ),
-  frq_source = frq_regional_2024,
-  reporting_rate_variant = "rrpttp26",
-  tag_reporting_source = peatman_rr_ini,
-  regional_cpue = TRUE,
-  regional_scaling = TRUE,
-  regional_scaling_weight = 100L,
-  tail_compression_1pct = TRUE
-)
-
-# Apply the time-varying relative-variance schedule immediately after regional
-# CPUE is introduced, without changing the index-specific observation-error
-# scales in the same step.
-write_sequence_step(
-  "12-TimeVaryingCV", "12 Time-varying CPUE uncertainty", "11-RegionalCPUE",
-  "Apply normalized time-varying CPUE relative-variance multipliers to F29-F33 while retaining the Step 11 observation-error scales.",
-  frq_source = frq_regional_2024,
-  reporting_rate_variant = "rrpttp26",
-  tag_reporting_source = peatman_rr_ini,
-  regional_cpue = TRUE,
-  regional_scaling = TRUE,
-  regional_scaling_weight = 100L,
-  tail_compression_1pct = TRUE,
-  time_varying_cv = TRUE,
-  fixed_cpue_sigma = FALSE
-)
-
-write_sequence_step(
-  "13-CPUEErrorCalibration", "13 CPUE observation-error calibration", "12-TimeVaryingCV",
-  paste(
-    "Across multiple exploratory settings, the maximum-likelihood CPUE",
-    "observation-error estimates changed little and converged near common values.",
-    "Apply the calibrated R1-R5 scales 0.35, 0.24, 0.21, 0.24, and 0.23",
-    "for every later step."
-  ),
-  frq_source = frq_regional_2024,
-  reporting_rate_variant = "rrpttp26",
-  tag_reporting_source = peatman_rr_ini,
-  regional_cpue = TRUE,
-  regional_scaling = TRUE,
-  regional_scaling_weight = 100L,
-  tail_compression_1pct = TRUE,
-  time_varying_cv = TRUE,
-  fixed_cpue_sigma = TRUE
-)
-
-write_sequence_step(
-  "14-NewAgeData", "14 New conditional age-at-length data", "13-CPUEErrorCalibration",
-  "Add the new conditional age-at-length data with a weighting factor of 0.75 from the 2023 BET assessment.",
-  frq_source = frq_regional_2024,
-  age_source = new_age,
-  age_effective_sample_size = 0.75,
-  reporting_rate_variant = "rrpttp26",
-  tag_reporting_source = peatman_rr_ini,
-  regional_cpue = TRUE,
-  regional_scaling = TRUE,
-  regional_scaling_weight = 100L,
-  tail_compression_1pct = TRUE,
-  time_varying_cv = TRUE,
-  fixed_cpue_sigma = TRUE
-)
-
-for (age_spec in list(
-  list(id = "15a-REG075", title = "15a Regional age weighting", source = regional_age_075, ess = NA_real_,
-       change = "Apply the exact heterogeneous REG075 composition-weighting alternative."),
-  list(id = "15b-SUB075", title = "15b Sub-basin age weighting selected", source = sub_basin_age_075, ess = NA_real_,
-       change = "Apply the exact heterogeneous SUB075 composition weighting; this sibling is selected.")
-)) {
-  write_sequence_step(
-    age_spec$id, age_spec$title, "14-NewAgeData", age_spec$change,
-    frq_source = frq_regional_2024,
-    age_source = age_spec$source,
-    age_effective_sample_size = age_spec$ess,
-    reporting_rate_variant = "rrpttp26",
-    tag_reporting_source = peatman_rr_ini,
-    regional_cpue = TRUE,
-    regional_scaling = TRUE,
-    regional_scaling_weight = 100L,
-    tail_compression_1pct = TRUE,
-    time_varying_cv = TRUE,
-    fixed_cpue_sigma = TRUE
-  )
-}
-
-write_selected_path_step <- function(
+common_late_step <- function(
     step_id, title, parent, change,
-    audit_notes = character(),
-    tag_mixing = FALSE, tag_flag2 = 0L,
-    tail_compression_1pct = TRUE,
-    time_varying_cv = FALSE, effort_creep = FALSE,
-    fixed_cpue_sigma = FALSE,
-    index_selectivity = FALSE, selectivity_update_bundle = FALSE,
-    all_selectivity_forms_relaxed = FALSE,
-    dom = FALSE, francis = numeric(),
-    dm_grouping = "", dm_nmax = NA_integer_,
-    status = "Ready for Kflow smoke runs; full MFCL fit not run here.") {
+    age_source = old_age, age_ess = 0.75,
+    regional_cpue = FALSE, time_varying_cv = FALSE,
+    fixed_cpue_sigma = FALSE, selectivity = FALSE,
+    tag_mixing = FALSE, tag_flag2 = 0L, effort_creep = FALSE,
+    dm = FALSE) {
+  raw_sha <- if (effort_creep) {
+    effort_creep_raw_sha
+  } else if (regional_cpue) {
+    regional_2024_raw_sha
+  } else {
+    global_2024_raw_sha
+  }
   write_sequence_step(
     step_id, title, parent, change,
-    audit_notes = audit_notes,
-    frq_source = frq_regional_2024,
-    age_source = sub_basin_age_075,
-    age_effective_sample_size = NA_real_,
+    frq_source = if (regional_cpue) frq_regional_2024 else frq_global_2024,
+    age_source = age_source,
+    age_effective_sample_size = age_ess,
     reporting_rate_variant = "rrpttp26",
     tag_reporting_source = peatman_rr_ini,
-    tag_mixing_source = if (tag_mixing) mix015_ini else "",
+    tag_mixing_source = if (tag_mixing) mix020_ini else "",
     tag_flag_column2 = tag_flag2,
-    regional_cpue = TRUE,
-    regional_scaling = TRUE,
-    regional_scaling_weight = 100L,
-    tail_compression_1pct = tail_compression_1pct,
-    index_selectivity = index_selectivity,
-    selectivity_update_bundle = selectivity_update_bundle,
-    all_selectivity_forms_relaxed = all_selectivity_forms_relaxed,
+    regional_cpue = regional_cpue,
+    regional_scaling = regional_cpue,
+    regional_scaling_weight = if (regional_cpue) 100L else NA_integer_,
+    ph_id_young5_selectivity = TRUE,
+    selectivity_update_bundle = selectivity,
+    all_selectivity_forms_relaxed = selectivity,
+    index_selectivity = selectivity,
     time_varying_cv = time_varying_cv,
     effort_creep = effort_creep,
-    dom_divisor200 = dom,
+    size_data_qc = TRUE,
+    size_data_qc_source_sha256 = raw_sha,
     fixed_cpue_sigma = fixed_cpue_sigma,
-    francis_divisors = francis,
-    francis_source = if (length(francis)) francis_ta18_path else "",
-    francis_source_note = if (length(francis)) francis_ta18_source_note else "",
-    dm_grouping = dm_grouping,
-    dm_nmax = dm_nmax,
-    status = status
+    dm_grouping = if (dm) "G8PSSET" else "",
+    dm_nmax = if (dm) 25L else NA_integer_,
+    dm_fixed_concentration = if (dm) 7 else NA_real_,
+    audit_notes = c(
+      "F15 bins below 70 cm are zeroed without renormalisation.",
+      "F21-F23 intervals with midpoint above 90 cm are removed.",
+      "F14 and F15 youngest five ages are fixed at zero selectivity.",
+      "Tag tau remains not estimated under the original 2023 negative-binomial parameterisation."
+    )
   )
 }
 
-write_selected_path_step(
-  "16-SelectivityUpdate", "16 Revised fishery-specific selectivity", "15b-SUB075",
-  paste0(
-    "Revise fishery-specific selectivity sharing, terminal ages, and F25/F26 shape settings for the 33-fishery structure, ",
-    "remove six superseded legacy controls, and set flag 16 to 0 for all 14 ",
-    "applicable fisheries so all weighting comparisons use the selected Job 14363 setting."
-  ),
-  audit_notes = c(
-    "Scientific rationale: represent fishery-specific size availability without imposing unnecessary older-age shape constraints before comparing composition weighting.",
-    "Held constant: data, fixed natural mortality, growth, CPUE settings, tag reporting-rate mapping, and every non-selectivity control.",
-    "The Step 15b parent has 15 active flag-16 penalties. The revised structure changes the applicable fishery set: superseded F20/F28 controls are removed and F15 is introduced.",
-    "For the resulting F12, F13, F15-F19, and F21-F27 set, flag 16 is 0 (form penalty off); fishery-specific terminal ages, spline-node counts, and youngest-age tails are retained.",
-    "Status: selected Job 14363 selectivity setting, carried forward to all Step 20 weighting comparisons."
-  ),
-  time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE,
-  status = "Prepared input snapshot; model fit not run here."
+common_late_step(
+  "09-SizeDataQC", "09 PH/ID and domestic size-data rules", "08-DataTo2024",
+  "Apply the agreed PH/ID and domestic mixed-gear size-data rules."
 )
-write_selected_path_step(
-  "17-MIX015", "17 Release-group-specific tag-mixing periods", "16-SelectivityUpdate",
-  paste0(
-    "Apply the release-group-specific MIX015 periods in tag_flags(:,1), while ",
-    "keeping tag_flags(:,2)=0 so the treatment of reporting rates during mixing is tested separately ",
-    "in Step 18; do not change reporting-rate values or priors."
-  ),
-  audit_notes = c(
-    "INI source: ofp-sam-2026-BET-YFT-build-ini branch SC22-IP10-based at commit 5b2fb60; the main branch is not used for this mixing-period step.",
-    "The release-group periods implement Appendix A of WCPFC-SC22-2026-SA-IP10.",
-    "The five reporting-rate matrices are identical to the Step 10-16 source; only tag_flags(:,1) changes at this step."
-  ),
-  tag_mixing = TRUE, tag_flag2 = 0L, time_varying_cv = TRUE,
-  fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE
+common_late_step(
+  "10-RegionalCPUE", "10 Regional CPUE and scaling", "09-SizeDataQC",
+  "Use five separate regional CPUE indices and the REGW100 regional-scaling prior.",
+  regional_cpue = TRUE
 )
-write_selected_path_step(
-  "18-TagReportingExclusion", "18 Tag reporting rates omitted in pre-mixing window", "17-MIX015",
-  paste0(
-    "Keep the release-group-specific mixing periods and set tag_flags(:,2)=1 ",
-    "so reporting rates are not applied to predicted recaptures within each ",
-    "release group's pre-mixing window; post-mixing treatment and all reporting-rate ",
-    "values, groups, targets, and priors remain unchanged."
-  ),
-  audit_notes = c(
-    "Scientific rationale: avoid applying poorly determined or assumed reporting rates during the pre-mixing reconstruction, as recommended in the MULTIFAN-CL manual.",
-    "Held constant: all Step 17 data, biology, revised fishery-specific selectivity with form penalties off, CPUE, tag-mixing periods, and numeric reporting-rate settings.",
-    "Only tag-flag column 2 changes from 0 to 1; reporting rates continue to apply after the mixing period."
-  ),
-  tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
-  fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE
+common_late_step(
+  "11-TimeVaryingCV", "11 Time-varying CPUE uncertainty", "10-RegionalCPUE",
+  "Apply normalized time-varying relative-variance multipliers to F29-F33.",
+  regional_cpue = TRUE, time_varying_cv = TRUE
 )
-write_selected_path_step(
-  "19-EffortCreep", "19 Effort-creep adjustment", "18-TagReportingExclusion",
+common_late_step(
+  "12-CPUEErrorCalibration", "12 Fixed regional CPUE SDs", "11-TimeVaryingCV",
+  "Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23.",
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE
+)
+common_late_step(
+  "13-NewAgeData", "13 New CAAL data", "12-CPUEErrorCalibration",
+  "Add the new CAAL data with weighting factor 0.75.",
+  age_source = new_age, age_ess = 0.75,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE
+)
+for (age_spec in list(
+  list(
+    id = "14a-REG075", title = "14a Regional CAAL reweighting",
+    source = regional_age_075,
+    change = "Apply the all-five-region CAAL reweighting alternative."
+  ),
+  list(
+    id = "14b-SUB075", title = "14b Sub-basin CAAL reweighting",
+    source = sub_basin_age_075,
+    change = "Apply the selected CAAL reweighting with regions 3 and 4 combined."
+  )
+)) {
+  common_late_step(
+    age_spec$id, age_spec$title, "13-NewAgeData", age_spec$change,
+    age_source = age_spec$source, age_ess = NA_real_,
+    regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE
+  )
+}
+common_late_step(
+  "15-SelectivityUpdate", "15 Flexible fishery selectivity", "14b-SUB075",
+  paste(
+    "Apply the reference flexible selectivity controls from Job 15062, with the",
+    "documented F14/F15 youngest-five-age constraint."
+  ),
+  age_source = sub_basin_age_075, age_ess = NA_real_,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
+  selectivity = TRUE
+)
+common_late_step(
+  "16-MIX020", "16 K=0.20 tag-mixing periods", "15-SelectivityUpdate",
+  paste(
+    "Copy only release-group mixing periods from",
+    "SC22-IP10-regionMean K=0.20; retain reporting-rate matrices unchanged."
+  ),
+  age_source = sub_basin_age_075, age_ess = NA_real_,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
+  selectivity = TRUE, tag_mixing = TRUE
+)
+common_late_step(
+  "17-TagReportingExclusion", "17 Pre-mixing reporting-rate exclusion", "16-MIX020",
+  "Set tag_flags(:,2)=1 so reporting rates are excluded only in pre-mixing windows.",
+  age_source = sub_basin_age_075, age_ess = NA_real_,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
+  selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L
+)
+common_late_step(
+  "18-EffortCreep", "18 Effort-creep adjustment", "17-TagReportingExclusion",
   "Apply the BET 2026 effort-creep series only to positive F29-F33 effort.",
-  tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
-  effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE
+  age_source = sub_basin_age_075, age_ess = NA_real_,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
+  selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L,
+  effort_creep = TRUE
 )
-write_selected_path_step(
-  "20a-DOMDiv200", "20a Three domestic fisheries downweighted", "19-EffortCreep",
-  "Apply divisor 200 to length compositions from the Indonesian, Philippine, and Vietnamese domestic fisheries (F21-F23).",
-  audit_notes = c(
-    "Scientific rationale: test whether reducing the influence of these three composition series improves balance with other data.",
-    "Held constant: the Step 19 data, biology, revised fishery-specific selectivity with form penalties off, CPUE, tag, and all other composition settings.",
-    "Status: independent alternative comparison; not carried forward."
+common_late_step(
+  "19-DMG8Nmax25", "19 DM weighting: G8 Nmax 25", "18-EffortCreep",
+  paste(
+    "Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25,",
+    "fish_pars(22) fixed at 7 and fish_pars(23) estimated."
   ),
-  tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
-  effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE,
-  dom = TRUE,
-  status = "Prepared alternative-comparison snapshot; model fit not run here."
+  age_source = sub_basin_age_075, age_ess = NA_real_,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
+  selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L,
+  effort_creep = TRUE, dm = TRUE
 )
 
-write_selected_path_step(
-  "20b-Francis", "20b Francis reweighting", "19-EffortCreep",
-  "Apply fishery-specific Francis length-composition divisors as an independent Step 19 comparison branch.",
-  audit_notes = c(
-    "Rationale: compare fishery-specific composition weighting using method TA1.8 of Francis (2011).",
-    "The applied divisors were calculated from standardized mean-length residuals for 2,399 retained compositions in the robust-normal S022 fit (Kflow Job 12306; regional-scaling weight 11; F21-F23 stage-1 divisors 200) and transferred unchanged to this branch.",
-    "Held constant: all Step 19 settings and the standard composition likelihood; the 20a divisor-200 treatment is not inherited.",
-    "Status: alternative comparison; not carried forward."
-  ),
-  tag_mixing = TRUE, tag_flag2 = 1L, time_varying_cv = TRUE,
-  effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE,
-  dom = FALSE,
-  francis = francis_lf_divisors,
-  status = "Prepared alternative-comparison snapshot; model fit not run here."
-)
-write_selected_path_step(
-  "20c-DMG8Nmax25", "20c DM weighting", "19-EffortCreep",
-  paste0(
-    "Branch directly from Step 19 and use a Dirichlet-multinomial length-",
-    "composition likelihood with G8 grouping and Nmax 25, ",
-    "without DOM divisor 200 or Francis weighting."
-  ),
-  audit_notes = c(
-    "Scientific rationale: estimate composition information internally with Nmax=25 as the asymptotic effective-sample-size upper bound. The value lies just above the 22.22-23.81 range of 95th-percentile composition-level Francis effective sample sizes across 2,399 positive LF compositions in matched robust-normal fits.",
-    "Held constant: all Step 19 data, biology, Job 14363 revised fishery-specific selectivity with form penalties off, CPUE, and tag settings; neither the 20a divisor nor 20b Francis weights are inherited. Flag 313 is reset to 0 because the DM likelihood does not read that percentage threshold and to avoid unrelated percentage-tail preprocessing; flag 320=5 controls DM support and the resulting numeric controls match Job 14363.",
-    "Status: selected final model."
-  ),
-  tag_mixing = TRUE, tag_flag2 = 1L, tail_compression_1pct = FALSE,
-  time_varying_cv = TRUE,
-  effort_creep = TRUE, fixed_cpue_sigma = TRUE,
-  index_selectivity = TRUE, selectivity_update_bundle = TRUE,
-  all_selectivity_forms_relaxed = TRUE,
-  dm_grouping = "G8PSSET", dm_nmax = 25L,
-  status = "Prepared selected-model snapshot; model fit not run here."
-)
-
-# Remove superseded numbering and selectivity-sensitivity folders after the
-# replacement sequence has been generated. Every removed folder remains
-# recoverable from Git history.
+# Remove every superseded step folder after the replacement sequence is
+# generated. Every removed folder remains recoverable from Git history.
 config_env <- new.env(parent = baseenv())
 sys.source(file.path(root, "job-config.R"), envir = config_env)
 configured_steps <- as.character(config_env$stepwise_models$step_id)
-obsolete_step_ids <- c(
-  "01a-NewExe1003", "01b-Ini1007",
-  "02-FixM", "03-LengthWeight", "04-NewStructure",
-  "05-ConvertToLength", "06-AddLengthData", "07-TailCompression1Pct",
-  "08-DataTo2024", "09-RegionalCPUE",
-  "10a-BASE075", "10b-REG075", "10c-SUB075",
-  "11-MIX015", "12-TAGF2ON", "13-TimeVaryingCV",
-  "14-EffortCreep", "15-CPUESigma", "16-SelectivityUpdateAllRelaxed",
-  "17a-DOMDiv200", "17b-Francis", "17c-DMG8Nmax25",
-  "12a-BASE075", "12b-REG075", "12c-SUB075",
-  "13a-BASE075", "13b-REG075", "13c-SUB075",
-  "13-MIX015", "13-SelectivityUpdate", "13-CPUESigma",
-  "14-TAGF2ON", "14-TimeVaryingCV", "14-SelectivityUpdate",
-  "14a-BASE075", "14b-REG075", "14c-SUB075",
-  "15-MIX015", "15-EffortCreep",
-  "16-TimeVaryingCV", "16-CPUESigma", "18-CPUESigma",
-  "18a-DOMDiv200", "18b-Francis", "18c-DMG8Nmax25",
-  "13-NewAgeData", "14a-REG075", "14b-SUB075",
-  "15-SelectivityUpdate", "16-MIX015", "17-EffortCreep",
-  "19a-DOMDiv200", "19b-Francis", "19c-DMG8Nmax25",
-  "13-CPUEObservationError",
-  "02a-NewExe1003", "02b-Ini1007", "02c-LengthWeight", "03-FixM",
-  "07-DataTo2024", "08-RegionalCPUE",
-  "09a-BASE075", "09b-REG075", "09c-SUB075",
-  "10-MIX015", "11-TAGF2ON",
-  "13-EffortCreep", "14-CPUESigma",
-  "16-DOMDiv200", "16a-DOMDiv200", "16b-Francis", "16c-DMG8Nmax25",
-  "17a-F15FormRelaxed", "17b-F22FormRelaxed",
-  "17c-F15F22FormRelaxed", "17d-AllSelectivityFormRelaxed",
-  "17a-Francis", "17b-DMG8Nmax25",
-  "18a-F22FormRelaxed", "18b-F15FormRelaxed",
-  "18c-F15F22FormRelaxed", "18d-AllSelectivityFormRelaxed",
-  "18-EffortCreep", "19-TagReportingExclusion"
-)
-if (length(intersect(obsolete_step_ids, configured_steps))) {
-  stop("Obsolete weighting step IDs remain configured", call. = FALSE)
-}
+existing_step_ids <- basename(list.dirs(
+  file.path(root, "steps"), recursive = FALSE, full.names = TRUE
+))
+obsolete_step_ids <- setdiff(existing_step_ids, configured_steps)
 obsolete_step_dirs <- file.path(root, "steps", obsolete_step_ids)
 unlink(obsolete_step_dirs[dir.exists(obsolete_step_dirs)], recursive = TRUE, force = TRUE)

@@ -2,6 +2,8 @@
 
 make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
                       frq_chop_year = NA_integer_, frq_transform = NULL,
+                      size_data_qc = FALSE,
+                      size_data_qc_source_sha256 = "",
                       frq_tag_groups = NA_integer_, index_cpue_source = "",
                       mix_from_ini = TRUE,
                       retain_reporting_rates_during_mixing = TRUE,
@@ -31,7 +33,11 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   # them. Removing them first prevents a renamed/reordered campaign from
   # inheriting stale evidence from an earlier occupant of the folder.
   unlink(
-    file.path(model_dir, c("cpue_mle_sigma_audit.csv", "francis_weights.csv")),
+    file.path(model_dir, c(
+      "cpue_mle_sigma_audit.csv", "francis_weights.csv",
+      "f15-lf-qc-audit.csv", "f15-lf-qc-summary.csv",
+      "dom-lf-qc-audit.csv", "dom-lf-qc-summary.csv"
+    )),
     force = TRUE
   )
 
@@ -56,6 +62,18 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
       index_fisheries = 29:33
     )
     frq_note <- paste0(frq_note, "; replaced ", replaced, " F29-F33 CPUE records")
+  }
+  size_qc <- NULL
+  if (isTRUE(size_data_qc)) {
+    size_qc <- apply_bet_size_data_qc(
+      model_dir,
+      expected_source_sha256 = size_data_qc_source_sha256
+    )
+    frq_note <- paste0(
+      frq_note,
+      "; F15 <70 cm bins zeroed and F21-F23 >90 cm midpoint bins removed",
+      " without renormalisation"
+    )
   }
   normalized <- normalize_frq_absent_lf_records(frq_out)
   if (normalized) frq_note <- paste0(frq_note, "; normalized ", normalized, " absent-LF records")
@@ -157,7 +175,7 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     )
   }
 
-  template_step <- get0("stepwise_5_region_template_step_id", ifnotfound = "06-NewStructure")
+  template_step <- get0("stepwise_5_region_template_step_id", ifnotfound = "05-NewStructure")
   template_model <- file.path(root, "steps", template_step, "model")
   copy_one(file.path(template_model, "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
   fishery_map_out <- file.path(model_dir, "fishery_map.R")
@@ -188,6 +206,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     all_selectivity_forms_relaxed = isTRUE(
       doitall_edits$all_selectivity_forms_relaxed
     ),
+    ph_id_young5_selectivity = isTRUE(
+      doitall_edits$ph_id_young5_selectivity
+    ),
     tail_compression_1pct = isTRUE(doitall_edits$tail_compression_1pct),
     time_varying_cv = isTRUE(doitall_edits$time_varying_cv),
     effort_creep = identical(frq_transform, "effort_creep"),
@@ -200,7 +221,10 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     },
     francis_divisors = francis_divisors,
     dm_grouping = get0("dm_grouping", doitall_edits, ifnotfound = ""),
-    dm_nmax = get0("dm_nmax", doitall_edits, ifnotfound = NA_integer_)
+    dm_nmax = get0("dm_nmax", doitall_edits, ifnotfound = NA_integer_),
+    dm_fixed_concentration = get0(
+      "dm_fixed_concentration", doitall_edits, ifnotfound = NA_real_
+    )
   )
   if (length(francis_divisors)) {
     if (!nzchar(francis_source)) {
@@ -208,7 +232,6 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     }
     copy_one(francis_source, file.path(model_dir, "francis_weights.csv"))
   }
-
   entries <- list(
     list(role = "frq", file = "bet.frq", source = frq_source, note = frq_note),
     list(role = "ini", file = "bet.ini", source = ini_source,
@@ -218,8 +241,28 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     list(role = "age_length", file = "bet.age_length", source = age_source, note = age_note),
     list(role = "doitall", file = "doitall.sh",
          source = file.path("steps", template_step, "model", "doitall.sh"),
-         note = "generated from the five-region template with only declared cumulative controls")
+      note = "generated from the five-region template with only declared cumulative controls")
   )
+  if (!is.null(size_qc)) {
+    entries <- c(entries, list(
+      list(
+        role = "f15_size_qc", file = "f15-lf-qc-summary.csv",
+        source = frq_source,
+        note = paste0(
+          "F15 bins below 70 cm set to zero; source SHA ",
+          size_qc$source_sha256
+        )
+      ),
+      list(
+        role = "domestic_size_qc", file = "dom-lf-qc-summary.csv",
+        source = frq_source,
+        note = paste0(
+          "F21-F23 intervals with midpoint above 90 cm removed; output SHA ",
+          size_qc$output_sha256
+        )
+      )
+    ))
+  }
   if (nzchar(tag_reporting_source)) {
     entries <- c(entries, list(list(
       role = "ini_reporting_rates", file = "bet.ini", source = tag_reporting_source,

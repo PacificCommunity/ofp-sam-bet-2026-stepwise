@@ -85,6 +85,35 @@ normalize_lorenzen_mortality_control <- function(lines, fixm = FALSE) {
   lines
 }
 
+apply_2023_newexe_controls <- function(lines) {
+  cpue_cv <- c(
+    `33` = 24L, `34` = 31L, `35` = 20L, `36` = 21L, `37` = 26L,
+    `38` = 23L, `39` = 20L, `40` = 25L, `41` = 47L
+  )
+  for (fishery in names(cpue_cv)) {
+    lines <- set_doitall_fishery_flag(
+      lines, as.integer(fishery), 92L, cpue_cv[[fishery]]
+    )
+  }
+  old_initial_z <- paste0(
+    "^[[:space:]]*2[[:space:]]+94[[:space:]]+1[[:space:]]+2",
+    "[[:space:]]+128[[:space:]]+10([[:space:]]|$)"
+  )
+  new_initial_z <- paste0(
+    "^[[:space:]]*2[[:space:]]+94[[:space:]]+1[[:space:]]+2",
+    "[[:space:]]+128[[:space:]]+100([[:space:]]|$)"
+  )
+  if (any(grepl(old_initial_z, lines))) {
+    lines <- replace_one_line(
+      lines, old_initial_z,
+      "  2 94 1 2 128 100  # 2.2.7.9-based executable: initial Z = 1.0*M"
+    )
+  } else if (!any(grepl(new_initial_z, lines))) {
+    stop("Expected one current-executable initial-Z control.", call. = FALSE)
+  }
+  lines
+}
+
 apply_2023_current_baseline_tail_controls <- function(lines, fixm = FALSE) {
   lines <- normalize_lorenzen_mortality_control(lines, fixm = fixm)
   phase11_start <- grep("<<PHASE11$", lines)
@@ -111,10 +140,12 @@ remove_tag_mixing_override <- function(lines) {
 write_2023_newexe_doitall <- function(from, to, fixm = FALSE, mix_from_ini = TRUE) {
   write_program_path_doitall(from, to)
   lines <- readLines(to, warn = FALSE)
+  lines <- apply_2023_newexe_controls(lines)
   if (isTRUE(mix_from_ini)) {
     lines <- remove_tag_mixing_override(lines)
   }
   lines <- apply_phase10_11_convergence_switch(lines)
+  lines <- apply_regional_recruitment_penalty_switch(lines)
   lines <- apply_2023_current_baseline_tail_controls(lines, fixm = fixm)
   writeLines(lines, to, useBytes = TRUE)
   Sys.chmod(to, mode = "0755")
@@ -392,6 +423,63 @@ apply_phase10_11_convergence_switch <- function(lines) {
   replace_phase10_11_convergence_lines(lines)
 }
 
+apply_regional_recruitment_penalty_switch <- function(lines) {
+  assignment <- grep("^regional_recruitment_penalty=", lines)
+  if (!length(assignment)) {
+    convergence_echo <- grep(
+      '^echo "PHASE 10/11 convergence criterion:', lines
+    )
+    if (length(convergence_echo) != 1L) {
+      stop("Expected one PHASE 10/11 convergence audit line", call. = FALSE)
+    }
+    block <- c(
+      "",
+      "regional_recruitment_penalty=${REGIONAL_RECRUITMENT_PENALTY:-0.1}",
+      "case \"$regional_recruitment_penalty\" in",
+      "  0.1)",
+      "    regional_recruitment_penalty_flag=0",
+      "    ;;",
+      "  0.2)",
+      "    # MFCL stores ten times this coefficient in age flag 110.",
+      "    regional_recruitment_penalty_flag=2",
+      "    ;;",
+      "  *)",
+      "    echo \"REGIONAL_RECRUITMENT_PENALTY must be 0.1 or 0.2.\" >&2",
+      "    exit 39",
+      "    ;;",
+      "esac",
+      "echo \"Regional recruitment-distribution penalty: $regional_recruitment_penalty (age flag 110=$regional_recruitment_penalty_flag)\""
+    )
+    lines <- append(lines, block, after = convergence_echo)
+  } else if (length(assignment) != 1L) {
+    stop("Expected at most one regional-recruitment penalty switch", call. = FALSE)
+  }
+
+  control <- grep(
+    "^[[:space:]]*2[[:space:]]+110[[:space:]]+[$]regional_recruitment_penalty_flag",
+    lines
+  )
+  if (!length(control)) {
+    phase1 <- phase_heredoc_bounds(lines, 1L)
+    anchor <- grep(
+      "^[[:space:]]*2[[:space:]]+177[[:space:]]+1([[:space:]]|$)",
+      lines
+    )
+    anchor <- anchor[anchor > phase1[["start"]] & anchor < phase1[["end"]]]
+    if (length(anchor) != 1L) {
+      stop("Expected one Phase-1 total-population scaling control", call. = FALSE)
+    }
+    lines <- append(
+      lines,
+      "  2 110 $regional_recruitment_penalty_flag  # regional recruitment-distribution penalty coefficient",
+      after = anchor
+    )
+  } else if (length(control) != 1L) {
+    stop("Expected at most one age flag 110 runtime control", call. = FALSE)
+  }
+  lines
+}
+
 write_doitall <- function(from, to, mix_from_ini = FALSE,
                           size_based_selectivity = FALSE,
                           time_varying_cv = FALSE,
@@ -637,6 +725,19 @@ apply_one_percent_lf_tail_compression <- function(lines) {
   lines
 }
 
+apply_ph_id_young5_selectivity <- function(lines) {
+  for (fishery in c(14L, 15L)) {
+    lines <- set_or_add_control_flag(
+      lines, paste0("-", fishery), 75L, 5L, 1L,
+      paste0(
+        "F", fishery,
+        " PH/ID youngest five ages fixed at zero after the Step 09 size-data rule"
+      )
+    )
+  }
+  lines
+}
+
 apply_all_selectivity_form_relaxation <- function(lines) {
   active_form_fisheries <- c(
     12L, 13L, 15L, 16L, 17L, 18L, 19L,
@@ -735,7 +836,6 @@ remove_exact_doitall_controls <- function(lines, expected_controls) {
 
 legacy_selectivity_controls_to_remove <- c(
   "-5 16 1",
-  "-14 75 5",
   "-20 16 2",
   "-20 3 30",
   "-28 16 2",
@@ -807,7 +907,53 @@ dm_group_vector <- function(grouping) {
   stop("Unknown DM grouping: ", grouping, call. = FALSE)
 }
 
-apply_dm_likelihood <- function(lines, grouping, nmax) {
+apply_fixed_dm_concentration <- function(lines, concentration = 7) {
+  makepar <- grep(
+    "[$]program_path bet[.]frq bet[.]ini 00[.]par -makepar",
+    lines
+  )
+  if (length(makepar) != 1L) {
+    stop("Expected one MFCL makepar command for fixed DM concentration.", call. = FALSE)
+  }
+  block <- c(
+    "",
+    "# Job 18518 treatment: write the eight grouped fish_pars(22)",
+    "# concentration intercepts at their fitted upper-bound value before Phase 1.",
+    sprintf("dm_concentration=%s", format(concentration, trim = TRUE)),
+    "awk -v concentration=\"$dm_concentration\" '",
+    "  /^# extra fishery parameters/ { in_fish = 1; print; next }",
+    "  in_fish && /^#/ { print; next }",
+    "  in_fish && NF {",
+    "    fish_row++",
+    "    if (fish_row == 22) {",
+    "      if (NF != 33) exit 38",
+    "      for (i = 1; i <= NF; i++)",
+    "        printf \"%s%s\", concentration, (i == NF ? \"\\n\" : \" \")",
+    "      changed = 1",
+    "      next",
+    "    }",
+    "  }",
+    "  { print }",
+    "  END { if (changed != 1) exit 38 }",
+    "' 00.par > 00.dm-fixed.par"
+  )
+  lines <- append(lines, block, after = makepar)
+  phase1 <- grep(
+    "[$]program_path bet[.]frq 00[.]par 01[.]par -file - <<PHASE1",
+    lines
+  )
+  if (length(phase1) != 1L) {
+    stop("Expected one Phase-1 MFCL command for fixed DM concentration.", call. = FALSE)
+  }
+  lines[[phase1]] <- sub(
+    "bet.frq 00.par 01.par", "bet.frq 00.dm-fixed.par 01.par",
+    lines[[phase1]], fixed = TRUE
+  )
+  lines
+}
+
+apply_dm_likelihood <- function(lines, grouping, nmax,
+                                fixed_concentration = NA_real_) {
   nmax <- as.integer(nmax)
   if (!is.finite(nmax) || nmax <= 0L) stop("DM Nmax must be positive", call. = FALSE)
   groups <- dm_group_vector(grouping)
@@ -840,9 +986,20 @@ apply_dm_likelihood <- function(lines, grouping, nmax) {
       paste0(grouping, " DM group for F", fishery)
     )
   }
+  fix_concentration <- is.finite(fixed_concentration)
+  if (fix_concentration) {
+    lines <- apply_fixed_dm_concentration(lines, fixed_concentration)
+  }
   lines <- set_or_add_control_flag(
-    lines, "-999", 69L, 1L, 1L,
-    "estimate group-specific DM scalar exponent"
+    lines, "-999", 69L, if (fix_concentration) 0L else 1L, 1L,
+    if (fix_concentration) {
+      paste0(
+        "fix grouped fish_pars(22) concentration intercepts at ",
+        format(fixed_concentration, trim = TRUE), " as in Job 18518"
+      )
+    } else {
+      "estimate group-specific DM scalar exponent"
+    }
   )
   lines <- set_or_add_control_flag(
     lines, "-999", 89L, 0L, 1L,
@@ -869,7 +1026,20 @@ apply_regional_index_selectivity_map <- function(path) {
     "",
     "# Step 16 uses one documented selectivity group per final fishery.",
     "fishery_map$selectivity_group <- seq_len(nrow(fishery_map))",
-    "fishery_map$selectivity_name <- fishery_map$fishery_name"
+    "fishery_map$selectivity_name <- fishery_map$fishery_name",
+    "",
+    "# Selectivity-stability sensitivity: extraction-based sharing only.",
+    "fishery_map$selectivity_group <- c(",
+    "  1, 2, 2, 3, 4, 5, 6, 7, 6, 8, 9, 10, 11, 12, 13, 14,",
+    "  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,",
+    "  27, 28, 29, 30, 31",
+    ")",
+    "fishery_map$selectivity_name <- sub(",
+    "  \"^[0-9]+[.]\", \"\", fishery_map$fishery_name",
+    ")",
+    "fishery_map$selectivity_name[c(2, 3)] <- \"LL.EAST.1 + LL.US.1\"",
+    "fishery_map$selectivity_name[c(7, 9)] <- \"LL.WEST.3 + LL.OS.3\"",
+    "fishery_map$selectivity_name[33] <- \"Index R5 (independent logistic)\""
   )
   lines <- c(lines[seq_len(marker)], block, lines[(marker + 1L):length(lines)])
   writeLines(lines, path, sep = eol, useBytes = TRUE)
@@ -887,6 +1057,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           index_selectivity = FALSE,
                           selectivity_update_bundle = FALSE,
                           all_selectivity_forms_relaxed = FALSE,
+                          ph_id_young5_selectivity = FALSE,
                           tail_compression_1pct = FALSE,
                           time_varying_cv = FALSE,
                           effort_creep = FALSE,
@@ -895,7 +1066,8 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           cpue_mle_sigma = numeric(),
                           francis_divisors = numeric(),
                           dm_grouping = "",
-                          dm_nmax = NA_integer_) {
+                          dm_nmax = NA_integer_,
+                          dm_fixed_concentration = NA_real_) {
   lines <- readLines(from, warn = FALSE)
   lines <- sub(
     "extraction labels need the 03 fishery map",
@@ -906,9 +1078,13 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
   if (!any(grepl("^set -eu$", lines))) lines <- append(lines, "set -eu", after = 1L)
   lines <- normalize_lorenzen_mortality_control(lines, fixm = TRUE)
   lines <- apply_phase10_11_convergence_switch(lines)
+  lines <- apply_regional_recruitment_penalty_switch(lines)
   if (isTRUE(mix_from_ini)) lines <- remove_tag_mixing_override(lines)
   if (isTRUE(tail_compression_1pct)) {
     lines <- apply_one_percent_lf_tail_compression(lines)
+  }
+  if (isTRUE(ph_id_young5_selectivity)) {
+    lines <- apply_ph_id_young5_selectivity(lines)
   }
   if (isTRUE(regional_cpue)) lines <- apply_regional_cpue_likelihood(lines)
   if (!is.na(regional_scaling_weight)) {
@@ -945,7 +1121,12 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     )
   }
   if (length(francis_divisors)) lines <- apply_francis_lf_divisors(lines, francis_divisors)
-  if (nzchar(dm_grouping)) lines <- apply_dm_likelihood(lines, dm_grouping, dm_nmax)
+  if (nzchar(dm_grouping)) {
+    lines <- apply_dm_likelihood(
+      lines, dm_grouping, dm_nmax,
+      fixed_concentration = dm_fixed_concentration
+    )
+  }
   writeLines(lines, to, useBytes = TRUE)
   Sys.chmod(to, mode = "0755")
   invisible(to)

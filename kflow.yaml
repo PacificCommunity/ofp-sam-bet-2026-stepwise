@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-stepwise-pathway-v2
-name: bet-2026-stepwise-pathway-v2
-description: Fit the reordered 23-model BET 2026 pathway with separate time-varying CPUE uncertainty and CPUE observation-error calibration steps, 1% LF tail compression on the normal-likelihood pathway, the Job 14363 fleet-specific selectivity choice with form penalties off, an isolated reporting-rate exclusion step, and a final DM model with flag 313 reset to 0 and DM support controlled by flag 320.
+#   /api/job/bet-2026-final-stepwise-v25
+name: bet-2026-final-stepwise-v25
+description: Fit the final 19-step BET 2026 pathway as 20 independent models, ending at the Job 18718 treatment (K=0.20, tau not estimated, flexible selectivity, DM G8 Nmax25 with concentration 7).
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -20,9 +20,9 @@ slot_requirements: 'regexp("^suvofp", Machine)'
 # Command executed inside the Docker container after checkout.
 command: bash run.sh
 
-# Immutable digest resolved for tuna-flow:v2.2. Never replace this with a tag
+# Immutable digest resolved for tuna-flow:v2.5. Never replace this with a tag
 # for a campaign run.
-docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 
 # HTCondor resource request. Increase memory/disk before increasing CPUs unless
 # the MFCL command itself can use more threads.
@@ -47,7 +47,7 @@ env:
   MODEL_LABEL: 2023 diagnostic rerun
   JOB_KEY: 01-diag2023
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-stepwise-pathway
+  FLOW_GROUP: bet-2026-final-stepwise
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -77,6 +77,7 @@ env:
 
   # Default convergence criterion for all stepwise model fits.
   BET_PHASE10_11_CONVERGENCE: "-4"
+  PROGRAM_PATH: /home/mfcl/mfclo64
 
   # Private helper packages are updated at runtime so the public image stays stable.
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
@@ -84,9 +85,9 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@2c931ebd20fd04286fb4ff476c774ec036c49bb9,mfclshiny=PacificCommunity/mfclshiny@dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
-  MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
-  MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@25103916446d0395286afae28b5404bf361670fc,mfclshiny=PacificCommunity/mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
+  MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   KFLOW_REPORT_COMMIT_GENERATED: "true"
@@ -119,8 +120,8 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
-      MFCLKIT_GITHUB_REF: 2c931ebd20fd04286fb4ff476c774ec036c49bb9
-      MFCLSHINY_GITHUB_REF: dc17e84eb08c9e5d5b2b9022d954f108c0640ab0
+      MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
+      MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "true"
       MFCLSHINY_LIVE_UPDATE: "false"

@@ -1,0 +1,4 @@
+"rule","fishery","source_sha256","output_sha256","lf_rows_before","affected_rows","empty_rows_removed","count_before","count_after","removed_count","renormalised","catch_or_effort_changed"
+"interval midpoint >90 cm removed",21,"1e9d1afdffdb528045327b991220bc9ddb3c3743858f23bc559496c47f0a62eb","503ab2a150b3e209a1966b183fd884362a9b8ff2f479df00565bca621eb20b78",40,3,1,2130,2074,56,FALSE,FALSE
+"interval midpoint >90 cm removed",22,"1e9d1afdffdb528045327b991220bc9ddb3c3743858f23bc559496c47f0a62eb","503ab2a150b3e209a1966b183fd884362a9b8ff2f479df00565bca621eb20b78",138,123,0,108385,102239,6146,FALSE,FALSE
+"interval midpoint >90 cm removed",23,"1e9d1afdffdb528045327b991220bc9ddb3c3743858f23bc559496c47f0a62eb","503ab2a150b3e209a1966b183fd884362a9b8ff2f479df00565bca621eb20b78",21,16,0,50146,48444,1702,FALSE,FALSE

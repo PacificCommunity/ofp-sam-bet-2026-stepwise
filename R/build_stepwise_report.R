@@ -66,11 +66,6 @@ stepwise_references <- c(
     "doi:10.1111/j.1095-8649.1996.tb00060.x."
   ),
   paste0(
-    "Francis, R.I.C.C. (2011). Data weighting in statistical fisheries stock ",
-    "assessment models. Canadian Journal of Fisheries and Aquatic Sciences, 68, ",
-    "1124-1138. doi:10.1139/F2011-025."
-  ),
-  paste0(
     "Thorson, J.T., Johnson, K.F., Methot, R.D. and Taylor, I.G. (2017). ",
     "Model-based estimates of effective sample size in stock assessment models ",
     "using the Dirichlet-multinomial distribution. Fisheries Research, 192, ",
@@ -88,7 +83,6 @@ stepwise_reference_urls <- c(
   "https://meetings.wcpfc.int/node/19353",
   "https://meetings.wcpfc.int/node/32243",
   "https://doi.org/10.1111/j.1095-8649.1996.tb00060.x",
-  "https://doi.org/10.1139/F2011-025",
   "https://doi.org/10.1016/j.fishres.2016.06.005",
   paste0(
     "https://github.com/PacificCommunity/ofp-sam-mfcl-manual/blob/",
@@ -135,16 +129,6 @@ stepwise_references_bibtex <- paste0(
   "  year = {1996},\n",
   "  doi = {10.1111/j.1095-8649.1996.tb00060.x}\n",
   "}\n\n",
-  "@article{Francis2011DataWeighting,\n",
-  "  author = {Francis, R. I. C. C.},\n",
-  "  title = {Data weighting in statistical fisheries stock assessment models},\n",
-  "  journal = {Canadian Journal of Fisheries and Aquatic Sciences},\n",
-  "  volume = {68},\n",
-  "  number = {6},\n",
-  "  pages = {1124--1138},\n",
-  "  year = {2011},\n",
-  "  doi = {10.1139/F2011-025}\n",
-  "}\n\n",
   "@article{ThorsonEtAl2017DMESS,\n",
   "  author = {Thorson, James T. and Johnson, Kelli F. and Methot, Richard D. and Taylor, Ian G.},\n",
   "  title = {Model-based estimates of effective sample size in stock assessment models using the Dirichlet-multinomial distribution},\n",
@@ -176,19 +160,15 @@ stepwise_dm_configuration <- data.frame(
   implementation = c(
     "Dirichlet-multinomial without random effects (flag 141 = 11).",
     "Eight groups covering all 33 fisheries (flag 68; Table XX).",
-    "Group-specific log-concentration and relative-sample-size exponent, estimated within the model (flags 69 and 89; from phase 2).",
+    "Group log-concentration fixed at 7 (flag 69 = 0); eight relative-sample-size exponents estimated from Phase 2 (flag 89 = 1).",
     "Nmax = 25 (flag 342; MFCL default = 1,000).",
     "Minimum span of five observed bins (flag 320 = 5); flag 313 = 0."
   ),
   basis = c(
     "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
     "Pool fisheries with similar gear and data roles while retaining major differences.",
-    "Allow composition information to vary among groups and with relative sample size.",
-    paste0(
-      "Set using composition-level effective sample sizes from the Francis ",
-      "reweighting as an empirical reference; 25 lies just above their ",
-      "95th-percentile range (22.22-23.81 across 2,399 compositions)."
-    ),
+    "Match the Job 18518/18718 treatment: hold the concentration intercept at its fitted upper bound and estimate the grouped relative-sample-size response.",
+    "Retain the final exploration effective-sample-size upper asymptote used by Job 18718.",
     "Apply the DM support rule; the robust-normal 1% tail control is not used."
   ),
   stringsAsFactors = FALSE
@@ -240,7 +220,7 @@ stepwise_parse_job_map <- function(value) {
   if (!all(valid)) {
     stop(
       "STEPWISE_MODEL_JOBS must use step=job pairs, for example ",
-      "01-Diag2023=14047,02-NewExe1003=14046.",
+      "01-Diag2023=14047,02-NewExeIni1007=14046.",
       call. = FALSE
     )
   }
@@ -563,17 +543,17 @@ build_stepwise_report <- function(
   table_latex <- stepwise_table_latex(table, include_jobs)
   dm_configuration_caption <- paste0(
     "Dirichlet-multinomial configuration used for length-composition weighting ",
-    "in the BET 2026 diagnostic model."
+    "in the BET 2026 final model."
   )
   dm_groups_caption <- paste0(
-    "Eight fishery groups used to estimate group-specific Dirichlet-multinomial ",
-    "overdispersion. Fishery numbers and series names follow the five-region, ",
+    "Eight fishery groups used for the final Dirichlet-multinomial treatment. ",
+    "Fishery numbers and series names follow the five-region, ",
     "33-fishery input specification."
   )
   dm_configuration_html <- stepwise_named_table_html(
     stepwise_dm_configuration,
     id = "dm-configuration-table",
-    headers = c("Component", "Diagnostic-model setting", "Rationale"),
+    headers = c("Component", "Final-model setting", "Rationale"),
     widths = c(18, 37, 45),
     first_column_class = "row-label"
   )
@@ -586,7 +566,7 @@ build_stepwise_report <- function(
   )
   dm_configuration_latex <- stepwise_named_table_latex(
     stepwise_dm_configuration,
-    headers = c("Component", "Diagnostic-model setting", "Rationale"),
+    headers = c("Component", "Final-model setting", "Rationale"),
     widths = c(0.17, 0.36, 0.42),
     caption = dm_configuration_caption,
     label = "tab:bet-dm-configuration",
@@ -611,7 +591,7 @@ build_stepwise_report <- function(
     "model component or data treatment was modified, while all other settings were held ",
     "constant where practicable (Figure XX; Table XX). Configurations retained after evaluation ",
     "defined the main development pathway; side branches document alternatives that were tested ",
-    "but not carried forward. The diagnostic model used a Dirichlet-multinomial (DM) likelihood for ",
+    "but not carried forward. The final model used a Dirichlet-multinomial (DM) likelihood for ",
     "length-composition data. The DM configuration and its eight fishery groupings are ",
     "summarised in Tables XX and XX, respectively."
   )
@@ -631,12 +611,12 @@ build_stepwise_report <- function(
     "rationale. Step numbers correspond to the pathway in Figure XX."
   )
   dm_section <- paste0(
-    "<section class=\"model-card\"><h2>Diagnostic-model Dirichlet-multinomial configuration</h2>",
-    "<p>The diagnostic model used a Dirichlet-multinomial likelihood for length compositions. ",
-    "The 33 fisheries were pooled into eight groups, with dispersion estimated by group. ",
+    "<section class=\"model-card\"><h2>Final-model Dirichlet-multinomial configuration</h2>",
+    "<p>The final model used a Dirichlet-multinomial likelihood for length compositions. ",
+    "The 33 fisheries were pooled into eight groups. The concentration intercept was fixed at 7 ",
+    "and the eight relative-sample-size exponents were estimated from Phase 2. ",
     paste0(
-      "An effective-sample-size upper bound of 25 was set using composition-level ",
-      "effective sample sizes from the Francis reweighting as an empirical reference.</p>"
+      "The effective-sample-size upper asymptote was fixed at 25, matching Job 18718.</p>"
     ),
     "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ",

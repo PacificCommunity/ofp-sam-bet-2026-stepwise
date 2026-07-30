@@ -1,106 +1,32 @@
-# Tag Reporting-Rate Inputs
+# Tag reporting-rate inputs
 
-This note is a compact map of the MFCL tag reporting-rate inputs. It is for
-checking file structure, not for defining extra stepwise model changes.
+MFCL reads five reporting-rate matrices from `bet.ini`:
 
-## What MFCL Reads
-
-MFCL reads tag reporting rates from `bet.ini`. `tag_rep_map.R` is generated
-only as a human-readable audit lookup.
-
-| `bet.ini` block | Meaning |
+| Block | Meaning |
 | --- | --- |
 | `# tag fish rep` | Initial reporting-rate values. |
-| `# tag fish rep group flags` | Group IDs linking release rows and fisheries. |
+| `# tag fish rep group flags` | Group IDs. |
 | `# tag_fish_rep active flags` | Estimation switches. |
 | `# tag_fish_rep target` | Prior targets. |
 | `# tag_fish_rep penalty` | Prior penalties. |
 
-Rows are tag release groups plus one pooled tagged-population row. Columns are
-fisheries.
+`tag_rep_map.R` is a display and audit sidecar; it is not read by MFCL.
 
-```text
-expected reporting-rate rows = tag release groups + 1 pooled row
-```
+| Steps | Fisheries | Release groups | Treatment |
+| --- | ---: | ---: | --- |
+| 01 | 41 | 118 | Archived diagnostic layout. |
+| 02-04 | 41 | 118 | INI 1007-compatible diagnostic layout; reporting assumptions retained. |
+| 05-07 | 33 | 96 | Five-region 2023 tag family with audited fishery/program reporting rates. |
+| 08-15 | 33 | 98 | 2026 tag family; base mixing and reporting-rate matrices retained. |
+| 16 | 33 | 98 | K=0.20 release-specific mixing; `tag_flags(:,2)=0`. |
+| 17-19 | 33 | 98 | Same K=0.20 mixing; `tag_flags(:,2)=1`. |
 
-## Step Families
+From Step 08 through Step 19 the five numeric reporting-rate matrices are
+identical. F25/F27 and F26/F28 retain separate West and East reporting-rate
+groups. Every positive tag recapture is validated against positive active,
+initial, target, and penalty cells.
 
-| Steps | Fisheries | Release groups | Reporting-rate rows | What to check |
-| --- | ---: | ---: | ---: | --- |
-| `01-Diag2023`, `02-NewExe1003` | 41 | 118 | 119 | 2023 diagnostic shape retained. |
-| `03-Ini1007` through `05-LengthWeight` | 41 | 118 | 119 | MFCL 1007 layout without changing the diagnostic tag grouping. |
-| `06-NewStructure` through `09-TailCompression1Pct` | 33 | 96 | 97 | Five-region 2023 tag grouping; Step 09 changes only the LF tail control. |
-| `10-DataTo2024` through `16-SelectivityUpdate` | 33 | 98 | 99 | 2026 tag build with aligned reporting-rate matrices and the base mixing periods. |
-| `17-MIX015` through `20c-DMG8Nmax25` | 33 | 98 | 99 | Release-group-specific mixing periods are read from the mix-period `.ini`; from Step 18, reporting rates are excluded only within those pre-mixing windows. |
-
-## Alignment Checks
-
-Generated inputs check three tag sections before Kflow submission:
-
-| Check | Pass condition |
-| --- | --- |
-| Reporting-rate matrices | Each matrix has `release groups + 1` rows and one column per fishery. |
-| Tag-control rows | One row per release group. |
-| Tag shed rate | One value per release group. |
-
-For `10`-`16`, the selected 2026 tag file has 98 release groups and the 2026
-base INI has 99 reporting-rate rows, including the pooled row. The generator
-copies the five RR matrices from that base INI, then checks their dimensions
-and all positive-recapture cells before writing each model folder. The
-SC22-IP10 mixing-period INIs contain the same five matrices.
-
-## Generated Changes To Tag Inputs
-
-The `.tag` file is copied unchanged for steps 10-20. The changes below are
-edits to generated `bet.ini` files so MFCL sees tag controls and RR matrices
-that match the selected `.tag`.
-
-| Scope | Source | Change in generated `bet.ini` |
-| --- | --- | --- |
-| `.tag`, steps 10-20 | `bet.2026.low.recaps.removed.tag` | Copied unchanged from the tag-prep repo. |
-| Tag flags, steps 06-09 | `bet.2023.new.structure.ini` | Source has 98 identical tag-control rows for a 96-release-group tag file; generated rows are trimmed to 96. |
-| RR matrices, steps 06-09 | `config/rrpttp26-reporting-rates.csv` | Maps the SC22 BET purse-seine means and penalties to the 96 release rows, retaining separate West and East groups. |
-| Tag flags, steps 10-16 | `bet.2026.ini` | Latest 98 rows kept; column 2 `tag_flags(it,2)` set from `1` to `0`. |
-| RR matrices, steps 10-20 | `bet.2026.ini` | Five RR/active/target/penalty blocks, including updated group IDs, are kept at 99 rows. |
-| Mixing periods, steps 17-20 | `bet.2026.mix-0.15.ini` | SC22-IP10 Appendix A release-group-specific mixing periods begin at Step 17 and are carried unchanged. |
-| Tag flags, step 17 | Selected MIX015 state | Column 2 `tag_flags(it,2)` remains `0`. |
-| Tag flags, steps 18-20 | Generated Step 17 state | Column 2 `tag_flags(it,2)` changes to `1` at Step 18 and is carried unchanged. |
-| Positive recapture RR check, steps 06-20 | Generated `.ini` and selected `.tag` | Every positive recapture must have nonzero RR, active, target, and penalty cells. |
-
-The older fishery 19 repair helper remains available for older upstream inputs
-that still have inactive RR cells, but the pinned 2026 source combination
-passes by validation rather than by applying that repair.
-
-The current source combination is
-`ofp-sam-2026-BET-YFT-build-ini@5b2fb60` from branch
-`SC22-IP10-based` and
-`ofp-sam-2026-BET-YFT-tag-prep@6d66dc3`. These revisions include the audited
-BET reporting-rate grouping, conflicting-prior checks, and SC22-IP10 Appendix
-A mixing periods. Steps 10-20 use the five reporting-rate matrices in
-`bet.2026.ini`; all mixing-period variants contain identical copies of those
-matrices. Steps 17-20 use only tag-flag column 1 from
-`bet.2026.mix-0.15.ini`. The generated files preserve the source
-reporting-rate group IDs; `tag_flags(it,2)` is `0` through Step 17 and `1`
-from Step 18 onward. Fishery display names and regions in `fishery_map.R` are
-synchronized from `BET/bet.RR.2026.csv`; `tag_rep_map.R` then uses those same
-labels so MFCLShiny reads a consistent pair of sidecars. Starting at step 06,
-F25/F27 and F26/F28 use separate West and East reporting-rate groups. Step 10
-retains those groups while mapping the same fishery-level specification to
-the two additional 2026 release rows. Other grouped initial values are
-harmonized where native MFCL requires a shared start.
-
-The build-ini `main` branch is not the source for this stepwise update.
-Every INI read from the build-ini repository—`bet.2023.new.structure.ini`,
-`bet.2026.ini`, and the selected mix-period INI—comes from
-`SC22-IP10-based`. Rebuilds must set `BET_2026_INI_REPO_ROOT` to a checkout of
-that branch; the locked commit and SHA256 values prevent silent fallback to a
-different base or MIX015 INI.
-
-The BET purse-seine means and penalties follow Table 3 of Peatman et al.
-(2026), *Analysis of tag seeding data for the 2026 bigeye and yellowfin
-assessments: reporting rates for purse seine fleets*,
-WCPFC-SC22-2026-SA-IP05. The configuration retains the higher-precision
-analysis values used by the final stepwise model.
-
-The full cell-by-cell audit remains in each model folder as
-`steps/<step_id>/model/tag_rep_map.R`.
+Step 16 reads only tag-flag column 1 from
+`SC22-IP10-regionMean@efe3107/BET/ini.mix-period/bet.2026.mix-0.2.ini`.
+Step 17 changes only column 2. No `doitall.sh` override replaces the
+release-group mixing periods or reporting-rate matrices.

@@ -186,7 +186,10 @@ def validate_immutable_campaign(config: dict[str, Any], rows: list[dict[str, str
 
 
 def scientific_parent(rows: list[dict[str, str]], index: int) -> str:
-    configured = rows[index].get("scientific_parent", "")
+    configured = (
+        rows[index].get("scientific_parent_id", "")
+        or rows[index].get("scientific_parent", "")
+    )
     if configured:
         return configured
     return rows[index - 1]["step_id"] if index else ""
