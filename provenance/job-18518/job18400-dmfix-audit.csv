@@ -1,0 +1,2 @@
+source_job,source_par_sha256,output_par_sha256,source_objective,output_objective,source_max_gradient,output_max_gradient,source_npars,output_npars,dm_groups,source_flag69,output_flag69,output_flag89,dm22_active,dm23_active,m_active,tau_active,status
+18400,23f8f45e43369fb5df4b797846f975221dc155113518327498906c424e35b86b,2077bf1c29ab432063e87e438cd529f97c259e5d2ba3d4ff0d693aa987292dd0,8.91628379503885e+04,8.91628379378823e+04,6.39680558376186e-05,6.19683122928385e-05,1989,1981,8,1,0,1,0,8,0,1,passed

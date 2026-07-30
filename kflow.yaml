@@ -1,5 +1,5 @@
 name: bet-2026-final-exploration-v25
-description: "One self-contained BET 2026 Job-17805-control exploration using tuna-flow v2.5; select mixing K and whether tag tau is estimated."
+description: "BET 2026 tuna-flow v2.5 exploration with Job 18518-style fixed DM concentration; select mixing K and whether tag tau is estimated."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: final-exploration
@@ -24,7 +24,6 @@ env:
   PROGRAM_PATH: /home/mfcl/mfclo64
   BET_PHASE10_11_CONVERGENCE: "-4"
   REGIONAL_RECRUITMENT_PENALTY: "0.1"
-  DM_NMAX: "25"
   TAG_TAU_GROUPING: common
   TAG_TAU_LOWER_BOUND: default
   ESTIMATE_M_FINAL: "false"
@@ -33,11 +32,12 @@ env:
 tags:
   species: BET
   stage: final-exploration-v25
-  comparison_jobs: "17805,18386"
+  comparison_jobs: "17805,18386,18518"
 
 metadata:
   scientific_parent_job: "17805"
   verified_k015_job: "18386"
+  dm_fix_reference_job: "18518"
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
@@ -46,6 +46,9 @@ metadata:
   f15_qc_mode: lt70
   dom_qc_mode: gt90_midpoint
   dm_nmax: 25
+  dm_groups: 8
+  dm_fish_pars_22: "fixed at 7"
+  dm_fish_pars_23: "estimated"
   natural_mortality_fixed: true
   tag_likelihood: negative-binomial
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"

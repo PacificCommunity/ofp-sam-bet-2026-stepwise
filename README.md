@@ -23,12 +23,17 @@ SHA256 manifest. No run-time input is borrowed from another exploration.
 
 ## Controls held fixed
 
-- Frozen Job 17805 data and controls.
+- Frozen Job 17805 data and controls, except for the explicit Job 18518 DM
+  concentration fix below.
 - F15 length-frequency observations below 70 cm removed.
 - Domestic-fishery length-frequency observations with midpoint above 90 cm
   removed.
 - F14 and F15 youngest five ages fixed at zero selectivity.
-- DM `Nmax=25`, recruitment penalty 0.1, movement prior 0.1, OPR off.
+- Job 18518-style DM-noRE controls: `parest 141=11`, `parest 320=5`,
+  `Nmax=25`, the eight G8-grouped `fish_pars(22)` concentration intercepts
+  fixed at exactly 7 (`flag 69=0`), and the eight grouped
+  `fish_pars(23)` relative-sample-size exponents estimated (`flag 89=1`).
+- Recruitment penalty 0.1, movement prior 0.1, OPR off.
 - Fixed age-pars log-M `-2.54930339768360e+00`, verified from the actual
   Job 18386 output archive.
 - Region-mean tag-mixing vectors from
@@ -36,7 +41,7 @@ SHA256 manifest. No run-time input is borrowed from another exploration.
 
 The K=0.15 final INI is byte-identical to the actual Job 18386 INI:
 SHA256 `670940e4815f7f10f734f5de289bbe033657169ffa764a6297d0adc693ce221f`.
-The six source INIs and actual Job 17805/18386 records are retained under
+The six source INIs and actual Job 17805/18386/18518 records are retained under
 [`provenance/`](provenance/).
 
 ## Reporting-rate check

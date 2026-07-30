@@ -28,6 +28,27 @@ from job names.
   66 affected LF rows. `selected-steps.csv` also records the domestic-fishery
   midpoint-above-90-cm exclusion.
 
+## Job 18518
+
+- Kflow job number: `18518`; completed.
+- Output archive SHA256:
+  `4bc58a7dbe4cc4c91b3d7822413d2393f353ee55a474b2bbd228931bd2c5622a`
+- Verified source/output PAR SHA256:
+  `23f8f45e43369fb5df4b797846f975221dc155113518327498906c424e35b86b`
+  and
+  `2077bf1c29ab432063e87e438cd529f97c259e5d2ba3d4ff0d693aa987292dd0`.
+- Job 18400 estimated eight G8-grouped `fish_pars(22)` values. All reached
+  the upper bound of 7 (the largest numerical difference from 7 was about
+  `6.4e-9`). Job 18518 retained those values and changed fish flag 69 from
+  one to zero, reducing the active parameter count from 1,989 to 1,981.
+- Fish flag 89 remained one, so all eight grouped `fish_pars(23)` values
+  remained estimated. The DM-noRE controls `parest 141=11`, `parest 320=5`,
+  and `parest 342=25` were retained.
+- `job-18518/` contains the actual continuation script, generated control
+  file, G8 map, selected-step record, and completed-run audit. The final
+  exploration uses an exact value of 7 instead of preserving insignificant
+  optimiser rounding.
+
 ## Region-mean INIs
 
 - Repository: `PacificCommunity/ofp-sam-2026-BET-YFT-build-ini`

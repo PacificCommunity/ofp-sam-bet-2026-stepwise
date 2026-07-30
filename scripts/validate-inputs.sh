@@ -67,8 +67,8 @@ expected_frq_sha=9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa
 expected_age_length_sha=426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c
 expected_tag_sha=b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f
 expected_scaling_sha=5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3
-expected_estimated_script_sha=9a5922133fd749ff162972590897f47796e0423c18dc71d0e332828f37e92ccf
-expected_not_estimated_script_sha=5e4094a328e4530b355a6a0c9ce971287a5b057e395d9c5cc70d327fee33520a
+expected_estimated_script_sha=39d66e31bc3e7ac6eeb4e0d5bfcc6d32caf75f28d10a67955bd93d6501a490c4
+expected_not_estimated_script_sha=1e9b1f785a7eead494e450cd54bd55cef4ce5de31b1e09d5c399fa66e3170070
 
 for tau_mode in "${tau_modes[@]}"; do
   for scenario in "${scenarios[@]}"; do
@@ -81,6 +81,29 @@ for tau_mode in "${tau_modes[@]}"; do
     (cd "$dir" && sha256sum -c MANIFEST.sha256 >/dev/null) ||
       fail "manifest mismatch in $dir"
     sh -n "$dir/doitall.sh" || fail "shell syntax error in $dir/doitall.sh"
+    if grep -q 'DM_NMAX' "$dir/doitall.sh"; then
+      fail "DM Nmax is still configurable in $dir/doitall.sh"
+    fi
+    grep -Eq '^dm_nmax=25$' "$dir/doitall.sh" ||
+      fail "DM Nmax is not fixed at 25 in $dir/doitall.sh"
+    grep -Eq '^dm_concentration=7$' "$dir/doitall.sh" ||
+      fail "DM concentration is not fixed at 7 in $dir/doitall.sh"
+    grep -Eq '^[[:space:]]+1[[:space:]]+141[[:space:]]+11' "$dir/doitall.sh" ||
+      fail "DM-noRE parest 141=11 is missing in $dir/doitall.sh"
+    grep -Eq '^[[:space:]]+1[[:space:]]+320[[:space:]]+5' "$dir/doitall.sh" ||
+      fail "DM tail support parest 320=5 is missing in $dir/doitall.sh"
+    grep -Eq '^[[:space:]]+1[[:space:]]+342[[:space:]]+25' "$dir/doitall.sh" ||
+      fail "DM Nmax parest 342=25 is missing in $dir/doitall.sh"
+    grep -Eq '^[[:space:]]+-999[[:space:]]+69[[:space:]]+0' "$dir/doitall.sh" ||
+      fail "fish_pars(22) is not fixed with flag 69=0 in $dir/doitall.sh"
+    grep -Eq '^[[:space:]]+-999[[:space:]]+89[[:space:]]+1' "$dir/doitall.sh" ||
+      fail "fish_pars(23) is not estimated with flag 89=1 in $dir/doitall.sh"
+    grep -Fq '$program_path bet.frq 00.dm-fixed.par 01.par' "$dir/doitall.sh" ||
+      fail "Phase 1 does not consume the explicit row-22-fixed PAR in $dir/doitall.sh"
+    grep -Eq 'dm22_active.*(-ne|!=).*0' "$dir/doitall.sh" ||
+      fail "final audit does not require zero active fish_pars(22) in $dir/doitall.sh"
+    grep -Eq 'dm23_active.*(-ne|!=).*8' "$dir/doitall.sh" ||
+      fail "final audit does not require eight active fish_pars(23) in $dir/doitall.sh"
 
     [[ $(read_m "$dir/bet.ini") == "$expected_m" ]] ||
       fail "wrong fixed M in $dir/bet.ini"
@@ -144,5 +167,12 @@ if grep -Eq '^[[:space:]]+1[[:space:]]+111[[:space:]]+2' \
   fail "tau-not-estimated mode incorrectly switches to Poisson flag 111=2"
 fi
 
+[[ $(sha256sum provenance/job-18518/continue-job18400-dmfix.sh | awk '{print $1}') == \
+  52627192cab7fa3886e8cf74d60cb0ec6ef87c956e1ff6cc1b094f718cd2e350 ]] ||
+  fail "Job 18518 continuation-script provenance drift"
+[[ $(sha256sum provenance/job-18518/job18400-dmfix-audit.csv | awk '{print $1}') == \
+  28318dca237682a20fc40209bfac94e3f5e619e042823b174582206656403412 ]] ||
+  fail "Job 18518 completed-run audit provenance drift"
+
 echo "Validated 12 self-contained exploration folders."
-echo "K015 matches Job 18386; all M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
+echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."

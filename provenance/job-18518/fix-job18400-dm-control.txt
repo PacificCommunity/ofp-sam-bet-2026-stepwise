@@ -1,0 +1,9 @@
+  1 1 10000  # maximum evaluations after fixing DM concentration
+  1 50 -4  # final MGC target
+  -999 69 0  # fix grouped fish_pars(22) at Job 18400 values
+  1 246 1  # write indepvar.rpt
+  1 189 1  # write fit reports
+  1 190 1  # write plot report
+  1 188 1  # write standard report output
+  1 187 1  # write tag report output
+  1 186 0

@@ -34,23 +34,9 @@ case "$regional_recruitment_penalty" in
 esac
 echo "Regional recruitment-distribution penalty: $regional_recruitment_penalty (age flag 110=$regional_recruitment_penalty_flag)"
 
-dm_nmax=${DM_NMAX:-25}
-case "$dm_nmax" in
-  15|25)
-    dm_nmax_flag=$dm_nmax
-    dm_nmax_effective=$dm_nmax
-    ;;
-  default|1000)
-    # A zero flag invokes the MFCL no-random-effects DM default Nmax=1000.
-    dm_nmax_flag=0
-    dm_nmax_effective=1000
-    ;;
-  *)
-    echo "DM_NMAX must be 15, 25, default, or 1000." >&2
-    exit 38
-    ;;
-esac
-echo "DM effective-sample-size upper bound: $dm_nmax_effective (parest flag 342=$dm_nmax_flag)"
+dm_nmax=25
+dm_concentration=7
+echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentration; fish_pars(23) estimated"
 
 
 # -----------------------------------
@@ -59,11 +45,31 @@ echo "DM effective-sample-size upper bound: $dm_nmax_effective (parest flag 342=
 
 $program_path bet.frq bet.ini 00.par -makepar
 
+# Job 18518 fixed the eight grouped fish_pars(22) concentration intercepts
+# after they had converged to their upper bound (7) in Job 18400. Set all
+# fishery copies explicitly before applying the same G8 grouping and flag 69=0.
+awk -v concentration="$dm_concentration" '
+  /^# extra fishery parameters/ { in_fish = 1; print; next }
+  in_fish && /^#/ { print; next }
+  in_fish && NF {
+    fish_row++
+    if (fish_row == 22) {
+      if (NF != 33) exit 38
+      for (i = 1; i <= NF; i++)
+        printf "%s%s", concentration, (i == NF ? "\n" : " ")
+      changed = 1
+      next
+    }
+  }
+  { print }
+  END { if (changed != 1) exit 38 }
+' 00.par > 00.dm-fixed.par
+
 # -----------------------
 #  PHASE 1 - initial par
 # -----------------------
 
-$program_path bet.frq 00.par 01.par -file - <<PHASE1
+$program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
 # Use default quasi-Newton minimizer
   1 351 0
   1 192 0
@@ -309,7 +315,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -29 61 4  # F29 retained Job 15989 four-node selectivity
   -33 57 1  # F33 independent asymptotic logistic selectivity
   1 320 5  # use tail-compressed DM when the first-to-last-positive observed span contains at least five bins
-  1 342 $dm_nmax_flag  # selected DM effective-sample-size upper bound
+  1 342 25  # Job 18518 DM effective-sample-size upper bound
   -1 68 1  # G8PSSET DM group for F1
   -2 68 1  # G8PSSET DM group for F2
   -3 68 1  # G8PSSET DM group for F3
@@ -343,7 +349,7 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -31 68 8  # G8PSSET DM group for F31
   -32 68 8  # G8PSSET DM group for F32
   -33 68 8  # G8PSSET DM group for F33
-  -999 69 1  # estimate group-specific DM scalar exponent
+  -999 69 0  # fix grouped fish_pars(22) concentration intercepts at 7, as in Job 18518
   -999 89 0  # stage relative sample-size exponent fixed at zero
 PHASE1
 
@@ -703,10 +709,27 @@ PHASE12
 
 final_par=12.par
 
+dm22_active=$(awk '$2 ~ /^fish_pars[(]22[)]/ {n++} END {print n+0}' indepvar.rpt)
+dm23_active=$(awk '$2 ~ /^fish_pars[(]23[)]/ {n++} END {print n+0}' indepvar.rpt)
+dm_control_summary=$(awk '
+  /^# fish flags/ { in_fish=1; next }
+  in_fish && /^#/ { exit }
+  in_fish && NF {
+    n++; groups[$68]=1; flag69 += $69; flag89 += $89
+    if (n == 33) exit
+  }
+  END {
+    for (group in groups) group_count++
+    print n "," group_count "," flag69 "," flag89
+  }
+' "$final_par")
+
 # Fail unless MFCL retained exactly the requested tau configuration.
 actual_tau=$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' indepvar.rpt)
-if [ "$actual_tau" -ne "$expected_tau_count" ]; then
-  echo "Final fit estimated $actual_tau tau parameters; expected $expected_tau_count." >&2
+if [ "$actual_tau" -ne "$expected_tau_count" ] ||
+   [ "$dm22_active" -ne 0 ] || [ "$dm23_active" -ne 8 ] ||
+   [ "$dm_control_summary" != "33,8,0,33" ]; then
+  echo "Final tau or Job 18518 DM controls are inconsistent." >&2
   exit 44
 fi
 
@@ -739,18 +762,21 @@ done < tag-tau-map-final.txt
 
 parest_111=$(awk '/^# The parest_flags/{getline; print $111; exit}' "$final_par")
 parest_121=$(awk '/^# The parest_flags/{getline; print $121; exit}' "$final_par")
+parest_141=$(awk '/^# The parest_flags/{getline; print $141; exit}' "$final_par")
 parest_177=$(awk '/^# The parest_flags/{getline; print $177; exit}' "$final_par")
 parest_239=$(awk '/^# The parest_flags/{getline; print $239; exit}' "$final_par")
 parest_249=$(awk '/^# The parest_flags/{getline; print $249; exit}' "$final_par")
 parest_305=$(awk '/^# The parest_flags/{getline; print $305; exit}' "$final_par")
 parest_306=$(awk '/^# The parest_flags/{getline; print $306; exit}' "$final_par")
+parest_320=$(awk '/^# The parest_flags/{getline; print $320; exit}' "$final_par")
 parest_342=$(awk '/^# The parest_flags/{getline; print $342; exit}' "$final_par")
 parest_358=$(awk '/^# The parest_flags/{getline; print $358; exit}' "$final_par")
 if [ "$parest_111" != 4 ] ||
+   [ "$parest_141" != 11 ] || [ "$parest_320" != 5 ] ||
    [ "$parest_177" != "$tag_likelihood_weight" ] || [ "$parest_239" != 0 ] ||
    [ "$parest_249" != 0 ] || [ "$parest_305" != 1 ] ||
    [ "$parest_306" != "$tag_tau_flag306" ] ||
-   [ "$parest_342" != "$dm_nmax_flag" ] || [ "$parest_358" != 0 ]; then
+   [ "$parest_342" != "$dm_nmax" ] || [ "$parest_358" != 0 ]; then
   echo "Final parameter file did not retain the required direct-tau or tag-weight controls." >&2
   exit 47
 fi
@@ -827,12 +853,13 @@ else
   fi
 fi
 
-printf 'grouping,regional_recruitment_penalty,age_flag110,dm_nmax_request,dm_nmax_effective,parest342,requested_tau_lower,effective_tau_lower,tau_start,estimated_tau_count,estimate_m_phases11_12,estimated_m_count,phase10_m,final_m,parest111,parest121,parest177,parest239,parest249,parest305,parest306,parest358,status\n' \
+printf 'grouping,regional_recruitment_penalty,age_flag110,dm_nmax,dm_concentration,dm22_active,dm23_active,parest141,parest320,parest342,requested_tau_lower,effective_tau_lower,tau_start,estimated_tau_count,estimate_m_phases11_12,estimated_m_count,phase10_m,final_m,parest111,parest121,parest177,parest239,parest249,parest305,parest306,parest358,status\n' \
   > tag-tau-audit.csv
-printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,passed\n' \
+printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,passed\n' \
   "$tag_tau_grouping_label" \
   "$regional_recruitment_penalty" "$age_flag_110" \
-  "$dm_nmax" "$dm_nmax_effective" "$parest_342" \
+  "$dm_nmax" "$dm_concentration" "$dm22_active" "$dm23_active" \
+  "$parest_141" "$parest_320" "$parest_342" \
   "$tag_tau_lower_bound" "$tag_tau_effective_lower" "$tag_tau_start" \
   "$actual_tau" "$estimate_m_final" "$estimated_m_count" "$phase10_m" "$final_m" \
   "$parest_111" "$parest_121" "$parest_177" \
