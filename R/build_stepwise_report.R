@@ -167,8 +167,8 @@ stepwise_dm_configuration <- data.frame(
   basis = c(
     "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
     "Pool fisheries with similar gear and data roles while retaining major differences.",
-    "Match the Job 18518/18717 treatment: hold the concentration intercept at its fitted upper bound and estimate the grouped relative-sample-size response.",
-    "Retain the final exploration effective-sample-size upper asymptote used by Job 18717.",
+    "Match the Job 18518/18718 treatment: hold the concentration intercept at its fitted upper bound and estimate the grouped relative-sample-size response.",
+    "Retain the final exploration effective-sample-size upper asymptote used by Job 18718.",
     "Apply the DM support rule; the robust-normal 1% tail control is not used."
   ),
   stringsAsFactors = FALSE
@@ -616,7 +616,7 @@ build_stepwise_report <- function(
     "The 33 fisheries were pooled into eight groups. The concentration intercept was fixed at 7 ",
     "and the eight relative-sample-size exponents were estimated from Phase 2. ",
     paste0(
-      "The effective-sample-size upper asymptote was fixed at 25, matching Job 18717.</p>"
+      "The effective-sample-size upper asymptote was fixed at 25, matching Job 18718.</p>"
     ),
     "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ",

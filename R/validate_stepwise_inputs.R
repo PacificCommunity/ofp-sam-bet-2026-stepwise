@@ -79,8 +79,8 @@ assert(!any(vapply(forbidden_names, function(x) any(grepl(x, actual_ids, fixed =
 
 ## Runtime lock.
 kflow <- paste(read_text(file.path(root, "kflow.yaml")), collapse = "\n")
-assert(grepl("name: bet-2026-final-stepwise-v25", kflow, fixed = TRUE),
-       "kflow", "task name is not the final v2.5 task")
+assert(grepl("name: bet-2026-final-stepwise-alt-v25", kflow, fixed = TRUE),
+       "kflow", "task name is not the alternative final v2.5 task")
 assert(grepl(
   "ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360",
   kflow, fixed = TRUE
@@ -315,7 +315,7 @@ for (id in expected_ids[-1L]) {
   ) && grepl(
     "2 110 $regional_recruitment_penalty_flag",
     script, fixed = TRUE
-  ), id, "the Job 18717 regional-recruitment penalty default/control is missing")
+  ), id, "the final-exploration regional-recruitment penalty default/control is missing")
 }
 
 expected_m <- -2.54930339768360
@@ -409,7 +409,7 @@ for (id in expected_ids[15:20]) {
          "selected SUB075 CAAL input was not carried forward")
 }
 
-## Exact Job 18717 selectivity-update signature.
+## Exact Job 18718 flexible-selectivity signature.
 selectivity_signature <- function(path) {
   lines <- read_text(path)
   phase <- -1L
@@ -432,13 +432,13 @@ selectivity_signature <- function(path) {
   }
   paste0(paste(rows, collapse = "\n"), "\n")
 }
-expected_selectivity_sha <- "0f5e9e3cd1911e5fcc19d7731a949908c5350712a282522f54967c3c47fee70c"
+expected_selectivity_sha <- "def9bf5fecf1a6e7e5890a8ea9ff2fcc577442334510c8409836bd43caa00400"
 for (id in expected_ids[16:20]) {
   signature <- selectivity_signature(file.path(model_dir(id), "doitall.sh"))
-  assert(length(strsplit(trimws(signature), "\n")[[1L]]) == 128L, id,
-         "selectivity-update signature must contain 128 Phase 1/5 controls")
+  assert(length(strsplit(trimws(signature), "\n")[[1L]]) == 94L, id,
+         "flexible-selectivity signature must contain 94 Phase 1/5 controls")
   assert(identical(sha256_text(signature), expected_selectivity_sha), id,
-         "selectivity update differs from Job 18717")
+         "flexible-selectivity update differs from Job 18718")
 }
 
 ## Tag mixing and reporting-rate isolation.
@@ -494,7 +494,7 @@ for (id in expected_ids) {
          "tag tau estimation was activated")
 }
 
-## Step 19: Job 18717 DM-noRE, G8, Nmax25, concentration fixed at 7.
+## Step 19: Job 18718 DM-noRE, G8, Nmax25, concentration fixed at 7.
 final_id <- "19-DMG8Nmax25"
 final_controls <- controls_by_id[[final_id]]
 for (pair in list(c(1L, 141L, 11), c(1L, 320L, 5), c(1L, 342L, 25),
@@ -609,8 +609,8 @@ for (step_id in five_region_steps) {
   )
 }
 
-## Final targets must match Job 18717 inputs and the stepwise-named audit map.
-job18717_aligned_hashes <- c(
+## Final targets must match Job 18718 inputs and the stepwise-named audit map.
+job18718_aligned_hashes <- c(
   "bet.frq" = "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3",
   "bet.ini" = "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
   "bet.tag" = "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
@@ -620,10 +620,10 @@ job18717_aligned_hashes <- c(
   "tag_rep_map.R" = "96bdd0e9e75bc0794036385edc08e7219942d3c23fe4839be5986c4d77f96085",
   "fishery_map.R" = "af75e51bed5fcbc752aa1a2534ef7c742daee88048a964e7e9e4b91223118717"
 )
-for (file in names(job18717_aligned_hashes)) {
+for (file in names(job18718_aligned_hashes)) {
   assert(identical(sha256_file(file.path(model_dir(final_id), file)),
-                   job18717_aligned_hashes[[file]]), final_id,
-         paste0(file, " differs from the locked Job 18717-aligned target"))
+                   job18718_aligned_hashes[[file]]), final_id,
+         paste0(file, " differs from the locked Job 18718-aligned target"))
 }
 
 if (length(failures)) {
@@ -633,7 +633,7 @@ if (length(failures)) {
 
 cat(
   "Validated 20 frozen models / 19 cumulative steps.\n",
-  "Final: Job 18717 treatment; K=0.20, tau not estimated, selectivity update, ",
+  "Final: Job 18718 treatment; K=0.20, tau not estimated, flexible selectivity, ",
   "DM G8 Nmax25, fish_pars(22)=7 fixed.\n",
   "Runtime: Suva, immutable tuna-flow v2.5, pinned mfclkit/mfclshiny.\n",
   sep = ""

@@ -9,7 +9,7 @@ stepwise_run <- list(
   numbered_groups = 19L,
   model_rows = 20L,
   selected_path_models = 19L,
-  flow_group = "bet-2026-final-stepwise",
+  flow_group = "bet-2026-final-stepwise-alt",
   trigger_next = FALSE
 )
 
@@ -157,8 +157,8 @@ stepwise_models <- do.call(rbind, list(
   ),
   model_row(
     "15-SelectivityUpdate", "15-SelectivityUpdate", "14b-SUB075",
-    TRUE, "carry", "revise fishery-specific selectivity",
-    "Selectivity update", "15 Selectivity update",
+    TRUE, "carry", "apply the Job 18718 flexible fishery-specific selectivity",
+    "Flexible selectivity update", "15 Flexible selectivity update",
     "15-selectivity-update"
   ),
   model_row(
@@ -186,7 +186,7 @@ stepwise_models <- do.call(rbind, list(
     "DM composition weighting", "19 DM composition weighting, G8 Nmax 25",
     "19-dm-g8-nmax25",
     paste(
-      "Use Job 18518/18717 DM-noRE controls: G8, Nmax=25, fish_pars(22)",
+      "Use Job 18518/18718 DM-noRE controls: G8, Nmax=25, fish_pars(22)",
       "fixed at 7 and eight grouped fish_pars(23) exponents estimated.",
       "Retain the original 2023 negative-binomial tag likelihood;",
       "tag tau is not estimated (parest 111=4; fish flags 43/44 inactive)."
@@ -211,7 +211,7 @@ stepwise_report_change <- c(
   "13-NewAgeData" = "New CAAL data with weight 0.75",
   "14a-REG075" = "Regional CAAL reweighting",
   "14b-SUB075" = "Sub-basin CAAL reweighting with regions 3 and 4 combined",
-  "15-SelectivityUpdate" = "Revised fishery-specific selectivity",
+  "15-SelectivityUpdate" = "Flexible fishery-specific selectivity",
   "16-MIX020" = "Release-group-specific K=0.20 tag-mixing periods",
   "17-TagReportingExclusion" = "Pre-mixing reporting-rate exclusion",
   "18-EffortCreep" = "Effort-creep adjustment",
@@ -234,11 +234,11 @@ stepwise_report_purpose <- c(
   "13-NewAgeData" = "Use the 2023 BET age-data weighting as the reference treatment.",
   "14a-REG075" = "Test region-level spatial CAAL weighting.",
   "14b-SUB075" = "Apply the selected sub-basin CAAL weighting.",
-  "15-SelectivityUpdate" = "Align selectivity specifications with the revised 33-fishery structure using the Job 18717 controls.",
+  "15-SelectivityUpdate" = "Apply the Job 18718 flexible selectivity treatment to the revised 33-fishery structure.",
   "16-MIX020" = "Assign Joe's region-mean release-group mixing periods at K=0.20.",
   "17-TagReportingExclusion" = "Avoid applying reporting rates in pre-mixing windows.",
   "18-EffortCreep" = "Account for gradual changes in fishing efficiency.",
-  "19-DMG8Nmax25" = "Use Job 18717 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7."
+  "19-DMG8Nmax25" = "Use the Job 18718 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7."
 )
 
 stepwise_models$report_change <- unname(stepwise_report_change[stepwise_models$step_id])
@@ -282,6 +282,9 @@ stepwise_models$length_weight_updated <- stepwise_models$path_stage >= 4L
 stepwise_models$tail_compression_percent <- 0
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 12L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 15L
+stepwise_models$selectivity_variant <- ifelse(
+  stepwise_models$path_stage >= 15L, "Job 18718 flexible", ""
+)
 stepwise_models$all_selectivity_forms_relaxed <- stepwise_models$path_stage >= 15L
 stepwise_models$size_data_qc <- stepwise_models$path_stage >= 9L
 rownames(stepwise_models) <- NULL

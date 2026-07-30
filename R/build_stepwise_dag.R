@@ -71,7 +71,7 @@ build_stepwise_dag <- function(
   caption <- paste(
     "BET 2026 final stepwise pathway. Teal arrows show the selected cumulative",
     "sequence; the orange branch is the alternative regional CAAL treatment.",
-    "The final node matches the Job 18717 treatment."
+    "The final node matches the Job 18718 flexible-selectivity treatment."
   )
 
   plot <- ggplot2::ggplot() +

@@ -620,40 +620,30 @@ apply_regional_scaling_phase5 <- function(lines, weight = 100L,
 }
 
 apply_selectivity_update_phase5 <- function(lines) {
-  groups <- c(
-    1L, 2L, 2L, 3L, 4L, 5L, 6L, 7L, 6L, 8L, 9L, 10L, 11L,
-    12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L,
-    23L, 24L, 25L, 26L, 27L, 28L, 29L, 30L, 31L
-  )
-  fishery_order <- c(29:33, 1:28)
   block <- c(
-    "# STAGED MFCL RUN 5: retain the Step 15 extraction sharing and separate regional indices.",
+    "# STAGED MFCL RUN 5: complete the Job 18718 flexible selectivity grouping.",
     sprintf(
-      "  -%d 24 %d  # F%d Step 15 selectivity-stability group",
-      fishery_order, groups[fishery_order], fishery_order
+      "  -%d 24 %d  # Index R%d; separate flexible selectivity group from staged run 5",
+      29:33, 29:33, 1:5
     )
   )
   append_phase_controls(lines, 5L, block)
 }
 
 apply_selectivity_update <- function(lines) {
-  phase1_groups <- c(
-    1L, 2L, 2L, 3L, 4L, 5L, 6L, 7L, 6L, 8L, 9L, 10L, 11L,
-    12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L,
-    23L, 24L, 25L, 26L, 27L, 28L, 29L, 30L, 31L
-  )
+  phase1_groups <- c(seq_len(28L), rep(29L, 5L))
   old_group_comment <- grep(
     "^# The old 29 groups become 25 groups here: 24 extraction groups [+] 1 index group[.]$",
     lines
   )
   if (length(old_group_comment) == 1L) {
     lines[[old_group_comment]] <-
-      "# Job 18717 selectivity update shares F2/F3 and F7/F9 while keeping the five regional indices separate."
+      "# Job 18718 flexible selectivity: F1-F28 are independent; F29-F33 separate in staged run 5."
   }
   for (fishery in seq_len(33L)) {
     lines <- set_or_add_control_flag(
       lines, paste0("-", fishery), 24L, phase1_groups[[fishery]], 1L,
-      paste0("F", fishery, " Step 15 selectivity-stability group")
+      paste0("F", fishery, " Step 15 flexible selectivity group")
     )
   }
 
@@ -724,16 +714,6 @@ apply_selectivity_update <- function(lines) {
       paste0("Index R", fishery - 28L, " youngest age classes fixed at zero selectivity")
     )
   }
-  for (fishery in c(1L, 2L, 3L, 5L, 29L)) {
-    lines <- set_or_add_control_flag(
-      lines, paste0("-", fishery), 61L, 4L, 1L,
-      paste0("F", fishery, " retained four-node Step 15 selectivity")
-    )
-  }
-  lines <- set_or_add_control_flag(
-    lines, "-33", 57L, 1L, 1L,
-    "Index R5 independent asymptotic logistic selectivity"
-  )
   lines
 }
 

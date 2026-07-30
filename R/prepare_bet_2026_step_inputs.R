@@ -936,9 +936,9 @@ write_sequence_step <- function(
       if (tail_compression_1pct && !nzchar(dm_grouping)) "Length-frequency parest flag 313 is 1, activating 1% tail aggregation; flags 311/301 remain 1 and weight-frequency flag 303 remains 0.",
       if (nzchar(dm_grouping)) "Length-frequency parest flag 313 is reset to 0 because the DM likelihood does not read the percentage threshold; this also avoids unrelated percentage-tail preprocessing, while parest flag 320 controls DM support.",
       if (selectivity_update) paste0(
-        "The Job 18717 selectivity update shares F2/F3 and F7/F9, ",
-        "retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic ",
-        "curve for F33, and keeps the documented F14/F15 youngest-five-age constraints."
+        "The Job 18718 flexible selectivity update keeps F1-F28 independent, ",
+        "separates F29-F33 in staged run 5, retains the flexible spline forms, ",
+        "and keeps the documented F14/F15 youngest-five-age constraints."
       ),
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
@@ -1104,10 +1104,10 @@ for (age_spec in list(
   )
 }
 common_late_step(
-  "15-SelectivityUpdate", "15 Selectivity update", "14b-SUB075",
+  "15-SelectivityUpdate", "15 Flexible selectivity update", "14b-SUB075",
   paste(
-    "Revise fishery-specific selectivity to align with the 33-fishery structure,",
-    "using the Job 18717 controls and documented F14/F15 youngest-five-age constraints."
+    "Apply the Job 18718 flexible fishery-specific selectivity to the 33-fishery structure,",
+    "retaining the documented F14/F15 youngest-five-age constraints."
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
@@ -1141,7 +1141,7 @@ common_late_step(
 common_late_step(
   "19-DMG8Nmax25", "19 DM weighting: G8 Nmax 25", "18-EffortCreep",
   paste(
-    "Apply the Job 18717 final composition treatment: DM-noRE, G8, Nmax=25,",
+    "Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25,",
     "fish_pars(22) fixed at 7 and fish_pars(23) estimated."
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,

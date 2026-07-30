@@ -1,16 +1,16 @@
-# BET 2026 final stepwise pathway
+# BET 2026 alternative final stepwise pathway
 
 This branch contains the revised BET 2026 stepwise pathway as 20
 self-contained model folders representing 19 cumulative changes. No model
 uses another step's fitted `.par` at runtime.
 
-The selected path ends at the treatment used by Kflow Job 18717:
+The selected path ends at the treatment used by Kflow Job 18718:
 
 - K = 0.20 region-mean tag-mixing periods.
 - Original 2023 negative-binomial tag likelihood; tau is not estimated.
-- Revised fishery-specific selectivity from Job 18717, with shared F2/F3 and F7/F9 curves,
-  retained four-node curves for F1/F2/F3/F5/F29, an independent logistic
-  curve for F33, and the youngest five ages fixed at zero for F14 and F15.
+- Flexible fishery-specific selectivity from Job 18718: F1-F28 are independent,
+  F29-F33 separate in staged run 5, flexible spline forms are retained, and
+  the youngest five ages remain fixed at zero for F14 and F15.
   The exact Step 14b-to-Step 15 changes are listed in
   [the selectivity-update note](docs/selectivity-update.md).
 - Dirichlet-multinomial length-composition likelihood, G8, `Nmax=25`.
@@ -18,7 +18,7 @@ The selected path ends at the treatment used by Kflow Job 18717:
   grouped `fish_pars(23)` is estimated from Phase 2.
 - Lorenzen natural-mortality intercept fixed at `-2.54930339768360`.
 
-The final numerical MFCL inputs are byte-identical to the public Job 18717
+The final numerical MFCL inputs are byte-identical to the public Job 18718
 model folder on `final-exploration`. The fishery and reporting-rate audit maps
 retain the same numerical groups while using the agreed current 2026 fishery
 labels, including `DOM` in place of the source-table label `MISC`.
@@ -42,7 +42,7 @@ labels, including `DOM` in place of the source-table label `MISC`.
 | 13 | `13-NewAgeData` | Add new CAAL data with weight 0.75. | Selected |
 | 14a | `14a-REG075` | Apply all-five-region CAAL reweighting. | Alternative |
 | 14b | `14b-SUB075` | Apply selected sub-basin CAAL reweighting, combining regions 3 and 4. | Selected |
-| 15 | `15-SelectivityUpdate` | Apply revised fishery-specific selectivity. | Selected |
+| 15 | `15-SelectivityUpdate` | Apply the Job 18718 flexible selectivity update. | Selected |
 | 16 | `16-MIX020` | Apply release-group-specific K=0.20 mixing periods. | Selected |
 | 17 | `17-TagReportingExclusion` | Exclude reporting rates within pre-mixing windows. | Selected |
 | 18 | `18-EffortCreep` | Apply effort creep to regional CPUE indices. | Selected |
@@ -58,7 +58,7 @@ controls together. The archived flag-92 penalty vector for F33-F41
 (`88/53/130/109/76/93/121/77/23`) becomes the 2.2.7.9 CV vector
 (`24/31/20/21/26/23/20/25/47`). Global age flag 128 changes from 10 to 100,
 preserving the intended initial-Z multiplier of 1.0 under the new reader.
-The regional recruitment-distribution penalty also uses the Job 18717 default
+The regional recruitment-distribution penalty also uses the final-exploration default
 of 0.1, represented by runtime age flag 110=0.
 
 Step 09 sets F15 bins below 70 cm to zero without renormalisation and removes
@@ -104,7 +104,7 @@ make validate
 The validator checks the full parent graph, all manifests and transition
 isolation, fixed M, size-data edits, reporting rates, K=0.20 mixing, tau mode,
 the selectivity update, DM controls, the headerless v2.5 scaling file, and
-final Job 18717 hashes.
+final Job 18718 hashes.
 
 ## Kflow runtime
 
@@ -127,7 +127,7 @@ outputs.
 ## Audit files
 
 - `config/public-run-provenance.csv`: public repository, commit, path and SHA
-  locks, including the Job 18717 final target.
+  locks, including the Job 18718 final target.
 - `docs/input-source-audit.md`: source-to-step input changes.
 - `docs/tag-reporting-groups.md`: reporting-rate and tag-flag treatment.
 - `MFCL_CONTROL_NOTES.md`: concise MFCL control interpretation.
