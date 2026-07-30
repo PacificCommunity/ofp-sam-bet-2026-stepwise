@@ -13,18 +13,10 @@ truthy()
   esac
 }
 
-case "$model" in
-  K005-tau-estimated|K005-tau-not-estimated|\
-  K010-tau-estimated|K010-tau-not-estimated|\
-  K015-tau-estimated|K015-tau-not-estimated|\
-  K020-tau-estimated|K020-tau-not-estimated|\
-  K025-tau-estimated|K025-tau-not-estimated|\
-  K030-tau-estimated|K030-tau-not-estimated) ;;
-  *)
-    echo "MODEL must combine K005/K010/K015/K020/K025/K030 with tau-estimated or tau-not-estimated." >&2
-    exit 2
-    ;;
-esac
+if [[ ! "$model" =~ ^K(005|010|015|020|025|030)-tau-(estimated|not-estimated)(-sel20c)?$ ]]; then
+  echo "MODEL must use K{005,010,015,020,025,030}-tau-{estimated,not-estimated}, optionally followed by -sel20c." >&2
+  exit 2
+fi
 
 if [[ ! -x "$program_path" ]]; then
   echo "PROGRAM_PATH is not an executable MFCL binary: $program_path" >&2
@@ -69,8 +61,8 @@ echo "MFCL executable: $program_path"
 )
 
 case "$model" in
-  *-tau-estimated) final_stage=12.par ;;
-  *-tau-not-estimated) final_stage=11.par ;;
+  *-tau-estimated|*-tau-estimated-sel20c) final_stage=12.par ;;
+  *-tau-not-estimated|*-tau-not-estimated-sel20c) final_stage=11.par ;;
 esac
 
 if [[ ! -s "$run_dir/$final_stage" ]]; then

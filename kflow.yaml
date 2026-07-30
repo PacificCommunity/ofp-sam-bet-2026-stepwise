@@ -1,5 +1,5 @@
 name: bet-2026-final-exploration-v25
-description: "BET 2026 tuna-flow v2.5 exploration with Job 18518-style fixed DM concentration; select mixing K and whether tag tau is estimated."
+description: "BET 2026 tuna-flow v2.5 exploration with Job 18518-style fixed DM concentration; select mixing K, tag-tau treatment, and optional Job 15062-based 20c selectivity with F14/F15 youngest-five-age constraints."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: final-exploration
@@ -52,17 +52,20 @@ metadata:
   verified_k015_job: "18386"
   dm_fix_reference_job: "18518"
   step20c_model_job: "15062"
+  model_count: 24
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
   ini_source_commit: efe3107c72774ee73b5e6dc45e44cf51f0fc20e8
   fixed_log_m: "-2.54930339768360e+00"
+  f14_lf_min_positive_cm: 72
   f15_qc_mode: lt70
   dom_qc_mode: gt90_midpoint
   dm_nmax: 25
   dm_groups: 8
   dm_fish_pars_22: "fixed at 7"
   dm_fish_pars_23: "estimated"
+  selectivity_treatments: "selected-final controls; Job 15062 20c doitall controls with F14/F15 youngest-five-age constraints"
   natural_mortality_fixed: true
   tag_likelihood: negative-binomial
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"

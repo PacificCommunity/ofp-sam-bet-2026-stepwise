@@ -59,6 +59,7 @@ required=(
 )
 tau_modes=(estimated not-estimated)
 scenarios=(K005 K010 K015 K020 K025 K030)
+selectivity_suffixes=("" "-sel20c")
 source_suffixes=(0.05 0.1 0.15 0.2 0.25 0.3)
 
 expected_m=-2.54930339768360e+00
@@ -69,11 +70,14 @@ expected_tag_sha=b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013
 expected_scaling_sha=5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3
 expected_estimated_script_sha=39d66e31bc3e7ac6eeb4e0d5bfcc6d32caf75f28d10a67955bd93d6501a490c4
 expected_not_estimated_script_sha=1e9b1f785a7eead494e450cd54bd55cef4ce5de31b1e09d5c399fa66e3170070
+expected_estimated_sel20c_script_sha=3dfcf4d64acaa500ff7316cb9393453606bcdbff2a563b433915d6d01285eaee
+expected_not_estimated_sel20c_script_sha=4a6a76faa6049b1c7a6b149e967c2e9d7653c2db3443c5cdcac9d7d1c2f8d659
 
-for tau_mode in "${tau_modes[@]}"; do
-  for scenario in "${scenarios[@]}"; do
-    model="${scenario}-tau-${tau_mode}"
-    dir="explorations/$model"
+for selectivity_suffix in "${selectivity_suffixes[@]}"; do
+  for tau_mode in "${tau_modes[@]}"; do
+    for scenario in "${scenarios[@]}"; do
+      model="${scenario}-tau-${tau_mode}${selectivity_suffix}"
+      dir="explorations/$model"
     [[ -d "$dir" ]] || fail "missing directory $dir"
     for file in "${required[@]}"; do
       [[ -s "$dir/$file" ]] || fail "missing or empty $dir/$file"
@@ -124,17 +128,52 @@ for tau_mode in "${tau_modes[@]}"; do
       fail "tag-file drift in $dir"
     [[ $(sha256sum "$dir/bet.reg_scaling" | awk '{print $1}') == "$expected_scaling_sha" ]] ||
       fail "regional-scaling drift in $dir"
+    done
   done
 done
+
+exploration_count=$(find explorations -mindepth 1 -maxdepth 1 -type d | wc -l)
+[[ "$exploration_count" -eq 24 ]] ||
+  fail "expected exactly 24 exploration directories; found $exploration_count"
+
+python3 scripts/create-sel20c-variants.py --check >/dev/null ||
+  fail "committed sel20c variants differ from Job 15062 plus the F14 constraint"
+
+awk '
+  ($4 == 14 || $4 == 15) && NF == 103 {
+    rows[$4]++
+    for (i = 8; i <= 102; i++) {
+      length_cm = 10 + (i - 8) * 2
+      if ($i > 0 && (!($4 in minimum) || length_cm < minimum[$4])) {
+        minimum[$4] = length_cm
+      }
+      if ($i > 0 && length_cm < 70) {
+        below_70[$4] += $i
+      }
+    }
+  }
+  END {
+    exit(rows[14] == 50 && rows[15] == 135 &&
+         minimum[14] == 72 && minimum[15] == 70 &&
+         below_70[14] == 0 && below_70[15] == 0 ? 0 : 1)
+  }
+' explorations/K015-tau-estimated/bet.frq ||
+  fail "F14/F15 retained length-frequency support check failed"
 
 for index in "${!scenarios[@]}"; do
   scenario=${scenarios[$index]}
   source_ini="provenance/SC22-IP10-regionMean/bet.2026.mix-${source_suffixes[$index]}.ini"
   estimated_ini="explorations/${scenario}-tau-estimated/bet.ini"
   not_estimated_ini="explorations/${scenario}-tau-not-estimated/bet.ini"
+  estimated_sel20c_ini="explorations/${scenario}-tau-estimated-sel20c/bet.ini"
+  not_estimated_sel20c_ini="explorations/${scenario}-tau-not-estimated-sel20c/bet.ini"
 
   cmp -s "$estimated_ini" "$not_estimated_ini" ||
     fail "tau modes do not share the exact same INI for $scenario"
+  cmp -s "$estimated_ini" "$estimated_sel20c_ini" ||
+    fail "estimated-tau selectivity treatments do not share the exact same INI for $scenario"
+  cmp -s "$estimated_ini" "$not_estimated_sel20c_ini" ||
+    fail "tau and selectivity treatments do not share the exact same INI for $scenario"
   diff -q \
     <(sed -n '6,103p' "$source_ini" | tr -d '\r') \
     <(sed -n '6,103p' "$estimated_ini" | tr -d '\r') >/dev/null ||
@@ -153,10 +192,24 @@ cmp -s \
 for scenario in "${scenarios[@]}"; do
   estimated_script="explorations/${scenario}-tau-estimated/doitall.sh"
   not_estimated_script="explorations/${scenario}-tau-not-estimated/doitall.sh"
+  estimated_sel20c_script="explorations/${scenario}-tau-estimated-sel20c/doitall.sh"
+  not_estimated_sel20c_script="explorations/${scenario}-tau-not-estimated-sel20c/doitall.sh"
   [[ $(sha256sum "$estimated_script" | awk '{print $1}') == "$expected_estimated_script_sha" ]] ||
     fail "estimated-tau script drift in $scenario"
   [[ $(sha256sum "$not_estimated_script" | awk '{print $1}') == "$expected_not_estimated_script_sha" ]] ||
     fail "tau-not-estimated script drift in $scenario"
+  [[ $(sha256sum "$estimated_sel20c_script" | awk '{print $1}') == "$expected_estimated_sel20c_script_sha" ]] ||
+    fail "estimated-tau 20c-selectivity script drift in $scenario"
+  [[ $(sha256sum "$not_estimated_sel20c_script" | awk '{print $1}') == "$expected_not_estimated_sel20c_script_sha" ]] ||
+    fail "tau-not-estimated 20c-selectivity script drift in $scenario"
+  grep -Eq '^[[:space:]]+-14[[:space:]]+75[[:space:]]+5' "$estimated_sel20c_script" ||
+    fail "F14 youngest-five-age constraint is missing in $scenario estimated sel20c"
+  grep -Eq '^[[:space:]]+-15[[:space:]]+75[[:space:]]+5' "$estimated_sel20c_script" ||
+    fail "F15 youngest-five-age constraint is missing in $scenario estimated sel20c"
+  grep -Eq '^[[:space:]]+-14[[:space:]]+75[[:space:]]+5' "$not_estimated_sel20c_script" ||
+    fail "F14 youngest-five-age constraint is missing in $scenario tau-not-estimated sel20c"
+  grep -Eq '^[[:space:]]+-15[[:space:]]+75[[:space:]]+5' "$not_estimated_sel20c_script" ||
+    fail "F15 youngest-five-age constraint is missing in $scenario tau-not-estimated sel20c"
 done
 
 grep -Eq '^[[:space:]]+1[[:space:]]+111[[:space:]]+4' \
@@ -166,6 +219,9 @@ if grep -Eq '^[[:space:]]+1[[:space:]]+111[[:space:]]+2' \
   explorations/K015-tau-not-estimated/doitall.sh; then
   fail "tau-not-estimated mode incorrectly switches to Poisson flag 111=2"
 fi
+grep -Eq '^[[:space:]]+1[[:space:]]+111[[:space:]]+4' \
+  explorations/K015-tau-not-estimated-sel20c/doitall.sh ||
+  fail "20c-selectivity tau-not-estimated mode does not retain negative-binomial flag 111=4"
 
 [[ $(sha256sum provenance/job-18518/continue-job18400-dmfix.sh | awk '{print $1}') == \
   52627192cab7fa3886e8cf74d60cb0ec6ef87c956e1ff6cc1b094f718cd2e350 ]] ||
@@ -173,6 +229,9 @@ fi
 [[ $(sha256sum provenance/job-18518/job18400-dmfix-audit.csv | awk '{print $1}') == \
   28318dca237682a20fc40209bfac94e3f5e619e042823b174582206656403412 ]] ||
   fail "Job 18518 completed-run audit provenance drift"
+[[ $(sha256sum provenance/job-15062/doitall.sh | awk '{print $1}') == \
+  11fc97e3d3798df7ca766229bcb7187cc6c78753d772afaf28e312eab5e2d15e ]] ||
+  fail "Job 15062 archived doitall.sh provenance drift"
 
 expected_image='ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360'
 expected_mfclkit=25103916446d0395286afae28b5404bf361670fc
@@ -203,6 +262,8 @@ Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "sc
   >/dev/null ||
   fail "R helper syntax check failed"
 
-echo "Validated 12 self-contained exploration folders."
+echo "Validated 24 self-contained exploration folders."
+echo "The 12 sel20c variants reproduce Job 15062 Phase 1/5 selectivity controls with the deliberate F14 constraint."
+echo "F14/F15 retained length-frequency support and youngest-five-age constraints passed."
 echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
 echo "Pinned tuna-flow v2.5, mfclkit, mfclshiny, payload, and local-app checks passed."

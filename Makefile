@@ -10,12 +10,12 @@ help:
 	  'BET 2026 final-exploration commands' \
 	  '' \
 	  'make validate' \
-	  '  Validate all 12 frozen input folders without running MFCL.' \
+	  '  Validate all 24 frozen input folders without running MFCL.' \
 	  '' \
 	  'make run MODEL=K015-tau-estimated PROGRAM_PATH=/path/to/mfclo64' \
 	  '  Run one selected exploration.' \
 	  '' \
-	  'MODEL format: K{005,010,015,020,025,030}-tau-{estimated,not-estimated}'
+	  'MODEL format: K{005,010,015,020,025,030}-tau-{estimated,not-estimated}[-sel20c]'
 
 validate:
 	@bash scripts/validate-inputs.sh

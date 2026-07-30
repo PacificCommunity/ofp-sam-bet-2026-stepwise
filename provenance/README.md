@@ -49,6 +49,16 @@ from job names.
   exploration uses an exact value of 7 instead of preserving insignificant
   optimiser rounding.
 
+## Job 15062 selectivity
+
+- `job-15062/doitall.sh` is byte-identical to the actual completed
+  `20c-DMG8Nmax25` model input script in the Job 15062 output archive.
+- The `-sel20c` exploration variants use only its Phase 1 and Phase 5
+  fishery-selectivity controls, with one deliberate addition: F14 retains
+  the same youngest-five-age constraint as F15.
+- The archive, source-script, container, and source-commit checksums are
+  recorded in `job-15062/README.md`.
+
 ## Region-mean INIs
 
 - Repository: `PacificCommunity/ofp-sam-2026-BET-YFT-build-ini`
