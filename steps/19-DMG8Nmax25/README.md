@@ -1,6 +1,6 @@
 # 19 DM weighting: G8 Nmax 25
 
-Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated.
+Apply the Job 18717 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars
 
 | # | Change |
 | --- | --- |
-| 1 | Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated. |
+| 1 | Apply the Job 18717 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated. |
 | 2 | F15 bins below 70 cm are zeroed without renormalisation. |
 | 3 | F21-F23 intervals with midpoint above 90 cm are removed. |
 | 4 | F14 and F15 youngest five ages are fixed at zero selectivity. |
@@ -39,7 +39,7 @@ Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars
 | `.ini` | rrpttp26 reporting-rate matrices; MIX020 copied only into tag_flags(:,1); tag_flags(:,2)=1 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Apply the Job 18717 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 
@@ -59,15 +59,13 @@ Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars
 |  1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
 |  2 | Regional-scaling weight is 100. |
 |  3 | Length-frequency parest flag 313 is reset to 0 because the DM likelihood does not read the percentage threshold; this also avoids unrelated percentage-tail preprocessing, while parest flag 320 controls DM support. |
-|  4 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  5 | The intended selectivity bundle unshares F15-F28 and applies fishery-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
-|  6 | The Job 15062 flexible-selectivity specification sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
-|  7 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
-|  8 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
-|  9 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25; grouped fish_pars(22) fixed at 7 as in Job 18518. |
-| 10 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
-| 11 | No OPR or length-bin selectivity controls are generated. |
-| 12 | INI and TAG inputs are never rolled back to an earlier selected row. |
+|  4 | The Job 18717 parsimonious selectivity specification shares F2/F3 and F7/F9, retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic curve for F33, and keeps the documented F14/F15 youngest-five-age constraints. |
+|  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
+|  6 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
+|  7 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25; grouped fish_pars(22) fixed at 7 as in Job 18518. |
+|  8 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
+|  9 | No OPR or length-bin selectivity controls are generated. |
+| 10 | INI and TAG inputs are never rolled back to an earlier selected row. |
 
 ## Run Notes
 

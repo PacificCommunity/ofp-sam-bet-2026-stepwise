@@ -122,11 +122,11 @@ selectivity_names <- c(
 )
 fishery_map$selectivity_name <- selectivity_names[fishery_map$selectivity_group]
 
-# Step 16 uses one documented selectivity group per final fishery.
+# Step 15 starts from one documented selectivity group per final fishery.
 fishery_map$selectivity_group <- seq_len(nrow(fishery_map))
 fishery_map$selectivity_name <- fishery_map$fishery_name
 
-# Selectivity-stability sensitivity: extraction-based sharing only.
+# Job 18717 parsimonious selectivity: extraction-based sharing only.
 fishery_map$selectivity_group <- c(
   1, 2, 2, 3, 4, 5, 6, 7, 6, 8, 9, 10, 11, 12, 13, 14,
   15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,

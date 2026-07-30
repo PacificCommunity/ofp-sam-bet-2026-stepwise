@@ -4,20 +4,21 @@ This branch contains the revised BET 2026 stepwise pathway as 20
 self-contained model folders representing 19 cumulative changes. No model
 uses another step's fitted `.par` at runtime.
 
-The selected path ends at the treatment used by Kflow Job 18718:
+The selected path ends at the treatment used by Kflow Job 18717:
 
 - K = 0.20 region-mean tag-mixing periods.
 - Original 2023 negative-binomial tag likelihood; tau is not estimated.
-- Flexible fishery selectivity from Job 15062, with the youngest five ages
-  fixed at zero for both F14 and F15.
+- Parsimonious fishery selectivity, with shared F2/F3 and F7/F9 curves,
+  retained four-node curves for F1/F2/F3/F5/F29, an independent logistic
+  curve for F33, and the youngest five ages fixed at zero for F14 and F15.
 - Dirichlet-multinomial length-composition likelihood, G8, `Nmax=25`.
 - `fish_pars(22)` is written as 7 before Phase 1 and fixed with flag 69=0;
   grouped `fish_pars(23)` is estimated from Phase 2.
 - Lorenzen natural-mortality intercept fixed at `-2.54930339768360`.
 
-The final FRQ, INI, TAG, CAAL, v2.5 regional-scaling input, MFCL
-configuration, reporting-rate map, and fishery map are byte-identical to the
-public Job 18718 model folder on `final-exploration`.
+The final MFCL inputs and reporting-rate map are byte-identical to the public
+Job 18717 model folder on `final-exploration`. The generated fishery audit map
+uses the same parsimonious groups with stepwise-specific labels.
 
 ## Step sequence
 
@@ -38,7 +39,7 @@ public Job 18718 model folder on `final-exploration`.
 | 13 | `13-NewAgeData` | Add new CAAL data with weight 0.75. | Selected |
 | 14a | `14a-REG075` | Apply all-five-region CAAL reweighting. | Alternative |
 | 14b | `14b-SUB075` | Apply selected sub-basin CAAL reweighting, combining regions 3 and 4. | Selected |
-| 15 | `15-SelectivityUpdate` | Apply flexible fishery-specific selectivity. | Selected |
+| 15 | `15-SelectivityUpdate` | Apply parsimonious fishery-specific selectivity. | Selected |
 | 16 | `16-MIX020` | Apply release-group-specific K=0.20 mixing periods. | Selected |
 | 17 | `17-TagReportingExclusion` | Exclude reporting rates within pre-mixing windows. | Selected |
 | 18 | `18-EffortCreep` | Apply effort creep to regional CPUE indices. | Selected |
@@ -54,7 +55,7 @@ controls together. The archived flag-92 penalty vector for F33-F41
 (`88/53/130/109/76/93/121/77/23`) becomes the 2.2.7.9 CV vector
 (`24/31/20/21/26/23/20/25/47`). Global age flag 128 changes from 10 to 100,
 preserving the intended initial-Z multiplier of 1.0 under the new reader.
-The regional recruitment-distribution penalty also uses the Job 18718 default
+The regional recruitment-distribution penalty also uses the Job 18717 default
 of 0.1, represented by runtime age flag 110=0.
 
 Step 09 sets F15 bins below 70 cm to zero without renormalisation and removes
@@ -93,8 +94,8 @@ make validate
 
 The validator checks the full parent graph, all manifests and transition
 isolation, fixed M, size-data edits, reporting rates, K=0.20 mixing, tau mode,
-flexible selectivity, DM controls, the headerless v2.5 scaling file, and final
-Job 18718 hashes.
+parsimonious selectivity, DM controls, the headerless v2.5 scaling file, and
+final Job 18717 hashes.
 
 ## Kflow runtime
 
@@ -117,7 +118,7 @@ outputs.
 ## Audit files
 
 - `config/public-run-provenance.csv`: public repository, commit, path and SHA
-  locks, including the Job 18718 final target.
+  locks, including the Job 18717 final target.
 - `docs/input-source-audit.md`: source-to-step input changes.
 - `docs/tag-reporting-groups.md`: reporting-rate and tag-flag treatment.
 - `MFCL_CONTROL_NOTES.md`: concise MFCL control interpretation.

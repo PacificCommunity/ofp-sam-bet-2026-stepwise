@@ -39,9 +39,9 @@ Step 03 fixed natural-mortality baseline with BET 2026 bias-corrected length-wei
 | Repository | Commit | Note |
 | --- | --- | --- |
 | `ofp-sam-2026-BET-YFT-frq-build` | `f89e066` | Delete YFT/yft.model-785.24062026.txt |
-| `ofp-sam-2026-BET-YFT-build-ini` | `d48e396` | Reject conflicting tag reporting-rate priors |
-| `ofp-sam-2026-BET-YFT-tag-prep` | `471b2fd` | Correct RR group init values |
-| `ofp-sam-2026-BET-YFT-age-length-build` | `a26b694` | plus group at age 40 |
+| `ofp-sam-2026-BET-YFT-build-ini` | `efe3107` | Use five-region mean for Region 1 mixing periods |
+| `ofp-sam-2026-BET-YFT-tag-prep` | `44f8043` | update RR groupings |
+| `ofp-sam-2026-BET-YFT-age-length-build` | `96a06d2` | add various effective sample sizes |
 | `ofp-sam-bet-2023-diagnostic` | `81fc412` | Format tables after plotting |
 | `ofp-sam-2026-BET` | `847d036` | Revert "Fallback selftest projection par generation" |
 

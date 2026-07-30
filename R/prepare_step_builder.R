@@ -180,8 +180,8 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
   copy_one(file.path(template_model, "mfcl.cfg"), file.path(model_dir, "mfcl.cfg"))
   fishery_map_out <- file.path(model_dir, "fishery_map.R")
   copy_one(file.path(template_model, "fishery_map.R"), fishery_map_out)
-  if (isTRUE(doitall_edits$index_selectivity)) {
-    apply_regional_index_selectivity_map(fishery_map_out)
+  if (isTRUE(doitall_edits$parsimonious_selectivity)) {
+    apply_parsimonious_selectivity_map(fishery_map_out)
   }
   write_generated_tag_rep_map(model_dir)
 
@@ -199,12 +199,8 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     regional_scaling_periods = if (has_reg_scaling) reg_info$total_periods else 292L,
     regional_scaling_start_period = reg_scaling_active_start_period,
     regional_scaling_end_period = reg_scaling_active_end_period,
-    index_selectivity = isTRUE(doitall_edits$index_selectivity),
-    selectivity_update_bundle = isTRUE(
-      doitall_edits$selectivity_update_bundle
-    ),
-    all_selectivity_forms_relaxed = isTRUE(
-      doitall_edits$all_selectivity_forms_relaxed
+    parsimonious_selectivity = isTRUE(
+      doitall_edits$parsimonious_selectivity
     ),
     ph_id_young5_selectivity = isTRUE(
       doitall_edits$ph_id_young5_selectivity

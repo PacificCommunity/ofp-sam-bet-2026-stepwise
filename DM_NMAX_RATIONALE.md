@@ -1,6 +1,6 @@
 # Final DM configuration
 
-Step 19 uses the Job 18718 composition treatment:
+Step 19 uses the Job 18717 composition treatment:
 
 - `parest_flags(141)=11`: Dirichlet-multinomial without random effects.
 - Eight fishery groups through fish flag 68.

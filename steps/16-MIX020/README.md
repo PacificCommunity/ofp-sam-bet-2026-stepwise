@@ -56,16 +56,14 @@ Copy only release-group mixing periods from SC22-IP10-regionMean K=0.20; retain 
 
 | # | Control |
 | --- | --- |
-|  1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
-|  2 | Regional-scaling weight is 100. |
-|  3 | F29-F33 use separate selectivity coefficient-sharing groups from staged MFCL run 5. |
-|  4 | The intended selectivity bundle unshares F15-F28 and applies fishery-specific terminal/dome and youngest-age-tail controls; F25/F26 each use seven nodes, terminal age 25, dome flag 2, and youngest-tail flag 0. |
-|  5 | The Job 15062 flexible-selectivity specification sets flag 16 to 0 for all 14 applicable fisheries, so the dome/old-age-tail form penalty is off. |
-|  6 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
-|  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
-|  8 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
-|  9 | No OPR or length-bin selectivity controls are generated. |
-| 10 | INI and TAG inputs are never rolled back to an earlier selected row. |
+| 1 | Regional CPUE indices use the configured stationary-catchability/likelihood groups. |
+| 2 | Regional-scaling weight is 100. |
+| 3 | The Job 18717 parsimonious selectivity specification shares F2/F3 and F7/F9, retains four-node curves for F1/F2/F3/F5/F29, uses an independent logistic curve for F33, and keeps the documented F14/F15 youngest-five-age constraints. |
+| 4 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
+| 5 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
+| 6 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
+| 7 | No OPR or length-bin selectivity controls are generated. |
+| 8 | INI and TAG inputs are never rolled back to an earlier selected row. |
 
 ## Run Notes
 

@@ -191,40 +191,40 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -999 57 3  # cubic-spline selectivity
   -999 61 5  # five cubic-spline coefficients by default
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.
-# Staged run 1 uses 29 contiguous groups: F1-F28 use groups 1-28; F29-F33 initially share group 29.
-  -1 24 1  # F1 staged-run-1 selectivity group
-  -2 24 2  # F2 staged-run-1 selectivity group
-  -3 24 3  # F3 staged-run-1 selectivity group
-  -4 24 4  # F4 staged-run-1 selectivity group
-  -5 24 5  # F5 staged-run-1 selectivity group
-  -6 24 6  # F6 staged-run-1 selectivity group
-  -7 24 7  # F7 staged-run-1 selectivity group
-  -8 24 8  # F8 staged-run-1 selectivity group
-  -9 24 9  # F9 staged-run-1 selectivity group
-  -10 24 10  # F10 staged-run-1 selectivity group
-  -11 24 11  # F11 staged-run-1 selectivity group
-  -12 24 12  # F12 staged-run-1 selectivity group
-  -13 24 13  # F13 staged-run-1 selectivity group
-  -14 24 14  # F14 staged-run-1 selectivity group
-  -15 24 15  # F15 staged-run-1 selectivity group
-  -16 24 16  # F16 staged-run-1 selectivity group
-  -17 24 17  # F17 staged-run-1 selectivity group
-  -18 24 18  # F18 staged-run-1 selectivity group
-  -19 24 19  # F19 staged-run-1 selectivity group
-  -20 24 20  # F20 staged-run-1 selectivity group
-  -21 24 21  # F21 staged-run-1 selectivity group
-  -22 24 22  # F22 staged-run-1 selectivity group
-  -23 24 23  # F23 staged-run-1 selectivity group
-  -24 24 24  # F24 staged-run-1 selectivity group
-  -25 24 25  # F25 staged-run-1 selectivity group
-  -26 24 26  # F26 staged-run-1 selectivity group
-  -27 24 27  # F27 staged-run-1 selectivity group
-  -28 24 28  # F28 staged-run-1 selectivity group
-  -29 24 29  # F29 staged-run-1 selectivity group
-  -30 24 29  # F30 staged-run-1 selectivity group
-  -31 24 29  # F31 staged-run-1 selectivity group
-  -32 24 29  # F32 staged-run-1 selectivity group
-  -33 24 29  # F33 staged-run-1 selectivity group
+# Job 18717 parsimonious selectivity shares F2/F3 and F7/F9 while keeping the five regional indices separate.
+  -1 24 1  # F1 parsimonious selectivity-stability group
+  -2 24 2  # F2 parsimonious selectivity-stability group
+  -3 24 2  # F3 parsimonious selectivity-stability group
+  -4 24 3  # F4 parsimonious selectivity-stability group
+  -5 24 4  # F5 parsimonious selectivity-stability group
+  -6 24 5  # F6 parsimonious selectivity-stability group
+  -7 24 6  # F7 parsimonious selectivity-stability group
+  -8 24 7  # F8 parsimonious selectivity-stability group
+  -9 24 6  # F9 parsimonious selectivity-stability group
+  -10 24 8  # F10 parsimonious selectivity-stability group
+  -11 24 9  # F11 parsimonious selectivity-stability group
+  -12 24 10  # F12 parsimonious selectivity-stability group
+  -13 24 11  # F13 parsimonious selectivity-stability group
+  -14 24 12  # F14 parsimonious selectivity-stability group
+  -15 24 13  # F15 parsimonious selectivity-stability group
+  -16 24 14  # F16 parsimonious selectivity-stability group
+  -17 24 15  # F17 parsimonious selectivity-stability group
+  -18 24 16  # F18 parsimonious selectivity-stability group
+  -19 24 17  # F19 parsimonious selectivity-stability group
+  -20 24 18  # F20 parsimonious selectivity-stability group
+  -21 24 19  # F21 parsimonious selectivity-stability group
+  -22 24 20  # F22 parsimonious selectivity-stability group
+  -23 24 21  # F23 parsimonious selectivity-stability group
+  -24 24 22  # F24 parsimonious selectivity-stability group
+  -25 24 23  # F25 parsimonious selectivity-stability group
+  -26 24 24  # F26 parsimonious selectivity-stability group
+  -27 24 25  # F27 parsimonious selectivity-stability group
+  -28 24 26  # F28 parsimonious selectivity-stability group
+  -29 24 27  # F29 parsimonious selectivity-stability group
+  -30 24 28  # F30 parsimonious selectivity-stability group
+  -31 24 29  # F31 parsimonious selectivity-stability group
+  -32 24 30  # F32 parsimonious selectivity-stability group
+  -33 24 31  # F33 parsimonious selectivity-stability group
 # Non-decreasing selectivity for the old6-derived longline fishery.
 # Selected old-derived longline fisheries set to zero for first two age classes.
   -2 75 2  # F2 youngest age classes fixed at zero selectivity
@@ -283,6 +283,12 @@ $program_path bet.frq 00.par 01.par -file - <<PHASE1
   -31 75 2  # Index R3 youngest age classes fixed at zero selectivity
   -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
   -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
+  -1 61 4  # F1 retained four-node parsimonious selectivity
+  -2 61 4  # F2 retained four-node parsimonious selectivity
+  -3 61 4  # F3 retained four-node parsimonious selectivity
+  -5 61 4  # F5 retained four-node parsimonious selectivity
+  -29 61 4  # F29 retained four-node parsimonious selectivity
+  -33 57 1  # Index R5 independent asymptotic logistic selectivity
 PHASE1
 
 # ---------
@@ -344,12 +350,40 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -31 94 0  # Index R3; separate flag-99 group now supplies its own flag-92 error scale
   -32 94 0  # Index R4; separate flag-99 group now supplies its own flag-92 error scale
   -33 94 0  # Index R5; separate flag-99 group now supplies its own flag-92 error scale
-# STAGED MFCL RUN 5: separate the five regional-index selectivity-sharing groups.
-  -29 24 29  # Index R1; separate selectivity coefficient-sharing group from staged run 5
-  -30 24 30  # Index R2; separate selectivity coefficient-sharing group from staged run 5
-  -31 24 31  # Index R3; separate selectivity coefficient-sharing group from staged run 5
-  -32 24 32  # Index R4; separate selectivity coefficient-sharing group from staged run 5
-  -33 24 33  # Index R5; separate selectivity coefficient-sharing group from staged run 5
+# STAGED MFCL RUN 5: retain the parsimonious extraction sharing and separate regional indices.
+  -29 24 27  # F29 parsimonious selectivity-stability group
+  -30 24 28  # F30 parsimonious selectivity-stability group
+  -31 24 29  # F31 parsimonious selectivity-stability group
+  -32 24 30  # F32 parsimonious selectivity-stability group
+  -33 24 31  # F33 parsimonious selectivity-stability group
+  -1 24 1  # F1 parsimonious selectivity-stability group
+  -2 24 2  # F2 parsimonious selectivity-stability group
+  -3 24 2  # F3 parsimonious selectivity-stability group
+  -4 24 3  # F4 parsimonious selectivity-stability group
+  -5 24 4  # F5 parsimonious selectivity-stability group
+  -6 24 5  # F6 parsimonious selectivity-stability group
+  -7 24 6  # F7 parsimonious selectivity-stability group
+  -8 24 7  # F8 parsimonious selectivity-stability group
+  -9 24 6  # F9 parsimonious selectivity-stability group
+  -10 24 8  # F10 parsimonious selectivity-stability group
+  -11 24 9  # F11 parsimonious selectivity-stability group
+  -12 24 10  # F12 parsimonious selectivity-stability group
+  -13 24 11  # F13 parsimonious selectivity-stability group
+  -14 24 12  # F14 parsimonious selectivity-stability group
+  -15 24 13  # F15 parsimonious selectivity-stability group
+  -16 24 14  # F16 parsimonious selectivity-stability group
+  -17 24 15  # F17 parsimonious selectivity-stability group
+  -18 24 16  # F18 parsimonious selectivity-stability group
+  -19 24 17  # F19 parsimonious selectivity-stability group
+  -20 24 18  # F20 parsimonious selectivity-stability group
+  -21 24 19  # F21 parsimonious selectivity-stability group
+  -22 24 20  # F22 parsimonious selectivity-stability group
+  -23 24 21  # F23 parsimonious selectivity-stability group
+  -24 24 22  # F24 parsimonious selectivity-stability group
+  -25 24 23  # F25 parsimonious selectivity-stability group
+  -26 24 24  # F26 parsimonious selectivity-stability group
+  -27 24 25  # F27 parsimonious selectivity-stability group
+  -28 24 26  # F28 parsimonious selectivity-stability group
 PHASE5
 
 # ---------

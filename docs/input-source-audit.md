@@ -21,13 +21,13 @@ Exact public repository commits, paths, and SHA256 values are recorded in
 | 13 | New CAAL input at weight 0.75. |
 | 14a | All-five-region CAAL reweighting alternative. |
 | 14b | Selected sub-basin CAAL reweighting, combining regions 3 and 4. |
-| 15 | No data change; Job 15062 flexible-selectivity controls and audit map. |
+| 15 | No data change; Job 18717 parsimonious-selectivity controls and audit map. |
 | 16 | Only tag-flag column 1 changes, using region-mean K=0.20 mixing periods. |
 | 17 | Only tag-flag column 2 changes from 0 to 1. |
 | 18 | Only positive effort for F29-F33 changes according to the effort-creep series. |
 | 19 | Only `doitall.sh` changes: DM-noRE G8/Nmax25 with concentration fixed at 7. |
 
-The final core input hashes are locked to Job 18718 on the public
+The final core input hashes are locked to Job 18717 on the public
 `final-exploration` branch. The validator also checks every parent-to-child
 transition against the expected changed-file set.
 
