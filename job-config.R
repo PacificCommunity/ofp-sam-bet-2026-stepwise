@@ -85,7 +85,7 @@ stepwise_models <- do.call(rbind, list(
   ),
   model_row(
     "05-NewStructure", "05-NewStructure", "04-LengthWeight",
-    TRUE, "carry", "adopt the five-region, 33-fishery structure",
+    TRUE, "carry", "adopt the five-region, 33-fishery structure and remap current reporting-rate controls",
     "Five-region structure", "05 Five-region, 33-fishery structure",
     "05-new-structure"
   ),
@@ -200,7 +200,7 @@ stepwise_report_change <- c(
   "02-NewExeIni1007" = "New MFCL executable (2.2.7.9-based) and INI 1007",
   "03-FixM" = "Lorenzen natural-mortality scaling fixed to the 2023 diagnostic estimate",
   "04-LengthWeight" = "BET 2026 bias-corrected length-weight parameters",
-  "05-NewStructure" = "Five-region, 33-fishery structure",
+  "05-NewStructure" = "Five-region, 33-fishery structure and reporting-rate remapping",
   "06-ConvertToLength" = "Reweighted weight data converted to length frequencies through 2021",
   "07-AddLengthData" = "Weight-as-length plus observed-length compositions",
   "08-DataTo2024" = "Data updated through 2024 except CAAL",
@@ -223,7 +223,7 @@ stepwise_report_purpose <- c(
   "02-NewExeIni1007" = "Isolate the combined executable and required INI-format update.",
   "03-FixM" = "Improve model stability as recommended at the PAW.",
   "04-LengthWeight" = "Update biomass conversion for the 2026 assessment.",
-  "05-NewStructure" = "Represent the revised spatial and fishery definitions.",
+  "05-NewStructure" = "Represent the revised spatial and fishery definitions and rebuild the current reporting-rate controls for the new fishery map.",
   "06-ConvertToLength" = "Evaluate conversion of reweighted weight data to length.",
   "07-AddLengthData" = "Use observed lengths where their catch coverage exceeded weight samples.",
   "08-DataTo2024" = "Extend the temporal coverage of the assessment.",

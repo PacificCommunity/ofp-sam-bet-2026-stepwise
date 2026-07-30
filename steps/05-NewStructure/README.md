@@ -1,6 +1,7 @@
 # 05 NewStructure
 
-First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
+First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE
+and the current reporting-rate controls remapped to the revised fisheries.
 
 ## Snapshot
 
@@ -18,7 +19,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 | 3 | Keeps data through 2021 and uses the global CPUE setup for this structural transition. |
 | 4 | Uses old CAAL re-assigned to the new fisheries. |
 | 5 | Uses the restructured tag setup with 96 release groups. |
-| 6 | Applies the SC22 BET purse-seine reporting-rate penalties with separate West and East groups. |
+| 6 | Begins the current reporting-rate specification by rebuilding all group, active, initial, target and penalty matrices for the 33-fishery structure, including separate West and East purse-seine groups. |
 | 7 | Applies Diagnostic natural-mortality estimate fixed from the 01-Diag2023 mgc=-5 diagnostic final par while retaining the 5-region `.ini` structure. |
 | 8 | Sets total population scaling factor LN(R0) to 17. |
 | 9 | Uses bias-corrected BET 2026 L-W parameters a=3.073533e-05, b=2.932410. |
@@ -61,6 +62,7 @@ First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.
 | 1 | This step is the 5-region control template for steps 06-19. |
 | 2 | MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed. |
 | 3 | Generated safeguards cover FRQ regions, MFCL 1007 tag blocks, shed rates, `age_flags(128)`, fail-fast `doitall.sh`, and the PHASE 10/11 env switch. |
+| 4 | The Step 04-to-Step 05 comparison includes the reporting-rate remapping required by the fishery-structure change; Step 17 later changes only pre-mixing application. |
 
 ## Checks
 

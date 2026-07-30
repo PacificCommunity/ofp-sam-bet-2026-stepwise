@@ -10,7 +10,7 @@ Exact public repository commits, paths, and SHA256 values are recorded in
 | 02 | INI 1007 plus the 2.2.7.9-compatible flag-92 CV and age-128 scaling controls. |
 | 03 | Lorenzen intercept fixed at `-2.54930339768360`. |
 | 04 | Length-weight parameters changed to `3.073533e-05 2.932410`. |
-| 05 | Five-region, 33-fishery FRQ/INI/TAG/CAAL structure. |
+| 05 | Five-region, 33-fishery FRQ/INI/TAG/CAAL structure, with the current reporting-rate groups, active flags, initial values, targets and penalties remapped to the revised fisheries. |
 | 06 | Reweighted weight data converted to length frequencies through 2021. |
 | 07 | Observed length data added where coverage exceeds weight samples. |
 | 08 | FRQ and tag data extended through 2024, except CAAL. |
@@ -51,6 +51,11 @@ effort and the remaining composition values are not renormalised.
 The full 292 × 5 source is kept as `bet.reg_scaling.full` for audit only.
 
 ## Tag and reporting-rate isolation
+
+The current reporting-rate specification begins at Step 05. Its five matrices
+are rebuilt for the revised 33-fishery structure rather than copied from the
+preceding 41-fishery model. This is a required part of the structural
+transition; Step 17 later changes only pre-mixing application.
 
 The K=0.20 source is:
 

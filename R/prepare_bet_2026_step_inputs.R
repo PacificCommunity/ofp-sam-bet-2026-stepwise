@@ -707,14 +707,21 @@ write_manifest(newstructure_dir, list(
 write_readme(
   newstructure_dir,
   "05 NewStructure",
-  "First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE.",
+  paste(
+    "First 5-region / 33-fishery BET input step, ending in 2021 with global CPUE",
+    "and the current reporting-rate controls remapped to the revised fisheries."
+  ),
   c(
     "Uses the new 5-region and new-fishery frequency source from the frq-build repo.",
     "Represents 28 extraction fisheries plus 5 index fisheries.",
     "Keeps data through 2021 and uses the global CPUE setup for this structural transition.",
     "Uses old CAAL re-assigned to the new fisheries.",
     paste0("Uses the restructured tag setup with ", frq_counts_04$n_tag_groups, " release groups."),
-    "Applies the SC22 BET purse-seine reporting-rate penalties with separate West and East groups.",
+    paste(
+      "Begins the current reporting-rate specification by rebuilding all group,",
+      "active, initial, target and penalty matrices for the 33-fishery structure,",
+      "including separate West and East purse-seine groups."
+    ),
     paste("Applies", fixm_age_par_display, "while retaining the 5-region `.ini` structure."),
     paste0("Sets total population scaling factor LN(R0) to ", five_region_total_population_scalar, "."),
     paste0("Uses ", bias_corrected_length_weight_note, ".")
@@ -750,7 +757,11 @@ write_readme(
     "Generated `.frq` files include region locations for every fishery, including index fisheries.",
     "MFCL 1007 `# tag flags` supply tag mixing periods directly; the inherited `-9999 1 2` doitall override is removed.",
     "`doitall.sh` uses `set -eu`, so a failed MFCL phase fails the Kflow job instead of continuing with missing `.par` files.",
-    "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; the default for all stepwise model fits is `-4`."
+    "PHASE 10/11 convergence is controlled by `BET_PHASE10_11_CONVERGENCE`; the default for all stepwise model fits is `-4`.",
+    paste(
+      "The Step 04-to-Step 05 comparison includes the reporting-rate remapping",
+      "required by the fishery-structure change; Step 17 later changes only pre-mixing application."
+    )
   ),
   c(
     "After fitting, review the 5-region selectivity/tag grouping inherited from the workbook mapping.",

@@ -21,6 +21,26 @@ MFCL reads five reporting-rate matrices from `bet.ini`:
 | 16 | 33 | 98 | K=0.20 release-specific mixing; `tag_flags(:,2)=0`. |
 | 17-19 | 33 | 98 | Same K=0.20 mixing; `tag_flags(:,2)=1`. |
 
+Step 05 is the first step that applies the current reporting-rate
+specification. The preceding 41-fishery matrices cannot be used directly
+after the structural change, so all five matrices are rebuilt from the audited
+33-fishery table. This includes the programme- and fishery-specific group IDs,
+active flags, initial values, targets and penalties. The principal updated
+purse-seine controls are:
+
+| Fisheries and programme | Initial value | Target | Penalty |
+| --- | ---: | ---: | ---: |
+| F19/F20, RTTP and PTTP | 0.4962 | 49.62 | 354.5 |
+| F25/F27, RTTP and PTTP | 0.5121 | 51.21 | 739.2 |
+| F26/F28, PTTP | 0.5282 | 52.82 | 231.2 |
+
+Introducing these controls at Step 05 is part of constructing a valid
+reporting-rate map for the revised fishery structure. Consequently, the
+Step 04-to-Step 05 comparison represents the combined structural transition,
+including its required reporting-rate remapping. Step 17 does not introduce
+new reporting-rate values; it changes only their treatment within pre-mixing
+windows.
+
 From Step 08 through Step 19 the five numeric reporting-rate matrices are
 identical. F25/F27 and F26/F28 retain separate West and East reporting-rate
 groups. Every positive tag recapture is validated against positive active,

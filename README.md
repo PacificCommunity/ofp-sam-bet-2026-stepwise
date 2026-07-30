@@ -31,7 +31,7 @@ labels, including `DOM` in place of the source-table label `MISC`.
 | 02 | `02-NewExeIni1007` | Move to the 2.2.7.9-based executable and INI 1007 together. | Selected |
 | 03 | `03-FixM` | Fix Lorenzen natural-mortality scaling to the diagnostic estimate. | Selected |
 | 04 | `04-LengthWeight` | Apply the BET 2026 bias-corrected length-weight parameters. | Selected |
-| 05 | `05-NewStructure` | Adopt the five-region, 33-fishery structure. | Selected |
+| 05 | `05-NewStructure` | Adopt the five-region, 33-fishery structure and remap the current reporting-rate controls. | Selected |
 | 06 | `06-ConvertToLength` | Replace reweighted weight compositions with weight-as-length data through 2021. | Selected |
 | 07 | `07-AddLengthData` | Add observed lengths where coverage exceeds weight samples. | Selected |
 | 08 | `08-DataTo2024` | Extend data through 2024, except CAAL. | Selected |
@@ -64,6 +64,12 @@ of 0.1, represented by runtime age flag 110=0.
 Step 09 sets F15 bins below 70 cm to zero without renormalisation and removes
 F21-F23 intervals with midpoint above 90 cm. The committed CSV files beside
 each affected FRQ record the exact removals.
+
+Step 05 is the first step that uses the current reporting-rate specification.
+The group IDs, active flags, initial values, targets and penalties are rebuilt
+for the 33-fishery structure because the preceding 41-fishery matrices cannot
+be transferred unchanged. This reporting-rate remapping is treated as part of
+the structural transition and is retained cumulatively thereafter.
 
 Step 16 copies only `tag_flags(:,1)` from
 `SC22-IP10-regionMean@efe3107`:

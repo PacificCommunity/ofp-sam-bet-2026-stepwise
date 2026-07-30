@@ -22,7 +22,8 @@ The fixed Lorenzen intercept in every model from Step 03 onward is
 `00.dm-fixed.par` before the first fitted phase; it does not rely on an
 unrelated phase to move the parameter to the bound.
 
-Tag reporting rates remain the same numeric means, group IDs, active flags,
-targets and penalties from Step 08 onward. Step 16 changes only release-group
-mixing periods; Step 17 changes only the pre-mixing reporting-rate exclusion
-flag.
+The current tag-reporting-rate specification begins at Step 05, when the five
+matrices are rebuilt for the 33-fishery structure. Step 08 extends the tag
+family from 96 to 98 release groups; the numeric matrices then remain
+unchanged through Step 19. Step 16 changes only release-group mixing periods,
+and Step 17 changes only the pre-mixing reporting-rate exclusion flag.
