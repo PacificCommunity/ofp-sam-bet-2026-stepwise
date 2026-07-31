@@ -133,9 +133,12 @@ Results are written to
 [`kflow.yaml`](kflow.yaml) pins
 `ghcr.io/pacificcommunity/tuna-flow:v2.5` to image digest
 `sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360`.
-The public task contains four independent campaign rows. `STEP_SELECT` is set
-per row to the weak penalty, MFCL-default penalty, asymptotic logistic F10, or
-F10-logistic plus Region-1 four-node candidate; no fit depends on another.
+The public task contains eight independent campaign rows. The original four
+rows cover the weak penalty, MFCL-default penalty, asymptotic logistic F10, and
+F10-logistic plus Region-1 four-node candidate. The four Index R5 rows cross
+F1-F3 five/four-node splines with F33 logistic/strong non-decreasing
+treatments while retaining logistic F10. `STEP_SELECT` identifies each row;
+no fit depends on another.
 
 The model job installs and verifies the current package snapshots at exact
 commits:
