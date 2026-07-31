@@ -297,9 +297,105 @@ if grep -Eq '^[[:space:]]+-(1|2|3|10)[[:space:]]+(16|56)[[:space:]]+' \
   fail "$logistic_r1_four_node_model incorrectly adds a directional spline penalty"
 fi
 
+f33_models=(
+  K020-tau-not-estimated-sel20c-f10-logistic-f33-logistic
+  K020-tau-not-estimated-sel20c-f10-logistic-f33-ndpen-strong
+  K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node-f33-logistic
+  K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node-f33-ndpen-strong
+)
+f33_parents=(
+  "$logistic_model"
+  "$logistic_model"
+  "$logistic_r1_four_node_model"
+  "$logistic_r1_four_node_model"
+)
+f33_treatments=(logistic ndpen logistic ndpen)
+
+for index in "${!f33_models[@]}"; do
+  model=${f33_models[$index]}
+  parent=${f33_parents[$index]}
+  treatment=${f33_treatments[$index]}
+  dir="explorations/$model"
+  parent_dir="explorations/$parent"
+  [[ -d "$dir" ]] || fail "missing F33 sensitivity directory $dir"
+  for file in "${required[@]}"; do
+    [[ -s "$dir/$file" ]] || fail "missing or empty $dir/$file"
+  done
+  (cd "$dir" && sha256sum -c MANIFEST.sha256 >/dev/null) ||
+    fail "manifest mismatch in $dir"
+  sh -n "$dir/doitall.sh" || fail "shell syntax error in $dir/doitall.sh"
+
+  for file in "${robust_unchanged_files[@]}"; do
+    cmp -s "$parent_dir/$file" "$dir/$file" ||
+      fail "$model changed frozen parent input $file"
+  done
+  [[ $(grep -Ec '^[[:space:]]+-10[[:space:]]+57[[:space:]]+1([[:space:]]|$)' \
+    "$dir/doitall.sh") -eq 1 ]] ||
+    fail "$model does not retain F10 flag 57=1 exactly once"
+  grep -Eq '^[[:space:]]+-999[[:space:]]+61[[:space:]]+5([[:space:]]|$)' \
+    "$dir/doitall.sh" || fail "$model does not retain the default five-node spline setting"
+
+  group_line=$(grep -nE '^[[:space:]]+-33[[:space:]]+24[[:space:]]+33([[:space:]]|$)' \
+    "$dir/doitall.sh" | cut -d: -f1)
+  phase5_end=$(awk -v start="$group_line" 'NR > start && /^PHASE5$/ {print NR; exit}' \
+    "$dir/doitall.sh")
+  [[ -n "$group_line" && -n "$phase5_end" ]] ||
+    fail "$model does not contain the Phase-5 F33 group-separation boundary"
+
+  if [[ "$treatment" == logistic ]]; then
+    [[ $(grep -Ec '^[[:space:]]+-33[[:space:]]+57[[:space:]]+1([[:space:]]|$)' \
+      "$dir/doitall.sh") -eq 1 ]] || fail "$model does not set F33 flag 57=1 exactly once"
+    if grep -Eq '^[[:space:]]+-33[[:space:]]+(16|56)[[:space:]]+' "$dir/doitall.sh"; then
+      fail "$model incorrectly combines F33 logistic with a non-decreasing spline penalty"
+    fi
+    treatment_line=$(grep -nE '^[[:space:]]+-33[[:space:]]+57[[:space:]]+1([[:space:]]|$)' \
+      "$dir/doitall.sh" | cut -d: -f1)
+    cmp -s \
+      <(sed -E \
+        -e '/^# F33 sensitivity: after the regional indices are independent, replace only$/d' \
+        -e "/^# Index R5's five-node spline with MFCL's two-parameter asymptotic logistic[.]$/d" \
+        -e '/^[[:space:]]+-33[[:space:]]+57[[:space:]]+1([[:space:]]|$)/d' \
+        "$dir/doitall.sh") \
+      "$parent_dir/doitall.sh" ||
+      fail "$model changes controls beyond its declared F33 logistic treatment"
+  else
+    [[ $(grep -Ec '^[[:space:]]+-33[[:space:]]+16[[:space:]]+1([[:space:]]|$)' \
+      "$dir/doitall.sh") -eq 1 ]] || fail "$model does not set F33 flag 16=1 exactly once"
+    [[ $(grep -Ec '^[[:space:]]+-33[[:space:]]+56[[:space:]]+100000000([[:space:]]|$)' \
+      "$dir/doitall.sh") -eq 1 ]] || fail "$model does not set F33 flag 56=100000000 exactly once"
+    if grep -Eq '^[[:space:]]+-33[[:space:]]+57[[:space:]]+[12]([[:space:]]|$)' \
+      "$dir/doitall.sh"; then
+      fail "$model incorrectly combines the F33 spline penalty with a functional form"
+    fi
+    treatment_line=$(grep -nE '^[[:space:]]+-33[[:space:]]+16[[:space:]]+1([[:space:]]|$)' \
+      "$dir/doitall.sh" | cut -d: -f1)
+    cmp -s \
+      <(sed -E \
+        -e '/^# F33 sensitivity: retain the fitted five-node spline but strongly penalize$/d' \
+        -e '/^# any decline after Index R5 becomes its own selectivity group[.]$/d' \
+        -e '/^[[:space:]]+-33[[:space:]]+16[[:space:]]+1([[:space:]]|$)/d' \
+        -e '/^[[:space:]]+-33[[:space:]]+56[[:space:]]+100000000([[:space:]]|$)/d' \
+        "$dir/doitall.sh") \
+      "$parent_dir/doitall.sh" ||
+      fail "$model changes controls beyond its declared F33 non-decreasing treatment"
+  fi
+  (( treatment_line > group_line && treatment_line < phase5_end )) ||
+    fail "$model applies the F33 treatment before Phase-5 group separation"
+
+  if [[ "$model" == *-r1ll-4node-* ]]; then
+    for fishery in 1 2 3; do
+      [[ $(grep -Ec "^[[:space:]]+-$fishery[[:space:]]+61[[:space:]]+4([[:space:]]|$)" \
+        "$dir/doitall.sh") -eq 1 ]] || fail "$model does not retain F$fishery flag 61=4"
+    done
+  elif grep -Eq '^[[:space:]]+-(1|2|3)[[:space:]]+61[[:space:]]+4([[:space:]]|$)' \
+    "$dir/doitall.sh"; then
+    fail "$model unexpectedly changes F1-F3 from five to four nodes"
+  fi
+done
+
 exploration_count=$(find explorations -mindepth 1 -maxdepth 1 -type d | wc -l)
-[[ "$exploration_count" -eq 28 ]] ||
-  fail "expected exactly 28 exploration directories; found $exploration_count"
+[[ "$exploration_count" -eq 32 ]] ||
+  fail "expected exactly 32 exploration directories; found $exploration_count"
 
 python3 scripts/create-sel20c-variants.py --check >/dev/null ||
   fail "committed sel20c variants differ from Job 15062 plus the F14 constraint"
@@ -427,11 +523,12 @@ Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "sc
   >/dev/null ||
   fail "R helper syntax check failed"
 
-echo "Validated 28 self-contained exploration folders."
+echo "Validated 32 self-contained exploration folders."
 echo "The 12 sel20c variants reproduce Job 15062 Phase 1/5 selectivity controls with the deliberate F14 constraint."
 echo "The two F10 candidates differ from Job 18718 only by flags 16 and 56."
 echo "The F10 logistic candidate differs from Job 18718 only by flag 57=1."
 echo "The Region-1 candidate adds only F1-F3 flag 61=4 to the F10 logistic treatment."
+echo "The four F33 candidates form the validated F1-F3 five/four-node by F33 logistic/non-decreasing 2x2 sensitivity."
 echo "F14/F15 retained length-frequency support and youngest-five-age constraints passed."
 echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
 echo "Pinned tuna-flow v2.5, mfclkit, mfclshiny, payload, and local-app checks passed."

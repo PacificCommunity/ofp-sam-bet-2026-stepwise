@@ -1,5 +1,5 @@
 name: BET 2026 F10 selectivity robustness - tuna-flow v2.5
-description: "Four independent Job 18718-based fits testing two F10 spline penalties, an asymptotic logistic F10 form, and F10 logistic with independently estimated four-node splines for Region-1 longline fisheries F1-F3. All other data and model controls are frozen."
+description: "Eight independent frozen-input fits spanning F10 robustness controls and a 2x2 Index R5 sensitivity: F1-F3 five/four-node splines crossed with F33 logistic/strong non-decreasing treatments. F10 remains logistic in all Index R5 fits."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: final-exploration-robust
@@ -45,11 +45,11 @@ env:
 tags:
   species: BET
   stage: f10-selectivity-robustness-v25
-  parent_job: "18718"
+  parent_job: "19326"
 
 metadata:
-  scientific_parent_job: "18718"
-  model_count: 4
+  scientific_parent_job: "19326"
+  model_count: 8
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
@@ -62,7 +62,7 @@ metadata:
   dm_groups: 8
   dm_fish_pars_22: "fixed at 7"
   dm_fish_pars_23: "estimated"
-  selectivity_treatments: "F10 five-node cubic spline with non-decreasing penalty weights 10000 and 1000000; F10 asymptotic logistic; F10 logistic with F1-F3 four-node cubic splines"
+  selectivity_treatments: "F10 five-node cubic spline penalties; F10 logistic; F1-F3 five/four-node controls; F33 logistic or five-node spline with non-decreasing penalty weight 100000000"
   natural_mortality_fixed: true
   tag_likelihood: negative-binomial
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"
@@ -166,3 +166,7 @@ model_campaign:
     - K020-tau-not-estimated-sel20c-f10-ndpen-default
     - K020-tau-not-estimated-sel20c-f10-logistic
     - K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node
+    - K020-tau-not-estimated-sel20c-f10-logistic-f33-logistic
+    - K020-tau-not-estimated-sel20c-f10-logistic-f33-ndpen-strong
+    - K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node-f33-logistic
+    - K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node-f33-ndpen-strong

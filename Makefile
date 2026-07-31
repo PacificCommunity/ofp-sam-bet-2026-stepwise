@@ -15,7 +15,7 @@ help:
 	  'make run MODEL=K015-tau-estimated PROGRAM_PATH=/path/to/mfclo64' \
 	  '  Run one selected exploration.' \
 	  '' \
-	  'Robust candidates: K020-tau-not-estimated-sel20c-f10-{ndpen-weak,ndpen-default,logistic,logistic-r1ll-4node}'
+	  'Robust candidates include F10 logistic, F1-F3 four-node, and F33 logistic/non-decreasing sensitivities.'
 
 validate:
 	@bash scripts/validate-inputs.sh
