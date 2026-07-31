@@ -117,6 +117,11 @@ non-zero intermediate plateau fitted by the full-data model. Moving flag 3
 earlier would also change the terminal spline-age mapping and would impose an
 even stronger structural assumption.
 
+In the Job 19326 full-data fit, the normalized age-37 to age-40 plateaus are
+0.2432, 0.3182 and 0.2565 for F1, F2 and F3. Applying the source formula to
+those unchanged curves would add about 327.2 objective-function units before
+refitting. This is not a weak base-preserving penalty.
+
 This built-in zero-tail treatment is not recommended as the primary
 regularization for F1-F3. The 2023 WCPO bigeye assessment reported that the
 unconstrained longline selectivities generally peaked at about 10-15 quarters
