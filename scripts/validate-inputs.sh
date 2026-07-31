@@ -177,9 +177,63 @@ for selectivity_suffix in "${selectivity_suffixes[@]}"; do
   done
 done
 
+robust_parent=explorations/K020-tau-not-estimated-sel20c
+robust_models=(
+  K020-tau-not-estimated-sel20c-f10-ndpen-weak
+  K020-tau-not-estimated-sel20c-f10-ndpen-default
+)
+robust_weights=(10000 1000000)
+robust_unchanged_files=(
+  bet.age_length
+  bet.frq
+  bet.ini
+  bet.reg_scaling
+  bet.tag
+  cpue_mle_sigma_audit.csv
+  fishery_map.R
+  mfcl.cfg
+  tag_rep_map.R
+)
+
+for index in "${!robust_models[@]}"; do
+  model=${robust_models[$index]}
+  weight=${robust_weights[$index]}
+  dir="explorations/$model"
+  [[ -d "$dir" ]] || fail "missing robust-candidate directory $dir"
+  for file in "${required[@]}"; do
+    [[ -s "$dir/$file" ]] || fail "missing or empty $dir/$file"
+  done
+  (cd "$dir" && sha256sum -c MANIFEST.sha256 >/dev/null) ||
+    fail "manifest mismatch in $dir"
+  sh -n "$dir/doitall.sh" || fail "shell syntax error in $dir/doitall.sh"
+  for file in "${robust_unchanged_files[@]}"; do
+    cmp -s "$robust_parent/$file" "$dir/$file" ||
+      fail "$model changed frozen parent input $file"
+  done
+  cmp -s \
+    <(sed -E \
+      -e '/^[[:space:]]+-10[[:space:]]+16[[:space:]]+1([[:space:]]|$)/d' \
+      -e '/^[[:space:]]+-10[[:space:]]+56[[:space:]]+[0-9]+([[:space:]]|$)/d' \
+      "$dir/doitall.sh") \
+    "$robust_parent/doitall.sh" ||
+    fail "$model changes controls beyond the two declared F10 penalty flags"
+  [[ $(grep -Ec '^[[:space:]]+-10[[:space:]]+16[[:space:]]+1([[:space:]]|$)' \
+    "$dir/doitall.sh") -eq 1 ]] ||
+    fail "$model does not set F10 flag 16 exactly once"
+  [[ $(grep -Ec "^[[:space:]]+-10[[:space:]]+56[[:space:]]+$weight([[:space:]]|$)" \
+    "$dir/doitall.sh") -eq 1 ]] ||
+    fail "$model does not set F10 flag 56 to $weight exactly once"
+  grep -Eq '^[[:space:]]+-999[[:space:]]+57[[:space:]]+3([[:space:]]|$)' \
+    "$dir/doitall.sh" ||
+    fail "$model no longer uses cubic-spline selectivity"
+  grep -Eq '^[[:space:]]+-999[[:space:]]+61[[:space:]]+5([[:space:]]|$)' \
+    "$dir/doitall.sh" ||
+    fail "$model no longer estimates five default spline nodes"
+done
+
 exploration_count=$(find explorations -mindepth 1 -maxdepth 1 -type d | wc -l)
-[[ "$exploration_count" -eq 24 ]] ||
-  fail "expected exactly 24 exploration directories; found $exploration_count"
+[[ "$exploration_count" -eq 26 ]] ||
+  fail "expected exactly 26 exploration directories; found $exploration_count"
 
 python3 scripts/create-sel20c-variants.py --check >/dev/null ||
   fail "committed sel20c variants differ from Job 15062 plus the F14 constraint"
@@ -279,8 +333,8 @@ grep -Eq '^[[:space:]]+1[[:space:]]+111[[:space:]]+4' \
   fail "Job 15062 archived doitall.sh provenance drift"
 
 expected_image='ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360'
-expected_mfclkit=25103916446d0395286afae28b5404bf361670fc
-expected_mfclshiny=1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+expected_mfclkit=34c56de25afecdd13e9f8e94f2e421e37d9c2f9b
+expected_mfclshiny=ff0dfcc0534c743713601dbadca5d9d56c0a4025
 grep -Fqx "docker_image: $expected_image" kflow.yaml ||
   fail "Kflow tuna-flow v2.5 image pin changed"
 [[ $(grep -Fc "$expected_mfclkit" kflow.yaml) -ge 3 ]] ||
@@ -307,8 +361,9 @@ Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "sc
   >/dev/null ||
   fail "R helper syntax check failed"
 
-echo "Validated 24 self-contained exploration folders."
+echo "Validated 26 self-contained exploration folders."
 echo "The 12 sel20c variants reproduce Job 15062 Phase 1/5 selectivity controls with the deliberate F14 constraint."
+echo "The two F10 candidates differ from Job 18718 only by flags 16 and 56."
 echo "F14/F15 retained length-frequency support and youngest-five-age constraints passed."
 echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
 echo "Pinned tuna-flow v2.5, mfclkit, mfclshiny, payload, and local-app checks passed."

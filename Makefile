@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 
-MODEL ?= K015-tau-estimated
+MODEL ?= K020-tau-not-estimated-sel20c-f10-ndpen-weak
 PROGRAM_PATH ?= /home/mfcl/mfclo64
 
 .PHONY: help validate run
@@ -10,12 +10,12 @@ help:
 	  'BET 2026 final-exploration commands' \
 	  '' \
 	  'make validate' \
-	  '  Validate all 24 frozen input folders without running MFCL.' \
+	  '  Validate all 26 frozen input folders without running MFCL.' \
 	  '' \
 	  'make run MODEL=K015-tau-estimated PROGRAM_PATH=/path/to/mfclo64' \
 	  '  Run one selected exploration.' \
 	  '' \
-	  'MODEL format: K{005,010,015,020,025,030}-tau-{estimated,not-estimated}[-sel20c]'
+	  'Robust candidates: K020-tau-not-estimated-sel20c-f10-ndpen-{weak,default}'
 
 validate:
 	@bash scripts/validate-inputs.sh

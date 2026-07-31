@@ -1,8 +1,8 @@
-name: BET 2026 final exploration - tuna-flow v2.5
-description: "BET 2026 exploration of tag-mixing K, estimated versus original non-estimated tau, and parsimonious versus flexible selectivity. All models retain negative-binomial tags, fixed M, and DM concentration 7 with Nmax 25."
+name: BET 2026 F10 selectivity robustness - tuna-flow v2.5
+description: "Two independent Job 18718-based fits testing weak and MFCL-default non-decreasing penalties on the estimated five-node F10 LL.ALL.5 selectivity. All other data and model controls are frozen."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
-branch: final-exploration
+branch: final-exploration-robust
 remote_host: suva
 remote_user: kyuhank
 remote_base_dir: /home/kyuhank/KflowOutput
@@ -20,7 +20,7 @@ exclude_machines: []
 exclude_slots: []
 
 env:
-  MODEL: K015-tau-estimated
+  STEP_SELECT: K020-tau-not-estimated-sel20c-f10-ndpen-weak
   PROGRAM_PATH: /home/mfcl/mfclo64
   BET_PHASE10_11_CONVERGENCE: "-4"
   REGIONAL_RECRUITMENT_PENALTY: "0.1"
@@ -34,9 +34,9 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: always
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@25103916446d0395286afae28b5404bf361670fc,mfclshiny=PacificCommunity/mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
-  MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
-  MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@34c56de25afecdd13e9f8e94f2e421e37d9c2f9b,mfclshiny=PacificCommunity/mfclshiny@ff0dfcc0534c743713601dbadca5d9d56c0a4025
+  MFCLKIT_GITHUB_REF: 34c56de25afecdd13e9f8e94f2e421e37d9c2f9b
+  MFCLSHINY_GITHUB_REF: ff0dfcc0534c743713601dbadca5d9d56c0a4025
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   MFCLSHINY_PAYLOAD_OBJECT_CACHE: all
@@ -44,15 +44,12 @@ env:
 
 tags:
   species: BET
-  stage: final-exploration-v25
-  comparison_jobs: "17805,18386,18518"
+  stage: f10-selectivity-robustness-v25
+  parent_job: "18718"
 
 metadata:
-  scientific_parent_job: "17805"
-  verified_k015_job: "18386"
-  dm_fix_reference_job: "18518"
-  step20c_model_job: "15062"
-  model_count: 24
+  scientific_parent_job: "18718"
+  model_count: 2
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
@@ -65,14 +62,14 @@ metadata:
   dm_groups: 8
   dm_fish_pars_22: "fixed at 7"
   dm_fish_pars_23: "estimated"
-  selectivity_treatments: "parsimonious; flexible with F14/F15 youngest-five-age constraints"
+  selectivity_treatments: "F10 five-node cubic spline with non-decreasing penalty weights 10000 and 1000000"
   natural_mortality_fixed: true
   tag_likelihood: negative-binomial
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"
   regional_scaling: "Job 17805 active 20x5 matrix with v2.6 header removed for v2.5"
   container: "tuna-flow v2.5 pinned by digest"
-  runtime_mfclkit_default: 25103916446d0395286afae28b5404bf361670fc
-  runtime_mfclshiny_default: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  runtime_mfclkit_default: 34c56de25afecdd13e9f8e94f2e421e37d9c2f9b
+  runtime_mfclshiny_default: ff0dfcc0534c743713601dbadca5d9d56c0a4025
   runtime_package_refs: "overrideable at Kflow submission with full commit SHAs"
 
 output_patterns:
@@ -110,7 +107,7 @@ local_apps:
         )
       }), use.names = FALSE))
       if (length(payloads) != 1L) {
-        stop("Expected one final-exploration model payload; found ", length(payloads))
+        stop("Expected one F10 robustness model payload; found ", length(payloads))
       }
       model_dir <- dirname(payloads[[1L]])
       package_archive <- file.path(model_dir, "runtime-package-library.tar.gz")
@@ -147,6 +144,7 @@ triggers: {}
 
 job_config:
   optional:
+    - STEP_SELECT
     - MODEL
     - KFLOW_JOB_KEY
     - KFLOW_JOB_TITLE
@@ -160,3 +158,9 @@ job_config:
     - KFLOW_RUNTIME_GITHUB_AUTH
     - KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME
     - BUILD_MODEL_PAYLOAD
+
+model_campaign:
+  rows_source: job-config.R
+  include_steps:
+    - K020-tau-not-estimated-sel20c-f10-ndpen-weak
+    - K020-tau-not-estimated-sel20c-f10-ndpen-default

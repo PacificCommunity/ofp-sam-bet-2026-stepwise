@@ -1,9 +1,10 @@
 # BET 2026 final exploration
 
 This branch is a compact, clone-and-run archive for the final BET 2026
-mixing-period exploration. It contains 24 independent model folders:
+mixing-period exploration and two F10 selectivity-robustness candidates. It
+contains 26 independent model folders:
 six region-mean mixing thresholds crossed with two tag-tau treatments and
-two selectivity treatments.
+two selectivity treatments, plus two Job 18718-based penalty candidates.
 It does not depend on the deleted stepwise `steps/` tree.
 
 ## Exploration grid
@@ -40,6 +41,21 @@ It includes `bet.frq`, `bet.ini`, `bet.tag`, `bet.age_length`,
 `bet.reg_scaling`, `mfcl.cfg`, its own `doitall.sh`, mapping files, and a
 SHA256 manifest. No run-time input is borrowed from another exploration.
 
+## F10 selectivity-robustness candidates
+
+Two additional folders retain all Job 18718 settings and keep F10
+`LL.ALL.5` as an estimated five-node cubic spline:
+
+| Internal model | F10 flag 16 | F10 flag 56 | Treatment |
+| --- | ---: | ---: | --- |
+| `K020-tau-not-estimated-sel20c-f10-ndpen-weak` | 1 | 10,000 | Weak non-decreasing penalty |
+| `K020-tau-not-estimated-sel20c-f10-ndpen-default` | 1 | 1,000,000 | Explicit MFCL default penalty |
+
+The candidates change no data, mixing, tau, reporting-rate, natural-mortality,
+DM or other selectivity control. Their diagnostic evidence, MFCL manual/source
+interpretation and acceptance criteria are documented in
+[`docs/f10-selectivity-penalty.md`](docs/f10-selectivity-penalty.md).
+
 ## Controls held fixed
 
 - Frozen Job 17805 data and controls, except for the explicit Job 18518 DM
@@ -70,7 +86,7 @@ and its archive checksums are retained under
 
 The reporting-rate initial values, group flags, active flags, targets, and
 penalties are numerically identical between Job 18386 and the authoritative
-K=0.15 source INI. The same reporting-rate blocks are retained in all 24
+K=0.15 source INI. The same reporting-rate blocks are retained in all 26
 explorations; only the tag-mixing column changes across K. Tag-flag column 2
 is one for all 98 release groups.
 
@@ -90,7 +106,7 @@ removed. The full and headered Job 17805 files remain in `provenance/`.
 Validation does not execute MFCL:
 
 ```bash
-git clone --branch final-exploration \
+git clone --branch final-exploration-robust \
   https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise.git
 cd ofp-sam-bet-2026-stepwise
 make validate
@@ -112,19 +128,15 @@ Results are written to
 [`kflow.yaml`](kflow.yaml) pins
 `ghcr.io/pacificcommunity/tuna-flow:v2.5` to image digest
 `sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360`.
-The default is `MODEL=K015-tau-estimated`. Override `MODEL` with one of the
-24 exploration directory names to submit each grid member independently.
+The public task contains two independent, concurrently submitted campaign
+rows. `STEP_SELECT` is set per row to the weak or MFCL-default F10 penalty
+candidate; neither fit depends on the other.
 
-The public Kflow labels are:
+The model job installs and verifies the current package snapshots at exact
+commits:
 
-- `K=<value> | Tau estimated | Parsimonious/Flexible selectivity`
-- `K=<value> | Tau not estimated (original) | Parsimonious/Flexible selectivity`
-
-The model job installs and verifies the current package snapshots from
-2026-07-30 at exact commits:
-
-- `mfclkit@25103916446d0395286afae28b5404bf361670fc`
-- `mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a`
+- `mfclkit@34c56de25afecdd13e9f8e94f2e421e37d9c2f9b`
+- `mfclshiny@ff0dfcc0534c743713601dbadca5d9d56c0a4025`
 
 They are used after the MFCL fit to build `model_payload.rds`. The image and
 package commits are intentionally pinned separately: tuna-flow v2.5 supplies
@@ -153,6 +165,7 @@ the package commits listed above. They additionally pin
 `FLR4MFCL@3faaf84a4867175bfea50d89e4d518c085e84739`, the version used by
 completed profile merge Job 18608 (33/33 profile points successful).
 
-The 24 model jobs were submitted to the public Kflow task
-`bet-2026-final-exploration-v25-20260730` as Jobs 18703-18726. Their dependent
-profile chains and merges are Jobs 18727-18798.
+The original 24 model jobs were submitted to the public Kflow task
+`bet-2026-final-exploration-v25-20260730` as Jobs 18703-18726. The two F10
+penalty candidates are submitted independently from this branch to the task
+named in `kflow.yaml`.

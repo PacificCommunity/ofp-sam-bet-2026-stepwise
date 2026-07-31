@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-model=${MODEL:-K015-tau-estimated}
+model=${MODEL:-${STEP_SELECT:-K020-tau-not-estimated-sel20c-f10-ndpen-weak}}
 program_path=${PROGRAM_PATH:-/home/mfcl/mfclo64}
 output_root=${OUTPUT_DIR:-outputs}
 
@@ -13,8 +13,9 @@ truthy()
   esac
 }
 
-if [[ ! "$model" =~ ^K(005|010|015|020|025|030)-tau-(estimated|not-estimated)(-sel20c)?$ ]]; then
-  echo "MODEL must use K{005,010,015,020,025,030}-tau-{estimated,not-estimated}, optionally followed by -sel20c." >&2
+if [[ ! "$model" =~ ^K(005|010|015|020|025|030)-tau-(estimated|not-estimated)(-sel20c)?$ ]] &&
+   [[ ! "$model" =~ ^K020-tau-not-estimated-sel20c-f10-ndpen-(weak|default)$ ]]; then
+  echo "MODEL is not a supported final-exploration or F10 penalty candidate." >&2
   exit 2
 fi
 
@@ -62,7 +63,7 @@ echo "MFCL executable: $program_path"
 
 case "$model" in
   *-tau-estimated|*-tau-estimated-sel20c) final_stage=12.par ;;
-  *-tau-not-estimated|*-tau-not-estimated-sel20c) final_stage=11.par ;;
+  *-tau-not-estimated*) final_stage=11.par ;;
 esac
 
 if [[ ! -s "$run_dir/$final_stage" ]]; then
