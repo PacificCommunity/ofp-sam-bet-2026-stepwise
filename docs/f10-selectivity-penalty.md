@@ -76,6 +76,22 @@ The rendered manual table contains `10-6` for the default weight. The
 executable source uses `1.e+6`; the two candidates therefore record explicit
 weights to remove that ambiguity.
 
+## Region-1 four-node candidate
+
+The exact Job 18718 FRQ contains 179, 124 and 80 quarterly length-composition
+records for F1 `LL.WEST.1`, F2 `LL.EAST.1` and F3 `LL.US.1`, respectively.
+F10 `LL.ALL.5` has 26 records. The Region-1 fisheries therefore retain
+independent flexible cubic splines, while F10 is tested with the parsimonious
+logistic form. Reducing F1-F3 from five to four spline coefficients does not
+impose an asymptotic or dome-shaped direction; it only tests whether the fifth
+coefficient is needed to reproduce the principal fitted patterns.
+
+This treatment is not accepted in advance. It is retained only if the
+full-data composition residuals, fishery likelihoods and derived quantities
+remain materially unchanged while retrospective and jitter sensitivity are
+reduced. The node count is justified by supported curve complexity, not by a
+target depletion value.
+
 ## Candidate comparison
 
 Applying the source-code penalty formula to the existing fitted curves gives:

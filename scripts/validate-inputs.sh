@@ -184,6 +184,7 @@ robust_models=(
 )
 robust_weights=(10000 1000000)
 logistic_model=K020-tau-not-estimated-sel20c-f10-logistic
+logistic_r1_four_node_model=K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node
 robust_unchanged_files=(
   bet.age_length
   bet.frq
@@ -261,9 +262,44 @@ if grep -Eq '^[[:space:]]+-10[[:space:]]+(16|56)[[:space:]]+' \
   fail "$logistic_model incorrectly combines the logistic form with a spline penalty"
 fi
 
+logistic_r1_four_node_dir="explorations/$logistic_r1_four_node_model"
+[[ -d "$logistic_r1_four_node_dir" ]] ||
+  fail "missing robust-candidate directory $logistic_r1_four_node_dir"
+for file in "${required[@]}"; do
+  [[ -s "$logistic_r1_four_node_dir/$file" ]] ||
+    fail "missing or empty $logistic_r1_four_node_dir/$file"
+done
+(cd "$logistic_r1_four_node_dir" && sha256sum -c MANIFEST.sha256 >/dev/null) ||
+  fail "manifest mismatch in $logistic_r1_four_node_dir"
+sh -n "$logistic_r1_four_node_dir/doitall.sh" ||
+  fail "shell syntax error in $logistic_r1_four_node_dir/doitall.sh"
+for file in "${robust_unchanged_files[@]}"; do
+  cmp -s "$robust_parent/$file" "$logistic_r1_four_node_dir/$file" ||
+    fail "$logistic_r1_four_node_model changed frozen parent input $file"
+done
+cmp -s \
+  <(sed -E \
+    -e '/^[[:space:]]+-(1|2|3)[[:space:]]+61[[:space:]]+4([[:space:]]|$)/d' \
+    -e '/^[[:space:]]+-10[[:space:]]+57[[:space:]]+1([[:space:]]|$)/d' \
+    "$logistic_r1_four_node_dir/doitall.sh") \
+  "$robust_parent/doitall.sh" ||
+  fail "$logistic_r1_four_node_model changes controls beyond F10 logistic and F1-F3 node counts"
+for fishery in 1 2 3; do
+  [[ $(grep -Ec "^[[:space:]]+-$fishery[[:space:]]+61[[:space:]]+4([[:space:]]|$)" \
+    "$logistic_r1_four_node_dir/doitall.sh") -eq 1 ]] ||
+    fail "$logistic_r1_four_node_model does not set F$fishery flag 61=4 exactly once"
+done
+[[ $(grep -Ec '^[[:space:]]+-10[[:space:]]+57[[:space:]]+1([[:space:]]|$)' \
+  "$logistic_r1_four_node_dir/doitall.sh") -eq 1 ]] ||
+  fail "$logistic_r1_four_node_model does not set F10 flag 57=1 exactly once"
+if grep -Eq '^[[:space:]]+-(1|2|3|10)[[:space:]]+(16|56)[[:space:]]+' \
+  "$logistic_r1_four_node_dir/doitall.sh"; then
+  fail "$logistic_r1_four_node_model incorrectly adds a directional spline penalty"
+fi
+
 exploration_count=$(find explorations -mindepth 1 -maxdepth 1 -type d | wc -l)
-[[ "$exploration_count" -eq 27 ]] ||
-  fail "expected exactly 27 exploration directories; found $exploration_count"
+[[ "$exploration_count" -eq 28 ]] ||
+  fail "expected exactly 28 exploration directories; found $exploration_count"
 
 python3 scripts/create-sel20c-variants.py --check >/dev/null ||
   fail "committed sel20c variants differ from Job 15062 plus the F14 constraint"
@@ -391,10 +427,11 @@ Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "sc
   >/dev/null ||
   fail "R helper syntax check failed"
 
-echo "Validated 27 self-contained exploration folders."
+echo "Validated 28 self-contained exploration folders."
 echo "The 12 sel20c variants reproduce Job 15062 Phase 1/5 selectivity controls with the deliberate F14 constraint."
 echo "The two F10 candidates differ from Job 18718 only by flags 16 and 56."
 echo "The F10 logistic candidate differs from Job 18718 only by flag 57=1."
+echo "The Region-1 candidate adds only F1-F3 flag 61=4 to the F10 logistic treatment."
 echo "F14/F15 retained length-frequency support and youngest-five-age constraints passed."
 echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
 echo "Pinned tuna-flow v2.5, mfclkit, mfclshiny, payload, and local-app checks passed."

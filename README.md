@@ -1,10 +1,10 @@
 # BET 2026 final exploration
 
 This branch is a compact, clone-and-run archive for the final BET 2026
-mixing-period exploration and three F10 selectivity-robustness candidates. It
-contains 27 independent model folders:
+mixing-period exploration and four selectivity-robustness candidates. It
+contains 28 independent model folders:
 six region-mean mixing thresholds crossed with two tag-tau treatments and
-two selectivity treatments, plus three Job 18718-based candidates.
+two selectivity treatments, plus four Job 18718-based candidates.
 It does not depend on the deleted stepwise `steps/` tree.
 
 ## Exploration grid
@@ -43,19 +43,22 @@ SHA256 manifest. No run-time input is borrowed from another exploration.
 
 ## F10 selectivity-robustness candidates
 
-Three additional folders retain all Job 18718 settings:
+Four additional folders retain all Job 18718 settings:
 
 | Internal model | F10 flag 16 | F10 flag 56 | Treatment |
 | --- | ---: | ---: | --- |
 | `K020-tau-not-estimated-sel20c-f10-ndpen-weak` | 1 | 10,000 | Weak non-decreasing penalty |
 | `K020-tau-not-estimated-sel20c-f10-ndpen-default` | 1 | 1,000,000 | Explicit MFCL default penalty |
 | `K020-tau-not-estimated-sel20c-f10-logistic` | not applicable | not applicable | Two-parameter asymptotic logistic form (`flag 57=1`) |
+| `K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node` | not applicable | not applicable | F10 logistic plus independent four-node cubic splines for F1-F3 (`flag 61=4`) |
 
-The two penalty candidates keep the five-node cubic spline. The logistic
-candidate estimates `fish_pars(9:10)` for F10 and is inherently
-non-decreasing. The candidates change no data, mixing, tau, reporting-rate,
-natural-mortality, DM or other selectivity control. Their diagnostic evidence,
-MFCL manual/source interpretation and acceptance criteria are documented in
+The two penalty candidates keep the five-node cubic spline. Both logistic
+candidates estimate `fish_pars(9:10)` for F10 and are inherently
+non-decreasing. The four-node candidate retains independent cubic splines for
+F1-F3 and removes one terminal degree of freedom from each. The candidates
+change no data, mixing, tau, reporting-rate, natural-mortality or DM control.
+Their diagnostic evidence, MFCL manual/source interpretation and acceptance
+criteria are documented in
 [`docs/f10-selectivity-penalty.md`](docs/f10-selectivity-penalty.md).
 
 ## Controls held fixed
@@ -130,9 +133,9 @@ Results are written to
 [`kflow.yaml`](kflow.yaml) pins
 `ghcr.io/pacificcommunity/tuna-flow:v2.5` to image digest
 `sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360`.
-The public task contains three independent, concurrently submitted campaign
-rows. `STEP_SELECT` is set per row to the weak penalty, MFCL-default penalty,
-or asymptotic logistic F10 candidate; no fit depends on another.
+The public task contains four independent campaign rows. `STEP_SELECT` is set
+per row to the weak penalty, MFCL-default penalty, asymptotic logistic F10, or
+F10-logistic plus Region-1 four-node candidate; no fit depends on another.
 
 The model job installs and verifies the current package snapshots at exact
 commits:
@@ -168,6 +171,6 @@ the package commits listed above. They additionally pin
 completed profile merge Job 18608 (33/33 profile points successful).
 
 The original 24 model jobs were submitted to the public Kflow task
-`bet-2026-final-exploration-v25-20260730` as Jobs 18703-18726. The three F10
-penalty candidates are submitted independently from this branch to the task
+`bet-2026-final-exploration-v25-20260730` as Jobs 18703-18726. The four
+selectivity-robustness candidates are submitted independently from this branch to the task
 named in `kflow.yaml`.

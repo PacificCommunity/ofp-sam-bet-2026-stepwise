@@ -14,7 +14,7 @@ truthy()
 }
 
 if [[ ! "$model" =~ ^K(005|010|015|020|025|030)-tau-(estimated|not-estimated)(-sel20c)?$ ]] &&
-   [[ ! "$model" =~ ^K020-tau-not-estimated-sel20c-f10-(ndpen-(weak|default)|logistic)$ ]]; then
+   [[ ! "$model" =~ ^K020-tau-not-estimated-sel20c-f10-(ndpen-(weak|default)|logistic(-r1ll-4node)?)$ ]]; then
   echo "MODEL is not a supported final-exploration or F10 penalty candidate." >&2
   exit 2
 fi
