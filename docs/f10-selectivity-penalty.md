@@ -92,6 +92,68 @@ remain materially unchanged while retrospective and jitter sensitivity are
 reduced. The node count is justified by supported curve complexity, not by a
 target depletion value.
 
+## Five-node older-age-tail penalty cross-check
+
+The built-in MFCL form penalties do not provide a weak, tail-only guard
+against the late-age re-ascent seen in the isolated 2018 retrospective fit.
+The distinction is important:
+
+- fishery flag 16 = 1 penalizes every decline in selectivity over the full
+  estimated age range. It therefore favours non-decreasing selectivity and is
+  inconsistent with the fitted F1-F3 pattern of a peak followed by a decline;
+- fishery flag 16 = 2 is described by the manual as zero selectivity from the
+  fishery-flag-3 age onward. For a spline (`flag 57 > 0`), the executable
+  implements this as `100 * sum(selectivity)` from flag 3 through the maximum
+  age. The weight is fixed at 100 and is not controlled by fishery flag 56;
+- fishery flag 56 changes only the flag-16 = 1 non-decreasing penalty; and
+- fishery flags 41 and 42 do not supply an alternative because the ordinary
+  second- and third-difference smoothing penalties are disabled for cubic
+  splines.
+
+F1-F3 currently have fishery flag 3 = 37. Activating flag 16 = 2 would
+therefore pull selectivity at ages 37-40 toward zero. It would not merely stop
+the positive slope in an older-age spline segment while retaining the
+non-zero intermediate plateau fitted by the full-data model. Moving flag 3
+earlier would also change the terminal spline-age mapping and would impose an
+even stronger structural assumption.
+
+This built-in zero-tail treatment is not recommended as the primary
+regularization for F1-F3. The 2023 WCPO bigeye assessment reported that the
+unconstrained longline selectivities generally peaked at about 10-15 quarters
+and then declined to a non-zero intermediate asymptote. A zero old-age tail
+would require independent evidence that the oldest fish are effectively
+unavailable to these Region-1 longline fisheries; the isolated retrospective
+solution is not such evidence.
+
+A scientifically targeted five-node alternative would be a weak one-sided
+penalty only on positive changes after a pre-specified old-age threshold. That
+penalty is not available through the tuna-flow v2.5 MFCL controls and would
+require a new executable, so it is outside this frozen-executable comparison.
+If flag 16 = 2 is tested later, it should be labelled explicitly as a
+zero-old-age-tail sensitivity rather than a generic tail-regularization model.
+
+The four-node candidate is therefore the cleaner existing-executable test: it
+retains independently estimated, direction-free cubic splines but removes one
+weakly identified degree of freedom. It is accepted only if full-data fit and
+derived quantities are preserved and the retrospective instability is
+reduced.
+
+### Scientific references
+
+- [MULTIFAN-CL User's Guide](https://mfcl.spc.int/index.php?Itemid=116&catid=3&cid=195&m=0&option=com_jdownloads&view=finish),
+  selectivity estimation and flag definitions.
+- [2023 WCPO bigeye stock assessment](https://meetings.wcpfc.int/node/19353),
+  especially the description of longline selectivity in Section 7.3.1.
+- [Punt, Hurtado-Ferro and Whitten (2014)](https://doi.org/10.1016/j.fishres.2013.06.003),
+  on bias from misspecified selectivity forms and the need for residual-based
+  model evaluation.
+- [Hurtado-Ferro et al. (2015)](https://doi.org/10.1093/icesjms/fsu198),
+  on links between selectivity misspecification and retrospective patterns,
+  while noting that retrospective patterns alone do not establish bias.
+- [Privitera-Johnson, Methot and Punt (2022)](https://doi.org/10.1016/j.fishres.2022.106247),
+  on matching selectivity flexibility to data information and avoiding
+  selection by a single fit statistic.
+
 ## Candidate comparison
 
 Applying the source-code penalty formula to the existing fitted curves gives:
