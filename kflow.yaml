@@ -1,5 +1,5 @@
 name: BET 2026 F10 selectivity robustness - tuna-flow v2.5
-description: "Two independent Job 18718-based fits testing weak and MFCL-default non-decreasing penalties on the estimated five-node F10 LL.ALL.5 selectivity. All other data and model controls are frozen."
+description: "Three independent Job 18718-based fits testing weak and MFCL-default non-decreasing penalties on the estimated five-node F10 LL.ALL.5 selectivity, plus an asymptotic logistic F10 form. All other data and model controls are frozen."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: final-exploration-robust
@@ -49,7 +49,7 @@ tags:
 
 metadata:
   scientific_parent_job: "18718"
-  model_count: 2
+  model_count: 3
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
@@ -62,7 +62,7 @@ metadata:
   dm_groups: 8
   dm_fish_pars_22: "fixed at 7"
   dm_fish_pars_23: "estimated"
-  selectivity_treatments: "F10 five-node cubic spline with non-decreasing penalty weights 10000 and 1000000"
+  selectivity_treatments: "F10 five-node cubic spline with non-decreasing penalty weights 10000 and 1000000; F10 asymptotic logistic"
   natural_mortality_fixed: true
   tag_likelihood: negative-binomial
   reporting_rate_controls: "numerically identical to SC22-IP10-regionMean; K015 byte-identical to Job 18386"
@@ -164,3 +164,4 @@ model_campaign:
   include_steps:
     - K020-tau-not-estimated-sel20c-f10-ndpen-weak
     - K020-tau-not-estimated-sel20c-f10-ndpen-default
+    - K020-tau-not-estimated-sel20c-f10-logistic

@@ -4,7 +4,9 @@
 
 The Job 18718 fitted base curve and the lowest-objective jitter solution
 (seed 14) should be retained as closely as possible, while preventing the
-distinct low-depletion basin represented by seed 10.
+distinct low-depletion basin represented by seed 10. Two soft-penalty
+treatments and one deliberately restrictive asymptotic logistic treatment
+are compared.
 
 ## Diagnostic evidence
 
@@ -60,6 +62,7 @@ The MFCL manual defines:
 
 - fishery flag 16 = 1 as the non-decreasing-selectivity constraint;
 - fishery flag 56 as its penalty weight;
+- fishery flag 57 = 1 as two-parameter asymptotic logistic selectivity;
 - fishery flag 57 = 3 as cubic-spline selectivity; and
 - fishery flag 61 as the number of estimated spline nodes.
 
@@ -85,8 +88,12 @@ Applying the source-code penalty formula to the existing fitted curves gives:
 
 The weak candidate is the primary base-preserving treatment. The explicit
 default candidate tests whether a much stronger non-decreasing constraint is
-needed to eliminate the low-depletion basin.
+needed to eliminate the low-depletion basin. The third candidate sets F10
+flag 57 to 1, replacing the spline with the manual-defined asymptotic logistic
+curve while estimating the two parameters stored in `fish_pars(9:10)`. It
+does not need flag 16 or flag 56 because the logistic form is inherently
+non-decreasing.
 
 Acceptance requires comparison with Job 18718 for objective, maximum
 gradient, F10 selectivity and derived quantities, followed by jitter and
-retrospective checks. Neither candidate is selected in advance.
+retrospective checks. No candidate is selected in advance.
