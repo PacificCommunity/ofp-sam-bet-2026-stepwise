@@ -46,21 +46,23 @@ expected_ids <- c(
   "08-DataTo2024", "09-SizeDataQC", "10-RegionalCPUE",
   "11-TimeVaryingCV", "12-CPUEErrorCalibration", "13-NewAgeData",
   "14a-REG075", "14b-SUB075", "15-SelectivityUpdate", "16-MIX020",
-  "17-TagReportingExclusion", "18-EffortCreep", "19-DMG8Nmax25"
+  "17-TagReportingExclusion", "18-EffortCreep", "19-DMG8Nmax25",
+  "20-F10NDWeak"
 )
 expected_parents <- c(
   "external-2023-diagnostic-archive", expected_ids[1:13],
   "13-NewAgeData", "14b-SUB075", "15-SelectivityUpdate",
-  "16-MIX020", "17-TagReportingExclusion", "18-EffortCreep"
+  "16-MIX020", "17-TagReportingExclusion", "18-EffortCreep",
+  "19-DMG8Nmax25"
 )
 assert(is.data.frame(models), "job-config", "stepwise_models must be a data frame")
 if (is.data.frame(models)) {
   assert(identical(as.character(models$step_id), expected_ids),
-         "job-config", "step order or model set differs from the approved 20-row/19-step chain")
+         "job-config", "step order or model set differs from the approved 21-row/20-step chain")
   assert(identical(as.character(models$scientific_parent_id), expected_parents),
          "job-config", "scientific parent graph differs from the approved cumulative chain")
-  assert(sum(as.logical(models$selected)) == 19L,
-         "job-config", "exactly 19 models must be on the selected path")
+  assert(sum(as.logical(models$selected)) == 20L,
+         "job-config", "exactly 20 models must be on the selected path")
   assert(identical(models$step_id[!as.logical(models$selected)], "14a-REG075"),
          "job-config", "14a-REG075 must be the only alternative")
   assert(identical(as.character(models$mfcl_program_path[[1L]]),
@@ -79,8 +81,8 @@ assert(!any(vapply(forbidden_names, function(x) any(grepl(x, actual_ids, fixed =
 
 ## Runtime lock.
 kflow <- paste(read_text(file.path(root, "kflow.yaml")), collapse = "\n")
-assert(grepl("name: bet-2026-final-stepwise-alt-v25", kflow, fixed = TRUE),
-       "kflow", "task name is not the alternative final v2.5 task")
+assert(grepl("name: bet-2026-final-stepwise-alt-f10-ndpen-weak-v25", kflow, fixed = TRUE),
+       "kflow", "task name is not the deterministic F10 weak-penalty v2.5 task")
 assert(grepl(
   "ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360",
   kflow, fixed = TRUE
@@ -88,8 +90,8 @@ assert(grepl(
 for (value in c(
   "remote_host: suva",
   "PROGRAM_PATH: /home/mfcl/mfclo64",
-  "MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc",
-  "MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a"
+  "MFCLKIT_GITHUB_REF: 04eff66ef90d38f24a1bb6b58ae750013d76ffeb",
+  "MFCLSHINY_GITHUB_REF: 0185662038fca0740b0d91c0f8546431fce0bc07"
 )) {
   assert(grepl(value, kflow, fixed = TRUE), "kflow", paste0("missing runtime lock: ", value))
 }
@@ -187,11 +189,11 @@ for (id in expected_ids) {
   }
 }
 
-for (id in expected_ids[10:20]) {
+for (id in expected_ids[10:length(expected_ids)]) {
   assert(all(file.exists(file.path(model_dir(id), c("bet.reg_scaling", "bet.reg_scaling.full")))),
          id, "regional-scaling active and full audit files are required")
 }
-for (id in expected_ids[9:20]) {
+for (id in expected_ids[9:length(expected_ids)]) {
   assert(all(file.exists(file.path(model_dir(id), qc_files))), id,
          "size-data QC audit files are required from Step 09 onward")
 }
@@ -323,7 +325,7 @@ for (id in expected_ids[1:2]) {
   assert(effective_flag(controls_by_id[[id]], 1L, 121L, 1L) == 1,
          id, "natural-mortality scaling must remain estimated before Step 03")
 }
-for (id in expected_ids[3:20]) {
+for (id in expected_ids[3:length(expected_ids)]) {
   assert(isTRUE(all.equal(age_m(file.path(model_dir(id), "bet.ini")), expected_m,
                           tolerance = 1e-12)), id,
          "fixed Lorenzen natural-mortality intercept changed")
@@ -331,12 +333,12 @@ for (id in expected_ids[3:20]) {
          id, "natural mortality is not fixed with parest flag 121=0")
 }
 expected_lw <- c(3.073533e-05, 2.932410)
-for (id in expected_ids[4:20]) {
+for (id in expected_ids[4:length(expected_ids)]) {
   assert(isTRUE(all.equal(length_weight(file.path(model_dir(id), "bet.ini")),
                           expected_lw, tolerance = 1e-12)),
          id, "BET 2026 length-weight parameters changed")
 }
-for (id in expected_ids[5:20]) {
+for (id in expected_ids[5:length(expected_ids)]) {
   assert(identical(frq_dimensions(file.path(model_dir(id), "bet.frq")), c(5L, 33L)),
          id, "five-region/33-fishery FRQ structure changed")
 }
@@ -353,7 +355,7 @@ assert(identical(as.integer(dom$fishery), 21:23) &&
          sum(dom$empty_rows_removed) == 1L && !any(dom$renormalised) &&
          !any(dom$catch_or_effort_changed), "09-SizeDataQC",
        "F21-F23 >90 cm audit does not match the agreed treatment")
-for (id in expected_ids[9:20]) {
+for (id in expected_ids[9:length(expected_ids)]) {
   controls <- controls_by_id[[id]]
   assert(effective_flag(controls, -14L, 75L, 1L) == 5 &&
            effective_flag(controls, -15L, 75L, 1L) == 5,
@@ -361,7 +363,7 @@ for (id in expected_ids[9:20]) {
 }
 
 ## Regional CPUE and headerless v2.5 scaling.
-for (id in expected_ids[10:20]) {
+for (id in expected_ids[10:length(expected_ids)]) {
   active <- file.path(model_dir(id), "bet.reg_scaling")
   lines <- trimws(read_text(active))
   values <- lapply(lines[nzchar(lines)], function(x) {
@@ -379,13 +381,13 @@ for (id in expected_ids[10:20]) {
            id, paste0("regional-scaling control ", flag, " changed"))
   }
 }
-for (id in expected_ids[11:20]) {
+for (id in expected_ids[11:length(expected_ids)]) {
   for (fishery in 29:33) {
     assert(effective_flag(controls_by_id[[id]], -fishery, 66L, 1L) == 1,
            id, "time-varying CPUE CV flag 66 is not active for all five indices")
   }
 }
-for (id in expected_ids[12:20]) {
+for (id in expected_ids[12:length(expected_ids)]) {
   for (i in seq_along(29:33)) {
     assert(effective_flag(controls_by_id[[id]], -(29:33)[[i]], 92L, 1L) ==
              c(35, 24, 21, 24, 23)[[i]], id,
@@ -403,7 +405,7 @@ for (id in names(age_hashes)) {
   assert(identical(sha256_file(file.path(model_dir(id), "bet.age_length")), age_hashes[[id]]),
          id, "CAAL source variant changed")
 }
-for (id in expected_ids[15:20]) {
+for (id in expected_ids[15:length(expected_ids)]) {
   assert(identical(sha256_file(file.path(model_dir(id), "bet.age_length")),
                    age_hashes[["14b-SUB075"]]), id,
          "selected SUB075 CAAL input was not carried forward")
@@ -414,7 +416,7 @@ selectivity_signature <- function(path) {
   lines <- read_text(path)
   phase <- -1L
   rows <- character()
-  flags <- c(3L, 16L, 24L, 26L, 57L, 61L, 75L)
+  flags <- c(3L, 16L, 24L, 26L, 56L, 57L, 61L, 75L)
   for (line in lines) {
     marker <- regmatches(line, regexec("^#  PHASE ([0-9]+)", line))[[1L]]
     if (length(marker) == 2L) phase <- as.integer(marker[[2L]])
@@ -441,6 +443,22 @@ for (id in expected_ids[16:20]) {
          "flexible-selectivity update differs from Job 18718")
 }
 
+job19325_signature <- selectivity_signature(
+  file.path(model_dir("20-F10NDWeak"), "doitall.sh")
+)
+assert(length(strsplit(trimws(job19325_signature), "\n")[[1L]]) == 96L,
+       "20-F10NDWeak",
+       "Job 19325 selectivity signature must add exactly the two F10 penalty controls")
+assert(identical(
+  sha256_text(job19325_signature),
+  "7107b30b5b9bbf5ef96ae3700322744ee40431cb61fa29f4f454b9c7ca0cb311"
+), "20-F10NDWeak", "selectivity controls differ from the deterministic Job 19325 treatment")
+assert(!isTRUE(effective_flag(controls_by_id[["19-DMG8Nmax25"]], -10L, 16L, 1L) == 1),
+       "19-DMG8Nmax25", "F10 non-decreasing penalty appeared before Step 20")
+assert(effective_flag(controls_by_id[["20-F10NDWeak"]], -10L, 16L, 1L) == 1 &&
+         effective_flag(controls_by_id[["20-F10NDWeak"]], -10L, 56L, 1L) == 10000,
+       "20-F10NDWeak", "F10 flags 16=1 and 56=10000 are not both active")
+
 ## Tag mixing and reporting-rate isolation.
 rr_labels <- c(
   "tag fish rep", "tag fish rep group flags", "tag_fish_rep active flags",
@@ -461,7 +479,7 @@ for (id in expected_ids[5:7]) {
          "2023 reporting-rate matrices drifted before the data update")
 }
 rr_reference_2026 <- rr_signature("08-DataTo2024")
-for (id in expected_ids[8:20]) {
+for (id in expected_ids[8:length(expected_ids)]) {
   assert(identical(rr_signature(id), rr_reference_2026), id,
          "2026 reporting-rate means/groups/active flags/targets/penalties drifted")
 }
@@ -477,7 +495,7 @@ assert(length(unique(tag_flags[["16-MIX020"]][, 1L])) > 1L,
        "16-MIX020", "K=0.20 release-specific mixing periods are absent")
 assert(all(tag_flags[["16-MIX020"]][, 2L] == 0),
        "16-MIX020", "Step 16 must retain reporting rates during pre-mixing windows")
-for (id in expected_ids[18:20]) {
+for (id in expected_ids[18:length(expected_ids)]) {
   assert(all(tag_flags[[id]][, 2L] == 1), id,
          "tag_flags(:,2) must be one from Step 17 onward")
   assert(identical(tag_flags[[id]][, 1L], tag_flags[["16-MIX020"]][, 1L]),
@@ -494,8 +512,8 @@ for (id in expected_ids) {
          "tag tau estimation was activated")
 }
 
-## Step 19: Job 18718 DM-noRE, G8, Nmax25, concentration fixed at 7.
-final_id <- "19-DMG8Nmax25"
+## Step 20: Job 19325 deterministic target; Step 19 DM controls retained.
+final_id <- "20-F10NDWeak"
 final_controls <- controls_by_id[[final_id]]
 for (pair in list(c(1L, 141L, 11), c(1L, 320L, 5), c(1L, 342L, 25),
                   c(-999L, 69L, 0))) {
@@ -518,6 +536,8 @@ assert(grepl("dm_concentration=7", final_script, fixed = TRUE) &&
        final_id, "fish_pars row 22 is not explicitly written and fixed at 7 before Phase 1")
 assert(effective_flag(final_controls, 1L, 313L, 1L) == 0,
        final_id, "normal-likelihood 1% tail compression must remain off under DM")
+assert(!grepl("jitter|perturb|seed[ _-]*23", final_script, ignore.case = TRUE),
+       final_id, "deterministic Step 20 must not execute a jitter, perturbation, or seed-23 path")
 
 ## Every transition changes only its declared axis.
 compare_transition <- function(from, to, allowed) {
@@ -555,7 +575,8 @@ transitions <- list(
   c("15-SelectivityUpdate", "16-MIX020", "bet.ini"),
   c("16-MIX020", "17-TagReportingExclusion", "bet.ini"),
   c("17-TagReportingExclusion", "18-EffortCreep", "bet.frq"),
-  c("18-EffortCreep", "19-DMG8Nmax25", "doitall.sh")
+  c("18-EffortCreep", "19-DMG8Nmax25", "doitall.sh"),
+  c("19-DMG8Nmax25", "20-F10NDWeak", "doitall.sh")
 )
 for (transition in transitions) {
   compare_transition(
@@ -609,7 +630,7 @@ for (step_id in five_region_steps) {
   )
 }
 
-## Final targets must match Job 18718 inputs and the stepwise-named audit map.
+## Final static inputs match Jobs 18718 and 19325; Step 20 changes only doitall flags.
 job18718_aligned_hashes <- c(
   "bet.frq" = "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3",
   "bet.ini" = "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
@@ -623,7 +644,7 @@ job18718_aligned_hashes <- c(
 for (file in names(job18718_aligned_hashes)) {
   assert(identical(sha256_file(file.path(model_dir(final_id), file)),
                    job18718_aligned_hashes[[file]]), final_id,
-         paste0(file, " differs from the locked Job 18718-aligned target"))
+         paste0(file, " differs from the locked Job 18718/19325-aligned target"))
 }
 
 if (length(failures)) {
@@ -632,9 +653,9 @@ if (length(failures)) {
 }
 
 cat(
-  "Validated 20 frozen models / 19 cumulative steps.\n",
-  "Final: Job 18718 treatment; K=0.20, tau not estimated, flexible selectivity, ",
-  "DM G8 Nmax25, fish_pars(22)=7 fixed.\n",
+  "Validated 21 frozen models / 20 cumulative steps.\n",
+  "Final: deterministic Job 19325 treatment; Job 18718 plus only F10 flags ",
+  "16=1 and 56=10000; no jitter or promoted seed; DM G8 Nmax25 retained.\n",
   "Runtime: Suva, immutable tuna-flow v2.5, pinned mfclkit/mfclshiny.\n",
   sep = ""
 )

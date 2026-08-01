@@ -1,10 +1,11 @@
 # BET 2026 alternative final stepwise pathway
 
-This branch contains the revised BET 2026 stepwise pathway as 20
-self-contained model folders representing 19 cumulative changes. No model
+This branch contains the revised BET 2026 stepwise pathway as 21
+self-contained model folders representing 20 cumulative changes. No model
 uses another step's fitted `.par` at runtime.
 
-The selected path ends at the treatment used by Kflow Job 18718:
+The selected path carries the deterministic Job 18718 treatment through Step
+19, then adds the weak F10 non-decreasing penalty used by Kflow Job 19325:
 
 - K = 0.20 region-mean tag-mixing periods.
 - Original 2023 negative-binomial tag likelihood; tau is not estimated.
@@ -16,10 +17,14 @@ The selected path ends at the treatment used by Kflow Job 18718:
 - Dirichlet-multinomial length-composition likelihood, G8, `Nmax=25`.
 - `fish_pars(22)` is written as 7 before Phase 1 and fixed with flag 69=0;
   grouped `fish_pars(23)` is estimated from Phase 2.
+- F10 fish flag 16=1 with penalty weight flag 56=10000.
 - Lorenzen natural-mortality intercept fixed at `-2.54930339768360`.
 
-The final numerical MFCL inputs are byte-identical to the public Job 18718
-model folder on `final-exploration`. The fishery and reporting-rate audit maps
+The final FRQ, TAG, age-length, regional-scaling, CFG and INI inputs are
+byte-identical to both public Job 18718 and deterministic Job 19325. Step 20
+changes only executable fishery controls 16 and 56 relative to Step 19. It
+uses the ordinary MFCL `-makepar` start: no jitter, perturbation or promoted
+seed-23 PAR from Job 19835 is used. The fishery and reporting-rate audit maps
 retain the same numerical groups while using the agreed current 2026 fishery
 labels, including `DOM` in place of the source-table label `MISC`.
 
@@ -46,7 +51,8 @@ labels, including `DOM` in place of the source-table label `MISC`.
 | 16 | `16-MIX020` | Apply release-group-specific K=0.20 mixing periods. | Selected |
 | 17 | `17-TagReportingExclusion` | Exclude reporting rates within pre-mixing windows. | Selected |
 | 18 | `18-EffortCreep` | Apply effort creep to regional CPUE indices. | Selected |
-| 19 | `19-DMG8Nmax25` | Apply DM-noRE composition weighting, G8 and `Nmax=25`, with concentration fixed at 7. | Final |
+| 19 | `19-DMG8Nmax25` | Apply DM-noRE composition weighting, G8 and `Nmax=25`, with concentration fixed at 7. | Selected |
+| 20 | `20-F10NDWeak` | Add only the F10 weak non-decreasing penalty (flags 16=1 and 56=10000), using the ordinary no-jitter makepar start. | Final |
 
 There is no separate tail-compression step and no DOM or Francis weighting
 branch in this pathway.
@@ -103,13 +109,14 @@ make validate
 
 The validator checks the full parent graph, all manifests and transition
 isolation, fixed M, size-data edits, reporting rates, K=0.20 mixing, tau mode,
-the selectivity update, DM controls, the headerless v2.5 scaling file, and
-final Job 18718 hashes.
+the selectivity update, DM controls, the headerless v2.5 scaling file, the
+Job 18718 core-input hashes, and the isolated deterministic Job 19325 F10
+penalty transition.
 
 ## Kflow runtime
 
 `kflow.yaml` is fixed to Suva and the immutable tuna-flow v2.5 image digest.
-The alternative task registers and submits only the changed Step 15-19 models.
+The alternative task registers and submits only the changed Step 15-20 models.
 The main executable is `/home/mfcl/mfclo64`; Step 01 selects the archived
 2.2.2.0 diagnostic executable. `mfclkit` and `mfclshiny` are installed at
 runtime from the pinned working commits in `kflow.yaml`, so a later campaign
@@ -118,7 +125,7 @@ can update those references without rebuilding the model inputs.
 Submit one model:
 
 ```bash
-make kflow STEP_SELECT=19-DMG8Nmax25
+make kflow STEP_SELECT=20-F10NDWeak
 ```
 
 Submit the configured campaign only after validation and an explicit launch
@@ -128,7 +135,7 @@ outputs.
 ## Audit files
 
 - `config/public-run-provenance.csv`: public repository, commit, path and SHA
-  locks, including the Job 18718 final target.
+  locks, including the Job 18718 core-input target.
 - `docs/input-source-audit.md`: source-to-step input changes.
 - `docs/tag-reporting-groups.md`: reporting-rate and tag-flag treatment.
 - `MFCL_CONTROL_NOTES.md`: concise MFCL control interpretation.

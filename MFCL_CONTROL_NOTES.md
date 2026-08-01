@@ -16,6 +16,8 @@
 | Fish flag 69 | 0 in Step 19 | Fix grouped `fish_pars(22)` after row 22 is written as 7. |
 | Fish flag 89 | 0 in Phase 1; 1 from Phase 2 | Estimate grouped `fish_pars(23)` only after the initial phase. |
 | Parest 313 | 0 | No separate 1% LF tail-compression step; DM support is controlled by flag 320. |
+| Fish flag 16 | 1 for F10 in Step 20 | Penalise decreases in F10 selectivity. |
+| Fish flag 56 | 10000 for F10 in Step 20 | Override the source-code default selectivity-form penalty weight of 1,000,000. |
 
 The fixed Lorenzen intercept in every model from Step 03 onward is
 `-2.54930339768360`. Step 19 writes all 33 copies of `fish_pars(22)` to 7 in
@@ -25,5 +27,13 @@ unrelated phase to move the parameter to the bound.
 The current tag-reporting-rate specification begins at Step 05, when the five
 matrices are rebuilt for the 33-fishery structure. Step 08 extends the tag
 family from 96 to 98 release groups; the numeric matrices then remain
-unchanged through Step 19. Step 16 changes only release-group mixing periods,
+unchanged through Step 20. Step 16 changes only release-group mixing periods,
 and Step 17 changes only the pre-mixing reporting-rate exclusion flag.
+
+For the executable lineage used here, `selectivity_form_penalty()` in
+`src/alldevpn.cpp` sets `penwt=1.e+6` when fish flag 16=1 and replaces that
+weight with fish flag 56 when flag 56 is non-zero. The manual also documents
+flag 16 as the non-decreasing constraint. Its older flag-56 section describes
+the catch-likelihood use of the same numbered flag, so the executable source
+is the controlling evidence for this selectivity use. Step 20's value 10,000
+is therefore an explicit weak override, not the default.

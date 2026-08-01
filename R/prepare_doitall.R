@@ -717,6 +717,17 @@ apply_selectivity_update <- function(lines) {
   lines
 }
 
+apply_f10_weak_non_decreasing_penalty <- function(lines) {
+  lines <- set_or_add_control_flag(
+    lines, "-10", 16L, 1L, 1L,
+    "F10 LL.ALL.5: penalize decreases in selectivity with age"
+  )
+  set_or_add_control_flag(
+    lines, "-10", 56L, 10000L, 1L,
+    "weak F10 non-decreasing penalty (1% of the MFCL default)"
+  )
+}
+
 apply_one_percent_lf_tail_compression <- function(lines) {
   lines <- set_or_add_control_flag(
     lines, "1", 313L, 1L, 1L,
@@ -1055,6 +1066,7 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
                           regional_scaling_start_period = reg_scaling_active_start_period,
                           regional_scaling_end_period = reg_scaling_active_end_period,
                           selectivity_update = FALSE,
+                          f10_weak_non_decreasing_penalty = FALSE,
                           ph_id_young5_selectivity = FALSE,
                           tail_compression_1pct = FALSE,
                           time_varying_cv = FALSE,
@@ -1103,6 +1115,9 @@ write_doitall <- function(from, to, mix_from_ini = FALSE,
     )
     lines <- apply_all_selectivity_form_relaxation(lines)
     lines <- apply_selectivity_update_phase5(lines)
+  }
+  if (isTRUE(f10_weak_non_decreasing_penalty)) {
+    lines <- apply_f10_weak_non_decreasing_penalty(lines)
   }
   if (isTRUE(time_varying_cv)) lines <- apply_time_varying_cpue_cv(lines)
   if (isTRUE(dom_divisor200)) lines <- apply_dom_lf_divisors(lines)

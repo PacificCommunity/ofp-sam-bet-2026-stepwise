@@ -6,10 +6,10 @@
 
 stepwise_run <- list(
   default_step_select = "all",
-  numbered_groups = 19L,
-  model_rows = 20L,
-  selected_path_models = 19L,
-  flow_group = "bet-2026-final-stepwise-alt",
+  numbered_groups = 20L,
+  model_rows = 21L,
+  selected_path_models = 20L,
+  flow_group = "bet-2026-final-stepwise-alt-f10-ndpen-weak",
   trigger_next = FALSE
 )
 
@@ -182,7 +182,7 @@ stepwise_models <- do.call(rbind, list(
   ),
   model_row(
     "19-DMG8Nmax25", "19-CompositionWeighting", "18-EffortCreep",
-    TRUE, "final", "apply Dirichlet-multinomial composition weighting",
+    TRUE, "carry", "apply Dirichlet-multinomial composition weighting",
     "DM composition weighting", "19 DM composition weighting, G8 Nmax 25",
     "19-dm-g8-nmax25",
     paste(
@@ -190,6 +190,18 @@ stepwise_models <- do.call(rbind, list(
       "fixed at 7 and eight grouped fish_pars(23) exponents estimated.",
       "Retain the original 2023 negative-binomial tag likelihood;",
       "tag tau is not estimated (parest 111=4; fish flags 43/44 inactive)."
+    )
+  ),
+  model_row(
+    "20-F10NDWeak", "20-SelectivityRobustness", "19-DMG8Nmax25",
+    TRUE, "final", "add only the Job 19325 weak F10 non-decreasing penalty",
+    "F10 weak non-decreasing penalty | ordinary makepar start",
+    "20 F10 non-decreasing penalty | weight 10,000 | no jitter",
+    "20-f10-ndpen-weak",
+    paste(
+      "Add only F10 LL.ALL.5 fish flags 16=1 and 56=10000 to Step 19.",
+      "This matches the deterministic Job 19325 model structure and uses the",
+      "ordinary makepar start, not Job 19835 or any jitter/seed-23 path."
     )
   )
 ))
@@ -215,7 +227,8 @@ stepwise_report_change <- c(
   "16-MIX020" = "Release-group-specific K=0.20 tag-mixing periods",
   "17-TagReportingExclusion" = "Pre-mixing reporting-rate exclusion",
   "18-EffortCreep" = "Effort-creep adjustment",
-  "19-DMG8Nmax25" = "Dirichlet-multinomial composition weighting"
+  "19-DMG8Nmax25" = "Dirichlet-multinomial composition weighting",
+  "20-F10NDWeak" = "Weak F10 non-decreasing selectivity penalty"
 )
 
 stepwise_report_purpose <- c(
@@ -238,7 +251,8 @@ stepwise_report_purpose <- c(
   "16-MIX020" = "Assign Joe's region-mean release-group mixing periods at K=0.20.",
   "17-TagReportingExclusion" = "Avoid applying reporting rates in pre-mixing windows.",
   "18-EffortCreep" = "Account for gradual changes in fishing efficiency.",
-  "19-DMG8Nmax25" = "Use the Job 18718 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7."
+  "19-DMG8Nmax25" = "Use the Job 18718 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7.",
+  "20-F10NDWeak" = "Add the weak F10 tail-stability penalty selected in deterministic Job 19325 without importing a jitter solution."
 )
 
 stepwise_models$report_change <- unname(stepwise_report_change[stepwise_models$step_id])
@@ -255,7 +269,7 @@ path_stage <- c(
   "14a-REG075" = 14L, "14b-SUB075" = 14L,
   "15-SelectivityUpdate" = 15L, "16-MIX020" = 16L,
   "17-TagReportingExclusion" = 17L, "18-EffortCreep" = 18L,
-  "19-DMG8Nmax25" = 19L
+  "19-DMG8Nmax25" = 19L, "20-F10NDWeak" = 20L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -268,9 +282,9 @@ stepwise_models$tag_flag2 <- NA_integer_
 stepwise_models$tag_flag2[stepwise_models$path_stage >= 2L] <- 0L
 stepwise_models$tag_flag2[stepwise_models$path_stage >= 17L] <- 1L
 stepwise_models$dm_grouping <- ""
-stepwise_models$dm_grouping[stepwise_models$step_id == "19-DMG8Nmax25"] <- "G8PSSET"
+stepwise_models$dm_grouping[stepwise_models$path_stage >= 19L] <- "G8PSSET"
 stepwise_models$dm_nmax <- NA_integer_
-stepwise_models$dm_nmax[stepwise_models$step_id == "19-DMG8Nmax25"] <- 25L
+stepwise_models$dm_nmax[stepwise_models$path_stage >= 19L] <- 25L
 stepwise_models$regional_scaling_weight <- NA_integer_
 stepwise_models$regional_scaling_weight[stepwise_models$path_stage >= 10L] <- 100L
 stepwise_models$reporting_rate_prior <- ifelse(
@@ -283,9 +297,14 @@ stepwise_models$tail_compression_percent <- 0
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 12L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 15L
 stepwise_models$selectivity_variant <- ifelse(
-  stepwise_models$path_stage >= 15L, "Job 18718 flexible", ""
+  stepwise_models$path_stage >= 20L, "Job 19325 weak F10 non-decreasing",
+  ifelse(stepwise_models$path_stage >= 15L, "Job 18718 flexible", "")
 )
-stepwise_models$all_selectivity_forms_relaxed <- stepwise_models$path_stage >= 15L
+stepwise_models$f10_non_decreasing_penalty_weight <- ifelse(
+  stepwise_models$path_stage >= 20L, 10000, NA_real_
+)
+stepwise_models$all_selectivity_forms_relaxed <-
+  stepwise_models$path_stage >= 15L & stepwise_models$path_stage < 20L
 stepwise_models$size_data_qc <- stepwise_models$path_stage >= 9L
 rownames(stepwise_models) <- NULL
 

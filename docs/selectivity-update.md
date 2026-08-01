@@ -48,3 +48,23 @@ greater selectivity flexibility:
   (WCPFC-SC22-2026-SA-IP01).
 - Peatman, T. et al. (2026), size-frequency analysis for the 2026 bigeye and
   yellowfin assessments (WCPFC-SC22-2026-SA-IP06).
+
+## Step 20 F10 weak non-decreasing penalty
+
+Step 20 reproduces the deterministic treatment fitted by Kflow Job 19325. An
+archive-level comparison with Job 18718 found byte-identical `bet.frq`,
+`bet.tag`, `bet.age_length`, `bet.reg_scaling`, `mfcl.cfg` and `bet.ini` files.
+After comments and wrapper-only text are removed, its executable-control diff
+from Job 18718 is exactly:
+
+```text
+-10 16 1
+-10 56 10000
+```
+
+Flag 16 activates the non-decreasing selectivity penalty for F10 and flag 56
+sets its weight to 10,000. This is one percent of MFCL's 1,000,000 default
+weight when flag 56 is absent. The step deliberately uses its frozen INI and
+the normal `mfclo64 -makepar` path. It does not load Job 19835, seed 23, a
+jitter result, or any perturbed PAR, so the scientific transition remains a
+single selectivity-penalty axis.

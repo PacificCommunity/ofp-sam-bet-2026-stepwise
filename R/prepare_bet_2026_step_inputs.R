@@ -792,7 +792,7 @@ write_readme(
 
 
 
-## Self-contained public 20-row / 19-stage sequence --------------------------
+## Self-contained public 21-row / 20-stage sequence --------------------------
 
 stepwise_5_region_template_step_id <- "05-NewStructure"
 
@@ -870,6 +870,7 @@ write_sequence_step <- function(
     regional_scaling_weight = NA_integer_,
     tail_compression_1pct = FALSE,
     selectivity_update = FALSE,
+    f10_weak_non_decreasing_penalty = FALSE,
     ph_id_young5_selectivity = FALSE,
     time_varying_cv = FALSE,
     effort_creep = FALSE,
@@ -885,6 +886,7 @@ write_sequence_step <- function(
     list(
       regional_cpue = regional_cpue,
       selectivity_update = selectivity_update,
+      f10_weak_non_decreasing_penalty = f10_weak_non_decreasing_penalty,
       ph_id_young5_selectivity = ph_id_young5_selectivity,
       tail_compression_1pct = tail_compression_1pct,
       time_varying_cv = time_varying_cv,
@@ -939,6 +941,10 @@ write_sequence_step <- function(
         "The Job 18718 flexible selectivity update keeps F1-F28 independent, ",
         "separates F29-F33 in staged run 5, retains the flexible spline forms, ",
         "and keeps the documented F14/F15 youngest-five-age constraints."
+      ),
+      if (f10_weak_non_decreasing_penalty) paste0(
+        "F10 LL.ALL.5 retains five estimated spline nodes and adds only fish flags ",
+        "16=1 and 56=10000, matching the deterministic Job 19325 treatment."
       ),
       if (time_varying_cv) "F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data.",
       if (dom_divisor200) "Only F21-F23 receive the DOM LF divisor 200.",
@@ -1020,6 +1026,7 @@ common_late_step <- function(
     age_source = old_age, age_ess = 0.75,
     regional_cpue = FALSE, time_varying_cv = FALSE,
     fixed_cpue_sigma = FALSE, selectivity = FALSE,
+    f10_weak_non_decreasing_penalty = FALSE,
     tag_mixing = FALSE, tag_flag2 = 0L, effort_creep = FALSE,
     dm = FALSE) {
   raw_sha <- if (effort_creep) {
@@ -1043,6 +1050,7 @@ common_late_step <- function(
     regional_scaling_weight = if (regional_cpue) 100L else NA_integer_,
     ph_id_young5_selectivity = TRUE,
     selectivity_update = selectivity,
+    f10_weak_non_decreasing_penalty = f10_weak_non_decreasing_penalty,
     time_varying_cv = time_varying_cv,
     effort_creep = effort_creep,
     size_data_qc = TRUE,
@@ -1147,6 +1155,18 @@ common_late_step(
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
   selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L,
+  effort_creep = TRUE, dm = TRUE
+)
+common_late_step(
+  "20-F10NDWeak", "20 F10 weak non-decreasing penalty", "19-DMG8Nmax25",
+  paste(
+    "Add the deterministic Job 19325 F10 LL.ALL.5 weak non-decreasing penalty:",
+    "fish flags 16=1 and 56=10000; do not jitter or perturb the makepar start."
+  ),
+  age_source = sub_basin_age_075, age_ess = NA_real_,
+  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
+  selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE,
+  tag_mixing = TRUE, tag_flag2 = 1L,
   effort_creep = TRUE, dm = TRUE
 )
 

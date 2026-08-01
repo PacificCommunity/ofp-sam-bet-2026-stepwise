@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-final-stepwise-alt-v25
-name: bet-2026-final-stepwise-alt-v25
-description: Fit only Steps 15-19 of the alternative BET 2026 pathway, ending at the Job 18718 treatment (K=0.20, tau not estimated, flexible selectivity, DM G8 Nmax25 with concentration 7).
+#   /api/job/bet-2026-final-stepwise-alt-f10-ndpen-weak-v25
+name: bet-2026-final-stepwise-alt-f10-ndpen-weak-v25
+description: "Fit Steps 15-20 of the alternative BET 2026 pathway, ending at deterministic Job 19325 structure: Job 18718 plus only the weak F10 non-decreasing penalty (fish flags 16=1 and 56=10000), with no jitter or promoted seed."
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -47,7 +47,7 @@ env:
   MODEL_LABEL: 2023 diagnostic rerun
   JOB_KEY: 01-diag2023
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-final-stepwise-alt
+  FLOW_GROUP: bet-2026-final-stepwise-alt-f10-ndpen-weak
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -85,9 +85,9 @@ env:
   TUNA_FLOW_RUNTIME_UPDATE: never
   KFLOW_REPO_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_PACKAGES: none
-  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@25103916446d0395286afae28b5404bf361670fc,mfclshiny=PacificCommunity/mfclshiny@1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
-  MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
-  MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+  KFLOW_REPO_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@04eff66ef90d38f24a1bb6b58ae750013d76ffeb,mfclshiny=PacificCommunity/mfclshiny@0185662038fca0740b0d91c0f8546431fce0bc07
+  MFCLKIT_GITHUB_REF: 04eff66ef90d38f24a1bb6b58ae750013d76ffeb
+  MFCLSHINY_GITHUB_REF: 0185662038fca0740b0d91c0f8546431fce0bc07
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
   KFLOW_REPORT_COMMIT_GENERATED: "true"
@@ -120,8 +120,8 @@ local_apps:
       NUMEXPR_NUM_THREADS: "1"
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
       KFLOW_LOCAL_APP_PACKAGE_UPDATE: "never"
-      MFCLKIT_GITHUB_REF: 25103916446d0395286afae28b5404bf361670fc
-      MFCLSHINY_GITHUB_REF: 1fc0bb6bf4cf5349da6f6def54cc56c5a60e182a
+      MFCLKIT_GITHUB_REF: 04eff66ef90d38f24a1bb6b58ae750013d76ffeb
+      MFCLSHINY_GITHUB_REF: 0185662038fca0740b0d91c0f8546431fce0bc07
       MFCLSHINY_AUTO_LOAD: "true"
       MFCLSHINY_INITIAL_RENDER: "true"
       MFCLSHINY_LIVE_UPDATE: "false"
@@ -407,6 +407,13 @@ local_apps:
 # so one failed fit cannot gate or fan out from any other fit.
 triggers: {}
 
+metadata:
+  scientific_base_job: "18718"
+  deterministic_target_job: "19325"
+  excluded_promoted_seed_job: "19835"
+  final_step_change: "F10 LL.ALL.5 fish flags 16=1 and 56=10000 only"
+  initialization: "ordinary makepar; no jitter, perturbation, or promoted seed"
+
 # Consumed by scripts/register_kflow_task.py. Rows and their descriptions are
 # derived at registration/plan time; no model count is duplicated here.
 model_campaign:
@@ -417,6 +424,7 @@ model_campaign:
     - 17-TagReportingExclusion
     - 18-EffortCreep
     - 19-DMG8Nmax25
+    - 20-F10NDWeak
   execution: independent-concurrent
   inputs: frozen
   scientific_parent: metadata-only

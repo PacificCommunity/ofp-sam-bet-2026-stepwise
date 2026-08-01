@@ -1,0 +1,2 @@
+"rule","source_sha256","output_sha256","lf_rows","affected_rows","count_before","count_after","removed_count","renormalised","catch_or_effort_changed"
+"F15 lower-bound bins <70 cm set to zero","d77f97c348409f845f1f0fc801af808d15b6cb119349d1f083308cfc9d4fba8c","3abf83821f8d696b36f020a80f48f99445f9e15046bdb3741adfac778c82ad60",135,66,41908,40851,1057,FALSE,FALSE
