@@ -1,5 +1,5 @@
 name: ofp-sam-bet-2026-stepwise-report
-description: Build a portable, report-ready account of the BET 2026 stepwise model-development pathway and, when supplied, fitted-model results.
+description: Build the dynamic BET 2026 stepwise report and offline interactive viewer from a selected upstream viewer job.
 branch: final-stepwise-alt
 target_folder: model-development-report
 command: bash run.sh
@@ -7,13 +7,15 @@ docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447
 remote_host: noumea
 
 resources:
-  cpus: 1
-  memory: 4GB
-  disk: 10GB
+  cpus: 4
+  memory: 16GB
+  disk: 30GB
 
 env:
   REPORT_OUTPUT_DIR: model-development
   STEPWISE_MODEL_JOBS: ""
+  STEPWISE_VIEWER_JOB: ""
+  STEPWISE_SOURCE_INDEX_JSON: ""
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -31,6 +33,8 @@ triggers: {}
 job_config:
   optional:
     - STEPWISE_MODEL_JOBS
+    - STEPWISE_VIEWER_JOB
+    - STEPWISE_SOURCE_INDEX_JSON
     - FLOW_SPECIES
     - FLOW_SPECIES_LABEL
     - FLOW_ASSESSMENT_YEAR

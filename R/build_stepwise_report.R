@@ -149,66 +149,6 @@ stepwise_references_bibtex <- paste0(
   "}"
 )
 
-stepwise_dm_configuration <- data.frame(
-  setting = c(
-    "Likelihood",
-    "Fishery groups",
-    "Group parameters",
-    "ESS upper bound",
-    "Length-bin support"
-  ),
-  implementation = c(
-    "Dirichlet-multinomial without random effects (flag 141 = 11).",
-    "Eight groups covering all 33 fisheries (flag 68; Table XX).",
-    "Group log-concentration fixed at 7 (flag 69 = 0); eight relative-sample-size exponents estimated from Phase 2 (flag 89 = 1).",
-    "Nmax = 25 (flag 342; MFCL default = 1,000).",
-    "Minimum span of five observed bins (flag 320 = 5); flag 313 = 0."
-  ),
-  basis = c(
-    "Estimate extra-multinomial variation in length compositions (Thorson et al., 2017).",
-    "Pool fisheries with similar gear and data roles while retaining major differences.",
-    "Match the Job 18518/18718 treatment: hold the concentration intercept at its fitted upper bound and estimate the grouped relative-sample-size response.",
-    "Retain the final exploration effective-sample-size upper asymptote used by Job 18718.",
-    "Apply the DM support rule; the robust-normal 1% tail control is not used."
-  ),
-  stringsAsFactors = FALSE
-)
-
-stepwise_dm_groups <- data.frame(
-  group = paste0("G", 1:8),
-  fisheries = c(
-    "F1-F4, F6-F8, F10-F11",
-    "F5, F9",
-    "F12, F17-F18",
-    "F19, F25-F26",
-    "F20, F27-F28",
-    "F14-F15",
-    "F13, F16, F21-F24",
-    "F29-F33"
-  ),
-  series = c(
-    "LL.WEST.ALL.1; LL.EAST.ALL.1; LL.US.1; LL.ALL.2; LL.ARCH.3; LL.WEST.3; LL.EAST.4; LL.ALL.5; LL.AU.5",
-    "LL.OS.2; LL.OS.3",
-    "PS.JP.1; PS.ID.2; PS.PH.2",
-    "PS.ASS.2; PS.ASSOC.WEST.3; PS.ASSOC.EAST.4",
-    "PS.UNA.2; PS.UNASSOC.WEST.3; PS.UNASSOC.EAST.4",
-    "HL.ID.2; HL.PH.2",
-    "PL.JP.1; PL.ALL.2; DOM.ID.2; DOM.PH.2; DOM.VN.2; PL.ALL.WEST.3",
-    "Index R1; Index R2; Index R3; Index R4; Index R5"
-  ),
-  grouping_basis = c(
-    "Main longline composition process",
-    "Offshore longline series with a distinct sampling history",
-    "Purse-seine series without associated/unassociated set-type separation",
-    "Associated purse-seine series",
-    "Unassociated purse-seine series",
-    "Handline series",
-    "Other extraction fisheries pooled for stable estimation",
-    "Regional indices sharing the relative-abundance reweighting procedure"
-  ),
-  stringsAsFactors = FALSE
-)
-
 stepwise_parse_job_map <- function(value) {
   value <- trimws(as.character(value %||% ""))
   if (!nzchar(value)) {
@@ -219,8 +159,7 @@ stepwise_parse_job_map <- function(value) {
   valid <- grepl("^[^=:#]+\\s*[=:#]\\s*#?[0-9]+$", tokens)
   if (!all(valid)) {
     stop(
-      "STEPWISE_MODEL_JOBS must use step=job pairs, for example ",
-      "01-Diag2023=14047,02-NewExeIni1007=14046.",
+      "STEPWISE_MODEL_JOBS must use comma-separated step=job pairs.",
       call. = FALSE
     )
   }
@@ -510,29 +449,85 @@ build_stepwise_report <- function(
     output_dir = Sys.getenv("OUTPUT_DIR", "model-development"),
     input_dir = Sys.getenv("INPUT_DIR", "inputs"),
     job_map_value = Sys.getenv("STEPWISE_MODEL_JOBS", "")) {
-  if (!requireNamespace("mfclshiny", quietly = TRUE)) {
-    stop("The mfclshiny package is required to build the report.")
-  }
   if (!exists("build_stepwise_dag", mode = "function")) {
     source(file.path(dirname(normalizePath(config_path)), "R", "build_stepwise_dag.R"))
+  }
+  if (!exists("stepwise_prepare_result_assets", mode = "function")) {
+    source(file.path(dirname(normalizePath(config_path)), "R", "stepwise_report_inputs.R"))
   }
 
   config <- new.env(parent = baseenv())
   sys.source(normalizePath(config_path, mustWork = TRUE), envir = config)
-  nodes <- get("stepwise_models", envir = config, inherits = FALSE)
-  job_map <- stepwise_parse_job_map(job_map_value)
-  unknown <- setdiff(job_map$step_id, nodes$step_id)
-  if (length(unknown)) {
-    stop("Unknown step identifiers in STEPWISE_MODEL_JOBS: ", paste(unknown, collapse = ", "))
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  source_index <- stepwise_json_records(Sys.getenv("STEPWISE_SOURCE_INDEX_JSON", ""))
+  assets <- stepwise_prepare_result_assets(input_dir, output_dir, source_index)
+  if (!nrow(source_index)) {
+    source_index <- stepwise_source_index_from_viewer(assets$viewer_data)
   }
 
-  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  configured <- get("stepwise_models", envir = config, inherits = FALSE)
+  explicit_map <- stepwise_parse_job_map(job_map_value)
+  if (!nrow(source_index) && nrow(explicit_map)) {
+    source_index <- data.frame(
+      order = seq_len(nrow(explicit_map)),
+      row = sub("-.*$", "", explicit_map$step_id),
+      step_id = explicit_map$step_id,
+      job_number = explicit_map$job_number,
+      job_title = explicit_map$step_id,
+      model_label = explicit_map$step_id,
+      change_axis = explicit_map$step_id,
+      scientific_parent_id = c("", head(explicit_map$step_id, -1L)),
+      selected = TRUE,
+      task = "",
+      status = "",
+      stringsAsFactors = FALSE
+    )
+  }
+  if (!nrow(source_index)) {
+    stop(
+      "No dynamic model index was found. Supply a viewer job through the submission helper ",
+      "or stage model payload inputs.", call. = FALSE
+    )
+  }
+
+  matches <- match(source_index$step_id, configured$step_id)
+  nodes <- configured[matches, , drop = FALSE]
+  unknown <- is.na(matches)
+  if (any(unknown)) {
+    for (name in names(nodes)) nodes[[name]][unknown] <- NA
+  }
+  nodes$step_id <- source_index$step_id
+  dynamic_labels <- trimws(as.character(source_index$model_label))
+  missing_label <- is.na(dynamic_labels) | !nzchar(dynamic_labels)
+  dynamic_labels[missing_label] <- trimws(as.character(source_index$job_title[missing_label]))
+  missing_label <- is.na(dynamic_labels) | !nzchar(dynamic_labels)
+  dynamic_labels[missing_label] <- source_index$step_id[missing_label]
+  nodes$model_label <- dynamic_labels
+  dynamic_parent <- trimws(as.character(source_index$scientific_parent_id))
+  use_parent <- !is.na(dynamic_parent) & nzchar(dynamic_parent)
+  nodes$scientific_parent_id[use_parent] <- dynamic_parent[use_parent]
+  nodes$selected <- source_index$selected
+  configured_purpose <- configured$report_purpose[matches]
+  configured_purpose <- gsub(
+    "Job[[:space:]]+[0-9]+(/[0-9]+)?",
+    "selected reference configuration",
+    configured_purpose,
+    perl = TRUE
+  )
+  fallback_purpose <- stepwise_sentence(source_index$change_axis)
+  missing_purpose <- is.na(configured_purpose) | !nzchar(trimws(configured_purpose))
+  configured_purpose[missing_purpose] <- fallback_purpose[missing_purpose]
+  nodes$report_purpose <- configured_purpose
+  nodes$report_change <- dynamic_labels
+  job_map <- source_index[, c("step_id", "job_number"), drop = FALSE]
+
   pathway_dir <- file.path(output_dir, "pathway")
   pathway_basename <- "bet-2026-stepwise-pathway"
   dag <- build_stepwise_dag(
     config_path = config_path,
     output_dir = pathway_dir,
-    basename = pathway_basename
+    basename = pathway_basename,
+    models = nodes
   )
   dag_png <- file.path(pathway_dir, "figures", paste0(pathway_basename, ".png"))
   png_data <- jsonlite::base64_enc(readBin(dag_png, "raw", n = file.info(dag_png)$size))
@@ -541,65 +536,18 @@ build_stepwise_report <- function(
   include_jobs <- nrow(job_map) > 0L
   table_html <- stepwise_table_html(table, include_jobs)
   table_latex <- stepwise_table_latex(table, include_jobs)
-  dm_configuration_caption <- paste0(
-    "Dirichlet-multinomial configuration used for length-composition weighting ",
-    "in the BET 2026 final model."
-  )
-  dm_groups_caption <- paste0(
-    "Eight fishery groups used for the final Dirichlet-multinomial treatment. ",
-    "Fishery numbers and series names follow the five-region, ",
-    "33-fishery input specification."
-  )
-  dm_configuration_html <- stepwise_named_table_html(
-    stepwise_dm_configuration,
-    id = "dm-configuration-table",
-    headers = c("Component", "Final-model setting", "Rationale"),
-    widths = c(18, 37, 45),
-    first_column_class = "row-label"
-  )
-  dm_groups_html <- stepwise_named_table_html(
-    stepwise_dm_groups,
-    id = "dm-groups-table",
-    headers = c("DM group", "Fishery numbers", "Fishery series", "Grouping basis"),
-    widths = c(9, 19, 45, 27),
-    first_column_class = "step-number"
-  )
-  dm_configuration_latex <- stepwise_named_table_latex(
-    stepwise_dm_configuration,
-    headers = c("Component", "Final-model setting", "Rationale"),
-    widths = c(0.17, 0.36, 0.42),
-    caption = dm_configuration_caption,
-    label = "tab:bet-dm-configuration",
-    first_column_bold = TRUE
-  )
-  dm_groups_latex <- stepwise_named_table_latex(
-    stepwise_dm_groups,
-    headers = c("DM group", "Fishery numbers", "Fishery series", "Grouping basis"),
-    widths = c(0.075, 0.165, 0.445, 0.245),
-    caption = dm_groups_caption,
-    label = "tab:bet-dm-groups",
-    first_column_bold = TRUE
-  )
-  dm_configuration_latex <- gsub(
-    "Nmax", "$N_{\\max}$", dm_configuration_latex, fixed = TRUE
-  )
-  discovered <- stepwise_discover_results(job_map, input_dir)
-  result_bundle <- stepwise_render_result_bundle(discovered, output_dir)
+  discovered <- stepwise_discover_payload_index(input_dir, source_index)
 
   method_text <- paste0(
     "Development of the BET 2026 assessment model proceeded sequentially. At each step, one ",
     "model component or data treatment was modified, while all other settings were held ",
     "constant where practicable (Figure XX; Table XX). Configurations retained after evaluation ",
     "defined the main development pathway; side branches document alternatives that were tested ",
-    "but not carried forward. The final model used a Dirichlet-multinomial (DM) likelihood for ",
-    "length-composition data. The DM configuration and its eight fishery groupings are ",
-    "summarised in Tables XX and XX, respectively."
+    "but not carried forward. Model diagnostics, fitted quantities, figures, and supporting ",
+    "tables were reconstructed from the selected runtime viewer bundle."
   )
   method_latex <- gsub(
     "Figure XX; Table XX", "Figure~XX; Table~XX", method_text, fixed = TRUE
-  )
-  method_latex <- gsub(
-    "Tables XX and XX", "Tables~XX and~XX", method_latex, fixed = TRUE
   )
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Solid teal arrows ",
@@ -610,54 +558,49 @@ build_stepwise_report <- function(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
     "rationale. Step numbers correspond to the pathway in Figure XX."
   )
-  dm_section <- paste0(
-    "<section class=\"model-card\"><h2>Final-model Dirichlet-multinomial configuration</h2>",
-    "<p>The final model used a Dirichlet-multinomial likelihood for length compositions. ",
-    "The 33 fisheries were pooled into eight groups. The concentration intercept was fixed at 7 ",
-    "and the eight relative-sample-size exponents were estimated from Phase 2. ",
-    paste0(
-      "The effective-sample-size upper asymptote was fixed at 25, matching Job 18718.</p>"
-    ),
-    "<div class=\"format-block\"><p class=\"caption\" id=\"dm-configuration-caption\"><strong>Table ",
-    "<span contenteditable=\"true\">XX</span>.</strong> ",
-    stepwise_html_escape(dm_configuration_caption), "</p>",
-    "<div class=\"table-shell\">", dm_configuration_html, "</div>",
-    "<div class=\"actions\"><button onclick=\"copyReportTable('dm-configuration-caption','dm-configuration-table',this)\">",
-    "Copy table + caption for Word</button>",
-    "<button class=\"secondary\" onclick=\"copyText('dm-configuration-latex',this)\">",
-    "Copy table + caption for LaTeX</button></div></div>",
-    "<div class=\"format-block dm-groups-block\"><p class=\"caption\" id=\"dm-groups-caption\"><strong>Table ",
-    "<span contenteditable=\"true\">XX</span>.</strong> ",
-    stepwise_html_escape(dm_groups_caption), "</p>",
-    "<div class=\"table-shell\">", dm_groups_html, "</div>",
-    "<div class=\"actions\"><button onclick=\"copyReportTable('dm-groups-caption','dm-groups-table',this)\">",
-    "Copy table + caption for Word</button>",
-    "<button class=\"secondary\" onclick=\"copyText('dm-groups-latex',this)\">",
-    "Copy table + caption for LaTeX</button></div></div></section>"
+  inventory <- data.frame(
+    Step = source_index$row,
+    Model = source_index$model_label,
+    Job = ifelse(is.na(source_index$job_number), "", paste0("#", source_index$job_number)),
+    Task = source_index$task,
+    Status = source_index$status,
+    stringsAsFactors = FALSE,
+    check.names = FALSE
   )
-
-  result_section <- ""
-  if (nrow(discovered)) {
-    result_rows <- paste0(
-      "<tr><td>", stepwise_html_escape(discovered$step_id), "</td><td>#",
-      discovered$job_number, "</td><td>", stepwise_html_escape(discovered$status), "</td></tr>",
-      collapse = ""
+  inventory_html <- stepwise_dynamic_table_html(inventory, "dynamic-model-inventory")
+  summary_html <- stepwise_dynamic_table_html(assets$model_summary, "dynamic-model-summary")
+  objective_html <- stepwise_dynamic_table_html(assets$objective_components, "dynamic-objective-components")
+  viewer_link <- if (nzchar(assets$viewer)) {
+    paste0(
+      "<div class=\"viewer-actions\"><a class=\"button\" href=\"interactive-model-viewer.html\" target=\"_blank\">",
+      "Open interactive viewer</a><a class=\"button alt\" href=\"interactive-model-viewer.html\" download>",
+      "Download offline viewer</a></div>",
+      "<iframe class=\"viewer-frame\" loading=\"lazy\" title=\"Interactive stepwise model viewer\" ",
+      "src=\"interactive-model-viewer.html\"></iframe>"
     )
-    iframe <- if (nzchar(result_bundle)) {
-      paste0(
-        "<iframe class=\"results-frame\" title=\"Fitted-model figures and tables\" srcdoc=\"",
-        stepwise_html_escape(result_bundle), "\"></iframe>"
-      )
-    } else {
-      "<p class=\"note\">Fitted-model figures will appear when mapped job outputs contain model payloads.</p>"
-    }
-    result_section <- paste0(
-      "<section class=\"model-card\"><h2>Fitted-model results</h2>",
-      "<p>Results are included only for explicitly mapped completed jobs.</p>",
-      "<table class=\"compact\"><thead><tr><th>Step</th><th>Job</th><th>Status</th></tr></thead><tbody>",
-      result_rows, "</tbody></table>", iframe, "</section>"
-    )
+  } else {
+    "<p class=\"note\">The interactive viewer could not be generated from the supplied inputs.</p>"
   }
+  result_section <- paste0(
+    "<section class=\"model-card\" id=\"interactive-viewer\"><h2>Interactive model viewer</h2>",
+    "<p>The viewer and this report are generated from the same runtime model index and fitted-model data.</p>",
+    viewer_link, "</section>",
+    "<section class=\"model-card\"><h2>Runtime model inventory</h2><p class=\"note\">",
+    "This table is reconstructed from the selected viewer job and changes when that input changes.</p>",
+    "<div class=\"table-shell\">", inventory_html, "</div></section>",
+    "<section class=\"model-card\"><h2>Model diagnostics and objective components</h2>",
+    "<p>Values below are read from the fitted-model viewer payload; they are not stored in the report source.</p>",
+    "<h3>Model summary</h3><div class=\"table-shell\">", summary_html, "</div>",
+    "<div class=\"actions\"><a class=\"button\" href=\"stepwise-model-summary.csv\" download>Download model summary</a></div>",
+    "<h3>Objective components</h3><div class=\"table-shell\">", objective_html, "</div>",
+    "<div class=\"actions\"><a class=\"button\" href=\"stepwise-objective-components.csv\" download>Download objective components</a></div>",
+    "</section>",
+    "<section class=\"model-card\"><h2>SC assessment figures</h2>",
+    "<p>Priority stock-status, population-dynamics, fit, selectivity, spatial and tagging figures are read from the upstream figure index.</p>",
+    stepwise_figure_sections_html(assets$figure_index), "</section>",
+    "<section class=\"model-card\"><h2>Supporting tables</h2>",
+    stepwise_table_downloads_html(assets$table_index), "</section>"
+  )
 
   latex_figure <- paste0(
     "\\begin{figure}[htbp]\n\\centering\n",
@@ -697,15 +640,19 @@ build_stepwise_report <- function(
     ".table-reference ol{margin:.6rem 0 0;padding-left:1.35rem}.table-reference li{margin:.45rem 0}",
     ".table-reference a{color:var(--ink);text-decoration-color:var(--sea);text-underline-offset:2px}",
     ".note{padding:13px 16px;border-left:4px solid var(--sea);",
-    "background:#eff5f5;color:#3a5967}.hidden-copy{display:none}.results-frame{width:100%;height:1100px;",
-    "border:1px solid var(--line);background:#fff}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
+    "background:#eff5f5;color:#3a5967}.hidden-copy{display:none}.viewer-actions{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}",
+    ".viewer-actions .alt{background:#fff;color:var(--sea);border:1px solid var(--sea)}.viewer-frame{width:100%;height:860px;",
+    "border:1px solid var(--line);background:#fff}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:22px}",
+    ".result-figure{margin:0;border:1px solid var(--line);padding:16px;background:#fff}.result-figure h3{margin:0 0 12px;color:var(--ink)}",
+    ".result-figure img{display:block;width:100%;height:auto}.download-list{list-style:none;padding:0}.download-list li{display:grid;grid-template-columns:minmax(220px,32%) 1fr;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}",
+    ".download-list li span{color:var(--muted)}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
     "background:var(--ink);color:#fff;padding:10px 15px;box-shadow:0 8px 24px rgba(18,59,93,.2);opacity:0;transform:translateY(8px);",
     "pointer-events:none;transition:opacity .16s ease,transform .16s ease}.action-status.show{opacity:1;transform:translateY(0)}",
     "@media(max-width:760px){main{padding:18px 10px 45px}table{font-size:.82rem;min-width:700px}}@page{size:A4;margin:14mm}@media print{body{background:#fff}",
     "header{padding:0 0 20px;background:#fff;color:var(--ink)}header p{color:var(--muted)}main{max-width:none;padding:0}.overview,.model-card{border:0;padding:0;margin:0}",
     "button,.actions,.action-status{display:none}h2{break-after:avoid}figure{break-inside:avoid}thead{display:table-header-group}",
-    "tr{break-inside:avoid}.table-shell{overflow:visible;max-height:none}.model-card{break-before:page}.dm-groups-block{break-before:page}",
-    "#dm-groups-table{font-size:.78rem}#dm-groups-table th,#dm-groups-table td{padding:6px 8px;line-height:1.25}}",
+    "tr{break-inside:avoid}.table-shell{overflow:visible;max-height:none}.model-card{break-before:page}.viewer-frame{display:none}",
+    ".result-grid{display:block}.result-figure{break-before:page;border:0;padding:0}}",
     "</style></head><body><header><div class=\"eyebrow\">BET 2026 assessment</div><h1>Stepwise model development</h1>",
     "<p>Assessment pathway and rationale</p></header><main>",
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
@@ -721,7 +668,6 @@ build_stepwise_report <- function(
     "<span contenteditable=\"true\">XX</span>.</strong> ", stepwise_html_escape(table_caption), "</p>",
     "<div class=\"table-shell\">", table_html, "</div><div class=\"actions\"><button onclick=\"copyTable(this)\">Copy table + caption for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('table-latex',this)\">Copy table + caption for LaTeX</button></div></div></section>",
-    dm_section,
     result_section,
     "<section class=\"model-card\"><div id=\"references-word\"><h2>References</h2><div class=\"table-reference\" id=\"table-reference\"><ol><li>",
     paste0(
@@ -735,8 +681,6 @@ build_stepwise_report <- function(
     "<pre id=\"method-latex\" class=\"hidden-copy\">", stepwise_html_escape(method_latex), "</pre>",
     "<pre id=\"figure-latex\" class=\"hidden-copy\">", stepwise_html_escape(latex_figure), "</pre>",
     "<pre id=\"table-latex\" class=\"hidden-copy\">", stepwise_html_escape(table_latex), "</pre>",
-    "<pre id=\"dm-configuration-latex\" class=\"hidden-copy\">", stepwise_html_escape(dm_configuration_latex), "</pre>",
-    "<pre id=\"dm-groups-latex\" class=\"hidden-copy\">", stepwise_html_escape(dm_groups_latex), "</pre>",
     "<pre id=\"references-bibtex\" class=\"hidden-copy\">", stepwise_html_escape(stepwise_references_bibtex), "</pre>",
     "<img id=\"dag-png\" hidden src=\"data:image/png;base64,", png_data, "\">",
     "<div id=\"action-status\" class=\"action-status\" role=\"status\" aria-live=\"polite\"></div>",
@@ -776,28 +720,11 @@ build_stepwise_report <- function(
     row.names = FALSE
   )
   writeLines(table_latex, file.path(output_dir, "stepwise-model-configurations.tex"))
-  write.csv(
-    stepwise_dm_configuration,
-    file.path(output_dir, "stepwise-dm-configuration.csv"),
-    row.names = FALSE
-  )
-  write.csv(
-    stepwise_dm_groups,
-    file.path(output_dir, "stepwise-dm-groups.csv"),
-    row.names = FALSE
-  )
-  writeLines(
-    dm_configuration_latex,
-    file.path(output_dir, "stepwise-dm-configuration.tex")
-  )
-  writeLines(dm_groups_latex, file.path(output_dir, "stepwise-dm-groups.tex"))
   writeLines(stepwise_references_bibtex, file.path(output_dir, "stepwise-references.bib"))
   writeLines(paste0("Figure XX. ", figure_caption), file.path(output_dir, "stepwise-pathway-caption.txt"))
   writeLines(
     c(
       paste0("Table XX. ", table_caption),
-      paste0("Table XX. ", dm_configuration_caption),
-      paste0("Table XX. ", dm_groups_caption),
       "References.",
       stepwise_references
     ),
@@ -808,14 +735,19 @@ build_stepwise_report <- function(
     html = html_file,
     pathway = dag,
     configurations = file.path(output_dir, "stepwise-model-configurations.csv"),
-    dm_configuration = file.path(output_dir, "stepwise-dm-configuration.csv"),
-    dm_groups = file.path(output_dir, "stepwise-dm-groups.csv"),
+    viewer = assets$viewer,
+    model_summary = file.path(output_dir, "stepwise-model-summary.csv"),
+    objective_components = file.path(output_dir, "stepwise-objective-components.csv"),
     references = file.path(output_dir, "stepwise-references.bib"),
     discovered_results = discovered
   ))
 }
 
-`%||%` <- function(x, y) if (is.null(x) || !length(x) || is.na(x[[1L]])) y else x
+`%||%` <- function(x, y) {
+  if (is.null(x) || !length(x)) return(y)
+  first <- x[[1L]]
+  if (length(first) == 1L && is.atomic(first) && is.na(first)) y else x
+}
 
 if (sys.nframe() == 0L) {
   build_stepwise_report()

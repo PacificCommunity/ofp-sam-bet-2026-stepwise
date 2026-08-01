@@ -79,3 +79,5 @@ Rscript R/build_stepwise_report.R
 
 printf 'Stepwise model-development report: %s\n' \
   "${REPORT_OUTPUT_PATH}/bet-2026-stepwise-model-development.html"
+printf 'Stepwise interactive viewer: %s\n' \
+  "${REPORT_OUTPUT_PATH}/interactive-model-viewer.html"

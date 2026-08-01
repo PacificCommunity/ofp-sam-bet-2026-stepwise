@@ -1,52 +1,61 @@
-# Build a publication-ready diagram of the final BET 2026 pathway.
+# Build a publication-ready diagram from the models selected at report runtime.
+
+stepwise_dag_value <- function(x, name, default = "") {
+  if (!name %in% names(x)) return(rep(default, nrow(x)))
+  value <- x[[name]]
+  value[is.na(value)] <- default
+  value
+}
 
 build_stepwise_dag <- function(
     config_path = "job-config.R",
     output_dir = Sys.getenv("OUTPUT_DIR", "outputs"),
-    basename = "bet-2026-stepwise-dag") {
+    basename = "bet-2026-stepwise-dag",
+    models = NULL) {
   for (package in c("ggplot2", "ragg")) {
     if (!requireNamespace(package, quietly = TRUE)) {
       stop("The ", package, " package is required to build the stepwise diagram.")
     }
   }
 
-  config <- new.env(parent = baseenv())
-  sys.source(normalizePath(config_path, mustWork = TRUE), envir = config)
-  models <- config$stepwise_models
-  models$id <- as.character(models$step_id)
-  models$parent <- as.character(models$scientific_parent_id)
-  models$label <- as.character(models$model_label)
-  models$category <- ifelse(
-    models$id == "19-DMG8Nmax25", "final",
-    ifelse(as.logical(models$selected), "selected", "alternative")
-  )
-
-  expected <- c(
-    "01-Diag2023", "02-NewExeIni1007", "03-FixM", "04-LengthWeight",
-    "05-NewStructure", "06-ConvertToLength", "07-AddLengthData",
-    "08-DataTo2024", "09-SizeDataQC", "10-RegionalCPUE",
-    "11-TimeVaryingCV", "12-CPUEErrorCalibration", "13-NewAgeData",
-    "14a-REG075", "14b-SUB075", "15-SelectivityUpdate", "16-MIX020",
-    "17-TagReportingExclusion", "18-EffortCreep", "19-DMG8Nmax25"
-  )
-  if (!identical(models$id, expected)) {
-    stop("Configured rows do not match the final 20-model pathway.")
+  if (is.null(models)) {
+    config <- new.env(parent = baseenv())
+    sys.source(normalizePath(config_path, mustWork = TRUE), envir = config)
+    models <- config$stepwise_models
+  }
+  if (!is.data.frame(models) || !nrow(models) || !"step_id" %in% names(models)) {
+    stop("models must be a non-empty data frame with a step_id column.", call. = FALSE)
   }
 
-  selected <- models[as.logical(models$selected), , drop = FALSE]
-  selected$order <- seq_len(nrow(selected))
-  selected$column <- pmin(4L, ceiling(selected$order / 5L))
-  selected$row <- ave(selected$order, selected$column, FUN = seq_along)
-  selected$x <- c(1.5, 4.4, 7.3, 10.2)[selected$column]
-  selected$y <- 6.2 - 1.05 * (selected$row - 1L)
+  models$id <- as.character(models$step_id)
+  models$parent <- as.character(stepwise_dag_value(models, "scientific_parent_id"))
+  models$label <- as.character(stepwise_dag_value(models, "model_label", models$id))
+  selected <- as.logical(stepwise_dag_value(models, "selected", TRUE))
+  selected[is.na(selected)] <- TRUE
+  models$category <- ifelse(selected, "selected", "alternative")
+  models$category[[nrow(models)]] <- "final"
 
-  alternative <- models[!as.logical(models$selected), , drop = FALSE]
-  alternative$x <- 8.7
-  alternative$y <- selected$y[selected$id == "14b-SUB075"]
-  nodes <- rbind(selected[, names(models)], alternative[, names(models)])
+  main <- models[selected, , drop = FALSE]
+  main$order <- seq_len(nrow(main))
+  rows_per_column <- max(1L, ceiling(nrow(main) / 4L))
+  main$column <- ceiling(main$order / rows_per_column)
+  main$row <- ave(main$order, main$column, FUN = seq_along)
+  main$x <- 1.45 + (main$column - 1L) * 2.9
+  main$y <- 6.15 - (main$row - 1L) * 1.02
+
+  alternative <- models[!selected, , drop = FALSE]
+  if (nrow(alternative)) {
+    parent_x <- main$x[match(alternative$parent, main$id)]
+    parent_y <- main$y[match(alternative$parent, main$id)]
+    parent_x[is.na(parent_x)] <- max(main$x, na.rm = TRUE) - 1.45
+    parent_y[is.na(parent_y)] <- 2.1
+    alternative$x <- pmin(parent_x + 2.05, 10.25)
+    alternative$y <- parent_y - seq_len(nrow(alternative)) * 0.43
+  }
+  nodes <- rbind(main[, names(models), drop = FALSE], alternative[, names(models), drop = FALSE])
   xy <- rbind(
-    selected[, c("id", "x", "y")],
-    alternative[, c("id", "x", "y")]
+    main[, c("id", "x", "y"), drop = FALSE],
+    alternative[, c("id", "x", "y"), drop = FALSE]
   )
   nodes$x <- xy$x[match(nodes$id, xy$id)]
   nodes$y <- xy$y[match(nodes$id, xy$id)]
@@ -59,9 +68,12 @@ build_stepwise_dag <- function(
     if (!parent %in% nodes$id) next
     from <- nodes[nodes$id == parent, , drop = FALSE]
     to <- nodes[i, , drop = FALSE]
+    same_column <- abs(from$x - to$x) < 0.05
     edges <- rbind(edges, data.frame(
-      x = from$x + 0.84, y = from$y,
-      xend = to$x - 0.84, yend = to$y,
+      x = if (same_column) from$x else from$x + 0.82,
+      y = if (same_column) from$y - 0.12 else from$y,
+      xend = if (same_column) to$x else to$x - 0.82,
+      yend = if (same_column) to$y + 0.12 else to$y,
       category = if (to$category == "alternative") "alternative" else "selected"
     ))
   }
@@ -69,9 +81,9 @@ build_stepwise_dag <- function(
   colours <- c(selected = "#23777C", alternative = "#C86616", final = "#123F48")
   fills <- c(selected = "#F7FBFB", alternative = "#FFF6EC", final = "#E9F3F3")
   caption <- paste(
-    "BET 2026 final stepwise pathway. Teal arrows show the selected cumulative",
-    "sequence; the orange branch is the alternative regional CAAL treatment.",
-    "The final node matches the Job 18718 flexible-selectivity treatment."
+    "Stepwise pathway generated from the models supplied to this report.",
+    "Teal arrows show the selected cumulative sequence; orange arrows show",
+    "comparison branches, and the dark-teal node is the last selected model."
   )
 
   plot <- ggplot2::ggplot() +
@@ -86,18 +98,18 @@ build_stepwise_dag <- function(
       data = nodes,
       ggplot2::aes(x = x, y = y, label = display,
                    colour = category, fill = category),
-      size = 2.55, linewidth = 0.55, label.r = grid::unit(0.08, "lines"),
+      size = 2.45, linewidth = 0.55, label.r = grid::unit(0.08, "lines"),
       label.padding = grid::unit(0.22, "lines"),
       fontface = ifelse(nodes$category == "final", "bold", "plain")
     ) +
     ggplot2::annotate(
-      "text", x = 0.45, y = 7.1,
-      label = "BET 2026 FINAL STEPWISE PATHWAY",
+      "text", x = 0.35, y = 7.05,
+      label = "BET 2026 STEPWISE DEVELOPMENT PATHWAY",
       hjust = 0, colour = "#253E45", fontface = "bold", size = 4.2
     ) +
     ggplot2::annotate(
-      "text", x = 0.45, y = 0.55,
-      label = caption, hjust = 0, colour = "#5C7075", size = 2.55
+      "text", x = 0.35, y = 0.42,
+      label = caption, hjust = 0, colour = "#5C7075", size = 2.45
     ) +
     ggplot2::scale_colour_manual(values = colours, guide = "none") +
     ggplot2::scale_fill_manual(values = fills, guide = "none") +
@@ -105,7 +117,7 @@ build_stepwise_dag <- function(
       values = c(selected = "solid", alternative = "22"), guide = "none"
     ) +
     ggplot2::coord_cartesian(
-      xlim = c(0.3, 11.35), ylim = c(0.35, 7.25), clip = "off"
+      xlim = c(0.2, 11.25), ylim = c(0.25, 7.2), clip = "off"
     ) +
     ggplot2::theme_void(base_family = "sans") +
     ggplot2::theme(
