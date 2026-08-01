@@ -4,7 +4,7 @@ branch: final-stepwise-alt
 target_folder: model-development-report
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
-remote_host: noumea
+remote_host: suva
 
 resources:
   cpus: 4

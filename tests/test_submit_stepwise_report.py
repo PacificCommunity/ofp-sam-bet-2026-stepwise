@@ -47,6 +47,10 @@ class DynamicStepwiseSubmissionTests(unittest.TestCase):
 
         payload = MODULE.submission_payload(viewer, records)
         self.assertEqual(payload["input_jobs"], [900])
+        self.assertEqual(
+            payload["metadata"]["job_title"],
+            "BET 2026 stepwise report | viewer #900 | models #801,#802,#803,#804",
+        )
         embedded = json.loads(payload["env"]["STEPWISE_SOURCE_INDEX_JSON"])
         self.assertEqual(embedded, records)
 

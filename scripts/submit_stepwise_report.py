@@ -130,9 +130,14 @@ def submission_payload(
     include_source_jobs: bool = False,
 ) -> dict[str, Any]:
     viewer_number = int(viewer["job_number"])
+    source_numbers = [int(record["job_number"]) for record in records]
+    source_label = ",".join(f"#{job_number}" for job_number in source_numbers)
+    job_title = (
+        f"BET 2026 stepwise report | viewer #{viewer_number} | models {source_label}"
+    )
     input_jobs = [viewer_number]
     if include_source_jobs:
-        input_jobs.extend(record["job_number"] for record in records)
+        input_jobs.extend(source_numbers)
     input_jobs = list(dict.fromkeys(input_jobs))
     return {
         "input_jobs": input_jobs,
@@ -149,13 +154,13 @@ def submission_payload(
         },
         "metadata": {
             "job_key": "dynamic-stepwise-report",
-            "job_title": "BET 2026 dynamic stepwise report and viewer",
+            "job_title": job_title,
             "job_description": (
                 "Stepwise report, SC figures, runtime tables, and offline interactive viewer "
                 "generated from the selected upstream viewer job."
             ),
             "viewer_job": viewer_number,
-            "source_jobs": [record["job_number"] for record in records],
+            "source_jobs": source_numbers,
             "source_rows": [record["row"] for record in records],
             "model_count": len(records),
             "dynamic_inputs": True,
