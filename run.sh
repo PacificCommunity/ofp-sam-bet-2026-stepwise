@@ -14,7 +14,7 @@ truthy()
 }
 
 if [[ ! "$model" =~ ^K(005|010|015|020|025|030)-tau-(estimated|not-estimated)(-sel20c)?$ ]] &&
-   [[ ! "$model" =~ ^K020-tau-not-estimated-sel20c-f10-(ndpen-(weak|default)|logistic(-r1ll-4node)?(-f33-(logistic|ndpen-strong))?)$ ]]; then
+   [[ ! "$model" =~ ^K020-tau-not-estimated-sel20c-f10-(ndpen-(weak|default)|ndpen-weak-seed23-base|logistic(-r1ll-4node)?(-f33-(logistic|ndpen-strong))?)$ ]]; then
   echo "MODEL is not a supported final-exploration or F10 penalty candidate." >&2
   exit 2
 fi
@@ -46,6 +46,14 @@ fi
 
 mkdir -p "$run_dir"
 cp -a "$source_dir/." "$run_dir/"
+
+# The selected seed-23 base is also a handoff bundle: archive the exact MFCL
+# executable beside doitall.sh so a future assessor can rerun it without
+# knowing the Kflow/container path convention.
+if [[ "$model" == K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base ]]; then
+  cp "$program_path" "$run_dir/mfclo64"
+  chmod 0755 "$run_dir/mfclo64"
+fi
 
 echo "Running $model"
 echo "MFCL executable: $program_path"

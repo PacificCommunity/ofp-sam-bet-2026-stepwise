@@ -1,10 +1,11 @@
 # BET 2026 final exploration
 
 This branch is a compact, clone-and-run archive for the final BET 2026
-mixing-period exploration and four selectivity-robustness candidates. It
-contains 28 independent model folders:
-six region-mean mixing thresholds crossed with two tag-tau treatments and
-two selectivity treatments, plus four Job 18718-based candidates.
+mixing-period exploration, eight selectivity-robustness candidates, and one
+promoted seed-23 base. It contains 33 independent model folders: six
+region-mean mixing thresholds crossed with two tag-tau treatments and two
+selectivity treatments, plus eight robustness candidates and the Job 19325
+best-objective seed-23 base.
 It does not depend on the deleted stepwise `steps/` tree.
 
 ## Exploration grid
@@ -60,6 +61,19 @@ change no data, mixing, tau, reporting-rate, natural-mortality or DM control.
 Their diagnostic evidence, MFCL manual/source interpretation and acceptance
 criteria are documented in
 [`docs/f10-selectivity-penalty.md`](docs/f10-selectivity-penalty.md).
+
+## Promoted Job 19325 seed-23 base
+
+[`K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base`](explorations/K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base/)
+retains the weak-penalty model and embeds the exact Job 19325 seed-23 CV=0.1
+Phase-1/2/5 initialization path in one `doitall.sh`. It starts with
+`bet.ini -makepar`, adapts to retrospective dimensions, records a complete
+initialization audit, and can use either a colocated `./mfclo64` or
+`PROGRAM_PATH`. The selected run had the best converged objective
+(89054.3397838085) and 2024 depletion 0.3287955046; it was not the
+lowest-depletion run. The ordinary downstream jitter workflow detects its
+resume state and does not apply the embedded seed-23 base initialization a
+second time.
 
 ## Controls held fixed
 
@@ -133,12 +147,13 @@ Results are written to
 [`kflow.yaml`](kflow.yaml) pins
 `ghcr.io/pacificcommunity/tuna-flow:v2.5` to image digest
 `sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360`.
-The public task contains eight independent campaign rows. The original four
+The public task contains nine independent campaign rows. The original four
 rows cover the weak penalty, MFCL-default penalty, asymptotic logistic F10, and
 F10-logistic plus Region-1 four-node candidate. The four Index R5 rows cross
 F1-F3 five/four-node splines with F33 logistic/strong non-decreasing
-treatments while retaining logistic F10. `STEP_SELECT` identifies each row;
-no fit depends on another.
+treatments while retaining logistic F10. The ninth row builds the standalone
+Job 19325 seed-23 base and archives its exact MFCL executable beside the model
+inputs. `STEP_SELECT` identifies each row; no fit depends on another.
 
 The model job installs and verifies the current package snapshots at exact
 commits:

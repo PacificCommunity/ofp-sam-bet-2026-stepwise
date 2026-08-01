@@ -393,9 +393,48 @@ for index in "${!f33_models[@]}"; do
   fi
 done
 
+seed23_model=K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base
+seed23_dir="explorations/$seed23_model"
+[[ -d "$seed23_dir" ]] || fail "missing seed-23 base directory $seed23_dir"
+for file in "${required[@]}"; do
+  [[ -s "$seed23_dir/$file" ]] || fail "missing or empty $seed23_dir/$file"
+done
+(cd "$seed23_dir" && sha256sum -c MANIFEST.sha256 >/dev/null) ||
+  fail "manifest mismatch in $seed23_dir"
+sh -n "$seed23_dir/doitall.sh" ||
+  fail "shell syntax error in $seed23_dir/doitall.sh"
+for file in "${robust_unchanged_files[@]}"; do
+  cmp -s "explorations/K020-tau-not-estimated-sel20c-f10-ndpen-weak/$file" \
+    "$seed23_dir/$file" ||
+    fail "$seed23_model changed frozen Job 19325 input $file"
+done
+grep -Fqx 'seed23_seed=23' "$seed23_dir/doitall.sh" ||
+  fail "$seed23_model does not lock seed 23"
+grep -Fqx 'seed23_cv=0.1' "$seed23_dir/doitall.sh" ||
+  fail "$seed23_model does not lock jitter CV 0.1"
+grep -Fq 'mfk_phase1_baseline.par' "$seed23_dir/doitall.sh" ||
+  fail "$seed23_model lacks the ordinary-jitter no-double-application guard"
+grep -Fq '104729 + as.double(phase) * 1009 + 17' "$seed23_dir/doitall.sh" ||
+  fail "$seed23_model does not retain the archived deferred-seed formula"
+grep -Fq 'fish_pars23 \' "$seed23_dir/doitall.sh" ||
+  fail "$seed23_model lacks the Phase-2 DM initialization hook"
+grep -Fq 'selectivity_coff \' "$seed23_dir/doitall.sh" ||
+  fail "$seed23_model lacks the Phase-5 index-selectivity initialization hook"
+Rscript -e '
+  path <- commandArgs(TRUE)[[1L]]
+  lines <- readLines(path, warn = FALSE)
+  first <- which(lines == "args <- commandArgs(trailingOnly = TRUE)")
+  last <- which(lines == "SEED23_R")
+  stopifnot(length(first) == 1L, length(last) == 1L, last > first)
+  parse(text = lines[first:(last - 1L)])
+' "$seed23_dir/doitall.sh" >/dev/null ||
+  fail "$seed23_model embedded R initializer has a syntax error"
+grep -Fq 'cp "$program_path" "$run_dir/mfclo64"' run.sh ||
+  fail "run.sh does not bundle the exact MFCL executable for $seed23_model"
+
 exploration_count=$(find explorations -mindepth 1 -maxdepth 1 -type d | wc -l)
-[[ "$exploration_count" -eq 32 ]] ||
-  fail "expected exactly 32 exploration directories; found $exploration_count"
+[[ "$exploration_count" -eq 33 ]] ||
+  fail "expected exactly 33 exploration directories; found $exploration_count"
 
 python3 scripts/create-sel20c-variants.py --check >/dev/null ||
   fail "committed sel20c variants differ from Job 15062 plus the F14 constraint"
@@ -523,12 +562,16 @@ Rscript -e 'parse(file = "scripts/prepare-runtime-packages.R"); parse(file = "sc
   >/dev/null ||
   fail "R helper syntax check failed"
 
-echo "Validated 32 self-contained exploration folders."
+Rscript -e 'source("job-config.R"); stopifnot(nrow(stepwise_models) == 9L)' ||
+  fail "job-config.R does not define the nine-row campaign"
+
+echo "Validated 33 self-contained exploration folders."
 echo "The 12 sel20c variants reproduce Job 15062 Phase 1/5 selectivity controls with the deliberate F14 constraint."
 echo "The two F10 candidates differ from Job 18718 only by flags 16 and 56."
 echo "The F10 logistic candidate differs from Job 18718 only by flag 57=1."
 echo "The Region-1 candidate adds only F1-F3 flag 61=4 to the F10 logistic treatment."
 echo "The four F33 candidates form the validated F1-F3 five/four-node by F33 logistic/non-decreasing 2x2 sensitivity."
+echo "The Job 19325 seed-23 base has a syntax-checked standalone Phase-1/2/5 initializer and ordinary-jitter guard."
 echo "F14/F15 retained length-frequency support and youngest-five-age constraints passed."
 echo "K015 matches Job 18386; Job 18518 DM, M, reporting-rate, tag-flag, and v2.5 scaling checks passed."
 echo "Pinned tuna-flow v2.5, mfclkit, mfclshiny, payload, and local-app checks passed."

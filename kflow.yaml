@@ -1,5 +1,5 @@
 name: BET 2026 F10 selectivity robustness - tuna-flow v2.5
-description: "Eight independent frozen-input fits spanning F10 robustness controls and a 2x2 Index R5 sensitivity: F1-F3 five/four-node splines crossed with F33 logistic/strong non-decreasing treatments. F10 remains logistic in all Index R5 fits."
+description: "Nine independent frozen-input fits spanning F10 robustness controls, a 2x2 Index R5 sensitivity, and the Job 19325 best-objective seed-23 solution promoted to a standalone reproducible base."
 
 repo_full_name: PacificCommunity/ofp-sam-bet-2026-stepwise
 branch: final-exploration-robust
@@ -49,7 +49,8 @@ tags:
 
 metadata:
   scientific_parent_job: "19326"
-  model_count: 8
+  seed23_base_parent_job: "19325"
+  model_count: 9
   parent_source_commit: 6ebfb4a98a933b2e410a1af480532b23873fa9c3
   ini_source_repo: PacificCommunity/ofp-sam-2026-BET-YFT-build-ini
   ini_source_branch: SC22-IP10-regionMean
@@ -170,3 +171,4 @@ model_campaign:
     - K020-tau-not-estimated-sel20c-f10-logistic-f33-ndpen-strong
     - K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node-f33-logistic
     - K020-tau-not-estimated-sel20c-f10-logistic-r1ll-4node-f33-ndpen-strong
+    - K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base
