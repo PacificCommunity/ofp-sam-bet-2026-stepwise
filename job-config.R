@@ -6,10 +6,10 @@
 
 stepwise_run <- list(
   default_step_select = "all",
-  numbered_groups = 20L,
-  model_rows = 21L,
-  selected_path_models = 20L,
-  flow_group = "bet-2026-final-stepwise-alt-f10-ndpen-weak",
+  numbered_groups = 19L,
+  model_rows = 20L,
+  selected_path_models = 19L,
+  flow_group = "bet-2026-final-stepwise-02aug",
   trigger_next = FALSE
 )
 
@@ -157,9 +157,14 @@ stepwise_models <- do.call(rbind, list(
   ),
   model_row(
     "15-SelectivityUpdate", "15-SelectivityUpdate", "14b-SUB075",
-    TRUE, "carry", "apply the Job 18718 flexible fishery-specific selectivity",
-    "Flexible selectivity update", "15 Flexible selectivity update",
-    "15-selectivity-update"
+    TRUE, "carry", "apply Job 18718 flexible selectivity plus the weak F10 non-decreasing penalty",
+    "Selectivity update", "15 Selectivity update",
+    "15-selectivity-f10-ndpen-weak",
+    paste(
+      "Apply the Job 18718 flexible selectivity controls and F10 LL.ALL.5",
+      "fish flags 16=1 and 56=10000 from the deterministic Job 19325 treatment.",
+      "Use the ordinary makepar start, not Job 19835 or any jitter/seed-23 path."
+    )
   ),
   model_row(
     "16-MIX020", "16-TagMixing", "15-SelectivityUpdate",
@@ -182,7 +187,7 @@ stepwise_models <- do.call(rbind, list(
   ),
   model_row(
     "19-DMG8Nmax25", "19-CompositionWeighting", "18-EffortCreep",
-    TRUE, "carry", "apply Dirichlet-multinomial composition weighting",
+    TRUE, "final", "apply Dirichlet-multinomial composition weighting",
     "DM composition weighting", "19 DM composition weighting, G8 Nmax 25",
     "19-dm-g8-nmax25",
     paste(
@@ -190,18 +195,6 @@ stepwise_models <- do.call(rbind, list(
       "fixed at 7 and eight grouped fish_pars(23) exponents estimated.",
       "Retain the original 2023 negative-binomial tag likelihood;",
       "tag tau is not estimated (parest 111=4; fish flags 43/44 inactive)."
-    )
-  ),
-  model_row(
-    "20-F10NDWeak", "20-SelectivityRobustness", "19-DMG8Nmax25",
-    TRUE, "final", "add only the Job 19325 weak F10 non-decreasing penalty",
-    "F10 weak non-decreasing penalty | ordinary makepar start",
-    "20 F10 non-decreasing penalty | weight 10,000 | no jitter",
-    "20-f10-ndpen-weak",
-    paste(
-      "Add only F10 LL.ALL.5 fish flags 16=1 and 56=10000 to Step 19.",
-      "This matches the deterministic Job 19325 model structure and uses the",
-      "ordinary makepar start, not Job 19835 or any jitter/seed-23 path."
     )
   )
 ))
@@ -223,12 +216,11 @@ stepwise_report_change <- c(
   "13-NewAgeData" = "New CAAL data with weight 0.75",
   "14a-REG075" = "Regional CAAL reweighting",
   "14b-SUB075" = "Sub-basin CAAL reweighting with regions 3 and 4 combined",
-  "15-SelectivityUpdate" = "Flexible fishery-specific selectivity",
+  "15-SelectivityUpdate" = "Flexible fishery-specific selectivity plus weak F10 non-decreasing penalty",
   "16-MIX020" = "Release-group-specific K=0.20 tag-mixing periods",
   "17-TagReportingExclusion" = "Pre-mixing reporting-rate exclusion",
   "18-EffortCreep" = "Effort-creep adjustment",
-  "19-DMG8Nmax25" = "Dirichlet-multinomial composition weighting",
-  "20-F10NDWeak" = "Weak F10 non-decreasing selectivity penalty"
+  "19-DMG8Nmax25" = "Dirichlet-multinomial composition weighting"
 )
 
 stepwise_report_purpose <- c(
@@ -247,12 +239,11 @@ stepwise_report_purpose <- c(
   "13-NewAgeData" = "Use the 2023 BET age-data weighting as the reference treatment.",
   "14a-REG075" = "Test region-level spatial CAAL weighting.",
   "14b-SUB075" = "Apply the selected sub-basin CAAL weighting.",
-  "15-SelectivityUpdate" = "Apply the Job 18718 flexible selectivity treatment to the revised 33-fishery structure.",
+  "15-SelectivityUpdate" = "Apply the Job 18718 flexible selectivity treatment and the deterministic Job 19325 weak F10 tail-stability penalty to the revised 33-fishery structure.",
   "16-MIX020" = "Assign Joe's region-mean release-group mixing periods at K=0.20.",
   "17-TagReportingExclusion" = "Avoid applying reporting rates in pre-mixing windows.",
   "18-EffortCreep" = "Account for gradual changes in fishing efficiency.",
-  "19-DMG8Nmax25" = "Use the Job 18718 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7.",
-  "20-F10NDWeak" = "Add the weak F10 tail-stability penalty selected in deterministic Job 19325 without importing a jitter solution."
+  "19-DMG8Nmax25" = "Use the Job 18718 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7."
 )
 
 stepwise_models$report_change <- unname(stepwise_report_change[stepwise_models$step_id])
@@ -269,7 +260,7 @@ path_stage <- c(
   "14a-REG075" = 14L, "14b-SUB075" = 14L,
   "15-SelectivityUpdate" = 15L, "16-MIX020" = 16L,
   "17-TagReportingExclusion" = 17L, "18-EffortCreep" = 18L,
-  "19-DMG8Nmax25" = 19L, "20-F10NDWeak" = 20L
+  "19-DMG8Nmax25" = 19L
 )
 stepwise_models$path_stage <- unname(path_stage[stepwise_models$step_id])
 stepwise_models$age_length_variant <- ""
@@ -297,14 +288,14 @@ stepwise_models$tail_compression_percent <- 0
 stepwise_models$fixed_cpue_sigma <- stepwise_models$path_stage >= 12L
 stepwise_models$selectivity_update <- stepwise_models$path_stage >= 15L
 stepwise_models$selectivity_variant <- ifelse(
-  stepwise_models$path_stage >= 20L, "Job 19325 weak F10 non-decreasing",
-  ifelse(stepwise_models$path_stage >= 15L, "Job 18718 flexible", "")
+  stepwise_models$path_stage >= 15L,
+  "Job 18718 flexible + Job 19325 weak F10 non-decreasing", ""
 )
 stepwise_models$f10_non_decreasing_penalty_weight <- ifelse(
-  stepwise_models$path_stage >= 20L, 10000, NA_real_
+  stepwise_models$path_stage >= 15L, 10000, NA_real_
 )
 stepwise_models$all_selectivity_forms_relaxed <-
-  stepwise_models$path_stage >= 15L & stepwise_models$path_stage < 20L
+  FALSE
 stepwise_models$size_data_qc <- stepwise_models$path_stage >= 9L
 rownames(stepwise_models) <- NULL
 

@@ -46,23 +46,21 @@ expected_ids <- c(
   "08-DataTo2024", "09-SizeDataQC", "10-RegionalCPUE",
   "11-TimeVaryingCV", "12-CPUEErrorCalibration", "13-NewAgeData",
   "14a-REG075", "14b-SUB075", "15-SelectivityUpdate", "16-MIX020",
-  "17-TagReportingExclusion", "18-EffortCreep", "19-DMG8Nmax25",
-  "20-F10NDWeak"
+  "17-TagReportingExclusion", "18-EffortCreep", "19-DMG8Nmax25"
 )
 expected_parents <- c(
   "external-2023-diagnostic-archive", expected_ids[1:13],
   "13-NewAgeData", "14b-SUB075", "15-SelectivityUpdate",
-  "16-MIX020", "17-TagReportingExclusion", "18-EffortCreep",
-  "19-DMG8Nmax25"
+  "16-MIX020", "17-TagReportingExclusion", "18-EffortCreep"
 )
 assert(is.data.frame(models), "job-config", "stepwise_models must be a data frame")
 if (is.data.frame(models)) {
   assert(identical(as.character(models$step_id), expected_ids),
-         "job-config", "step order or model set differs from the approved 21-row/20-step chain")
+         "job-config", "step order or model set differs from the approved 20-row/19-step chain")
   assert(identical(as.character(models$scientific_parent_id), expected_parents),
          "job-config", "scientific parent graph differs from the approved cumulative chain")
-  assert(sum(as.logical(models$selected)) == 20L,
-         "job-config", "exactly 20 models must be on the selected path")
+  assert(sum(as.logical(models$selected)) == 19L,
+         "job-config", "exactly 19 models must be on the selected path")
   assert(identical(models$step_id[!as.logical(models$selected)], "14a-REG075"),
          "job-config", "14a-REG075 must be the only alternative")
   assert(identical(as.character(models$mfcl_program_path[[1L]]),
@@ -81,8 +79,8 @@ assert(!any(vapply(forbidden_names, function(x) any(grepl(x, actual_ids, fixed =
 
 ## Runtime lock.
 kflow <- paste(read_text(file.path(root, "kflow.yaml")), collapse = "\n")
-assert(grepl("name: bet-2026-final-stepwise-alt-f10-ndpen-weak-v25", kflow, fixed = TRUE),
-       "kflow", "task name is not the deterministic F10 weak-penalty v2.5 task")
+assert(grepl("name: bet-2026-final-stepwise-02aug", kflow, fixed = TRUE),
+       "kflow", "task name is not the corrected full-pathway 02aug task")
 assert(grepl(
   "ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360",
   kflow, fixed = TRUE
@@ -434,30 +432,21 @@ selectivity_signature <- function(path) {
   }
   paste0(paste(rows, collapse = "\n"), "\n")
 }
-expected_selectivity_sha <- "def9bf5fecf1a6e7e5890a8ea9ff2fcc577442334510c8409836bd43caa00400"
-for (id in expected_ids[16:20]) {
+for (id in expected_ids[16:length(expected_ids)]) {
   signature <- selectivity_signature(file.path(model_dir(id), "doitall.sh"))
-  assert(length(strsplit(trimws(signature), "\n")[[1L]]) == 94L, id,
-         "flexible-selectivity signature must contain 94 Phase 1/5 controls")
-  assert(identical(sha256_text(signature), expected_selectivity_sha), id,
-         "flexible-selectivity update differs from Job 18718")
+  assert(length(strsplit(trimws(signature), "\n")[[1L]]) == 96L, id,
+         "Job 19325 selectivity signature must contain Job 18718 plus two F10 controls")
+  assert(identical(
+    sha256_text(signature),
+    "7107b30b5b9bbf5ef96ae3700322744ee40431cb61fa29f4f454b9c7ca0cb311"
+  ), id, "selectivity controls differ from Job 18718 plus the deterministic Job 19325 F10 treatment")
+  assert(effective_flag(controls_by_id[[id]], -10L, 16L, 1L) == 1 &&
+           effective_flag(controls_by_id[[id]], -10L, 56L, 1L) == 10000,
+         id, "F10 flags 16=1 and 56=10000 must be active from Step 15 onward")
 }
-
-job19325_signature <- selectivity_signature(
-  file.path(model_dir("20-F10NDWeak"), "doitall.sh")
-)
-assert(length(strsplit(trimws(job19325_signature), "\n")[[1L]]) == 96L,
-       "20-F10NDWeak",
-       "Job 19325 selectivity signature must add exactly the two F10 penalty controls")
-assert(identical(
-  sha256_text(job19325_signature),
-  "7107b30b5b9bbf5ef96ae3700322744ee40431cb61fa29f4f454b9c7ca0cb311"
-), "20-F10NDWeak", "selectivity controls differ from the deterministic Job 19325 treatment")
-assert(!isTRUE(effective_flag(controls_by_id[["19-DMG8Nmax25"]], -10L, 16L, 1L) == 1),
-       "19-DMG8Nmax25", "F10 non-decreasing penalty appeared before Step 20")
-assert(effective_flag(controls_by_id[["20-F10NDWeak"]], -10L, 16L, 1L) == 1 &&
-         effective_flag(controls_by_id[["20-F10NDWeak"]], -10L, 56L, 1L) == 10000,
-       "20-F10NDWeak", "F10 flags 16=1 and 56=10000 are not both active")
+assert(!isTRUE(effective_flag(
+  controls_by_id[["14b-SUB075"]], -10L, 16L, 1L
+) == 1), "14b-SUB075", "F10 non-decreasing penalty appeared before Step 15")
 
 ## Tag mixing and reporting-rate isolation.
 rr_labels <- c(
@@ -512,8 +501,8 @@ for (id in expected_ids) {
          "tag tau estimation was activated")
 }
 
-## Step 20: Job 19325 deterministic target; Step 19 DM controls retained.
-final_id <- "20-F10NDWeak"
+## Step 19 final: Job 19325 selectivity treatment with Job 18718 DM controls.
+final_id <- "19-DMG8Nmax25"
 final_controls <- controls_by_id[[final_id]]
 for (pair in list(c(1L, 141L, 11), c(1L, 320L, 5), c(1L, 342L, 25),
                   c(-999L, 69L, 0))) {
@@ -537,7 +526,7 @@ assert(grepl("dm_concentration=7", final_script, fixed = TRUE) &&
 assert(effective_flag(final_controls, 1L, 313L, 1L) == 0,
        final_id, "normal-likelihood 1% tail compression must remain off under DM")
 assert(!grepl("jitter|perturb|seed[ _-]*23", final_script, ignore.case = TRUE),
-       final_id, "deterministic Step 20 must not execute a jitter, perturbation, or seed-23 path")
+       final_id, "deterministic Step 15-19 path must not execute a jitter, perturbation, or seed-23 path")
 
 ## Every transition changes only its declared axis.
 compare_transition <- function(from, to, allowed) {
@@ -575,8 +564,7 @@ transitions <- list(
   c("15-SelectivityUpdate", "16-MIX020", "bet.ini"),
   c("16-MIX020", "17-TagReportingExclusion", "bet.ini"),
   c("17-TagReportingExclusion", "18-EffortCreep", "bet.frq"),
-  c("18-EffortCreep", "19-DMG8Nmax25", "doitall.sh"),
-  c("19-DMG8Nmax25", "20-F10NDWeak", "doitall.sh")
+  c("18-EffortCreep", "19-DMG8Nmax25", "doitall.sh")
 )
 for (transition in transitions) {
   compare_transition(
@@ -630,8 +618,87 @@ for (step_id in five_region_steps) {
   )
 }
 
-## Final static inputs match Jobs 18718 and 19325; Step 20 changes only doitall flags.
-job18718_aligned_hashes <- c(
+## Step 15-19 display metadata must describe the controls that MFCL executes.
+## `selectivity_group` is the final Phase-5 grouping used by downstream viewers;
+## the two phase-specific columns preserve the staged Job 18718 transition.
+selectivity_map_steps <- expected_ids[
+  match("15-SelectivityUpdate", expected_ids):length(expected_ids)
+]
+expected_phase1_groups <- c(seq_len(28L), rep(29L, 5L))
+expected_phase5_groups <- seq_len(33L)
+expected_selectivity_names <- sub("^[0-9]+[.]", "", expected_five_region_names)
+expected_selectivity_forms <- rep("age-based cubic spline", 33L)
+expected_selectivity_nodes <- c(rep(5L, 24L), 7L, 7L, rep(5L, 7L))
+required_selectivity_fields <- c(
+  "selectivity_group", "selectivity_name",
+  "selectivity_phase1_group", "selectivity_phase5_group",
+  "selectivity_form", "selectivity_nodes"
+)
+expected_dom_names <- c("21.DOM.ID.2", "22.DOM.PH.2", "23.DOM.VN.2")
+expected_dom_selectivity_names <- c("DOM.ID.2", "DOM.PH.2", "DOM.VN.2")
+
+for (step_id in selectivity_map_steps) {
+  current_map <- read_fishery_map(step_id)
+  controls <- controls_by_id[[step_id]]
+  assert(all(required_selectivity_fields %in% names(current_map)), step_id,
+         "fishery_map.R is missing the auditable Job 18718 selectivity fields")
+  if (!all(required_selectivity_fields %in% names(current_map))) next
+
+  assert(identical(as.integer(current_map$selectivity_phase1_group),
+                   expected_phase1_groups), step_id,
+         "fishery_map Phase-1 selectivity groups differ from Job 18718")
+  assert(identical(as.integer(current_map$selectivity_phase5_group),
+                   expected_phase5_groups), step_id,
+         "fishery_map Phase-5 selectivity groups differ from Job 18718")
+  assert(identical(as.integer(current_map$selectivity_group),
+                   expected_phase5_groups), step_id,
+         "viewer selectivity_group must represent the final Phase-5 grouping")
+  assert(identical(as.character(current_map$selectivity_name),
+                   expected_selectivity_names), step_id,
+         "fishery_map selectivity names do not preserve the final fishery names")
+  assert(identical(as.character(current_map$selectivity_form),
+                   expected_selectivity_forms), step_id,
+         "fishery_map must identify every Job 18718 form as an age-based cubic spline")
+  assert(identical(as.integer(current_map$selectivity_nodes),
+                   expected_selectivity_nodes), step_id,
+         "fishery_map node counts differ from the executed Job 18718 controls")
+
+  dom_rows <- match(21:23, current_map$fishery)
+  assert(identical(current_map$fishery_name[dom_rows], expected_dom_names) &&
+           identical(current_map$group[dom_rows], rep("DOM", 3L)) &&
+           identical(current_map$selectivity_name[dom_rows],
+                     expected_dom_selectivity_names), step_id,
+         "F21-F23 must retain DOM fishery, group, and selectivity labels")
+  assert(!any(grepl("MISC", unlist(current_map[c(
+    "fishery_name", "group", "selectivity_name"
+  )]), fixed = TRUE)), step_id,
+  "MISC label is forbidden; the agreed F21-F23 public label is DOM")
+
+  control_phase1_groups <- vapply(seq_len(33L), function(fishery) {
+    as.integer(effective_flag(controls, -fishery, 24L, 1L))
+  }, integer(1))
+  control_phase5_groups <- vapply(seq_len(33L), function(fishery) {
+    as.integer(effective_flag(controls, -fishery, 24L, 5L))
+  }, integer(1))
+  control_forms <- vapply(seq_len(33L), function(fishery) {
+    as.integer(effective_flag(controls, -fishery, 57L, 1L))
+  }, integer(1))
+  control_nodes <- vapply(seq_len(33L), function(fishery) {
+    as.integer(effective_flag(controls, -fishery, 61L, 1L))
+  }, integer(1))
+  assert(identical(control_phase1_groups, expected_phase1_groups), step_id,
+         "executed Phase-1 flag-24 groups disagree with fishery_map")
+  assert(identical(control_phase5_groups, expected_phase5_groups), step_id,
+         "executed Phase-5 flag-24 groups disagree with fishery_map")
+  assert(identical(control_forms, rep(3L, 33L)), step_id,
+         "executed flag 57 must retain cubic-spline selectivity for all fisheries")
+  assert(identical(control_nodes, expected_selectivity_nodes), step_id,
+         "executed flag-61 node counts disagree with fishery_map")
+}
+
+## Final numerical inputs match Jobs 18718 and 19325; the corrected display map
+## is locked separately in the same final-input set.
+final_static_hashes <- c(
   "bet.frq" = "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3",
   "bet.ini" = "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
   "bet.tag" = "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
@@ -639,12 +706,12 @@ job18718_aligned_hashes <- c(
   "bet.reg_scaling" = "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
   "mfcl.cfg" = "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
   "tag_rep_map.R" = "96bdd0e9e75bc0794036385edc08e7219942d3c23fe4839be5986c4d77f96085",
-  "fishery_map.R" = "af75e51bed5fcbc752aa1a2534ef7c742daee88048a964e7e9e4b91223118717"
+  "fishery_map.R" = "e861024937a1b560bcbadfa9fbdbbb5cbfdf2e950f166f17bc24842036ef0f33"
 )
-for (file in names(job18718_aligned_hashes)) {
+for (file in names(final_static_hashes)) {
   assert(identical(sha256_file(file.path(model_dir(final_id), file)),
-                   job18718_aligned_hashes[[file]]), final_id,
-         paste0(file, " differs from the locked Job 18718/19325-aligned target"))
+                   final_static_hashes[[file]]), final_id,
+         paste0(file, " differs from the locked final static-input target"))
 }
 
 if (length(failures)) {
@@ -653,9 +720,9 @@ if (length(failures)) {
 }
 
 cat(
-  "Validated 21 frozen models / 20 cumulative steps.\n",
-  "Final: deterministic Job 19325 treatment; Job 18718 plus only F10 flags ",
-  "16=1 and 56=10000; no jitter or promoted seed; DM G8 Nmax25 retained.\n",
+  "Validated 20 frozen models / 19 cumulative steps.\n",
+  "Steps 15-19: deterministic Job 19325 selectivity treatment; Job 18718 plus ",
+  "F10 flags 16=1 and 56=10000; no jitter or promoted seed. Final DM G8 Nmax25 retained.\n",
   "Runtime: Suva, immutable tuna-flow v2.5, pinned mfclkit/mfclshiny.\n",
   sep = ""
 )

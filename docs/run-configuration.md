@@ -9,7 +9,7 @@ Operational settings are generated from `job-config.R` and `kflow.yaml`.
 | `setting` | `value` | `meaning` |
 | --- | --- | --- |
 | `default_step_select` | `all` | Model selection used when `STEP_SELECT` is not supplied. |
-| `flow_group` | `bet-2026-final-stepwise-alt-f10-ndpen-weak` | Kflow group label used to connect stepwise, results, and report jobs. |
+| `flow_group` | `bet-2026-final-stepwise-02aug` | Kflow group label used to connect stepwise, results, and report jobs. |
 | `trigger_next` | `false` | Whether command-line Kflow submissions keep the downstream results/report chain. |
 | `docker_image` | `ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360` | Docker image used by Kflow and local Docker runs. |
 | `program_path` | `/home/mfcl/mfclo64` | MFCL executable path inside the Docker image. |
@@ -43,12 +43,11 @@ Operational settings are generated from `job-config.R` and `kflow.yaml`.
 | `13-NewAgeData` | `TRUE` | 13-AgeData | 13 | add new CAAL data with weight 0.75 | New CAAL data | 13 New CAAL data, weight 0.75 | `13-new-age-data` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `14a-REG075` | `TRUE` | 14-AgeWeighting | 14a | apply regional CAAL reweighting | Regional CAAL reweighting | 14a Regional CAAL reweighting | `14a-reg075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `14b-SUB075` | `TRUE` | 14-AgeWeighting | 14b | apply selected regions 3-and-4 combined CAAL reweighting | Sub-basin CAAL reweighting | 14b Sub-basin CAAL reweighting | `14b-sub075` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
-| `15-SelectivityUpdate` | `TRUE` | 15-SelectivityUpdate | 15 | apply the Job 18718 flexible fishery-specific selectivity | Flexible selectivity update | 15 Flexible selectivity update | `15-selectivity-update` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `15-SelectivityUpdate` | `TRUE` | 15-SelectivityUpdate | 15 | apply Job 18718 flexible selectivity plus the weak F10 non-decreasing penalty | Selectivity update | 15 Selectivity update | `15-selectivity-f10-ndpen-weak` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `16-MIX020` | `TRUE` | 16-TagMixing | 16 | apply release-group-specific K=0.20 mixing periods | K=0.20 tag mixing periods | 16 K=0.20 release-group tag mixing | `16-mix020` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `17-TagReportingExclusion` | `TRUE` | 17-TagReportingExclusion | 17 | exclude reporting rates during pre-mixing windows | Pre-mixing reporting-rate exclusion | 17 Pre-mixing reporting-rate exclusion | `17-tag-reporting-exclusion` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `18-EffortCreep` | `TRUE` | 18-EffortCreep | 18 | apply effort-creep adjustment to CPUE indices | Effort-creep adjustment | 18 Effort-creep adjustment | `18-effort-creep` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `19-DMG8Nmax25` | `TRUE` | 19-CompositionWeighting | 19 | apply Dirichlet-multinomial composition weighting | DM composition weighting | 19 DM composition weighting, G8 Nmax 25 | `19-dm-g8-nmax25` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
-| `20-F10NDWeak` | `TRUE` | 20-SelectivityRobustness | 20 | add only the Job 19325 weak F10 non-decreasing penalty | F10 weak non-decreasing penalty \| ordinary makepar start | 20 F10 non-decreasing penalty \| weight 10,000 \| no jitter | `20-f10-ndpen-weak` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 
 
 ## Folder Checks
@@ -77,7 +76,6 @@ Operational settings are generated from `job-config.R` and `kflow.yaml`.
 | `17-TagReportingExclusion` | `steps/17-TagReportingExclusion/model` | `exists` |
 | `18-EffortCreep` | `steps/18-EffortCreep/model` | `exists` |
 | `19-DMG8Nmax25` | `steps/19-DMG8Nmax25/model` | `exists` |
-| `20-F10NDWeak` | `steps/20-F10NDWeak/model` | `exists` |
 
 
 ## Submission
@@ -91,7 +89,7 @@ make validate
 Submit one frozen model:
 
 ```bash
-make kflow STEP_SELECT=20-F10NDWeak
+make kflow STEP_SELECT=19-DMG8Nmax25
 ```
 
 The Kflow task is fixed to Suva and the immutable tuna-flow v2.5 image digest.

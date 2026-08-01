@@ -202,6 +202,9 @@ make_step <- function(step_id, frq_source, ini_source, tag_source, age_source,
     selectivity_update = isTRUE(
       doitall_edits$selectivity_update
     ),
+    f10_weak_non_decreasing_penalty = isTRUE(
+      doitall_edits$f10_weak_non_decreasing_penalty
+    ),
     ph_id_young5_selectivity = isTRUE(
       doitall_edits$ph_id_young5_selectivity
     ),

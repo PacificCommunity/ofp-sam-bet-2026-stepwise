@@ -41,7 +41,7 @@ including its required reporting-rate remapping. Step 17 does not introduce
 new reporting-rate values; it changes only their treatment within pre-mixing
 windows.
 
-From Step 08 through Step 20 the five numeric reporting-rate matrices are
+From Step 08 through Step 19 the five numeric reporting-rate matrices are
 identical. F25/F27 and F26/F28 retain separate West and East reporting-rate
 groups. Every positive tag recapture is validated against positive active,
 initial, target, and penalty cells.

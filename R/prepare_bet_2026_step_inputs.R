@@ -792,7 +792,7 @@ write_readme(
 
 
 
-## Self-contained public 21-row / 20-stage sequence --------------------------
+## Self-contained public 20-row / 19-stage sequence --------------------------
 
 stepwise_5_region_template_step_id <- "05-NewStructure"
 
@@ -1112,14 +1112,15 @@ for (age_spec in list(
   )
 }
 common_late_step(
-  "15-SelectivityUpdate", "15 Flexible selectivity update", "14b-SUB075",
+  "15-SelectivityUpdate", "15 Selectivity update", "14b-SUB075",
   paste(
-    "Apply the Job 18718 flexible fishery-specific selectivity to the 33-fishery structure,",
-    "retaining the documented F14/F15 youngest-five-age constraints."
+    "Apply the Job 18718 flexible fishery-specific selectivity and the",
+    "deterministic Job 19325 weak F10 non-decreasing penalty (flags 16=1",
+    "and 56=10000) from the ordinary makepar start."
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
-  selectivity = TRUE
+  selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE
 )
 common_late_step(
   "16-MIX020", "16 K=0.20 tag-mixing periods", "15-SelectivityUpdate",
@@ -1129,21 +1130,24 @@ common_late_step(
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
-  selectivity = TRUE, tag_mixing = TRUE
+  selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE,
+  tag_mixing = TRUE
 )
 common_late_step(
   "17-TagReportingExclusion", "17 Pre-mixing reporting-rate exclusion", "16-MIX020",
   "Set tag_flags(:,2)=1 so reporting rates are excluded only in pre-mixing windows.",
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
-  selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L
+  selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE,
+  tag_mixing = TRUE, tag_flag2 = 1L
 )
 common_late_step(
   "18-EffortCreep", "18 Effort-creep adjustment", "17-TagReportingExclusion",
   "Apply the BET 2026 effort-creep series only to positive F29-F33 effort.",
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
-  selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L,
+  selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE,
+  tag_mixing = TRUE, tag_flag2 = 1L,
   effort_creep = TRUE
 )
 common_late_step(
@@ -1151,17 +1155,6 @@ common_late_step(
   paste(
     "Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25,",
     "fish_pars(22) fixed at 7 and fish_pars(23) estimated."
-  ),
-  age_source = sub_basin_age_075, age_ess = NA_real_,
-  regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,
-  selectivity = TRUE, tag_mixing = TRUE, tag_flag2 = 1L,
-  effort_creep = TRUE, dm = TRUE
-)
-common_late_step(
-  "20-F10NDWeak", "20 F10 weak non-decreasing penalty", "19-DMG8Nmax25",
-  paste(
-    "Add the deterministic Job 19325 F10 LL.ALL.5 weak non-decreasing penalty:",
-    "fish flags 16=1 and 56=10000; do not jitter or perturb the makepar start."
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,

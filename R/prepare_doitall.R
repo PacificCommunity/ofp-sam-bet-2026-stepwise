@@ -718,14 +718,29 @@ apply_selectivity_update <- function(lines) {
 }
 
 apply_f10_weak_non_decreasing_penalty <- function(lines) {
-  lines <- set_or_add_control_flag(
-    lines, "-10", 16L, 1L, 1L,
-    "F10 LL.ALL.5: penalize decreases in selectivity with age"
-  )
-  set_or_add_control_flag(
-    lines, "-10", 56L, 10000L, 1L,
-    "weak F10 non-decreasing penalty (1% of the MFCL default)"
-  )
+  flag16 <- "  -10 16 1  # F10 LL.ALL.5: penalize decreases in selectivity with age"
+  flag56 <- "  -10 56 10000  # weak F10 non-decreasing penalty (1% of the MFCL default)"
+  hit16 <- grep("^[[:space:]]*-10[[:space:]]+16[[:space:]]+", lines)
+  hit56 <- grep("^[[:space:]]*-10[[:space:]]+56[[:space:]]+", lines)
+  if (length(hit16) || length(hit56)) {
+    if (length(hit16) != 1L || length(hit56) != 1L) {
+      stop("F10 penalty controls must be both absent or both present", call. = FALSE)
+    }
+    lines[[hit16]] <- flag16
+    lines[[hit56]] <- flag56
+    return(lines)
+  }
+
+  bounds <- phase_heredoc_bounds(lines, 1L)
+  candidates <- seq.int(bounds[["start"]] + 1L, bounds[["end"]] - 1L)
+  anchor <- candidates[grepl(
+    "^[[:space:]]*-999[[:space:]]+61[[:space:]]+5([[:space:]]|$)",
+    lines[candidates]
+  )]
+  if (length(anchor) != 1L) {
+    stop("Expected one Phase-1 global five-node selectivity control", call. = FALSE)
+  }
+  append(lines, c(flag16, flag56), after = anchor)
 }
 
 apply_one_percent_lf_tail_compression <- function(lines) {
@@ -1035,22 +1050,19 @@ apply_selectivity_update_map <- function(path) {
   }
   block <- c(
     "",
-    "# Step 15 starts from one documented selectivity group per final fishery.",
-    "fishery_map$selectivity_group <- seq_len(nrow(fishery_map))",
-    "fishery_map$selectivity_name <- fishery_map$fishery_name",
-    "",
-    "# Job 18717 selectivity update: extraction-based sharing only.",
-    "fishery_map$selectivity_group <- c(",
-    "  1, 2, 2, 3, 4, 5, 6, 7, 6, 8, 9, 10, 11, 12, 13, 14,",
-    "  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,",
-    "  27, 28, 29, 30, 31",
-    ")",
+    "# Job 18718 flexible selectivity metadata.",
+    "# F1-F28 are independent in Phase 1. F29-F33 share group 29 in",
+    "# Phase 1, then split to independent groups 29-33 in Phase 5.",
+    "fishery_map$selectivity_phase1_group <- c(seq_len(28L), rep(29L, 5L))",
+    "fishery_map$selectivity_phase5_group <- seq_len(nrow(fishery_map))",
+    "fishery_map$selectivity_group <- fishery_map$selectivity_phase5_group",
     "fishery_map$selectivity_name <- sub(",
     "  \"^[0-9]+[.]\", \"\", fishery_map$fishery_name",
     ")",
-    "fishery_map$selectivity_name[c(2, 3)] <- \"LL.EAST.ALL.1 + LL.US.1\"",
-    "fishery_map$selectivity_name[c(7, 9)] <- \"LL.WEST.3 + LL.OS.3\"",
-    "fishery_map$selectivity_name[33] <- \"Index R5 (independent logistic)\""
+    "fishery_map$selectivity_form <- rep(",
+    "  \"age-based cubic spline\", nrow(fishery_map)",
+    ")",
+    "fishery_map$selectivity_nodes <- c(rep(5L, 24L), 7L, 7L, rep(5L, 7L))"
   )
   lines <- c(lines[seq_len(marker)], block, lines[(marker + 1L):length(lines)])
   writeLines(lines, path, sep = eol, useBytes = TRUE)

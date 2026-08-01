@@ -210,6 +210,8 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -999 26 2  # evaluate age-based selectivity against scaled mean length-at-age
   -999 57 3  # cubic-spline selectivity
   -999 61 5  # five cubic-spline coefficients by default
+  -10 16 1  # F10 LL.ALL.5: penalize decreases in selectivity with age
+  -10 56 10000  # weak F10 non-decreasing penalty (1% of the MFCL default)
 # Grouping of fisheries with common selectivity, mapped from BET_PHrev_FNL.xlsx.
 # Job 18718 flexible selectivity: F1-F28 are independent; F29-F33 separate in staged run 5.
   -1 24 1  # F1 Step 15 flexible selectivity group

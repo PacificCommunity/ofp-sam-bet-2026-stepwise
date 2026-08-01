@@ -122,22 +122,19 @@ selectivity_names <- c(
 )
 fishery_map$selectivity_name <- selectivity_names[fishery_map$selectivity_group]
 
-# Step 15 starts from one documented selectivity group per final fishery.
-fishery_map$selectivity_group <- seq_len(nrow(fishery_map))
-fishery_map$selectivity_name <- fishery_map$fishery_name
-
-# Job 18717 selectivity update: extraction-based sharing only.
-fishery_map$selectivity_group <- c(
-  1, 2, 2, 3, 4, 5, 6, 7, 6, 8, 9, 10, 11, 12, 13, 14,
-  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-  27, 28, 29, 30, 31
-)
+# Job 18718 flexible selectivity metadata.
+# F1-F28 are independent in Phase 1. F29-F33 share group 29 in
+# Phase 1, then split to independent groups 29-33 in Phase 5.
+fishery_map$selectivity_phase1_group <- c(seq_len(28L), rep(29L, 5L))
+fishery_map$selectivity_phase5_group <- seq_len(nrow(fishery_map))
+fishery_map$selectivity_group <- fishery_map$selectivity_phase5_group
 fishery_map$selectivity_name <- sub(
   "^[0-9]+[.]", "", fishery_map$fishery_name
 )
-fishery_map$selectivity_name[c(2, 3)] <- "LL.EAST.ALL.1 + LL.US.1"
-fishery_map$selectivity_name[c(7, 9)] <- "LL.WEST.3 + LL.OS.3"
-fishery_map$selectivity_name[33] <- "Index R5 (independent logistic)"
+fishery_map$selectivity_form <- rep(
+  "age-based cubic spline", nrow(fishery_map)
+)
+fishery_map$selectivity_nodes <- c(rep(5L, 24L), 7L, 7L, rep(5L, 7L))
 
 make_fishery_group_map <- function(group_col, name_col) {
   groups <- sort(unique(fishery_map[[group_col]]))

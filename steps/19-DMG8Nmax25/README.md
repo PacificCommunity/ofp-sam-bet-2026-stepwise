@@ -60,12 +60,13 @@ Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars
 |  2 | Regional-scaling weight is 100. |
 |  3 | Length-frequency parest flag 313 is reset to 0 because the DM likelihood does not read the percentage threshold; this also avoids unrelated percentage-tail preprocessing, while parest flag 320 controls DM support. |
 |  4 | The Job 18718 flexible selectivity update keeps F1-F28 independent, separates F29-F33 in staged run 5, retains the flexible spline forms, and keeps the documented F14/F15 youngest-five-age constraints. |
-|  5 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
-|  6 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
-|  7 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25; grouped fish_pars(22) fixed at 7 as in Job 18518. |
-|  8 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
-|  9 | No OPR or length-bin selectivity controls are generated. |
-| 10 | INI and TAG inputs are never rolled back to an earlier selected row. |
+|  5 | F10 LL.ALL.5 retains five estimated spline nodes and adds only fish flags 16=1 and 56=10000, matching the deterministic Job 19325 treatment. |
+|  6 | F29-F33 use normalized time-varying CPUE relative-variance multipliers from the frequency data. |
+|  7 | Fixed CPUE observation-error scales (flag 92 integer percentages): 35, 24, 21, 24, 23. |
+|  8 | G8PSSET DM likelihood with effective-sample-size upper asymptote Nmax=25; grouped fish_pars(22) fixed at 7 as in Job 18518. |
+|  9 | The folder is generated independently from source inputs; its scientific parent is not a runtime dependency. |
+| 10 | No OPR or length-bin selectivity controls are generated. |
+| 11 | INI and TAG inputs are never rolled back to an earlier selected row. |
 
 ## Run Notes
 

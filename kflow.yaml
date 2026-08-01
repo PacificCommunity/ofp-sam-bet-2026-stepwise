@@ -5,9 +5,9 @@
 # saved outputs, and automatic follow-up tasks.
 
 # Stable task id shown in Kflow and used by the API:
-#   /api/job/bet-2026-final-stepwise-alt-f10-ndpen-weak-v25
-name: bet-2026-final-stepwise-alt-f10-ndpen-weak-v25
-description: "Fit Steps 15-20 of the alternative BET 2026 pathway, ending at deterministic Job 19325 structure: Job 18718 plus only the weak F10 non-decreasing penalty (fish flags 16=1 and 56=10000), with no jitter or promoted seed."
+#   /api/job/bet-2026-final-stepwise-02aug
+name: bet-2026-final-stepwise-02aug
+description: "Fit the complete corrected BET 2026 pathway as 20 independent models. Steps 01-14b match bet-2026-final-stepwise-v25; Step 15 introduces the selectivity update plus weak F10 non-decreasing penalty (fish flags 16=1 and 56=10000), and Steps 16-19 carry both controls forward with no jitter or promoted seed."
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -47,7 +47,7 @@ env:
   MODEL_LABEL: 2023 diagnostic rerun
   JOB_KEY: 01-diag2023
   TRIGGER_NEXT: "false"
-  FLOW_GROUP: bet-2026-final-stepwise-alt-f10-ndpen-weak
+  FLOW_GROUP: bet-2026-final-stepwise-02aug
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
@@ -411,20 +411,13 @@ metadata:
   scientific_base_job: "18718"
   deterministic_target_job: "19325"
   excluded_promoted_seed_job: "19835"
-  final_step_change: "F10 LL.ALL.5 fish flags 16=1 and 56=10000 only"
+  step15_selectivity_change: "Job 18718 controls plus F10 LL.ALL.5 fish flags 16=1 and 56=10000"
   initialization: "ordinary makepar; no jitter, perturbation, or promoted seed"
 
 # Consumed by scripts/register_kflow_task.py. Rows and their descriptions are
 # derived at registration/plan time; no model count is duplicated here.
 model_campaign:
   rows_source: job-config.R
-  include_steps:
-    - 15-SelectivityUpdate
-    - 16-MIX020
-    - 17-TagReportingExclusion
-    - 18-EffortCreep
-    - 19-DMG8Nmax25
-    - 20-F10NDWeak
   execution: independent-concurrent
   inputs: frozen
   scientific_parent: metadata-only

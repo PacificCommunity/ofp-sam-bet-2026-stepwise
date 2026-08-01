@@ -21,18 +21,17 @@ Exact public repository commits, paths, and SHA256 values are recorded in
 | 13 | New CAAL input at weight 0.75. |
 | 14a | All-five-region CAAL reweighting alternative. |
 | 14b | Selected sub-basin CAAL reweighting, combining regions 3 and 4. |
-| 15 | No data change; Job 18718 flexible fishery-specific selectivity controls. |
+| 15 | No data change; Job 18718 fishery-specific selectivity controls plus F10 fish flags 16=1 and 56=10000, using the ordinary no-jitter start. |
 | 16 | Only tag-flag column 1 changes, using region-mean K=0.20 mixing periods. |
 | 17 | Only tag-flag column 2 changes from 0 to 1. |
 | 18 | Only positive effort for F29-F33 changes according to the effort-creep series. |
-| 19 | Only `doitall.sh` changes: DM-noRE G8/Nmax25 with concentration fixed at 7. |
-| 20 | Only `doitall.sh` changes: F10 fish flags 16=1 and 56=10000. No jitter, perturbation or promoted fitted PAR is used. |
+| 19 | Only `doitall.sh` changes: DM-noRE G8/Nmax25 with concentration fixed at 7; the Step 15 F10 penalty is retained. |
 
 The final core input hashes are locked to Job 18718 on the public
 `final-exploration` branch and were independently matched against deterministic
 Job 19325. The validator also checks every parent-to-child transition against
-the expected changed-file set and requires Step 19 to Step 20 to differ only
-in `doitall.sh`.
+the expected changed-file set and requires both F10 controls to be present in
+every Step 15-19 `doitall.sh`.
 
 ## Size-data audit
 
