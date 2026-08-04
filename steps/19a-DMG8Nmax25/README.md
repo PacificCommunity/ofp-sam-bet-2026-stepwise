@@ -1,4 +1,4 @@
-# 19 DM weighting: G8 Nmax 25
+# 19a DM weighting: G8 Nmax 25
 
 Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars(22) fixed at 7 and fish_pars(23) estimated.
 
@@ -6,7 +6,7 @@ Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25, fish_pars
 
 | Field | Value |
 | --- | --- |
-| Step folder | `steps/19-DMG8Nmax25/model` |
+| Step folder | `steps/19a-DMG8Nmax25/model` |
 | Status | Ready for Kflow smoke runs; full MFCL fit not run here. |
 
 ## Changes

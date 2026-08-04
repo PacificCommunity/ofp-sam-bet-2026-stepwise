@@ -1,6 +1,6 @@
 name: ofp-sam-bet-2026-stepwise-report
-description: Build the dynamic BET 2026 stepwise report and offline interactive viewer from a selected upstream viewer job.
-branch: final-stepwise-alt
+description: Build the dynamic 22-step BET 2026 pathway report, including historical Job 19835 as Step 19b and the tau=2, F33-penalty and h=0.90 transitions to the current Diagnostic model.
+branch: main
 target_folder: model-development-report
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360

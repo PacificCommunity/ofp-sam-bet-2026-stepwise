@@ -1,6 +1,7 @@
-# Final DM configuration
+# DM configuration retained in the current Diagnostic model
 
-Step 19 uses the Job 18718 composition treatment:
+Step 19a introduces the Job 18718 composition treatment, which is retained
+unchanged through Step 22:
 
 - `parest_flags(141)=11`: Dirichlet-multinomial without random effects.
 - Eight fishery groups through fish flag 68.
@@ -13,9 +14,9 @@ Step 19 uses the Job 18718 composition treatment:
 
 The value 7 is the upper-bound estimate reached before Job 18518. Fixing it
 means the model starts and remains at that fitted bound; it is not estimated
-again in Step 19. `Nmax=25` is a separate upper asymptote and is not a hard
+again in Step 19a. `Nmax=25` is a separate upper asymptote and is not a hard
 replacement for an observed sample size.
 
-Tag overdispersion is independent of this composition setting. The final
-model retains negative-binomial tags with the original 2023 parameterisation
-and does not estimate tau.
+Tag overdispersion is independent of this composition setting. Step 20 changes
+the tag likelihood parameterisation to direct negative-binomial tau and fixes
+`fish_pars(4)=0`, so `tau = 1 + exp(0) = 2`; tau is not estimated.

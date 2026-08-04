@@ -231,7 +231,8 @@ for (module in c(
   "prepare_readme_manifest.R",
   "prepare_doitall.R",
   "apply_size_data_qc.R",
-  "prepare_step_builder.R"
+  "prepare_step_builder.R",
+  "prepare_final_diagnostic_steps.R"
 )) {
   source_prepare_module(module)
 }
@@ -1151,7 +1152,7 @@ common_late_step(
   effort_creep = TRUE
 )
 common_late_step(
-  "19-DMG8Nmax25", "19 DM weighting: G8 Nmax 25", "18-EffortCreep",
+  "19a-DMG8Nmax25", "19a DM weighting: G8 Nmax 25", "18-EffortCreep",
   paste(
     "Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25,",
     "fish_pars(22) fixed at 7 and fish_pars(23) estimated."
@@ -1161,6 +1162,30 @@ common_late_step(
   selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE,
   tag_mixing = TRUE, tag_flag2 = 1L,
   effort_creep = TRUE, dm = TRUE
+)
+
+diagnostic_repo_env <- trimws(Sys.getenv("BET_2026_DIAGNOSTIC_ROOT", ""))
+diagnostic_repo_candidates <- if (nzchar(diagnostic_repo_env)) {
+  diagnostic_repo_env
+} else {
+  c(
+    file.path(dirname(root), "ofp-sam-bet-2026-diagnostic"),
+    file.path(dirname(root), "input-repos", "ofp-sam-bet-2026-diagnostic")
+  )
+}
+diagnostic_repo_hits <- diagnostic_repo_candidates[
+  dir.exists(file.path(diagnostic_repo_candidates, ".git")) |
+    file.exists(file.path(diagnostic_repo_candidates, ".git"))
+]
+if (!length(diagnostic_repo_hits)) {
+  stop(
+    "Could not find ofp-sam-bet-2026-diagnostic. Set BET_2026_DIAGNOSTIC_ROOT ",
+    "to a clone containing commits 770edf1 and 0d6db04.",
+    call. = FALSE
+  )
+}
+write_final_diagnostic_steps(
+  normalizePath(diagnostic_repo_hits[[1L]], winslash = "/", mustWork = TRUE)
 )
 
 # Remove every superseded step folder after the replacement sequence is

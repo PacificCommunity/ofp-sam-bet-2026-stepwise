@@ -1,4 +1,4 @@
-# Dynamic stepwise report and viewer
+# Dynamic 22-step pathway report and viewer
 
 This Kflow task produces both:
 
@@ -21,3 +21,8 @@ SC figures, downloads, and the bundled offline viewer.
 Use `--include-source-jobs` only when the upstream job does not already contain its viewer
 and report-ready figure bundle. In that mode, the task stages the source model payloads and
 asks `mfclshiny` to regenerate the figures and viewer.
+
+The configured pathway treats 19b as a historical Job 19835 seed-23 branch.
+The selected pathway proceeds from ordinary-makepar 19a to tau=2 at Step 20,
+adds only the weak F33 non-decreasing penalty at Step 21, and changes only
+fixed steepness to 0.90 at Step 22 (the current Diagnostic model).

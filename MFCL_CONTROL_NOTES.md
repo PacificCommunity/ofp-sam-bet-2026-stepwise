@@ -3,31 +3,33 @@
 | Control | Value | Interpretation |
 | --- | ---: | --- |
 | Parest 111 | 4 | Negative-binomial tag likelihood. |
-| Fish flags 43/44 | 0/0 | Original 2023 parameterisation; tag tau is not estimated. |
+| Parest 305/306 | `1/0` from Step 20 | Use the direct negative-binomial tau parameterisation; no grouped offset. |
+| Fish flags 43/44 | 0/0 | Keep fishery tau parameters fixed and ungrouped. |
 | Parest 121 | 0 from Step 03 | Fix the Lorenzen intercept and slope at incoming values. |
 | Age flag 128 | 10 in Step 01; 100 from Step 02 | Preserve initial Z = 1.0 × M across the old and 2.2.7.9-based readers. |
 | Fish flag 92 | CV form from Step 02 | F33-F41 use `24/31/20/21/26/23/20/25/47`; final R1-R5 use `35/24/21/24/23`. |
 | Fish flag 66 | 1 from Step 11 | Use time-varying CPUE relative-variance multipliers. |
 | Parest 77-81 | `100/1/240/220/1` | Activate the five-region MVN regional-scaling prior. |
-| Parest 141 | 11 in Step 19 | Dirichlet-multinomial length likelihood without random effects. |
-| Parest 320 | 5 in Step 19 | Require a five-bin positive span for DM support. |
-| Parest 342 | 25 in Step 19 | DM effective-sample-size upper asymptote. |
+| Parest 141 | 11 from Step 19a | Dirichlet-multinomial length likelihood without random effects. |
+| Parest 320 | 5 from Step 19a | Require a five-bin positive span for DM support. |
+| Parest 342 | 25 from Step 19a | DM effective-sample-size upper asymptote. |
 | Fish flag 68 | G8 vector | Assign all 33 fisheries to eight DM groups. |
-| Fish flag 69 | 0 in Step 19 | Fix grouped `fish_pars(22)` after row 22 is written as 7. |
+| Fish flag 69 | 0 from Step 19a | Fix grouped `fish_pars(22)` after row 22 is written as 7. |
 | Fish flag 89 | 0 in Phase 1; 1 from Phase 2 | Estimate grouped `fish_pars(23)` only after the initial phase. |
 | Parest 313 | 0 | No separate 1% LF tail-compression step; DM support is controlled by flag 320. |
-| Fish flag 16 | 1 for F10 in Step 20 | Penalise decreases in F10 selectivity. |
-| Fish flag 56 | 10000 for F10 in Step 20 | Override the source-code default selectivity-form penalty weight of 1,000,000. |
+| `fish_pars(4)` | 0 from Step 20 | Fix direct tau at `1 + exp(0) = 2`. |
+| Fish flag 16 | 1 for F10 from Step 15; also F33 from Step 21 | Penalise decreases in those selectivity curves. |
+| Fish flag 56 | 10000 for F10 from Step 15; also F33 from Step 21 | Override the source-code default selectivity-form penalty weight of 1,000,000. |
 
 The fixed Lorenzen intercept in every model from Step 03 onward is
-`-2.54930339768360`. Step 19 writes all 33 copies of `fish_pars(22)` to 7 in
+`-2.54930339768360`. Step 19a writes all 33 copies of `fish_pars(22)` to 7 in
 `00.dm-fixed.par` before the first fitted phase; it does not rely on an
 unrelated phase to move the parameter to the bound.
 
 The current tag-reporting-rate specification begins at Step 05, when the five
 matrices are rebuilt for the 33-fishery structure. Step 08 extends the tag
 family from 96 to 98 release groups; the numeric matrices then remain
-unchanged through Step 20. Step 16 changes only release-group mixing periods,
+unchanged through Step 22. Step 16 changes only release-group mixing periods,
 and Step 17 changes only the pre-mixing reporting-rate exclusion flag.
 
 For the executable lineage used here, `selectivity_form_penalty()` in
@@ -35,5 +37,6 @@ For the executable lineage used here, `selectivity_form_penalty()` in
 weight with fish flag 56 when flag 56 is non-zero. The manual also documents
 flag 16 as the non-decreasing constraint. Its older flag-56 section describes
 the catch-likelihood use of the same numbered flag, so the executable source
-is the controlling evidence for this selectivity use. Step 20's value 10,000
-is therefore an explicit weak override, not the default.
+is the controlling evidence for this selectivity use. The value 10,000 used
+for F10 from Step 15 and F33 from Step 21 is therefore an explicit weak
+override, not the default.
