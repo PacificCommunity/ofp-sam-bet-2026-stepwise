@@ -45,11 +45,14 @@ KFLOW_RUNTIME_UPDATE ?= $(call yml,y$$env$$KFLOW_RUNTIME_UPDATE,never)
 TUNA_FLOW_RUNTIME_UPDATE ?= $(call yml,y$$env$$TUNA_FLOW_RUNTIME_UPDATE,never)
 KFLOW_REPO_RUNTIME_UPDATE ?= $(call yml,y$$env$$KFLOW_REPO_RUNTIME_UPDATE,auto)
 KFLOW_RUNTIME_PACKAGES ?= $(call yml,y$$env$$KFLOW_RUNTIME_PACKAGES,none)
-KFLOW_REPO_RUNTIME_PACKAGES ?= $(call yml,y$$env$$KFLOW_REPO_RUNTIME_PACKAGES,mfclkit=PacificCommunity/ofp-sam-mfclkit@main,mfclshiny=PacificCommunity/mfclshiny@main)
 MODEL_MFCLKIT_GITHUB_REF ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_row_value(Sys.getenv("STEP_SELECT"), "mfclkit_github_ref"))')
 MODEL_MFCLSHINY_GITHUB_REF ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 'source("$(CONFIG_HELPERS_R)"); source_stepwise_config("$(CONFIG_R)"); cat(stepwise_row_value(Sys.getenv("STEP_SELECT"), "mfclshiny_github_ref"))')
 MFCLKIT_GITHUB_REF ?= $(if $(strip $(MODEL_MFCLKIT_GITHUB_REF)),$(MODEL_MFCLKIT_GITHUB_REF),$(call yml,y$$env$$MFCLKIT_GITHUB_REF,main))
 MFCLSHINY_GITHUB_REF ?= $(if $(strip $(MODEL_MFCLSHINY_GITHUB_REF)),$(MODEL_MFCLSHINY_GITHUB_REF),$(call yml,y$$env$$MFCLSHINY_GITHUB_REF,main))
+# The runtime verifier requires the install specifications and the explicit
+# revision fields to agree. Build both from the same effective per-model refs;
+# this is essential for the historical 19b recipe and harmless for current rows.
+KFLOW_REPO_RUNTIME_PACKAGES ?= mfclkit=PacificCommunity/ofp-sam-mfclkit@$(MFCLKIT_GITHUB_REF),mfclshiny=PacificCommunity/mfclshiny@$(MFCLSHINY_GITHUB_REF)
 KFLOW_RUNTIME_GITHUB_AUTH ?= $(call yml,y$$env$$KFLOW_RUNTIME_GITHUB_AUTH,true)
 KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME ?= $(call yml,y$$env$$KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME,true)
 STEPWISE_SAVE_FINAL_PAR ?= $(call yml,y$$env$$STEPWISE_SAVE_FINAL_PAR,false)
