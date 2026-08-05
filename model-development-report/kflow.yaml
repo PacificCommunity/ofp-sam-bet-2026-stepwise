@@ -14,7 +14,6 @@ resources:
   disk: 10GB
 
 env:
-  INPUT_DIR: ../data/stepwise
   REPORT_OUTPUT_DIR: model-development
   STEPWISE_MODEL_JOBS: ""
   STEPWISE_VIEWER_JOB: ""
