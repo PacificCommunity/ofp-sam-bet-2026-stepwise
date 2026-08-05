@@ -127,7 +127,7 @@ stepwise_official_recent_quantities <- function(series, map) {
     if (!nrow(model)) stop("No stock-wide time series found for ", token, ".", call. = FALSE)
     terminal <- max(as.integer(model$year), na.rm = TRUE)
     sb_years <- seq.int(terminal - 3L, terminal)
-    sbf0_years <- seq.int(terminal - 10L, terminal - 1L)
+    sbf0_years <- seq.int(terminal - 9L, terminal)
     f_years <- seq.int(terminal - 4L, terminal - 1L)
     sb_recent <- mean(stepwise_window_values(model, sb_years, "spawning_potential", token))
     sbf0_recent <- mean(stepwise_window_values(model, sbf0_years, "spawning_potential_nofish", token))
@@ -165,11 +165,11 @@ stepwise_official_recent_quantities <- function(series, map) {
   diagnostic <- quantities[quantities$Configuration == "22-Diagnostic", , drop = FALSE]
   if (nrow(diagnostic) != 1L || diagnostic[["Terminal year"]] != 2024L ||
       diagnostic[["SB recent period"]] != "2021\u20132024" ||
-      diagnostic[["SB F=0 period"]] != "2014\u20132023" ||
+      diagnostic[["SB F=0 period"]] != "2015\u20132024" ||
       diagnostic[["F recent period"]] != "2020\u20132023") {
     stop("Step 22 official recent-period audit failed.", call. = FALSE)
   }
-  expected <- c(0.1731393, 1.025495, 1.143641)
+  expected <- c(0.1739457, 1.025495, 1.143641)
   actual <- unlist(diagnostic[1L, c(
     "SB recent / SB F=0", "SB recent / SB MSY", "F recent / F MSY"
   )], use.names = FALSE)
@@ -208,11 +208,15 @@ stepwise_cached_recent_quantities <- function(file, map) {
     stop("The cached recent-quantity table is not in source-index order.", call. = FALSE)
   }
   diagnostic <- quantities[quantities$Configuration == "22-Diagnostic", , drop = FALSE]
-  expected <- c(0.1731393, 1.025495, 1.143641)
+  expected <- c(0.1739457, 1.025495, 1.143641)
   actual <- suppressWarnings(as.numeric(diagnostic[1L, c(
     "SB recent / SB F=0", "SB recent / SB MSY", "F recent / F MSY"
   )]))
-  if (nrow(diagnostic) != 1L || any(!is.finite(actual)) || any(abs(actual - expected) > 5e-7)) {
+  periods_ok <- nrow(diagnostic) == 1L &&
+    diagnostic[["SB recent period"]] == "2021\u20132024" &&
+    diagnostic[["SB F=0 period"]] == "2015\u20132024" &&
+    diagnostic[["F recent period"]] == "2020\u20132023"
+  if (!periods_ok || any(!is.finite(actual)) || any(abs(actual - expected) > 5e-7)) {
     stop("The cached Step 22 stock-status audit failed.", call. = FALSE)
   }
   quantities
@@ -388,8 +392,8 @@ stepwise_custom_figure_index <- function(series, map) {
     paste0(
       "Stock-status quantities across the 23 model configurations evaluated during stepwise development. For each ",
       "configuration, recent periods are defined relative to its terminal year: spawning biomass uses T-3 to T, ",
-      "unfished spawning biomass uses T-10 to T-1, and fishing mortality uses T-4 to T-1. For the final diagnostic ",
-      "model (T = 2024), these periods are 2021-2024, 2014-2023 and 2020-2023, respectively. Step 22 is outlined ",
+      "unfished spawning biomass uses T-9 to T, and fishing mortality uses T-4 to T-1. For the final Diagnostic ",
+      "model (T = 2024), these periods are 2021-2024, 2015-2024 and 2020-2023, respectively. Step 22 is outlined ",
       "in red. The depletion line marks the limit reference point (LRP = 0.2); MSY-ratio lines mark 1.0."
     )
   )
@@ -403,8 +407,8 @@ stepwise_custom_figure_index <- function(series, map) {
     paste0(
       "Stock-status quantities across the 23 model configurations evaluated during stepwise development. For each ",
       "configuration, recent periods are defined relative to its terminal year: spawning biomass uses $T-3$ to $T$, ",
-      "unfished spawning biomass uses $T-10$ to $T-1$, and fishing mortality uses $T-4$ to $T-1$. For the final ",
-      "Diagnostic model ($T=2024$), these periods are 2021--2024, 2014--2023, and 2020--2023, respectively. ",
+      "unfished spawning biomass uses $T-9$ to $T$, and fishing mortality uses $T-4$ to $T-1$. For the final ",
+      "Diagnostic model ($T=2024$), these periods are 2021--2024, 2015--2024, and 2020--2023, respectively. ",
       "Step~22 is outlined in red. The depletion line marks the limit reference point (LRP = 0.2); MSY-ratio ",
       "lines mark 1.0."
     )

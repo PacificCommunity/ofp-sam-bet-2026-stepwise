@@ -51,7 +51,7 @@ if (file.exists(series_file)) {
   if (is.null(recent)) recent <- stepwise_official_recent_quantities(series, map)
   diagnostic <- recent[recent$Configuration == "22-Diagnostic", , drop = FALSE]
   stopifnot(
-    abs(diagnostic[["SB recent / SB F=0"]] - 0.1731393) < 5e-7,
+    abs(diagnostic[["SB recent / SB F=0"]] - 0.1739457) < 5e-7,
     abs(diagnostic[["SB recent / SB MSY"]] - 1.025495) < 5e-7,
     abs(diagnostic[["F recent / F MSY"]] - 1.143641) < 5e-7
   )
