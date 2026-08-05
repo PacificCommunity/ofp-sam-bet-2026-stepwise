@@ -108,6 +108,63 @@ stepwise_rep_scalar <- function(rep_text, label) {
 
 stepwise_period_label <- function(years) paste0(min(years), "\u2013", max(years))
 
+stepwise_validate_recent_periods <- function(quantities) {
+  # WCPFC-SC19-2023/SA-WP-05 definitions used for the BET stock assessment:
+  # SB_recent = T-3:T, SB_F=0 = T-9:T, and F_recent = T-4:T-1.
+  # Only F_recent excludes the terminal year because terminal catch/effort may
+  # be incomplete and terminal fishing mortality is correspondingly uncertain.
+  required <- c(
+    "Configuration", "Terminal year", "SB recent period",
+    "SB F=0 period", "F recent period"
+  )
+  missing <- setdiff(required, names(quantities))
+  if (length(missing)) {
+    stop(
+      "The recent-quantity table is missing period-audit fields: ",
+      paste(missing, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  terminal <- suppressWarnings(as.integer(quantities[["Terminal year"]]))
+  valid_terminal <- is.finite(terminal)
+  expected_sb <- expected_sbf0 <- expected_f <- rep(NA_character_, nrow(quantities))
+  expected_sb[valid_terminal] <- vapply(
+    terminal[valid_terminal],
+    function(year) stepwise_period_label(seq.int(year - 3L, year)),
+    character(1)
+  )
+  expected_sbf0[valid_terminal] <- vapply(
+    terminal[valid_terminal],
+    function(year) stepwise_period_label(seq.int(year - 9L, year)),
+    character(1)
+  )
+  expected_f[valid_terminal] <- vapply(
+    terminal[valid_terminal],
+    function(year) stepwise_period_label(seq.int(year - 4L, year - 1L)),
+    character(1)
+  )
+
+  valid <- valid_terminal &
+    !is.na(quantities[["SB recent period"]]) &
+    !is.na(quantities[["SB F=0 period"]]) &
+    !is.na(quantities[["F recent period"]]) &
+    as.character(quantities[["SB recent period"]]) == expected_sb &
+    as.character(quantities[["SB F=0 period"]]) == expected_sbf0 &
+    as.character(quantities[["F recent period"]]) == expected_f
+  valid[is.na(valid)] <- FALSE
+  if (any(!valid)) {
+    failed <- as.character(quantities$Configuration[!valid])
+    stop(
+      "Official recent-period audit failed for: ",
+      paste(failed, collapse = ", "),
+      ". Expected SB T-3:T, SB(F=0) T-9:T, and F T-4:T-1.",
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
 stepwise_window_values <- function(data, years, column, model_token) {
   selected <- data[data$year %in% years, c("year", column), drop = FALSE]
   if (!identical(sort(unique(as.integer(selected$year))), as.integer(years))) {
@@ -159,9 +216,10 @@ stepwise_official_recent_quantities <- function(series, map) {
   })
   quantities <- do.call(rbind, rows)
   rownames(quantities) <- NULL
+  stepwise_validate_recent_periods(quantities)
 
-  # Job 21641 / Step 22 is the numerical anchor. These values independently
-  # reproduce the native MFCL quantities already reported for that model.
+  # Step 22, the public Diagnostic model, is the numerical anchor. These values
+  # independently reproduce the native MFCL quantities reported for that fit.
   diagnostic <- quantities[quantities$Configuration == "22-Diagnostic", , drop = FALSE]
   if (nrow(diagnostic) != 1L || diagnostic[["Terminal year"]] != 2024L ||
       diagnostic[["SB recent period"]] != "2021\u20132024" ||
@@ -207,6 +265,7 @@ stepwise_cached_recent_quantities <- function(file, map) {
   if (!identical(as.character(quantities$Configuration), as.character(map$step_id))) {
     stop("The cached recent-quantity table is not in source-index order.", call. = FALSE)
   }
+  stepwise_validate_recent_periods(quantities)
   diagnostic <- quantities[quantities$Configuration == "22-Diagnostic", , drop = FALSE]
   expected <- c(0.1739457, 1.025495, 1.143641)
   actual <- suppressWarnings(as.numeric(diagnostic[1L, c(

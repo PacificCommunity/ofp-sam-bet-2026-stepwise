@@ -49,6 +49,43 @@ if (file.exists(series_file)) {
     file.path(result_dir, "tables", "stepwise-recent-key-quantities.csv"), map
   )
   if (is.null(recent)) recent <- stepwise_official_recent_quantities(series, map)
+  stopifnot(isTRUE(stepwise_validate_recent_periods(recent)))
+  expected_periods <- data.frame(
+    `SB recent period` = vapply(
+      recent[["Terminal year"]],
+      function(year) stepwise_period_label(seq.int(year - 3L, year)),
+      character(1)
+    ),
+    `SB F=0 period` = vapply(
+      recent[["Terminal year"]],
+      function(year) stepwise_period_label(seq.int(year - 9L, year)),
+      character(1)
+    ),
+    `F recent period` = vapply(
+      recent[["Terminal year"]],
+      function(year) stepwise_period_label(seq.int(year - 4L, year - 1L)),
+      character(1)
+    ),
+    check.names = FALSE
+  )
+  stopifnot(identical(
+    recent[names(expected_periods)],
+    expected_periods
+  ))
+  invalid_recent <- recent
+  invalid_recent[["SB F=0 period"]][[1L]] <- "1900\u20131909"
+  invalid_rejected <- tryCatch(
+    {
+      stepwise_validate_recent_periods(invalid_recent)
+      FALSE
+    },
+    error = function(error) grepl(
+      as.character(invalid_recent$Configuration[[1L]]),
+      conditionMessage(error),
+      fixed = TRUE
+    )
+  )
+  stopifnot(isTRUE(invalid_rejected))
   diagnostic <- recent[recent$Configuration == "22-Diagnostic", , drop = FALSE]
   stopifnot(
     abs(diagnostic[["SB recent / SB F=0"]] - 0.1739457) < 5e-7,

@@ -125,7 +125,7 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
     list(
       id = "22-Diagnostic", commit = diagnostic_main_commit,
       input = "Diagnostic", selectivity = "Diagnostic", title = "22 BET 2026 Diagnostic model",
-      summary = "Retain Step 21 and fix steepness at 0.90, reproducing public Diagnostic Job 21641.",
+      summary = "Retain Step 21 and fix steepness at 0.90, reproducing the public Diagnostic model.",
       change = "Only INI sv(29) changes from 0.80 to 0.90; age flag 162 remains zero."
     )
   )
@@ -217,7 +217,7 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
         "DM G8/Nmax25, fixed concentration 7, M, mixing, reporting rates, CPUE and biological inputs are retained."
       ),
       status = if (identical(specification$id, "22-Diagnostic")) {
-        "Locked to the public Diagnostic main and completed Job 21641 reference."
+        "Locked to the completed fit on the public Diagnostic main branch."
       } else {
         "Ready for an independent Suva fit."
       }

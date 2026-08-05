@@ -118,6 +118,26 @@ if (!"source_file" %in% names(cache_data) ||
   stop("The public report cache must use repository-relative source_file values.")
 }
 
+source(file.path(root, "R", "build_stepwise_key_quantities.R"))
+recent_quantities <- utils::read.csv(
+  cache_recent, stringsAsFactors = FALSE, check.names = FALSE, encoding = "UTF-8"
+)
+if (nrow(recent_quantities) != nrow(source_index) ||
+    !identical(as.character(recent_quantities$Configuration), as.character(source_index$step_id))) {
+  stop("The cached recent-quantity table does not contain the complete ordered pathway.")
+}
+stepwise_validate_recent_periods(recent_quantities)
+diagnostic_recent <- recent_quantities[
+  recent_quantities$Configuration == "22-Diagnostic", , drop = FALSE
+]
+diagnostic_values <- suppressWarnings(as.numeric(diagnostic_recent[1L, c(
+  "SB recent / SB F=0", "SB recent / SB MSY", "F recent / F MSY"
+)]))
+if (nrow(diagnostic_recent) != 1L || any(!is.finite(diagnostic_values)) ||
+    any(abs(diagnostic_values - c(0.1739457, 1.025495, 1.143641)) > 5e-7)) {
+  stop("The cached Step 22 official stock-status audit failed.")
+}
+
 dir.create(file.path(root, "results"), recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(audit, file.path(root, "results", "payload-validation.csv"), row.names = FALSE)
 message("Validated 23 repository payloads for the 22-step pathway.")

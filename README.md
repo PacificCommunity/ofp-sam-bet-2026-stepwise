@@ -175,5 +175,15 @@ After the GitHub workflow completes, the public outputs are available as the
 [stepwise report](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/bet-2026-stepwise-model-development.html)
 and [interactive model viewer](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html).
 The viewer retains scientific fit diagnostics, likelihood components and
-Hessian positive-definiteness (PDH) status where it has actually been evaluated;
-unevaluated models are labelled `Not evaluated` rather than being assigned `No`.
+Hessian positive-definiteness (PDH) status where it has actually been evaluated.
+Completed native Hessian analyses are reported as `Yes` or `No`; submitted but
+unfinished dependent analyses are reported as `Pending`, and a missing result
+is never interpreted as a non-positive-definite Hessian.
+
+Stock-status summaries follow the BET assessment definitions in
+WCPFC-SC19-2023/SA-WP-05. For a model with terminal year T,
+`SB_recent` is averaged over T-3 to T, `SB_F=0` over T-9 to T, and `F_recent`
+over T-4 to T-1. Thus only the fishing-mortality window excludes the terminal
+year. For the final Diagnostic model (T = 2024), the windows are 2021-2024,
+2015-2024 and 2020-2023, respectively. Repository validation applies these
+period checks to all 23 configurations before the report is rendered.
