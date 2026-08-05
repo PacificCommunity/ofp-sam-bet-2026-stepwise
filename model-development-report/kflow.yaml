@@ -11,7 +11,7 @@ remote_base_dir: /home/kyuhank/KflowOutput
 resources:
   cpus: 2
   memory: 8GB
-  disk: 20GB
+  disk: 10GB
 
 env:
   INPUT_DIR: ../data/stepwise
