@@ -285,6 +285,33 @@ stepwise_simplify_viewer <- function(
     "[{v:0.2,c:'#b73e3e'},{v:0.5,c:'#3f8f53'}]",
     "[{v:0.2,c:'#b73e3e'}]", lines, fixed = TRUE
   )
+  # Keep the public offline viewer portable. Older mfclshiny bundles could
+  # retain the machine-specific prefix of a payload path in embedded JSON.
+  lines <- gsub(
+    paste0(
+      "(?i)(?:[A-Za-z]:)?[/\\\\][^\"'<>[:space:]]*",
+      "[/\\\\]data[/\\\\]stepwise[/\\\\]models[/\\\\]",
+      "([^/\\\\\"'<>[:space:]]+)[/\\\\]model_payload[.]rds"
+    ),
+    "data/stepwise/models/\\1/model_payload.rds",
+    lines,
+    perl = TRUE
+  )
+  private_patterns <- c(
+    "/home/", "/var/lib/condor", "KflowOutput", "suvofp", "corp.spc",
+    "AKIA", "ghp_"
+  )
+  leaked <- private_patterns[vapply(
+    private_patterns, function(pattern) any(grepl(pattern, lines, fixed = TRUE)),
+    logical(1)
+  )]
+  if (length(leaked)) {
+    stop(
+      "The public interactive viewer contains private or machine-specific metadata: ",
+      paste(leaked, collapse = ", "),
+      call. = FALSE
+    )
+  }
   writeLines(lines, viewer, useBytes = TRUE)
   TRUE
 }
@@ -323,7 +350,10 @@ stepwise_prepare_result_assets <- function(input_dir, output_dir, source_index) 
     for (folder in c("figures", "indices", "tables")) {
       stepwise_copy_directory(file.path(upstream$root, folder), file.path(result_dir, folder))
     }
-    for (file in c("analysis-manifest.csv", "analysis-manifest.json", "report-files.csv")) {
+    for (file in c(
+      "analysis-manifest.csv", "analysis-manifest.json", "report-files.csv",
+      "mfclshiny-report-depletion-data.csv"
+    )) {
       source <- file.path(upstream$root, file)
       if (file.exists(source)) file.copy(source, file.path(result_dir, file), overwrite = TRUE)
     }

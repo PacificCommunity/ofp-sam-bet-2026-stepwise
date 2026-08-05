@@ -164,6 +164,13 @@ rerunning MFCL:
 ./run-report
 ```
 
+Report rendering uses the same immutable TunaFlow v2.5 image as Kflow. A small,
+checksum-locked public report cache under `data/stepwise/report-cache/` contains
+only the portable offline viewer and derived annual series needed to render the
+paper-ready figures. This avoids a private-package download in GitHub Actions;
+the 23 sanitized fitted-model payloads remain the archived source fits and the
+validator rejects machine paths or credentials in both payloads and cache.
+
 After the GitHub workflow completes, the public outputs are available as the
 [stepwise report](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/bet-2026-stepwise-model-development.html)
 and [interactive model viewer](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html).

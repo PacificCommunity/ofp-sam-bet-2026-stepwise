@@ -79,6 +79,34 @@ audits <- lapply(seq_along(payload_paths), function(i) {
   )
 })
 audit <- do.call(rbind, audits)
+
+cache_root <- file.path(data_dir, "report-cache", "outputs")
+cache_viewer <- file.path(cache_root, "overview", "interactive-model-viewer.html")
+cache_series <- file.path(cache_root, "mfclshiny-report-depletion-data.csv")
+if (!file.exists(cache_viewer) || !file.exists(cache_series)) {
+  stop("The checksum-locked public report cache is incomplete.")
+}
+private_patterns <- c(
+  "/home/", "/var/lib/condor", "KflowOutput", "suvofp", "corp.spc",
+  "AKIA", "ghp_"
+)
+for (file in c(cache_viewer, cache_series)) {
+  text <- readLines(file, warn = FALSE, encoding = "UTF-8")
+  leaked <- private_patterns[vapply(
+    private_patterns, function(pattern) any(grepl(pattern, text, fixed = TRUE)),
+    logical(1)
+  )]
+  if (length(leaked)) {
+    stop(basename(file), " contains private or machine-specific metadata: ",
+         paste(leaked, collapse = ", "))
+  }
+}
+cache_data <- utils::read.csv(cache_series, stringsAsFactors = FALSE, check.names = FALSE)
+if (!"source_file" %in% names(cache_data) ||
+    any(!grepl("^data/stepwise/models/[^/]+/model_payload[.]rds$", cache_data$source_file))) {
+  stop("The public report cache must use repository-relative source_file values.")
+}
+
 dir.create(file.path(root, "results"), recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(audit, file.path(root, "results", "payload-validation.csv"), row.names = FALSE)
 message("Validated 23 repository payloads for the 22-step pathway.")

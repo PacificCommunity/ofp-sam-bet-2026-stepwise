@@ -66,3 +66,22 @@ if (file.exists(likelihood_file)) {
     any(abs(likelihood[["Length frequency"]]) > 0)
   )
 }
+
+text_outputs <- list.files(
+  "results/stepwise-report",
+  pattern = "[.](html|csv|json|txt|tex|bib|qmd)$",
+  recursive = TRUE,
+  full.names = TRUE,
+  ignore.case = TRUE
+)
+private_patterns <- c(
+  "/home/", "/var/lib/condor", "KflowOutput", "suvofp", "corp.spc",
+  "AKIA", "ghp_"
+)
+for (file in text_outputs) {
+  text <- readLines(file, warn = FALSE, encoding = "UTF-8")
+  stopifnot(!any(vapply(
+    private_patterns, function(pattern) any(grepl(pattern, text, fixed = TRUE)),
+    logical(1)
+  )))
+}

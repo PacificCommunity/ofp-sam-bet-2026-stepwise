@@ -40,6 +40,10 @@ viewer_payload <- list(
     )
   )
 )
+viewer_payload$models$source_file <- list(
+  "/home/example/private/data/stepwise/models/01-base/model_payload.rds",
+  "/home/example/private/data/stepwise/models/02-final/model_payload.rds"
+)
 writeLines(
   c(
     "<html><body>",
@@ -62,6 +66,7 @@ write.csv(data.frame(
   source = "Native MFCL Hessian eigen analysis"
 ), hessian_file, row.names = FALSE)
 stopifnot(stepwise_simplify_viewer(viewer_file, hessian_file))
+stopifnot(!any(grepl("/home/", readLines(viewer_file, warn = FALSE), fixed = TRUE)))
 simplified <- stepwise_extract_viewer_data(viewer_file)
 simplified_summary <- stepwise_metric_table(simplified, "model_summary")
 stopifnot(

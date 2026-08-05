@@ -479,6 +479,7 @@ build_stepwise_key_quantities <- function(result_dir, source_index) {
   )
 
   recent_export <- recent
+  dir.create(file.path(result_dir, "tables"), recursive = TRUE, showWarnings = FALSE)
   utils::write.csv(
     recent_export, file.path(result_dir, "tables", "stepwise-recent-key-quantities.csv"),
     row.names = FALSE, na = ""

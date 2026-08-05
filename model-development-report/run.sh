@@ -17,10 +17,26 @@ resolve_path() {
 REPORT_OUTPUT_PATH="$(resolve_path "${REPORT_OUTPUT_DIR}")"
 INPUT_PATH="$(resolve_path "${INPUT_DIR}")"
 
+case "${REPORT_OUTPUT_PATH}" in
+  "${ROOT}/"*) ;;
+  *)
+    printf 'Refusing to replace report output outside the repository: %s\n' "${REPORT_OUTPUT_PATH}" >&2
+    exit 64
+    ;;
+esac
+if [ "${REPORT_OUTPUT_PATH}" = "${ROOT}" ]; then
+  printf 'Refusing to use the repository root as report output.\n' >&2
+  exit 64
+fi
+rm -rf -- "${REPORT_OUTPUT_PATH}"
 mkdir -p "${REPORT_OUTPUT_PATH}" "${INPUT_PATH}" "${R_LIBRARY}"
 export R_LIBS_USER="${R_LIBRARY}"
 
-Rscript - <<'RS'
+CACHE_VIEWER="${INPUT_PATH}/report-cache/outputs/overview/interactive-model-viewer.html"
+CACHE_SERIES="${INPUT_PATH}/report-cache/outputs/mfclshiny-report-depletion-data.csv"
+
+if [ ! -s "${CACHE_VIEWER}" ] || [ ! -s "${CACHE_SERIES}" ]; then
+  Rscript - <<'RS'
 lib <- Sys.getenv("R_LIBS_USER")
 dir.create(lib, recursive = TRUE, showWarnings = FALSE)
 .libPaths(unique(c(lib, .libPaths())))
@@ -71,6 +87,9 @@ for (api in c("build_model_dag_report", "build_report_figures")) {
   }
 }
 RS
+else
+  printf 'Using checksum-locked public report cache; no private package install is required.\n'
+fi
 
 cd "${ROOT}"
 OUTPUT_DIR="${REPORT_OUTPUT_PATH}" \
