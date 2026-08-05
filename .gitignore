@@ -1,7 +1,11 @@
 /outputs/
 /inputs/
 /work/
-/data/
+/data/*
+!/data/SHA256SUMS
+!/data/stepwise/
+!/data/stepwise/**
+/results/
 /.R-library/
 /.kflow-runtime-cache/
 .Rhistory

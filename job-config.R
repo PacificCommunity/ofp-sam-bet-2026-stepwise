@@ -7,7 +7,7 @@
 stepwise_run <- list(
   default_step_select = "all",
   numbered_groups = 22L,
-  model_rows = 24L,
+  model_rows = 23L,
   selected_path_models = 22L,
   flow_group = "bet-2026-final-stepwise-diagnostic-04aug",
   trigger_next = FALSE
@@ -166,7 +166,7 @@ stepwise_models <- do.call(rbind, list(
     paste(
       "Apply the Job 18718 flexible selectivity controls and F10 LL.ALL.5",
       "fish flags 16=1 and 56=10000 from the deterministic Job 19325 treatment.",
-      "Use the ordinary makepar start, not Job 19835 or any jitter/seed-23 path."
+      "Use the ordinary makepar start."
     )
   ),
   model_row(
@@ -189,10 +189,10 @@ stepwise_models <- do.call(rbind, list(
     "18-effort-creep"
   ),
   model_row(
-    "19a-DMG8Nmax25", "19-CompositionWeighting", "18-EffortCreep",
+    "19-DMG8Nmax25", "19-CompositionWeighting", "18-EffortCreep",
     TRUE, "carry", "apply Dirichlet-multinomial composition weighting",
-    "DM composition weighting", "19a DM composition weighting, G8 Nmax 25",
-    "19a-dm-g8-nmax25",
+    "DM composition weighting", "19 DM composition weighting, G8 Nmax 25",
+    "19-dm-g8-nmax25",
     paste(
       "Use Job 18518/18718 DM-noRE controls: G8, Nmax=25, fish_pars(22)",
       "fixed at 7 and eight grouped fish_pars(23) exponents estimated.",
@@ -201,28 +201,12 @@ stepwise_models <- do.call(rbind, list(
     )
   ),
   model_row(
-    "19b-Job19835Seed23", "19-Initialization", "19a-DMG8Nmax25",
-    FALSE, "historical", "select the best-objective converged jitter fit",
-    "Previous Diagnostic (seed 23)",
-    "19b Previous Diagnostic: best-objective jitter seed 23 (Job 19835)",
-    "19b-job19835-seed23",
-    paste(
-      "Retain the complete 19a scientific model and reproduce Job 19835",
-      "by applying the CV=0.1 seed-23 Phase-1/2/5 initialization path.",
-      "Seed 23 was selected because it had the lowest objective among the",
-      "converged Job 19325 jitter fits, not because of its depletion estimate."
-    ),
-    mfclkit_github_ref = "34c56de25afecdd13e9f8e94f2e421e37d9c2f9b",
-    mfclshiny_github_ref = "ff0dfcc0534c743713601dbadca5d9d56c0a4025",
-    fitted_job_id = "19835"
-  ),
-  model_row(
-    "20-Tau2Fixed", "20-TagTau", "19a-DMG8Nmax25",
+    "20-Tau2Fixed", "20-TagTau", "19-DMG8Nmax25",
     TRUE, "carry", "fix negative-binomial tag tau at 2",
     "Tag tau fixed at 2", "20 Fix negative-binomial tag tau at 2",
     "20-tau2-fixed",
     paste(
-      "Continue from the ordinary-makepar 19a pathway; do not use seed 23.",
+      "Continue from the ordinary-makepar Step 19 pathway.",
       "Use direct negative-binomial tau parameterization with parest",
       "111/305/306=4/1/0, fish flags 43/44=0 and fish_pars(4)=0."
     )
@@ -273,8 +257,7 @@ stepwise_report_change <- c(
   "16-MIX020" = "Release-group-specific K=0.20 tag-mixing periods",
   "17-TagReportingExclusion" = "Pre-mixing reporting-rate exclusion",
   "18-EffortCreep" = "Effort-creep adjustment",
-  "19a-DMG8Nmax25" = "Dirichlet-multinomial composition weighting",
-  "19b-Job19835Seed23" = "Best-objective converged jitter fit (seed 23)",
+  "19-DMG8Nmax25" = "Dirichlet-multinomial composition weighting",
   "20-Tau2Fixed" = "Negative-binomial tag tau fixed at 2",
   "21-F33WeakPenalty" = "Weak F33 non-decreasing selectivity penalty",
   "22-Diagnostic" = "Steepness fixed at 0.90"
@@ -296,14 +279,17 @@ stepwise_report_purpose <- c(
   "13-NewAgeData" = "Use the 2023 BET age-data weighting as the reference treatment.",
   "14a-REG075" = "Test region-level spatial CAAL weighting.",
   "14b-SUB075" = "Apply the selected sub-basin CAAL weighting.",
-  "15-SelectivityUpdate" = "Apply the Job 18718 flexible selectivity treatment and the deterministic Job 19325 weak F10 tail-stability penalty to the revised 33-fishery structure.",
+  "15-SelectivityUpdate" = "Apply the selected flexible-selectivity treatment and deterministic weak F10 tail-stability penalty to the revised 33-fishery structure.",
   "16-MIX020" = "Assign Joe's region-mean release-group mixing periods at K=0.20.",
   "17-TagReportingExclusion" = "Avoid applying reporting rates in pre-mixing windows.",
   "18-EffortCreep" = "Account for gradual changes in fishing efficiency.",
-  "19a-DMG8Nmax25" = "Use the Job 18718 DM-noRE G8/Nmax25 weighting with concentration intercepts fixed at 7.",
-  "19b-Job19835Seed23" = "Record the previous Diagnostic selected from the converged jitter ensemble using the lowest objective, while changing no scientific setting.",
-  "20-Tau2Fixed" = "Evaluate direct fixed tau=2 from the ordinary-makepar 19a basis without carrying the seed-23 initialization.",
-  "21-F33WeakPenalty" = "Apply the same weak non-decreasing treatment to the F33 regional index selectivity that is already used for F10.",
+  "19-DMG8Nmax25" = "Use DM-noRE G8/Nmax25 composition weighting with concentration intercepts fixed at 7.",
+  "20-Tau2Fixed" = "Evaluate direct fixed tau=2 from the ordinary-makepar Step 19 basis.",
+  "21-F33WeakPenalty" = paste(
+    "Stabilize F33 selectivity where Region 5 length-frequency information is limited:",
+    "a weak non-decreasing penalty discourages unsupported dome-shaped tails without",
+    "forcing strongly asymptotic selectivity, so the fitted shape remains data informed."
+  ),
   "22-Diagnostic" = "Adopt fixed h=0.90 and reproduce the current public BET 2026 Diagnostic model."
 )
 
@@ -321,7 +307,7 @@ path_stage <- c(
   "14a-REG075" = 14L, "14b-SUB075" = 14L,
   "15-SelectivityUpdate" = 15L, "16-MIX020" = 16L,
   "17-TagReportingExclusion" = 17L, "18-EffortCreep" = 18L,
-  "19a-DMG8Nmax25" = 19L, "19b-Job19835Seed23" = 19L,
+  "19-DMG8Nmax25" = 19L,
   "20-Tau2Fixed" = 20L, "21-F33WeakPenalty" = 21L,
   "22-Diagnostic" = 22L
 )

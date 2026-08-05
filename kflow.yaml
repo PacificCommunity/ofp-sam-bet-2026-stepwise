@@ -7,7 +7,7 @@
 # Stable task id shown in Kflow and used by the API:
 #   /api/job/bet-2026-final-stepwise-diagnostic-04aug
 name: bet-2026-final-stepwise-diagnostic-04aug
-description: "BET 2026 stepwise pathway to the current Diagnostic model. Step 19a is the ordinary-makepar DM G8/Nmax25 basis; 19b reproduces the previous Job 19835 Diagnostic selected as best converged jitter objective (seed 23); Step 20 fixes negative-binomial tau=2 from 19a with no seed; Step 21 adds only the weak F33 non-decreasing penalty; Step 22 changes only fixed steepness from 0.80 to 0.90 and matches public Diagnostic Job 21641."
+description: "BET 2026 stepwise pathway to the current Diagnostic model. Step 19 is the ordinary-makepar DM G8/Nmax25 basis; Step 20 fixes negative-binomial tau=2; Step 21 adds only the weak F33 non-decreasing penalty; Step 22 changes only fixed steepness from 0.80 to 0.90 and matches the public Diagnostic model."
 
 # All campaign fits are intentionally submitted on the Suva pool. Keep both
 # the submitter and node requirement explicit so a task-default change cannot
@@ -410,7 +410,6 @@ triggers: {}
 metadata:
   scientific_base_job: "18718"
   deterministic_target_job: "19325"
-  excluded_promoted_seed_job: "19835"
   step15_selectivity_change: "Job 18718 controls plus F10 LL.ALL.5 fish flags 16=1 and 56=10000"
   initialization: "ordinary makepar; no jitter, perturbation, or promoted seed"
 

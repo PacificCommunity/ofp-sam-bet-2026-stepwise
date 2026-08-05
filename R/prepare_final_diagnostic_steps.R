@@ -50,14 +50,17 @@ stepwise_write_locked_manifest <- function(step_dir, provenance) {
         role = "carried_audit", repository = stepwise_repository_url,
         commit = stepwise_base_commit,
         path = file.path("steps", "19a-DMG8Nmax25", "model", file),
-        note = "Carried unchanged from Step 19a; not an MFCL fitting input."
+        note = "Carried unchanged from Step 19; not an MFCL fitting input."
       )
     }
     source_sha <- ""
     if (identical(record$repository, stepwise_repository_url) &&
         identical(record$commit, stepwise_base_commit) &&
         startsWith(record$path, "steps/19a-DMG8Nmax25/")) {
-      source_file <- file.path(root, record$path)
+      source_file <- file.path(
+        root,
+        sub("^steps/19a-DMG8Nmax25", "steps/19-DMG8Nmax25", record$path)
+      )
       if (file.exists(source_file)) source_sha <- stepwise_sha256_file(source_file)
     }
     data.frame(
@@ -96,69 +99,11 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
   stepwise_repository_url <<- "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise"
   diagnostic_repository_url <<- "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic"
   stepwise_base_commit <<- "b3bc4c5cb30200c7c5e7faa77ad26d3ebcef2eba"
-  job19835_recipe_commit <- "2973795d47b255e015fee680608401f20160e80a"
   tau2_recipe_commit <- "770edf1e910b03b8a390c3cd1a1398d5ea25796e"
-  diagnostic_main_commit <- "0d6db041478a582d44577d14915048d3ee60866b"
-
-  ## 19b: exact Job 19835 seed-23 initialization on the unchanged 19a model.
-  step19a_model <- file.path(root, "steps", "19a-DMG8Nmax25", "model")
-  step19b_dir <- file.path(root, "steps", "19b-Job19835Seed23")
-  step19b_model <- file.path(step19b_dir, "model")
-  stepwise_copy_tree(step19a_model, step19b_model)
-  seed_script_path <- paste0(
-    "explorations/K020-tau-not-estimated-sel20c-f10-ndpen-weak-",
-    "seed23-base/doitall.sh"
-  )
-  stepwise_git_blob_to_file(root, job19835_recipe_commit, seed_script_path,
-                            file.path(step19b_model, "doitall.sh"))
-  Sys.chmod(file.path(step19b_model, "doitall.sh"), mode = "0755")
-  write.csv(
-    data.frame(
-      source_base_job = 19325L,
-      promoted_recipe_job = 19835L,
-      jitter_cv = 0.1,
-      selected_seed = 23L,
-      selection_rule = "minimum objective among converged jitter fits",
-      objective = 89054.3397838085,
-      maximum_gradient = 9.2968286e-05,
-      terminal_depletion_2024 = 0.3287955046,
-      stringsAsFactors = FALSE
-    ),
-    file.path(step19b_model, "seed23-selection-audit.csv"), row.names = FALSE
-  )
-  provenance19b <- list()
-  provenance19b[["doitall.sh"]] <- list(
-    role = "job19835_doitall", repository = stepwise_repository_url,
-    commit = job19835_recipe_commit, path = seed_script_path,
-    note = "Exact Job 19835 Phase-1/2/5 deterministic seed-23 initialization recipe."
-  )
-  provenance19b[["seed23-selection-audit.csv"]] <- list(
-    role = "jitter_selection_audit", repository = stepwise_repository_url,
-    commit = job19835_recipe_commit, path = paste0(dirname(seed_script_path), "/README.md"),
-    note = "Seed 23 selected by lowest objective among converged Job 19325 jitters."
-  )
-  stepwise_write_locked_manifest(step19b_dir, provenance19b)
-  write_readme(
-    step19b_dir, "19b Previous Diagnostic: selected jitter seed 23",
-    "Reproduce Job 19835 by promoting the best-objective converged Job 19325 jitter fit.",
-    c(
-      "All scientific inputs and MFCL controls are unchanged from Step 19a.",
-      "The only fitting-path change is the exact CV=0.1 seed-23 initialization at Phases 1, 2 and 5.",
-      "Seed 23 was selected by minimum objective among converged jitters, not by depletion."
-    ),
-    c(
-      "bet.* / mfcl.cfg" = "Byte-identical Step 19a scientific inputs",
-      "doitall.sh" = "Exact public Job 19835 reproducible seed-23 recipe",
-      "seed23-selection-audit.csv" = "Selection rule and archived fit statistics"
-    ),
-    c(
-      "Job 19835 objective 89054.3397838085; maximum gradient 9.2968286e-05.",
-      "This is a historical comparison branch. Step 20 continues from ordinary-makepar Step 19a."
-    ),
-    status = "Ready to reproduce the previous Diagnostic Job 19835 on Suva."
-  )
+  diagnostic_main_commit <- "d57127a01fa1de33d56280438cda5b425fc25e7d"
 
   ## 20-22: exact public tau=2 grid and Diagnostic recipes at locked commits.
+  step19_model <- file.path(root, "steps", "19-DMG8Nmax25", "model")
   common_files <- c(
     "bet.age_length", "bet.frq", "bet.ini", "bet.reg_scaling", "bet.tag",
     "cpue_mle_sigma_audit.csv", "doitall.sh", "fishery_map.R", "mfcl.cfg",
@@ -168,8 +113,8 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
     list(
       id = "20-Tau2Fixed", commit = tau2_recipe_commit,
       input = "S0.80-F1", selectivity = "F1", title = "20 Tag tau fixed at 2",
-      summary = "Fix direct negative-binomial tag tau at 2 from ordinary Step 19a initialization.",
-      change = "Only the fitted-model tau treatment changes; seed 23 is not carried forward."
+      summary = "Fix direct negative-binomial tag tau at 2 from ordinary Step 19 initialization.",
+      change = "Only the fitted-model tau treatment changes."
     ),
     list(
       id = "21-F33WeakPenalty", commit = tau2_recipe_commit,
@@ -245,7 +190,7 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
       "bet.reg_scaling.full", "f15-lf-qc-audit.csv", "f15-lf-qc-summary.csv",
       "dom-lf-qc-audit.csv", "dom-lf-qc-summary.csv"
     )) {
-      copy_one(file.path(step19a_model, audit), file.path(model_dir, audit))
+      copy_one(file.path(step19_model, audit), file.path(model_dir, audit))
     }
     stepwise_write_locked_manifest(step_dir, provenance)
     write_readme(

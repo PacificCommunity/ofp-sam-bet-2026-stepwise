@@ -1152,7 +1152,7 @@ common_late_step(
   effort_creep = TRUE
 )
 common_late_step(
-  "19a-DMG8Nmax25", "19a DM weighting: G8 Nmax 25", "18-EffortCreep",
+  "19-DMG8Nmax25", "19 DM weighting: G8 Nmax 25", "18-EffortCreep",
   paste(
     "Apply the Job 18718 final composition treatment: DM-noRE, G8, Nmax=25,",
     "fish_pars(22) fixed at 7 and fish_pars(23) estimated."
@@ -1180,7 +1180,7 @@ diagnostic_repo_hits <- diagnostic_repo_candidates[
 if (!length(diagnostic_repo_hits)) {
   stop(
     "Could not find ofp-sam-bet-2026-diagnostic. Set BET_2026_DIAGNOSTIC_ROOT ",
-    "to a clone containing commits 770edf1 and 0d6db04.",
+    "to a clone containing commits 770edf1 and d57127a.",
     call. = FALSE
   )
 }

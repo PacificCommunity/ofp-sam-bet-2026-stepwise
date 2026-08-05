@@ -4,7 +4,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${HERE}/.." && pwd)"
 REPORT_OUTPUT_DIR="${REPORT_OUTPUT_DIR:-model-development}"
-INPUT_DIR="${INPUT_DIR:-inputs}"
+INPUT_DIR="${INPUT_DIR:-../data/stepwise}"
 R_LIBRARY="${R_LIBS_USER:-${HERE}/.R-library}"
 
 resolve_path() {

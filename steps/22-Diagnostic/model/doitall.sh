@@ -45,10 +45,14 @@ echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentrati
 echo "Tag overdispersion: tau fixed at 2 under the direct parameterization (parest 305=1; fish_pars(4)=0; fish flags 43/44=0)"
 
 requested_model_id=${MODEL_ID:-Diagnostic}
-if [ "$requested_model_id" != Diagnostic ]; then
-  echo "MODEL_ID must remain Diagnostic (the Job 21641 model recipe)." >&2
-  exit 40
-fi
+case "$requested_model_id" in
+  Diagnostic)
+    ;;
+  *)
+    echo "MODEL_ID must be Diagnostic for the Job 21641 main workflow." >&2
+    exit 40
+    ;;
+esac
 
 model_input="model-inputs/$requested_model_id.conf"
 if [ ! -s "$model_input" ]; then

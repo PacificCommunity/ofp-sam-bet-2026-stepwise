@@ -76,5 +76,5 @@ from Job 18718 is exactly:
 Flag 16 activates the non-decreasing selectivity penalty for F10 and flag 56
 sets its weight to 10,000. This is one percent of MFCL's 1,000,000 default
 weight when flag 56 is absent. Every affected step deliberately uses its
-frozen INI and the normal `mfclo64 -makepar` path. It does not load Job 19835,
-seed 23, a jitter result, or any perturbed PAR.
+frozen INI and the normal `mfclo64 -makepar` path. It does not load a jitter
+result or any perturbed PAR.

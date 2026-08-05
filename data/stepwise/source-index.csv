@@ -1,0 +1,24 @@
+order,row,step_id,job_number,job_title,model_label,change_axis,scientific_parent_id,selected,task,status
+1,01,01-Diag2023,19182,01 2023 diagnostic-model refit,2023 diagnostic-model refit,refit the 2023 diagnostic model,external-2023-diagnostic-archive,TRUE,bet-2026-final-stepwise-02aug,completed
+2,02,02-NewExeIni1007,19181,02 New executable and INI 1007,New executable and INI 1007,update MFCL executable and INI format together,01-Diag2023,TRUE,bet-2026-final-stepwise-02aug,completed
+3,03,03-FixM,19188,03 Fix natural mortality,Natural mortality fixed,fix Lorenzen natural-mortality scaling,02-NewExeIni1007,TRUE,bet-2026-final-stepwise-02aug,completed
+4,04,04-LengthWeight,19186,04 BET 2026 length-weight update,Length-weight update,update bias-corrected BET length-weight parameters,03-FixM,TRUE,bet-2026-final-stepwise-02aug,completed
+5,05,05-NewStructure,19183,"05 Five-region, 33-fishery structure",Five-region structure,"adopt the five-region, 33-fishery structure and remap current reporting-rate controls",04-LengthWeight,TRUE,bet-2026-final-stepwise-02aug,completed
+6,06,06-ConvertToLength,19187,06 Convert weight data to length,Weight-as-length compositions,replace weight compositions with reweighted weight-as-length data through 2021,05-NewStructure,TRUE,bet-2026-final-stepwise-02aug,completed
+7,07,07-AddLengthData,19189,07 Add observed length data,Observed-length supplementation,add observed length compositions where coverage exceeds weight samples,06-ConvertToLength,TRUE,bet-2026-final-stepwise-02aug,completed
+8,08,08-DataTo2024,19190,08 Update data through 2024,Data through 2024,extend data through 2024 except CAAL,07-AddLengthData,TRUE,bet-2026-final-stepwise-02aug,completed
+9,09,09-SizeDataQC,19185,09 PH/ID and domestic size-data rules,PH/ID and domestic size-data rules,apply PH/ID and domestic mixed-gear size-data rules,08-DataTo2024,TRUE,bet-2026-final-stepwise-02aug,completed
+10,10,10-RegionalCPUE,19184,10 Regional CPUE and scaling,Regional CPUE and scaling,use separate regional CPUE indices and regional scaling,09-SizeDataQC,TRUE,bet-2026-final-stepwise-02aug,completed
+11,11,11-TimeVaryingCV,19191,11 Time-varying CPUE uncertainty,Time-varying CPUE uncertainty,apply time-varying CPUE uncertainty,10-RegionalCPUE,TRUE,bet-2026-final-stepwise-02aug,completed
+12,12,12-CPUEErrorCalibration,19192,12 Fix regional CPUE SDs,Fixed regional CPUE SDs,fix regional CPUE log-scale observation-error SDs,11-TimeVaryingCV,TRUE,bet-2026-final-stepwise-02aug,completed
+13,13,13-NewAgeData,19195,"13 New CAAL data, weight 0.75",New CAAL data,add new CAAL data with weight 0.75,12-CPUEErrorCalibration,TRUE,bet-2026-final-stepwise-02aug,completed
+14,14a,14a-REG075,19194,14a Regional CAAL reweighting,Regional CAAL reweighting,apply regional CAAL reweighting,13-NewAgeData,FALSE,bet-2026-final-stepwise-02aug,completed
+15,14b,14b-SUB075,19193,14b Sub-basin CAAL reweighting,Sub-basin CAAL reweighting,apply selected regions 3-and-4 combined CAAL reweighting,13-NewAgeData,TRUE,bet-2026-final-stepwise-02aug,completed
+16,15,15-SelectivityUpdate,20218,15 Selectivity update,Selectivity update,apply Job 18718 flexible selectivity plus the weak F10 non-decreasing penalty,14b-SUB075,TRUE,bet-2026-final-stepwise-02aug,completed
+17,16,16-MIX020,20217,16 K=0.20 release-group tag mixing,K=0.20 tag mixing periods,apply release-group-specific K=0.20 mixing periods,15-SelectivityUpdate,TRUE,bet-2026-final-stepwise-02aug,completed
+18,17,17-TagReportingExclusion,20219,17 Pre-mixing reporting-rate exclusion,Pre-mixing reporting-rate exclusion,exclude reporting rates during pre-mixing windows,16-MIX020,TRUE,bet-2026-final-stepwise-02aug,completed
+19,18,18-EffortCreep,20220,18 Effort-creep adjustment,Effort-creep adjustment,apply effort-creep adjustment to CPUE indices,17-TagReportingExclusion,TRUE,bet-2026-final-stepwise-02aug,completed
+20,19,19-DMG8Nmax25,20221,"19 DM composition weighting, G8 Nmax 25",DM composition weighting,apply Dirichlet-multinomial composition weighting,18-EffortCreep,TRUE,bet-2026-final-stepwise-02aug,completed
+21,20,20-Tau2Fixed,22198,20 Fix negative-binomial tag tau at 2,Tag tau fixed at 2,fix negative-binomial tag tau at 2,19-DMG8Nmax25,TRUE,bet-2026-final-stepwise-diagnostic-04aug,completed
+22,21,21-F33WeakPenalty,22199,21 Add weak F33 non-decreasing selectivity penalty,F33 weak non-decreasing penalty,add the weak F33 non-decreasing selectivity penalty,20-Tau2Fixed,TRUE,bet-2026-final-stepwise-diagnostic-04aug,completed
+23,22,22-Diagnostic,21641,22 BET 2026 Diagnostic model: h=0.90 fixed,BET 2026 Diagnostic model,fix steepness at 0.90,21-F33WeakPenalty,TRUE,ofp-sam-bet-2026-tau2-steepness-selectivity-grid,completed

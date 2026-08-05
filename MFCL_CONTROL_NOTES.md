@@ -10,11 +10,11 @@
 | Fish flag 92 | CV form from Step 02 | F33-F41 use `24/31/20/21/26/23/20/25/47`; final R1-R5 use `35/24/21/24/23`. |
 | Fish flag 66 | 1 from Step 11 | Use time-varying CPUE relative-variance multipliers. |
 | Parest 77-81 | `100/1/240/220/1` | Activate the five-region MVN regional-scaling prior. |
-| Parest 141 | 11 from Step 19a | Dirichlet-multinomial length likelihood without random effects. |
-| Parest 320 | 5 from Step 19a | Require a five-bin positive span for DM support. |
-| Parest 342 | 25 from Step 19a | DM effective-sample-size upper asymptote. |
+| Parest 141 | 11 from Step 19 | Dirichlet-multinomial length likelihood without random effects. |
+| Parest 320 | 5 from Step 19 | Require a five-bin positive span for DM support. |
+| Parest 342 | 25 from Step 19 | DM effective-sample-size upper asymptote. |
 | Fish flag 68 | G8 vector | Assign all 33 fisheries to eight DM groups. |
-| Fish flag 69 | 0 from Step 19a | Fix grouped `fish_pars(22)` after row 22 is written as 7. |
+| Fish flag 69 | 0 from Step 19 | Fix grouped `fish_pars(22)` after row 22 is written as 7. |
 | Fish flag 89 | 0 in Phase 1; 1 from Phase 2 | Estimate grouped `fish_pars(23)` only after the initial phase. |
 | Parest 313 | 0 | No separate 1% LF tail-compression step; DM support is controlled by flag 320. |
 | `fish_pars(4)` | 0 from Step 20 | Fix direct tau at `1 + exp(0) = 2`. |
@@ -22,7 +22,7 @@
 | Fish flag 56 | 10000 for F10 from Step 15; also F33 from Step 21 | Override the source-code default selectivity-form penalty weight of 1,000,000. |
 
 The fixed Lorenzen intercept in every model from Step 03 onward is
-`-2.54930339768360`. Step 19a writes all 33 copies of `fish_pars(22)` to 7 in
+`-2.54930339768360`. Step 19 writes all 33 copies of `fish_pars(22)` to 7 in
 `00.dm-fixed.par` before the first fitted phase; it does not rely on an
 unrelated phase to move the parameter to the bound.
 

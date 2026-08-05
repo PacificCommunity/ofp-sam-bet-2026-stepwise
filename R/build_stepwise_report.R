@@ -246,6 +246,7 @@ stepwise_stage_table <- function(nodes, job_map) {
   table <- data.frame(
     step_id = nodes$step_id,
     step = sub("-.*$", "", nodes$step_id),
+    model = trimws(as.character(nodes$model_label)),
     change = if ("report_change" %in% names(nodes)) {
       trimws(as.character(nodes$report_change))
     } else {
@@ -272,13 +273,13 @@ stepwise_table_html <- function(table, include_jobs = FALSE) {
   job_header <- if (include_jobs) "<th>Job</th>" else ""
   colgroup <- if (include_jobs) {
     paste0(
-      "<col style=\"width:8%\"><col style=\"width:39%\">",
-      "<col style=\"width:47%\"><col style=\"width:6%\">"
+      "<col style=\"width:6%\"><col style=\"width:18%\">",
+      "<col style=\"width:29%\"><col style=\"width:41%\"><col style=\"width:6%\">"
     )
   } else {
     paste0(
-      "<col style=\"width:8%\"><col style=\"width:42%\">",
-      "<col style=\"width:50%\">"
+      "<col style=\"width:7%\"><col style=\"width:21%\">",
+      "<col style=\"width:31%\"><col style=\"width:41%\">"
     )
   }
   rows <- vapply(seq_len(nrow(table)), function(i) {
@@ -289,14 +290,15 @@ stepwise_table_html <- function(table, include_jobs = FALSE) {
     } else ""
     paste0(
       "<tr><td class=\"step-number\">", stepwise_html_escape(table$step[[i]]), "</td>",
+      "<td class=\"row-label\">", stepwise_html_escape(table$model[[i]]), "</td>",
       "<td>", stepwise_html_escape(table$change[[i]]), "</td>",
       "<td>", stepwise_html_escape(rationale), "</td>", job_cell, "</tr>"
     )
   }, character(1))
   paste0(
     "<table id=\"stage-table\"><colgroup>", colgroup, "</colgroup>",
-    "<thead><tr><th>Step</th><th>Model change</th>",
-    "<th>Rationale</th>", job_header,
+    "<thead><tr><th>Step</th><th>Configuration</th><th>What changed</th>",
+    "<th>Why it was evaluated</th>", job_header,
     "</tr></thead><tbody>", paste(rows, collapse = ""), "</tbody></table>"
   )
 }
@@ -304,25 +306,28 @@ stepwise_table_html <- function(table, include_jobs = FALSE) {
 stepwise_table_latex <- function(table, include_jobs = FALSE) {
   columns <- if (include_jobs) {
     paste0(
-      "@{}>{\\centering\\arraybackslash}p{0.06\\linewidth}",
-      ">{\\raggedright\\arraybackslash}p{0.38\\linewidth}",
-      ">{\\raggedright\\arraybackslash}p{0.45\\linewidth}r@{}"
+      "@{}>{\\centering\\arraybackslash}p{0.05\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.17\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.27\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.39\\linewidth}r@{}"
     )
   } else {
     paste0(
-      "@{}>{\\centering\\arraybackslash}p{0.06\\linewidth}",
-      ">{\\raggedright\\arraybackslash}p{0.41\\linewidth}",
-      ">{\\raggedright\\arraybackslash}p{0.48\\linewidth}@{}"
+      "@{}>{\\centering\\arraybackslash}p{0.05\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.20\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.29\\linewidth}",
+      ">{\\raggedright\\arraybackslash}p{0.40\\linewidth}@{}"
     )
   }
   header <- if (include_jobs) {
-    "Step & Model change & Rationale & Job"
+    "Step & Configuration & What changed & Why it was evaluated & Job"
   } else {
-    "Step & Model change & Rationale"
+    "Step & Configuration & What changed & Why it was evaluated"
   }
   rows <- vapply(seq_len(nrow(table)), function(i) {
     values <- c(
       paste0("\\textbf{", stepwise_latex_escape(table$step[[i]]), "}"),
+      stepwise_latex_escape(table$model[[i]]),
       stepwise_latex_escape(table$change[[i]]),
       stepwise_latex_escape(table$rationale[[i]])
     )
@@ -455,12 +460,21 @@ build_stepwise_report <- function(
   if (!exists("stepwise_prepare_result_assets", mode = "function")) {
     source(file.path(dirname(normalizePath(config_path)), "R", "stepwise_report_inputs.R"))
   }
+  if (!exists("build_stepwise_key_quantities", mode = "function")) {
+    source(file.path(dirname(normalizePath(config_path)), "R", "build_stepwise_key_quantities.R"))
+  }
 
   config <- new.env(parent = baseenv())
   sys.source(normalizePath(config_path, mustWork = TRUE), envir = config)
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   source_index <- stepwise_json_records(Sys.getenv("STEPWISE_SOURCE_INDEX_JSON", ""))
+  if (!nrow(source_index)) {
+    source_index <- stepwise_repository_source_index(input_dir)
+  }
   assets <- stepwise_prepare_result_assets(input_dir, output_dir, source_index)
+  key_assets <- build_stepwise_key_quantities(assets$result_dir, source_index)
+  assets$figure_index <- key_assets$figure_index
+  assets$table_index <- key_assets$table_index
   if (!nrow(source_index)) {
     source_index <- stepwise_source_index_from_viewer(assets$viewer_data)
   }
@@ -518,7 +532,16 @@ build_stepwise_report <- function(
   missing_purpose <- is.na(configured_purpose) | !nzchar(trimws(configured_purpose))
   configured_purpose[missing_purpose] <- fallback_purpose[missing_purpose]
   nodes$report_purpose <- configured_purpose
-  nodes$report_change <- dynamic_labels
+  configured_change <- configured$report_change[matches]
+  configured_change <- gsub(
+    "Job[[:space:]]+[0-9]+(/[0-9]+)?",
+    "selected fitted configuration",
+    configured_change,
+    perl = TRUE
+  )
+  missing_change <- is.na(configured_change) | !nzchar(trimws(configured_change))
+  configured_change[missing_change] <- fallback_purpose[missing_change]
+  nodes$report_change <- configured_change
   job_map <- source_index[, c("step_id", "job_number"), drop = FALSE]
 
   pathway_dir <- file.path(output_dir, "pathway")
@@ -533,7 +556,9 @@ build_stepwise_report <- function(
   png_data <- jsonlite::base64_enc(readBin(dag_png, "raw", n = file.info(dag_png)$size))
 
   table <- stepwise_stage_table(nodes, job_map)
-  include_jobs <- nrow(job_map) > 0L
+  # Job provenance remains available in the runtime inventory. The main
+  # paper/report table is kept scientific and compact for A4 reproduction.
+  include_jobs <- FALSE
   table_html <- stepwise_table_html(table, include_jobs)
   table_latex <- stepwise_table_latex(table, include_jobs)
   discovered <- stepwise_discover_payload_index(input_dir, source_index)
@@ -541,33 +566,24 @@ build_stepwise_report <- function(
   method_text <- paste0(
     "Development of the BET 2026 assessment model proceeded sequentially. At each step, one ",
     "model component or data treatment was modified, while all other settings were held ",
-    "constant where practicable (Figure XX; Table XX). Configurations retained after evaluation ",
-    "defined the main development pathway; side branches document alternatives that were tested ",
-    "but not carried forward. Model diagnostics, fitted quantities, figures, and supporting ",
-    "tables were reconstructed from the selected runtime viewer bundle."
+    "constant where practicable (Figure XX; Table XX). The configurations are presented in ",
+    "evaluation order; Step 14a documents the regional CAAL weighting evaluated immediately ",
+    "before the Step 14b treatment that was carried forward. Model diagnostics, fitted quantities, figures, and supporting ",
+    "tables were reconstructed from the checksum-locked repository payloads."
   )
   method_latex <- gsub(
     "Figure XX; Table XX", "Figure~XX; Table~XX", method_text, fixed = TRUE
   )
   figure_caption <- paste0(
-    "Stepwise model-development pathway for the BET 2026 assessment. Solid teal arrows ",
-    "show configurations carried forward; dashed orange arrows show comparison branches. ",
-    "The dark-teal node marks the final model."
+    "Stepwise model-development pathway for the BET 2026 assessment. Configurations are ",
+    "arranged in evaluation order from Step 1 to Step 22. Step 14a was evaluated ",
+    "before the Step 14b configuration that was carried forward. The dark-teal row marks ",
+    "the final Diagnostic model."
   )
   table_caption <- paste0(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
     "rationale. Step numbers correspond to the pathway in Figure XX."
   )
-  inventory <- data.frame(
-    Step = source_index$row,
-    Model = source_index$model_label,
-    Job = ifelse(is.na(source_index$job_number), "", paste0("#", source_index$job_number)),
-    Task = source_index$task,
-    Status = source_index$status,
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
-  inventory_html <- stepwise_dynamic_table_html(inventory, "dynamic-model-inventory")
   summary_html <- stepwise_dynamic_table_html(assets$model_summary, "dynamic-model-summary")
   objective_html <- stepwise_dynamic_table_html(assets$objective_components, "dynamic-objective-components")
   viewer_link <- if (nzchar(assets$viewer)) {
@@ -583,16 +599,13 @@ build_stepwise_report <- function(
   }
   result_section <- paste0(
     "<section class=\"model-card\" id=\"interactive-viewer\"><h2>Interactive model viewer</h2>",
-    "<p>The viewer and this report are generated from the same runtime model index and fitted-model data.</p>",
+    "<p>The viewer and this report are generated from the same checksum-locked fitted-model payloads.</p>",
     viewer_link, "</section>",
-    "<section class=\"model-card\"><h2>Runtime model inventory</h2><p class=\"note\">",
-    "This table is reconstructed from the selected viewer job and changes when that input changes.</p>",
-    "<div class=\"table-shell\">", inventory_html, "</div></section>",
-    "<section class=\"model-card\"><h2>Model diagnostics and objective components</h2>",
-    "<p>Values below are read from the fitted-model viewer payload; they are not stored in the report source.</p>",
-    "<h3>Model summary</h3><div class=\"table-shell\">", summary_html, "</div>",
+    "<section class=\"model-card\"><h2>Fit diagnostics and likelihood components</h2>",
+    "<p>The compact diagnostics table reports convergence and positive-definite Hessian (PDH) status where a native Hessian analysis was available.</p>",
+    "<h3>Fit diagnostics</h3><div class=\"table-shell\">", summary_html, "</div>",
     "<div class=\"actions\"><a class=\"button\" href=\"stepwise-model-summary.csv\" download>Download model summary</a></div>",
-    "<h3>Objective components</h3><div class=\"table-shell\">", objective_html, "</div>",
+    "<h3>Likelihood components</h3><div class=\"table-shell\">", objective_html, "</div>",
     "<div class=\"actions\"><a class=\"button\" href=\"stepwise-objective-components.csv\" download>Download objective components</a></div>",
     "</section>",
     "<section class=\"model-card\"><h2>SC assessment figures</h2>",
@@ -603,10 +616,14 @@ build_stepwise_report <- function(
   )
 
   latex_figure <- paste0(
+    "% Requires \\usepackage{graphicx,hyperref}\n",
     "\\begin{figure}[htbp]\n\\centering\n",
-    "\\includegraphics[width=\\linewidth,height=0.80\\textheight,keepaspectratio]{pathway/figures/bet-2026-stepwise-pathway.png}\n",
+    "\\includegraphics[width=\\linewidth,height=0.88\\textheight,keepaspectratio]{pathway/figures/bet-2026-stepwise-pathway.pdf}\n",
     "\\caption{", stepwise_latex_escape(figure_caption), "}\n",
-    "\\label{fig:bet-stepwise-pathway}\n\\end{figure}\n"
+    "\\label{fig:bet-stepwise-pathway}\n",
+    "\\par\\small\\href{https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html}",
+    "{Explore individual model configurations in the interactive viewer.}\n",
+    "\\end{figure}\n"
   )
 
   html_file <- file.path(output_dir, "bet-2026-stepwise-model-development.html")
@@ -642,8 +659,8 @@ build_stepwise_report <- function(
     ".note{padding:13px 16px;border-left:4px solid var(--sea);",
     "background:#eff5f5;color:#3a5967}.hidden-copy{display:none}.viewer-actions{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}",
     ".viewer-actions .alt{background:#fff;color:var(--sea);border:1px solid var(--sea)}.viewer-frame{width:100%;height:860px;",
-    "border:1px solid var(--line);background:#fff}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:22px}",
-    ".result-figure{margin:0;border:1px solid var(--line);padding:16px;background:#fff}.result-figure h3{margin:0 0 12px;color:var(--ink)}",
+    "border:1px solid var(--line);background:#fff}.result-grid{display:block}",
+    ".result-figure{max-width:980px;margin:0 auto 30px;border:1px solid var(--line);padding:16px;background:#fff}.result-figure h3{margin:0 0 12px;color:var(--ink)}",
     ".result-figure img{display:block;width:100%;height:auto}.download-list{list-style:none;padding:0}.download-list li{display:grid;grid-template-columns:minmax(220px,32%) 1fr;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}",
     ".download-list li span{color:var(--muted)}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
     "background:var(--ink);color:#fff;padding:10px 15px;box-shadow:0 8px 24px rgba(18,59,93,.2);opacity:0;transform:translateY(8px);",
@@ -658,11 +675,13 @@ build_stepwise_report <- function(
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
     "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy methods text for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy methods text for LaTeX</button></div>",
-    "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\">",
+    "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><a href=\"interactive-model-viewer.html\" target=\"_blank\" title=\"Open the interactive viewer\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\"></a>",
     "</div><figcaption id=\"figure-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
-    stepwise_html_escape(figure_caption), "</figcaption></figure>",
+    stepwise_html_escape(figure_caption), " <a href=\"interactive-model-viewer.html\" target=\"_blank\">",
+    "Explore individual configurations in the interactive viewer.</a></figcaption></figure>",
     "<div class=\"actions\"><button onclick=\"copyFigure(this)\">Copy figure + caption for Word</button>",
     "<a class=\"button\" download href=\"data:image/png;base64,", png_data, "\">Save PNG</a>",
+    "<a class=\"button\" download href=\"pathway/figures/bet-2026-stepwise-pathway.pdf\">Save vector PDF</a>",
     "<button class=\"secondary\" onclick=\"copyText('figure-latex',this)\">Copy figure + caption for LaTeX</button></div></div>",
     "<div class=\"format-block\"><h2>Stepwise changes</h2><p class=\"caption\" id=\"table-caption\"><strong>Table ",
     "<span contenteditable=\"true\">XX</span>.</strong> ", stepwise_html_escape(table_caption), "</p>",
@@ -708,10 +727,13 @@ build_stepwise_report <- function(
     "function copyFigure(b){const i=document.getElementById('dag-png'),c=document.getElementById('figure-caption');",
     "writeClipboard('<figure><img src=\"'+i.src+'\" style=\"max-width:100%;height:auto\"><figcaption>'+c.innerHTML+'</figcaption></figure>',",
     "c.innerText,b)}",
+    "function copyResultFigure(imageId,captionId,b){const i=document.getElementById(imageId),c=document.getElementById(captionId);",
+    "writeClipboard('<figure><img src=\"'+i.src+'\" style=\"max-width:100%;height:auto\"><figcaption>'+c.innerHTML+'</figcaption></figure>',",
+    "c.innerText,b)}",
     "</script></main></body></html>"
   )
   writeLines(html, html_file, useBytes = TRUE)
-  export_columns <- c("step", "change", "rationale")
+  export_columns <- c("step", "model", "change", "rationale")
   if (include_jobs) export_columns <- c(export_columns, "job_number")
   export_table <- table[export_columns]
   write.csv(

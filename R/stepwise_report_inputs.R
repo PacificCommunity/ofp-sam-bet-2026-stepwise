@@ -32,6 +32,25 @@ stepwise_json_records <- function(value) {
   parsed[order(parsed$order), , drop = FALSE]
 }
 
+stepwise_repository_source_index <- function(input_dir) {
+  candidates <- file.path(input_dir, c("source-index.csv", "model-index.csv"))
+  candidates <- candidates[file.exists(candidates)]
+  if (!length(candidates)) return(stepwise_empty_source_index())
+  parsed <- utils::read.csv(candidates[[1L]], stringsAsFactors = FALSE, check.names = FALSE)
+  defaults <- stepwise_empty_source_index()
+  for (name in names(defaults)) {
+    if (!name %in% names(parsed)) parsed[[name]] <- NA
+  }
+  parsed <- parsed[, names(defaults), drop = FALSE]
+  parsed$order <- suppressWarnings(as.integer(parsed$order))
+  missing_order <- is.na(parsed$order)
+  parsed$order[missing_order] <- seq_len(nrow(parsed))[missing_order]
+  parsed$job_number <- suppressWarnings(as.integer(parsed$job_number))
+  parsed$selected <- as.logical(parsed$selected)
+  parsed$selected[is.na(parsed$selected)] <- TRUE
+  parsed[order(parsed$order), , drop = FALSE]
+}
+
 stepwise_provenance_records <- function(input_dir) {
   file <- file.path(input_dir, "kflow-provenance.json")
   if (!file.exists(file)) return(data.frame())
@@ -65,7 +84,29 @@ stepwise_find_job_root <- function(input_dir, job_id) {
 
 stepwise_discover_payload_index <- function(input_dir, source_index) {
   provenance <- stepwise_provenance_records(input_dir)
-  if (!nrow(provenance)) return(data.frame())
+  if (!nrow(provenance)) {
+    if (!nrow(source_index)) source_index <- stepwise_repository_source_index(input_dir)
+    if (!nrow(source_index)) return(data.frame())
+    records <- lapply(seq_len(nrow(source_index)), function(i) {
+      step_id <- as.character(source_index$step_id[[i]])
+      payload <- file.path(input_dir, "models", step_id, "model_payload.rds")
+      if (!file.exists(payload)) return(NULL)
+      data.frame(
+        step_id = step_id,
+        job_number = source_index$job_number[[i]],
+        job_title = source_index$job_title[[i]],
+        model_label = source_index$model_label[[i]],
+        payload = normalizePath(payload, winslash = "/", mustWork = TRUE),
+        status = source_index$status[[i]],
+        stringsAsFactors = FALSE
+      )
+    })
+    records <- Filter(Negate(is.null), records)
+    if (!length(records)) return(data.frame())
+    result <- do.call(rbind, records)
+    rownames(result) <- NULL
+    return(result)
+  }
   records <- lapply(seq_len(nrow(provenance)), function(i) {
     root <- stepwise_find_job_root(input_dir, provenance$job_id[[i]])
     if (!nzchar(root)) return(NULL)
@@ -149,6 +190,105 @@ stepwise_extract_viewer_data <- function(viewer) {
   )
 }
 
+stepwise_payload_likelihood_components <- function(input_dir, source_index) {
+  core <- c("Tag", "Length frequency", "Weight frequency", "Age", "CPUE", "Catch")
+  rows <- lapply(source_index$step_id, function(step_id) {
+    file <- file.path(input_dir, "models", step_id, "model_payload.rds")
+    if (!file.exists(file)) return(NULL)
+    payload <- readRDS(file)
+    likelihood <- payload$data$LikelihoodComponents %||% list()
+    if (!length(likelihood)) return(NULL)
+    likelihood <- as.data.frame(likelihood, stringsAsFactors = FALSE)
+    if (!all(c("Component", "Value") %in% names(likelihood))) return(NULL)
+    value <- function(component) {
+      matched <- likelihood$Value[match(component, likelihood$Component)]
+      if (!length(matched) || !is.finite(matched)) 0 else as.numeric(matched)
+    }
+    penalty <- sum(likelihood$Value[
+      !likelihood$Component %in% c(core, "Unclassified objective residual")
+    ], na.rm = TRUE)
+    data.frame(
+      Model = step_id,
+      `Total objective` = as.numeric(payload$obj_fun[[1L]]),
+      Tag = value("Tag"),
+      `Length frequency` = value("Length frequency"),
+      `Weight frequency` = value("Weight frequency"),
+      Age = value("Age"),
+      CPUE = value("CPUE"),
+      Catch = value("Catch"),
+      Penalty = penalty,
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    )
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) return(data.frame())
+  do.call(rbind, rows)
+}
+
+stepwise_simplify_viewer <- function(
+  viewer,
+  hessian_audit_file = "",
+  likelihood_components = data.frame()
+) {
+  if (!file.exists(viewer)) return(FALSE)
+  lines <- readLines(viewer, warn = FALSE, encoding = "UTF-8")
+  marker <- grep('<script type="application/json" id="viewer-data">', lines, fixed = TRUE)
+  if (length(marker) != 1L || marker[[1L]] >= length(lines)) {
+    stop("The interactive viewer JSON payload could not be located.", call. = FALSE)
+  }
+  data_line <- marker[[1L]] + 1L
+  viewer_data <- jsonlite::fromJSON(lines[[data_line]], simplifyVector = FALSE)
+  audit <- if (nzchar(hessian_audit_file) && file.exists(hessian_audit_file)) {
+    utils::read.csv(hessian_audit_file, stringsAsFactors = FALSE, check.names = FALSE)
+  } else data.frame()
+
+  viewer_data$metrics <- lapply(viewer_data$metrics, function(metric) {
+    key <- as.character(metric$key %||% "")
+    if (identical(key, "model_summary")) {
+      keep <- c(
+        "Model", "Max gradient", "Objective value", "Active parameters",
+        "Hessian PDH", "Non-positive eigenvalues", "Smallest eigenvalue"
+      )
+      keep <- keep[keep %in% names(metric$records)]
+      metric$records <- metric$records[keep]
+      metric$columns <- as.list(keep)
+      metric$label <- "Fit diagnostics"
+      models <- unlist(metric$records$Model, use.names = FALSE)
+      pdh <- rep("Not evaluated", length(models))
+      nonpositive <- as.list(rep("", length(models)))
+      smallest <- as.list(rep("", length(models)))
+      if (nrow(audit)) {
+        matched <- match(models, audit$step_id)
+        found <- !is.na(matched)
+        pdh[found] <- as.character(audit$pdh[matched[found]])
+        nonpositive[found] <- as.list(as.numeric(audit$nonpositive_eigenvalues[matched[found]]))
+        smallest[found] <- as.list(as.numeric(audit$smallest_eigenvalue[matched[found]]))
+      }
+      metric$records[["Hessian PDH"]] <- as.list(pdh)
+      metric$records[["Non-positive eigenvalues"]] <- nonpositive
+      metric$records[["Smallest eigenvalue"]] <- smallest
+    } else if (identical(key, "objective_components")) {
+      metric$label <- "Likelihood components"
+      if (nrow(likelihood_components)) {
+        metric$records <- lapply(likelihood_components, as.list)
+        metric$columns <- as.list(names(likelihood_components))
+      }
+    }
+    metric
+  })
+  lines[[data_line]] <- as.character(jsonlite::toJSON(
+    viewer_data, auto_unbox = TRUE, null = "null", na = "null", digits = NA
+  ))
+  # The stepwise report uses only the adopted 20% depletion LRP.
+  lines <- gsub(
+    "[{v:0.2,c:'#b73e3e'},{v:0.5,c:'#3f8f53'}]",
+    "[{v:0.2,c:'#b73e3e'}]", lines, fixed = TRUE
+  )
+  writeLines(lines, viewer, useBytes = TRUE)
+  TRUE
+}
+
 stepwise_metric_table <- function(viewer_data, key) {
   metrics <- viewer_data$metrics %||% list()
   selected <- Filter(function(metric) identical(as.character(metric$key %||% ""), key), metrics)
@@ -214,11 +354,19 @@ stepwise_prepare_result_assets <- function(input_dir, output_dir, source_index) 
   viewer_candidates <- viewer_candidates[file.exists(viewer_candidates)]
   viewer <- if (length(viewer_candidates)) viewer_candidates[[1L]] else ""
   public_viewer <- file.path(output_dir, "interactive-model-viewer.html")
-  if (nzchar(viewer)) file.copy(viewer, public_viewer, overwrite = TRUE, copy.date = TRUE)
+  if (nzchar(viewer)) {
+    file.copy(viewer, public_viewer, overwrite = TRUE, copy.date = TRUE)
+    likelihood_components <- stepwise_payload_likelihood_components(input_dir, source_index)
+    stepwise_simplify_viewer(
+      public_viewer,
+      file.path(normalizePath(input_dir, mustWork = TRUE), "hessian-audit.csv"),
+      likelihood_components
+    )
+  }
 
   figure_index <- file.path(result_dir, "indices", "figure-index.csv")
   table_index <- file.path(result_dir, "indices", "table-index.csv")
-  viewer_data <- stepwise_extract_viewer_data(viewer)
+  viewer_data <- stepwise_extract_viewer_data(if (file.exists(public_viewer)) public_viewer else viewer)
   model_summary <- stepwise_metric_table(viewer_data, "model_summary")
   objective_components <- stepwise_metric_table(viewer_data, "objective_components")
   if (nrow(model_summary)) write.csv(model_summary, file.path(output_dir, "stepwise-model-summary.csv"), row.names = FALSE)
@@ -256,6 +404,7 @@ stepwise_figure_sections_html <- function(index) {
   index <- index[index$status == "ok" & nzchar(index$file), , drop = FALSE]
   if (!nrow(index)) return("")
   priority <- c(
+    "stepwise-key-quantity-trajectories", "stepwise-key-quantity-changes",
     "key-quantities", "spawning-potential-with-without-fishing", "depletion-by-area",
     "recruitment-by-area", "f-juvenile-adult-by-area", "f-area-contribution",
     "kobe-plot", "majuro-plot", "region-map", "fishery-process", "cpue-fits",
@@ -267,11 +416,38 @@ stepwise_figure_sections_html <- function(index) {
   index <- index[order(ifelse(is.na(rank), length(priority) + seq_len(nrow(index)), rank)), , drop = FALSE]
   cards <- vapply(seq_len(nrow(index)), function(i) {
     file <- file.path("results", "figures", index$file[[i]])
+    pdf_file <- sub("[.]png$", ".pdf", file, ignore.case = TRUE)
+    id <- paste0("result-figure-", i)
+    latex_caption <- if ("latex_caption" %in% names(index) && nzchar(index$latex_caption[[i]])) {
+      index$latex_caption[[i]]
+    } else {
+      stepwise_latex_escape(index$caption[[i]])
+    }
+    viewer_url <- "https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html"
+    latex <- paste0(
+      "% Requires \\usepackage{graphicx,hyperref}\n",
+      "\\begin{figure}[htbp]\n\\centering\n",
+      "\\includegraphics[width=\\linewidth,height=0.88\\textheight,keepaspectratio]{", pdf_file, "}\n",
+      "\\caption{", latex_caption, "}\n",
+      "\\label{fig:", gsub("[^a-z0-9]+", "-", tolower(index$figure[[i]])), "}\n",
+      "\\par\\small\\href{", viewer_url, "}{Explore individual model configurations in the interactive viewer.}\n",
+      "\\end{figure}\n"
+    )
     paste0(
       "<figure class=\"result-figure\"><h3>", stepwise_html_escape(index$label[[i]]), "</h3>",
-      "<a href=\"", stepwise_html_escape(file), "\"><img loading=\"lazy\" src=\"", stepwise_html_escape(file),
+      "<a href=\"interactive-model-viewer.html\" target=\"_blank\" title=\"Open the interactive viewer\"><img id=\"", id, "-image\" loading=\"lazy\" src=\"", stepwise_html_escape(file),
       "\" alt=\"", stepwise_html_escape(index$alt_text[[i]]), "\"></a>",
-      "<figcaption>", stepwise_html_escape(index$caption[[i]]), "</figcaption></figure>"
+      "<figcaption id=\"", id, "-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
+      stepwise_html_escape(index$caption[[i]]), " <a href=\"interactive-model-viewer.html\" target=\"_blank\">",
+      "Explore individual configurations in the interactive viewer.</a></figcaption>",
+      "<div class=\"actions\"><button onclick=\"copyResultFigure('", id, "-image','", id, "-caption',this)\">",
+      "Copy figure + caption for Word</button>",
+      "<a class=\"button\" href=\"interactive-model-viewer.html\" target=\"_blank\">Open interactive viewer</a>",
+      "<a class=\"button\" download href=\"", stepwise_html_escape(file), "\">Save PNG</a>",
+      "<a class=\"button\" download href=\"", stepwise_html_escape(pdf_file), "\">Save vector PDF</a>",
+      "<button class=\"secondary\" onclick=\"copyText('", id, "-latex',this)\">",
+      "Copy figure + caption for LaTeX</button></div>",
+      "<pre id=\"", id, "-latex\" class=\"hidden-copy\">", stepwise_html_escape(latex), "</pre></figure>"
     )
   }, character(1))
   paste0("<div class=\"result-grid\">", paste(cards, collapse = ""), "</div>")

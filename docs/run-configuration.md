@@ -47,8 +47,7 @@ Operational settings are generated from `job-config.R` and `kflow.yaml`.
 | `16-MIX020` | `TRUE` | 16-TagMixing | 16 | apply release-group-specific K=0.20 mixing periods | K=0.20 tag mixing periods | 16 K=0.20 release-group tag mixing | `16-mix020` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `17-TagReportingExclusion` | `TRUE` | 17-TagReportingExclusion | 17 | exclude reporting rates during pre-mixing windows | Pre-mixing reporting-rate exclusion | 17 Pre-mixing reporting-rate exclusion | `17-tag-reporting-exclusion` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `18-EffortCreep` | `TRUE` | 18-EffortCreep | 18 | apply effort-creep adjustment to CPUE indices | Effort-creep adjustment | 18 Effort-creep adjustment | `18-effort-creep` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
-| `19a-DMG8Nmax25` | `TRUE` | 19-CompositionWeighting | 19a | apply Dirichlet-multinomial composition weighting | DM composition weighting | 19a DM composition weighting, G8 Nmax 25 | `19a-dm-g8-nmax25` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
-| `19b-Job19835Seed23` | `TRUE` | 19-Initialization | 19b | select the best-objective converged jitter fit | Previous Diagnostic (seed 23) | 19b Previous Diagnostic: best-objective jitter seed 23 (Job 19835) | `19b-job19835-seed23` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
+| `19-DMG8Nmax25` | `TRUE` | 19-CompositionWeighting | 19 | apply Dirichlet-multinomial composition weighting | DM composition weighting | 19 DM composition weighting, G8 Nmax 25 | `19-dm-g8-nmax25` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `20-Tau2Fixed` | `TRUE` | 20-TagTau | 20 | fix negative-binomial tag tau at 2 | Tag tau fixed at 2 | 20 Fix negative-binomial tag tau at 2 | `20-tau2-fixed` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `21-F33WeakPenalty` | `TRUE` | 21-Selectivity | 21 | add the weak F33 non-decreasing selectivity penalty | F33 weak non-decreasing penalty | 21 Add weak F33 non-decreasing selectivity penalty | `21-f33-ndpen-weak` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
 | `22-Diagnostic` | `TRUE` | 22-Steepness | 22 | fix steepness at 0.90 | BET 2026 Diagnostic model | 22 BET 2026 Diagnostic model: h=0.90 fixed | `22-diagnostic` | `doitall` | /home/mfcl/mfclo64 | `blank` | `bet.frq` | `blank` |
@@ -79,8 +78,7 @@ Operational settings are generated from `job-config.R` and `kflow.yaml`.
 | `16-MIX020` | `steps/16-MIX020/model` | `exists` |
 | `17-TagReportingExclusion` | `steps/17-TagReportingExclusion/model` | `exists` |
 | `18-EffortCreep` | `steps/18-EffortCreep/model` | `exists` |
-| `19a-DMG8Nmax25` | `steps/19a-DMG8Nmax25/model` | `exists` |
-| `19b-Job19835Seed23` | `steps/19b-Job19835Seed23/model` | `exists` |
+| `19-DMG8Nmax25` | `steps/19-DMG8Nmax25/model` | `exists` |
 | `20-Tau2Fixed` | `steps/20-Tau2Fixed/model` | `exists` |
 | `21-F33WeakPenalty` | `steps/21-F33WeakPenalty/model` | `exists` |
 | `22-Diagnostic` | `steps/22-Diagnostic/model` | `exists` |

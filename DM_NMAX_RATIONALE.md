@@ -1,6 +1,6 @@
 # DM configuration retained in the current Diagnostic model
 
-Step 19a introduces the Job 18718 composition treatment, which is retained
+Step 19 introduces the Job 18718 composition treatment, which is retained
 unchanged through Step 22:
 
 - `parest_flags(141)=11`: Dirichlet-multinomial without random effects.
@@ -14,7 +14,7 @@ unchanged through Step 22:
 
 The value 7 is the upper-bound estimate reached before Job 18518. Fixing it
 means the model starts and remains at that fitted bound; it is not estimated
-again in Step 19a. `Nmax=25` is a separate upper asymptote and is not a hard
+again in Step 19. `Nmax=25` is a separate upper asymptote and is not a hard
 replacement for an observed sample size.
 
 Tag overdispersion is independent of this composition setting. Step 20 changes

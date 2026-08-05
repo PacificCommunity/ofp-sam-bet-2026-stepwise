@@ -50,8 +50,7 @@ MODEL_MFCLSHINY_GITHUB_REF ?= $(shell STEP_SELECT='$(STEP_SELECT)' Rscript -e 's
 MFCLKIT_GITHUB_REF ?= $(if $(strip $(MODEL_MFCLKIT_GITHUB_REF)),$(MODEL_MFCLKIT_GITHUB_REF),$(call yml,y$$env$$MFCLKIT_GITHUB_REF,main))
 MFCLSHINY_GITHUB_REF ?= $(if $(strip $(MODEL_MFCLSHINY_GITHUB_REF)),$(MODEL_MFCLSHINY_GITHUB_REF),$(call yml,y$$env$$MFCLSHINY_GITHUB_REF,main))
 # The runtime verifier requires the install specifications and the explicit
-# revision fields to agree. Build both from the same effective per-model refs;
-# this is essential for the historical 19b recipe and harmless for current rows.
+# revision fields to agree. Build both from the same effective per-model refs.
 KFLOW_REPO_RUNTIME_PACKAGES ?= mfclkit=PacificCommunity/ofp-sam-mfclkit@$(MFCLKIT_GITHUB_REF),mfclshiny=PacificCommunity/mfclshiny@$(MFCLSHINY_GITHUB_REF)
 KFLOW_RUNTIME_GITHUB_AUTH ?= $(call yml,y$$env$$KFLOW_RUNTIME_GITHUB_AUTH,true)
 KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME ?= $(call yml,y$$env$$KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME,true)

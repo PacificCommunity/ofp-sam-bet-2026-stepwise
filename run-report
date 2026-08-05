@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$repo_dir"
+
+sha256sum -c data/SHA256SUMS
+Rscript R/validate_stepwise_payloads.R
+
+export INPUT_DIR="$repo_dir/data/stepwise"
+export REPORT_OUTPUT_DIR="$repo_dir/results/stepwise-report"
+bash model-development-report/run.sh
+
+Rscript tests/test_stepwise_report_inputs.R
+Rscript tests/test_stepwise_public_report.R
+python3 -m unittest tests/test_submit_stepwise_report.py
+
+test -s "$REPORT_OUTPUT_DIR/bet-2026-stepwise-model-development.html"
+test -s "$REPORT_OUTPUT_DIR/interactive-model-viewer.html"
+test -s "$REPORT_OUTPUT_DIR/pathway/figures/bet-2026-stepwise-pathway.pdf"
+
+if command -v pdflatex >/dev/null 2>&1; then
+  latex_dir=$(mktemp -d)
+  pdflatex -halt-on-error -interaction=batchmode -output-directory "$latex_dir" tests/latex-smoke.tex
+  test -s "$latex_dir/latex-smoke.pdf"
+fi

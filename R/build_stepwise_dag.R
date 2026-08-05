@@ -35,89 +35,155 @@ build_stepwise_dag <- function(
   models$category <- ifelse(selected, "selected", "alternative")
   models$category[[nrow(models)]] <- "final"
 
-  main <- models[selected, , drop = FALSE]
-  main$order <- seq_len(nrow(main))
-  rows_per_column <- max(1L, ceiling(nrow(main) / 4L))
-  main$column <- ceiling(main$order / rows_per_column)
-  main$row <- ave(main$order, main$column, FUN = seq_along)
-  main$x <- 1.45 + (main$column - 1L) * 2.9
-  main$y <- 6.15 - (main$row - 1L) * 1.02
-
-  alternative <- models[!selected, , drop = FALSE]
-  if (nrow(alternative)) {
-    parent_x <- main$x[match(alternative$parent, main$id)]
-    parent_y <- main$y[match(alternative$parent, main$id)]
-    parent_x[is.na(parent_x)] <- max(main$x, na.rm = TRUE) - 1.45
-    parent_y[is.na(parent_y)] <- 2.1
-    alternative$x <- pmin(parent_x + 2.05, 10.25)
-    alternative$y <- parent_y - seq_len(nrow(alternative)) * 0.43
-  }
-  nodes <- rbind(main[, names(models), drop = FALSE], alternative[, names(models), drop = FALSE])
-  xy <- rbind(
-    main[, c("id", "x", "y"), drop = FALSE],
-    alternative[, c("id", "x", "y"), drop = FALSE]
-  )
-  nodes$x <- xy$x[match(nodes$id, xy$id)]
-  nodes$y <- xy$y[match(nodes$id, xy$id)]
+  # Lay out every evaluated configuration in a single chronological timeline.
+  # The compact row height is sized for an A4 portrait page, with a concise
+  # model title and one-line explanation beside every bold step number.
+  nodes <- models
+  nodes$order <- seq_len(nrow(nodes))
+  nodes$x <- 0.55
+  nodes$y <- rev(seq_len(nrow(nodes)))
   nodes$step <- sub("-.*$", "", nodes$id)
-  nodes$display <- paste0(nodes$step, "  ", nodes$label)
+  short_titles <- c(
+    "01-Diag2023" = "Baseline refit",
+    "02-NewExeIni1007" = "Executable and INI",
+    "03-FixM" = "Natural mortality",
+    "04-LengthWeight" = "Length-weight",
+    "05-NewStructure" = "Spatial structure",
+    "06-ConvertToLength" = "Weight-to-length data",
+    "07-AddLengthData" = "Observed lengths",
+    "08-DataTo2024" = "2024 data update",
+    "09-SizeDataQC" = "Size-data QC",
+    "10-RegionalCPUE" = "Regional CPUE",
+    "11-TimeVaryingCV" = "CPUE uncertainty",
+    "12-CPUEErrorCalibration" = "CPUE error SDs",
+    "13-NewAgeData" = "New CAAL data",
+    "14a-REG075" = "Regional CAAL weights",
+    "14b-SUB075" = "Sub-basin CAAL weights",
+    "15-SelectivityUpdate" = "Selectivity",
+    "16-MIX020" = "Tag mixing",
+    "17-TagReportingExclusion" = "Tag reporting",
+    "18-EffortCreep" = "Effort creep",
+    "19-DMG8Nmax25" = "Composition weighting",
+    "20-Tau2Fixed" = "Tag overdispersion",
+    "21-F33WeakPenalty" = "F33 selectivity penalty",
+    "22-Diagnostic" = "Diagnostic model"
+  )
+  short_descriptions <- c(
+    "01-Diag2023" = "Refit the 2023 diagnostic configuration as the starting model.",
+    "02-NewExeIni1007" = "Update the MFCL executable and adopt INI format 1007.",
+    "03-FixM" = "Fix the Lorenzen natural-mortality scaling parameter.",
+    "04-LengthWeight" = "Update the bias-corrected BET length-weight parameters.",
+    "05-NewStructure" = "Adopt five regions and 33 fisheries; remap reporting rates.",
+    "06-ConvertToLength" = "Convert reweighted weight compositions to length.",
+    "07-AddLengthData" = "Add observed lengths where coverage exceeds weight samples.",
+    "08-DataTo2024" = "Extend frequency and tagging data through 2024, except CAAL.",
+    "09-SizeDataQC" = "Apply PH/ID and domestic mixed-gear size-data rules.",
+    "10-RegionalCPUE" = "Introduce regional CPUE indices and abundance scaling.",
+    "11-TimeVaryingCV" = "Allow CPUE observation uncertainty to vary through time.",
+    "12-CPUEErrorCalibration" = "Fix the five regional CPUE observation-error SDs.",
+    "13-NewAgeData" = "Add the new CAAL data with weight 0.75.",
+    "14a-REG075" = "Evaluate CAAL reweighting across all five regions.",
+    "14b-SUB075" = "Retain sub-basin CAAL reweighting for Regions 3 and 4.",
+    "15-SelectivityUpdate" = "Update fishery selectivity and add the weak F10 penalty.",
+    "16-MIX020" = "Set release-group tag mixing periods using K = 0.20.",
+    "17-TagReportingExclusion" = "Exclude reporting rates during pre-mixing periods.",
+    "18-EffortCreep" = "Apply effort-creep adjustments to the regional CPUE indices.",
+    "19-DMG8Nmax25" = "Apply Dirichlet-multinomial weighting (G8; Nmax = 25).",
+    "20-Tau2Fixed" = "Fix negative-binomial tag overdispersion at tau = 2.",
+    "21-F33WeakPenalty" = "Stabilize the data-limited F33 tail without forcing asymptotic selectivity.",
+    "22-Diagnostic" = "Fix steepness at h = 0.90 and adopt the Diagnostic model."
+  )
+  nodes$short_title <- unname(short_titles[nodes$id])
+  missing_title <- is.na(nodes$short_title) | !nzchar(nodes$short_title)
+  nodes$short_title[missing_title] <- nodes$label[missing_title]
+  nodes$description <- unname(short_descriptions[nodes$id])
+  missing_description <- is.na(nodes$description) | !nzchar(nodes$description)
+  nodes$description[missing_description] <- as.character(
+    stepwise_dag_value(nodes[missing_description, , drop = FALSE], "change_axis")
+  )
 
   edges <- data.frame()
-  for (i in seq_len(nrow(nodes))) {
-    parent <- nodes$parent[[i]]
-    if (!parent %in% nodes$id) next
-    from <- nodes[nodes$id == parent, , drop = FALSE]
-    to <- nodes[i, , drop = FALSE]
-    same_column <- abs(from$x - to$x) < 0.05
-    edges <- rbind(edges, data.frame(
-      x = if (same_column) from$x else from$x + 0.82,
-      y = if (same_column) from$y - 0.12 else from$y,
-      xend = if (same_column) to$x else to$x - 0.82,
-      yend = if (same_column) to$y + 0.12 else to$y,
-      category = if (to$category == "alternative") "alternative" else "selected"
-    ))
+  if (nrow(nodes) > 1L) {
+    for (i in seq_len(nrow(nodes) - 1L)) {
+      from <- nodes[i, , drop = FALSE]
+      to <- nodes[i + 1L, , drop = FALSE]
+      edges <- rbind(edges, data.frame(
+        x = 0.55, y = from$y - 0.24,
+        xend = 0.55, yend = to$y + 0.24
+      ))
+    }
   }
 
-  colours <- c(selected = "#23777C", alternative = "#C86616", final = "#123F48")
-  fills <- c(selected = "#F7FBFB", alternative = "#FFF6EC", final = "#E9F3F3")
   caption <- paste(
-    "Stepwise pathway generated from the models supplied to this report.",
-    "Teal arrows show the selected cumulative sequence; orange arrows show",
-    "comparison branches, and the dark-teal node is the last selected model."
+    "Configurations are arranged from top to bottom in evaluation order.",
+    "Steps 14a and 14b are shown consecutively, and the final row is the Diagnostic model."
   )
 
   plot <- ggplot2::ggplot() +
+    ggplot2::geom_rect(
+      data = nodes[nodes$order %% 2L == 0L & nodes$category != "final", , drop = FALSE],
+      ggplot2::aes(ymin = y - 0.42, ymax = y + 0.42),
+      xmin = 0.05, xmax = 7.75, fill = "#F4F8F8", colour = NA
+    ) +
+    ggplot2::geom_rect(
+      data = nodes[nodes$category == "final", , drop = FALSE],
+      ggplot2::aes(ymin = y - 0.42, ymax = y + 0.42),
+      xmin = 0.05, xmax = 7.75, fill = "#123F48", colour = NA
+    ) +
     ggplot2::geom_segment(
       data = edges,
-      ggplot2::aes(x = x, y = y, xend = xend, yend = yend,
-                   colour = category, linetype = category),
-      linewidth = 0.75,
-      arrow = grid::arrow(length = grid::unit(1.7, "mm"), type = "closed")
+      ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
+      colour = "#1F6F78", linewidth = 0.62,
+      arrow = grid::arrow(length = grid::unit(1.35, "mm"), type = "closed")
     ) +
     ggplot2::geom_label(
       data = nodes,
-      ggplot2::aes(x = x, y = y, label = display,
-                   colour = category, fill = category),
-      size = 2.45, linewidth = 0.55, label.r = grid::unit(0.08, "lines"),
-      label.padding = grid::unit(0.22, "lines"),
-      fontface = ifelse(nodes$category == "final", "bold", "plain")
+      ggplot2::aes(x = x, y = y, label = step),
+      colour = "#174C55", fill = "#FFFFFF", linewidth = 0.55,
+      size = 2.45, fontface = "bold",
+      label.r = grid::unit(0.12, "lines"),
+      label.padding = grid::unit(0.16, "lines")
+    ) +
+    ggplot2::geom_text(
+      data = nodes[nodes$category != "final", , drop = FALSE],
+      ggplot2::aes(x = 1.05, y = y, label = short_title),
+      hjust = 0, colour = "#173F48", size = 2.55,
+      fontface = "bold"
+    ) +
+    ggplot2::geom_text(
+      data = nodes[nodes$category != "final", , drop = FALSE],
+      ggplot2::aes(x = 3.05, y = y, label = description),
+      hjust = 0, colour = "#516B73", size = 2.10
+    ) +
+    ggplot2::geom_text(
+      data = nodes[nodes$category == "final", , drop = FALSE],
+      ggplot2::aes(x = 1.05, y = y, label = short_title),
+      hjust = 0, colour = "#FFFFFF", size = 2.55, fontface = "bold"
+    ) +
+    ggplot2::geom_text(
+      data = nodes[nodes$category == "final", , drop = FALSE],
+      ggplot2::aes(x = 3.05, y = y, label = description),
+      hjust = 0, colour = "#DCEDEF", size = 2.10
     ) +
     ggplot2::annotate(
-      "text", x = 0.35, y = 7.05,
-      label = "BET 2026 STEPWISE DEVELOPMENT PATHWAY",
-      hjust = 0, colour = "#253E45", fontface = "bold", size = 4.2
+      "text", x = 0.55, y = nrow(nodes) + 1.05, label = "STEP",
+      colour = "#60757B", size = 2.2, fontface = "bold"
     ) +
     ggplot2::annotate(
-      "text", x = 0.35, y = 0.42,
-      label = caption, hjust = 0, colour = "#5C7075", size = 2.45
+      "text", x = 1.05, y = nrow(nodes) + 1.05, label = "MODEL CHANGE",
+      hjust = 0, colour = "#60757B", size = 2.2, fontface = "bold"
     ) +
-    ggplot2::scale_colour_manual(values = colours, guide = "none") +
-    ggplot2::scale_fill_manual(values = fills, guide = "none") +
-    ggplot2::scale_linetype_manual(
-      values = c(selected = "solid", alternative = "22"), guide = "none"
+    ggplot2::annotate(
+      "text", x = 3.05, y = nrow(nodes) + 1.05, label = "WHAT CHANGED",
+      hjust = 0, colour = "#60757B", size = 2.2, fontface = "bold"
+    ) +
+    ggplot2::annotate(
+      "segment", x = 0.05, xend = 7.75,
+      y = nrow(nodes) + 0.63, yend = nrow(nodes) + 0.63,
+      colour = "#9CB2B8", linewidth = 0.55
     ) +
     ggplot2::coord_cartesian(
-      xlim = c(0.2, 11.25), ylim = c(0.25, 7.2), clip = "off"
+      xlim = c(0, 7.8), ylim = c(0.48, nrow(nodes) + 1.38), clip = "off"
     ) +
     ggplot2::theme_void(base_family = "sans") +
     ggplot2::theme(
@@ -130,10 +196,15 @@ build_stepwise_dag <- function(
   png_path <- file.path(figure_dir, paste0(basename, ".png"))
   ggplot2::ggsave(
     png_path, plot, device = ragg::agg_png,
-    width = 11.69, height = 7.35, units = "in", dpi = 300,
+    width = 7.15, height = 9.25, units = "in", dpi = 300,
     background = "white"
   )
-  invisible(list(png = png_path, nodes = nodes, caption = caption))
+  pdf_path <- file.path(figure_dir, paste0(basename, ".pdf"))
+  ggplot2::ggsave(
+    pdf_path, plot, device = grDevices::cairo_pdf,
+    width = 7.15, height = 9.25, units = "in", bg = "white"
+  )
+  invisible(list(png = png_path, pdf = pdf_path, nodes = nodes, edges = edges, caption = caption))
 }
 
 if (sys.nframe() == 0L) build_stepwise_dag()

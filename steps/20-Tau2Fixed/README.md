@@ -1,6 +1,6 @@
 # 20 Tag tau fixed at 2
 
-Fix direct negative-binomial tag tau at 2 from ordinary Step 19a initialization.
+Fix direct negative-binomial tag tau at 2 from ordinary Step 19 initialization.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Fix direct negative-binomial tag tau at 2 from ordinary Step 19a initialization.
 
 | # | Change |
 | --- | --- |
-| 1 | Only the fitted-model tau treatment changes; seed 23 is not carried forward. |
+| 1 | Only the fitted-model tau treatment changes. |
 | 2 | No seed, jitter or fitted checkpoint is used. |
 | 3 | The model files are extracted from the public fixed-tau exploration recipe. |
 

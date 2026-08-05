@@ -46,39 +46,34 @@ expected_ids <- c(
   "08-DataTo2024", "09-SizeDataQC", "10-RegionalCPUE",
   "11-TimeVaryingCV", "12-CPUEErrorCalibration", "13-NewAgeData",
   "14a-REG075", "14b-SUB075", "15-SelectivityUpdate", "16-MIX020",
-  "17-TagReportingExclusion", "18-EffortCreep", "19a-DMG8Nmax25",
-  "19b-Job19835Seed23", "20-Tau2Fixed", "21-F33WeakPenalty",
+  "17-TagReportingExclusion", "18-EffortCreep", "19-DMG8Nmax25",
+  "20-Tau2Fixed", "21-F33WeakPenalty",
   "22-Diagnostic"
 )
 expected_parents <- c(
   "external-2023-diagnostic-archive", expected_ids[1:13],
   "13-NewAgeData", "14b-SUB075", "15-SelectivityUpdate",
   "16-MIX020", "17-TagReportingExclusion", "18-EffortCreep",
-  "19a-DMG8Nmax25", "19a-DMG8Nmax25", "20-Tau2Fixed",
+  "19-DMG8Nmax25", "20-Tau2Fixed",
   "21-F33WeakPenalty"
 )
 assert(is.data.frame(models), "job-config", "stepwise_models must be a data frame")
 if (is.data.frame(models)) {
   assert(identical(as.character(models$step_id), expected_ids),
-         "job-config", "step order or model set differs from the approved 24-row/22-step chain")
+         "job-config", "step order or model set differs from the approved 23-row/22-step chain")
   assert(identical(as.character(models$scientific_parent_id), expected_parents),
          "job-config", "scientific parent graph differs from the approved cumulative chain")
   assert(sum(as.logical(models$selected)) == 22L,
          "job-config", "exactly 22 models must be on the selected pathway")
   assert(identical(
     as.character(models$step_id[!as.logical(models$selected)]),
-    c("14a-REG075", "19b-Job19835Seed23")
-  ), "job-config", "14a and the historical Job 19835 seed-23 model must be the only branches")
+    "14a-REG075"
+  ), "job-config", "14a must be the only alternative branch")
   assert(identical(as.character(models$mfcl_program_path[[1L]]),
                    "/home/mfcl/mfclo64_2023_diagnostic_2.2.2.0"),
          "job-config", "Step 01 must use the archived 2.2.2.0 diagnostic executable")
   assert(all(as.character(models$mfcl_program_path[-1L]) == "/home/mfcl/mfclo64"),
          "job-config", "Steps 02-22 must use tuna-flow v2.5 /home/mfcl/mfclo64")
-  seed_row <- models[models$step_id == "19b-Job19835Seed23", , drop = FALSE]
-  assert(nrow(seed_row) == 1L && identical(
-    as.character(seed_row$mfclkit_github_ref),
-    "34c56de25afecdd13e9f8e94f2e421e37d9c2f9b"
-  ), "job-config", "Step 19b must pin the mfclkit implementation used by Job 19835")
 }
 
 actual_ids <- sort(basename(list.dirs(file.path(root, "steps"), recursive = FALSE)))
@@ -420,7 +415,7 @@ for (id in expected_ids[15:length(expected_ids)]) {
          "selected SUB075 CAAL input was not carried forward")
 }
 
-## Exact Job 18718 / Job 19835 flexible-selectivity signature through 19b.
+## Exact Job 18718 flexible-selectivity signature through Step 19.
 selectivity_signature <- function(path) {
   lines <- read_text(path)
   phase <- -1L
@@ -502,9 +497,9 @@ for (id in expected_ids[18:length(expected_ids)]) {
          id, "K=0.20 mixing periods were not carried forward")
 }
 
-## Negative-binomial tau treatment: original through 19b, direct fixed tau=2
+## Negative-binomial tau treatment: original through Step 19, direct fixed tau=2
 ## from the ordinary-makepar Step 20 pathway onward.
-for (id in expected_ids[1:21]) {
+for (id in expected_ids[1:20]) {
   controls <- controls_by_id[[id]]
   assert(effective_flag(controls, 1L, 111L, 1L) == 4, id,
          "tag likelihood is not negative binomial")
@@ -530,11 +525,11 @@ for (id in tau2_ids) {
          id, "the makepar fish_pars(4)=0 tau=2 write is missing")
   assert(grepl("No jitter", script, fixed = TRUE) ||
            grepl("No seed, jitter", script, fixed = TRUE),
-         id, "Step 20-22 must start from ordinary makepar without seed 23")
+         id, "Step 20-22 must start from ordinary makepar")
 }
 
-## Step 19a: Job 19325 selectivity treatment with Job 18718 DM controls.
-final_id <- "19a-DMG8Nmax25"
+## Step 19: Job 19325 selectivity treatment with Job 18718 DM controls.
+final_id <- "19-DMG8Nmax25"
 final_controls <- controls_by_id[[final_id]]
 for (pair in list(c(1L, 141L, 11), c(1L, 320L, 5), c(1L, 342L, 25),
                   c(-999L, 69L, 0))) {
@@ -558,29 +553,7 @@ assert(grepl("dm_concentration=7", final_script, fixed = TRUE) &&
 assert(effective_flag(final_controls, 1L, 313L, 1L) == 0,
        final_id, "normal-likelihood 1% tail compression must remain off under DM")
 assert(!grepl("jitter|perturb|seed[ _-]*23", final_script, ignore.case = TRUE),
-       final_id, "ordinary Step 19a must not execute a jitter, perturbation, or seed-23 path")
-
-seed_id <- "19b-Job19835Seed23"
-seed_script <- paste(read_text(file.path(model_dir(seed_id), "doitall.sh")), collapse = "\n")
-assert(identical(
-  sha256_file(file.path(model_dir(seed_id), "doitall.sh")),
-  "56351fb284553a5f533720872ed9120d9803e43b8fd6160397f61383747749fc"
-), seed_id, "doitall.sh is not the exact public Job 19835 seed-23 recipe")
-assert(grepl("seed23_seed=23", seed_script, fixed = TRUE) &&
-         grepl("seed23_cv=0.1", seed_script, fixed = TRUE) &&
-         grepl("phase01-seed23.par", seed_script, fixed = TRUE) &&
-         grepl("phase05-seed23.par", seed_script, fixed = TRUE),
-       seed_id, "the exact CV=0.1 seed-23 initialization path is incomplete")
-selection_audit <- utils::read.csv(
-  file.path(model_dir(seed_id), "seed23-selection-audit.csv"),
-  stringsAsFactors = FALSE
-)
-assert(nrow(selection_audit) == 1L && selection_audit$selected_seed == 23L &&
-         identical(selection_audit$selection_rule,
-                   "minimum objective among converged jitter fits") &&
-         isTRUE(all.equal(selection_audit$objective, 89054.3397838085,
-                          tolerance = 1e-10)),
-       seed_id, "seed-23 best-converged-objective selection audit changed")
+       final_id, "ordinary Step 19 must not execute a jitter or perturbation path")
 
 ## Every transition changes only its declared axis.
 compare_transition <- function(from, to, allowed) {
@@ -618,9 +591,8 @@ transitions <- list(
   c("15-SelectivityUpdate", "16-MIX020", "bet.ini"),
   c("16-MIX020", "17-TagReportingExclusion", "bet.ini"),
   c("17-TagReportingExclusion", "18-EffortCreep", "bet.frq"),
-  c("18-EffortCreep", "19a-DMG8Nmax25", "doitall.sh"),
-  c("19a-DMG8Nmax25", "19b-Job19835Seed23", "doitall.sh"),
-  c("19a-DMG8Nmax25", "20-Tau2Fixed",
+  c("18-EffortCreep", "19-DMG8Nmax25", "doitall.sh"),
+  c("19-DMG8Nmax25", "20-Tau2Fixed",
     "bet.frq,doitall.sh,fishery_map.R,tag_rep_map.R"),
   c("20-Tau2Fixed", "21-F33WeakPenalty", "doitall.sh"),
   c("21-F33WeakPenalty", "22-Diagnostic", "bet.ini,doitall.sh")
@@ -655,7 +627,7 @@ expected_five_region_regions <- c(
   3L, 3L, 4L, 3L, 4L, 1L, 2L, 3L, 4L, 5L
 )
 five_region_steps <- expected_ids[
-  match("05-NewStructure", expected_ids):match("19b-Job19835Seed23", expected_ids)
+  match("05-NewStructure", expected_ids):match("19-DMG8Nmax25", expected_ids)
 ]
 base_map <- read_fishery_map("05-NewStructure")
 assert(identical(base_map$fishery_name, expected_five_region_names),
@@ -681,7 +653,7 @@ for (step_id in five_region_steps) {
 ## `selectivity_group` is the final Phase-5 grouping used by downstream viewers;
 ## the two phase-specific columns preserve the staged Job 18718 transition.
 selectivity_map_steps <- expected_ids[
-  match("15-SelectivityUpdate", expected_ids):match("19a-DMG8Nmax25", expected_ids)
+  match("15-SelectivityUpdate", expected_ids):match("19-DMG8Nmax25", expected_ids)
 ]
 expected_phase1_groups <- c(seq_len(28L), rep(29L, 5L))
 expected_phase5_groups <- seq_len(33L)
@@ -814,8 +786,7 @@ ini_sv29 <- function(path) {
   if (length(marker) != 1L || marker == length(lines)) return(NA_real_)
   suppressWarnings(as.numeric(lines[[marker + 1L]]))
 }
-for (id in c("19a-DMG8Nmax25", "19b-Job19835Seed23",
-             "20-Tau2Fixed", "21-F33WeakPenalty")) {
+for (id in c("19-DMG8Nmax25", "20-Tau2Fixed", "21-F33WeakPenalty")) {
   assert(isTRUE(all.equal(ini_sv29(file.path(model_dir(id), "bet.ini")),
                           0.80, tolerance = 1e-12)),
          id, "steepness must remain fixed at h=0.80 before Step 22")
@@ -831,11 +802,11 @@ assert(effective_flag(controls_by_id[["21-F33WeakPenalty"]], 2L, 162L, 1L) == 0 
 
 ## The Step 20 FRQ cleanup removes only the unused weight-frequency structure.
 ## Exact public hashes lock both representations; all fitting observations are
-## audited in the public Diagnostic JOB19835_COMPARISON.md.
+## audited in the public Diagnostic repository.
 assert(identical(
-  sha256_file(file.path(model_dir("19a-DMG8Nmax25"), "bet.frq")),
+  sha256_file(file.path(model_dir("19-DMG8Nmax25"), "bet.frq")),
   "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3"
-), "19a-DMG8Nmax25", "pre-cleanup Job 19835 FRQ changed")
+), "19-DMG8Nmax25", "pre-cleanup FRQ changed")
 for (id in tau2_ids) {
   assert(identical(
     sha256_file(file.path(model_dir(id), "bet.frq")),
@@ -843,7 +814,7 @@ for (id in tau2_ids) {
   ), id, "Diagnostic FRQ cleanup or observations changed")
 }
 
-## Step 19a numerical inputs match Jobs 18718/19325/19835.
+## Step 19 numerical inputs match the locked final pre-tau target.
 final_static_hashes <- c(
   "bet.frq" = "9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3",
   "bet.ini" = "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
@@ -860,7 +831,7 @@ for (file in names(final_static_hashes)) {
          paste0(file, " differs from the locked final static-input target"))
 }
 
-## Step 22 is the exact current public Diagnostic model recipe at 0d6db04.
+## Step 22 is the exact current public Diagnostic model recipe at d57127a.
 diagnostic_static_hashes <- c(
   "bet.frq" = "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
   "bet.ini" = "fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e",
@@ -869,7 +840,7 @@ diagnostic_static_hashes <- c(
   "bet.reg_scaling" = "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
   "mfcl.cfg" = "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
   "cpue_mle_sigma_audit.csv" = "cd2d9a9b61f6efda432318be34c856029b355f0ea35f33681dc1dc37820cbc86",
-  "doitall.sh" = "9fc11d2f1fa115504be4af18d4a3d8ea0f990ef7d02f80e09250e450406e2930",
+  "doitall.sh" = "244255622950aace6ee66e9b15a13e94a8abb020cb744e9ff70c2b37cd351583",
   "fishery_map.R" = "0e989f4692c4a2a54abf22f12a1c53c7bd29cb7f0f3bd7c4457cdd3d6e1a125c",
   "tag_rep_map.R" = "e1bddfe316a8b3e39333d0792f58db8f070d3f6f370770507e2f500f9d88786c",
   "model-inputs/Diagnostic.conf" = "45ed73f3d53f6ab24e477353e310b0cf4a50c2dd8413375a7befc0e5d4f7790e",
@@ -879,7 +850,7 @@ for (file in names(diagnostic_static_hashes)) {
   assert(identical(
     sha256_file(file.path(model_dir("22-Diagnostic"), file)),
     diagnostic_static_hashes[[file]]
-  ), "22-Diagnostic", paste0(file, " differs from diagnostic main@0d6db04"))
+  ), "22-Diagnostic", paste0(file, " differs from diagnostic main@d57127a"))
 }
 
 if (length(failures)) {
@@ -888,10 +859,10 @@ if (length(failures)) {
 }
 
 cat(
-  "Validated 24 frozen models / 22 numbered steps.\n",
-  "19a is the ordinary-makepar DM basis; 19b is exact Job 19835 seed 23. ",
-  "Step 20 fixes tau=2 from 19a without a seed; Step 21 adds only F33 weak penalty; ",
-  "Step 22 changes only h=0.80 to 0.90 and matches Diagnostic main@0d6db04.\n",
+  "Validated 23 frozen models / 22 numbered steps.\n",
+  "Step 19 is the ordinary-makepar DM basis. ",
+  "Step 20 fixes tau=2 from Step 19; Step 21 adds only F33 weak penalty; ",
+  "Step 22 changes only h=0.80 to 0.90 and matches Diagnostic main@d57127a.\n",
   "Runtime: Suva, immutable tuna-flow v2.5, pinned mfclkit/mfclshiny.\n",
   sep = ""
 )

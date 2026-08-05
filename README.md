@@ -1,20 +1,18 @@
 # BET 2026 stepwise pathway to the Diagnostic model — 04 Aug
 
-This branch contains the revised BET 2026 stepwise pathway as 24
+This branch contains the revised BET 2026 stepwise pathway as 23
 self-contained model folders representing 22 numbered steps. No model
 uses another step's fitted `.par` at runtime.
 
-The selected path introduces the Job 18718 selectivity update and the weak
-F10 non-decreasing penalty used by Kflow Job 19325 together at Step 15, then
-carries both controls through Step 19a. The final four rows document the
-previous Diagnostic and isolate the three changes leading to the current
-Diagnostic Job 21641:
+The selected path introduces the selected flexible-selectivity update and the weak
+F10 non-decreasing penalty together at Step 15, then
+carries both controls through Step 19. The final three steps isolate the
+changes leading to the current Diagnostic model:
 
 - K = 0.20 region-mean tag-mixing periods.
-- Original 2023 negative-binomial tag likelihood through Step 19a and the
-  historical 19b branch; direct
+- Original 2023 negative-binomial tag likelihood through Step 19; direct
   negative-binomial `tau=2` fixed from Step 20.
-- Flexible fishery-specific selectivity from Job 18718: F1-F28 are independent,
+- Flexible fishery-specific selectivity: F1-F28 are independent,
   F29-F33 separate in staged run 5, flexible spline forms are retained, and
   the youngest five ages remain fixed at zero for F14 and F15.
   The exact Step 14b-to-Step 15 changes are listed in
@@ -25,15 +23,12 @@ Diagnostic Job 21641:
 - F10 fish flag 16=1 with penalty weight flag 56=10000.
 - Lorenzen natural-mortality intercept fixed at `-2.54930339768360`.
 
-The Step 19a FRQ, TAG, age-length, regional-scaling, CFG and INI inputs are
-byte-identical to public Jobs 18718, 19325 and 19835. Step 15
-adds executable fishery controls 16 and 56 together with the selectivity
-update, and Steps 16-19a retain them. Step 19b alone reproduces Job 19835 by
-promoting jitter seed 23, selected because it had the lowest objective among
-the converged Job 19325 jitter fits. The new selected path branches from
-ordinary-makepar Step 19a: Step 20 fixes tau at 2, Step 21 adds the weak F33
+The Step 19 FRQ, TAG, age-length, regional-scaling, CFG and INI inputs retain
+the locked Step 15–18 scientific inputs. Step 15 adds executable fishery
+controls 16 and 56 together with the selectivity update, and Steps 16–19 retain
+them. From ordinary-makepar Step 19, Step 20 fixes tau at 2, Step 21 adds the weak F33
 non-decreasing penalty, and Step 22 changes fixed steepness from 0.80 to 0.90.
-Step 22 is SHA-locked to the public Diagnostic repository recipe for Job 21641.
+Step 22 is SHA-locked to the public Diagnostic repository recipe.
 
 ## Step sequence
 
@@ -58,11 +53,10 @@ Step 22 is SHA-locked to the public Diagnostic repository recipe for Job 21641.
 | 16 | `16-MIX020` | Apply release-group-specific K=0.20 mixing periods. | Selected |
 | 17 | `17-TagReportingExclusion` | Exclude reporting rates within pre-mixing windows. | Selected |
 | 18 | `18-EffortCreep` | Apply effort creep to regional CPUE indices. | Selected |
-| 19a | `19a-DMG8Nmax25` | Apply DM-noRE composition weighting, G8 and `Nmax=25`, with concentration fixed at 7, from ordinary makepar. | Selected |
-| 19b | `19b-Job19835Seed23` | Reproduce the previous Diagnostic Job 19835 using the best-objective converged jitter seed 23. | Historical branch |
-| 20 | `20-Tau2Fixed` | From 19a, fix direct negative-binomial tau at 2; do not use seed 23. | Selected |
-| 21 | `21-F33WeakPenalty` | Add only the weak F33 non-decreasing penalty (flags 16=1 and 56=10000). | Selected |
-| 22 | `22-Diagnostic` | Change only fixed steepness from 0.80 to 0.90; match Diagnostic Job 21641. | Final |
+| 19 | `19-DMG8Nmax25` | Apply DM-noRE composition weighting, G8 and `Nmax=25`, with concentration fixed at 7, from ordinary makepar. | Selected |
+| 20 | `20-Tau2Fixed` | From Step 19, fix direct negative-binomial tau at 2. | Selected |
+| 21 | `21-F33WeakPenalty` | Add only the weak F33 non-decreasing penalty (flags 16=1 and 56=10000) to stabilize the tail where Region 5 length-frequency information is limited, without forcing strongly asymptotic selectivity. | Selected |
+| 22 | `22-Diagnostic` | Change only fixed steepness from 0.80 to 0.90; match the current Diagnostic model. | Final |
 
 There is no separate tail-compression step and no DOM or Francis weighting
 branch in this pathway.
@@ -101,7 +95,7 @@ Step 20 adopts the Diagnostic FRQ cleanup that removes only the declared but
 unused weight-frequency dimensions and trailing placeholder. All 7,449 catch,
 effort and length-frequency records remain token-identical. This approved
 format cleanup does not change the likelihood. The fitting change from the
-ordinary Step 19a model is only direct fixed `tau=2`.
+ordinary Step 19 model is only direct fixed `tau=2`.
 
 ## Rebuild and validate
 
@@ -126,17 +120,16 @@ make validate
 The validator checks the full parent graph, all manifests and transition
 isolation, fixed M, size-data edits, reporting rates, K=0.20 mixing, tau mode,
 the selectivity update, DM controls, the headerless v2.5 scaling file, the
-Job 18718 core-input hashes, and the deterministic Job 19325 F10 penalty from
-Step 15 through Step 19a. It additionally locks the exact Job 19835 seed-23
-script, proves Step 20 uses direct fixed tau=2 without a seed, isolates the
+selected flexible-selectivity core-input hashes and the deterministic F10 penalty from
+Step 15 through Step 19. It additionally proves Step 20 uses direct fixed tau=2, isolates the
 Step 21 F33 flags, and checks every Step 22 Diagnostic file against public
-Diagnostic `main@0d6db04`.
+Diagnostic `main@d57127a`.
 
 ## Kflow runtime
 
 `kflow.yaml` is fixed to Suva and the immutable tuna-flow v2.5 image digest.
-The `bet-2026-final-stepwise-diagnostic-04aug` task registers the complete
-24-model pathway, including the 19b historical branch and selected Steps 20-22.
+The `bet-2026-final-stepwise-diagnostic-04aug` task contains the completed
+late-step fits used for Steps 20–21.
 The main executable is `/home/mfcl/mfclo64`; Step 01 selects the archived
 2.2.2.0 diagnostic executable. `mfclkit` and `mfclshiny` are installed at
 runtime from the pinned working commits in `kflow.yaml`, so a later campaign
@@ -148,17 +141,32 @@ Submit one model:
 make kflow STEP_SELECT=20-Tau2Fixed
 ```
 
-Submit the configured campaign only after validation and an explicit launch
-decision. The repository itself contains inputs and controls, not fitted
-outputs.
+The compact payloads under `data/stepwise/models/` restore the completed fits
+used by the report without rerunning MFCL.
 
 ## Audit files
 
 - `config/public-run-provenance.csv`: public repository, commit, path and SHA
-  locks, including the Job 18718 core-input target.
+  locks, including the selected flexible-selectivity core-input target.
 - `docs/input-source-audit.md`: source-to-step input changes.
-- `docs/diagnostic-transition-audit.md`: locked 19a/19b/20/21/22
-  single-change proof and current-Diagnostic equivalence.
+- `docs/diagnostic-transition-audit.md`: locked 19/20/21/22 single-change proof
+  and current-Diagnostic equivalence.
 - `docs/tag-reporting-groups.md`: reporting-rate and tag-flag treatment.
 - `MFCL_CONTROL_NOTES.md`: concise MFCL control interpretation.
 - `DM_NMAX_RATIONALE.md`: final DM parameterisation.
+
+## Report and interactive viewer
+
+The checksum-locked payloads reproduce the paper-ready A4 report without
+rerunning MFCL:
+
+```bash
+./run-report
+```
+
+After the GitHub workflow completes, the public outputs are available as the
+[stepwise report](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/bet-2026-stepwise-model-development.html)
+and [interactive model viewer](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html).
+The viewer retains scientific fit diagnostics, likelihood components and
+Hessian positive-definiteness (PDH) status where it has actually been evaluated;
+unevaluated models are labelled `Not evaluated` rather than being assigned `No`.
