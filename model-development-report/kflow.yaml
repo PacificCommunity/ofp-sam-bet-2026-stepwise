@@ -4,7 +4,9 @@ branch: main
 target_folder: model-development-report
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
-remote_host: local
+remote_host: kflow-local-kyuhank-nc240124
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
 
 resources:
   cpus: 2
@@ -12,6 +14,7 @@ resources:
   disk: 20GB
 
 env:
+  INPUT_DIR: ../data/stepwise
   REPORT_OUTPUT_DIR: model-development
   STEPWISE_MODEL_JOBS: ""
   STEPWISE_VIEWER_JOB: ""
