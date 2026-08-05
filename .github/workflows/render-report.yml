@@ -61,7 +61,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: bet-2026-stepwise-report-${{ github.ref_name }}.zip
+          files: |
+            bet-2026-stepwise-report-${{ github.ref_name }}.zip
+            results/stepwise-report/interactive-model-viewer.html
+            results/stepwise-report/bet-2026-stepwise-model-development.html
 
   deploy:
     if: github.ref == 'refs/heads/main'

@@ -1,6 +1,6 @@
-# 16 K=0.20 tag-mixing periods
+# 16 KS D-statistic cutoff 0.20 tag-mixing periods
 
-Copy only release-group mixing periods from SC22-IP10-regionMean K=0.20; retain reporting-rate matrices unchanged.
+Apply the release-group-specific tag-mixing periods estimated using a KS D-statistic cutoff of 0.20 (Scutt Phillips et al., 2026); retain reporting-rate matrices unchanged.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Copy only release-group mixing periods from SC22-IP10-regionMean K=0.20; retain 
 
 | # | Change |
 | --- | --- |
-| 1 | Copy only release-group mixing periods from SC22-IP10-regionMean K=0.20; retain reporting-rate matrices unchanged. |
+| 1 | Apply the release-group-specific tag-mixing periods estimated using a KS D-statistic cutoff of 0.20 (Scutt Phillips et al., 2026); retain reporting-rate matrices unchanged. |
 | 2 | F15 bins below 70 cm are zeroed without renormalisation. |
 | 3 | F21-F23 intervals with midpoint above 90 cm are removed. |
 | 4 | F14 and F15 youngest five ages are fixed at zero selectivity. |
@@ -39,7 +39,7 @@ Copy only release-group mixing periods from SC22-IP10-regionMean K=0.20; retain 
 | `.ini` | rrpttp26 reporting-rate matrices; MIX020 copied only into tag_flags(:,1); tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Preserves the exact heterogeneous age-length variant. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Copy only release-group mixing periods from SC22-IP10-regionMean K=0.20; retain reporting-rate matrices unchanged. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Apply the release-group-specific tag-mixing periods estimated using a KS D-statistic cutoff of 0.20 (Scutt Phillips et al., 2026); retain reporting-rate matrices unchanged. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 

@@ -27,12 +27,21 @@ stopifnot(
   identical(as.integer(source_index$job_number), as.integer(provenance$model_job_number)),
   !any(grepl("19b|seed.?23", source_index$step_id, ignore.case = TRUE))
 )
+diagnostic_hessian <- hessian_audit[
+  hessian_audit$step_id == "22-Diagnostic",
+  ,
+  drop = FALSE
+]
 stopifnot(
-  identical(hessian_audit$step_id, "22-Diagnostic"),
-  identical(hessian_audit$pdh, "Yes"),
-  hessian_audit$total_eigenvalues == 1997L,
-  hessian_audit$nonpositive_eigenvalues == 0L,
-  abs(hessian_audit$smallest_eigenvalue - 2.55194e-7) < 1e-14
+  nrow(hessian_audit) == 23L,
+  identical(hessian_audit$step_id, source_index$step_id),
+  all(hessian_audit$pdh %in% c("Yes", "No", "Pending")),
+  sum(hessian_audit$pdh == "Pending") <= 5L,
+  nrow(diagnostic_hessian) == 1L,
+  diagnostic_hessian$pdh == "Yes",
+  diagnostic_hessian$total_eigenvalues == 1997L,
+  diagnostic_hessian$nonpositive_eigenvalues == 0L,
+  abs(diagnostic_hessian$smallest_eigenvalue - 2.55194e-7) < 1e-14
 )
 
 payload_paths <- file.path(data_dir, "models", source_index$step_id, "model_payload.rds")
@@ -83,14 +92,16 @@ audit <- do.call(rbind, audits)
 cache_root <- file.path(data_dir, "report-cache", "outputs")
 cache_viewer <- file.path(cache_root, "overview", "interactive-model-viewer.html")
 cache_series <- file.path(cache_root, "mfclshiny-report-depletion-data.csv")
-if (!file.exists(cache_viewer) || !file.exists(cache_series)) {
+cache_recent <- file.path(cache_root, "tables", "stepwise-recent-key-quantities.csv")
+cache_files <- c(cache_viewer, cache_series, cache_recent)
+if (!all(file.exists(cache_files))) {
   stop("The checksum-locked public report cache is incomplete.")
 }
 private_patterns <- c(
   "/home/", "/var/lib/condor", "KflowOutput", "suvofp", "corp.spc",
   "AKIA", "ghp_"
 )
-for (file in c(cache_viewer, cache_series)) {
+for (file in cache_files) {
   text <- readLines(file, warn = FALSE, encoding = "UTF-8")
   leaked <- private_patterns[vapply(
     private_patterns, function(pattern) any(grepl(pattern, text, fixed = TRUE)),

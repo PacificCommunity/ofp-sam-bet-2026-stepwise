@@ -19,12 +19,14 @@ hessian <- read.csv(
   check.names = FALSE
 )
 stopifnot(
-  nrow(hessian) == 1L,
-  identical(hessian$step_id, "22-Diagnostic"),
-  identical(hessian$pdh, "Yes"),
-  hessian$nonpositive_eigenvalues == 0L,
-  hessian$eigenvalues_checked == 1997L,
-  hessian$smallest_eigenvalue > 0
+  nrow(hessian) == 23L,
+  identical(hessian$step_id, models$step_id),
+  all(hessian$pdh %in% c("Yes", "No", "Pending")),
+  sum(hessian$pdh == "Pending") <= 5L,
+  identical(hessian$pdh[hessian$step_id == "22-Diagnostic"], "Yes"),
+  hessian$nonpositive_eigenvalues[hessian$step_id == "22-Diagnostic"] == 0L,
+  hessian$total_eigenvalues[hessian$step_id == "22-Diagnostic"] == 1997L,
+  hessian$smallest_eigenvalue[hessian$step_id == "22-Diagnostic"] > 0
 )
 
 preview <- tempfile("stepwise-pathway-")
@@ -43,12 +45,28 @@ if (file.exists(series_file)) {
   series <- read.csv(series_file, stringsAsFactors = FALSE, check.names = FALSE)
   source_index <- read.csv("data/stepwise/source-index.csv", stringsAsFactors = FALSE, check.names = FALSE)
   map <- stepwise_model_map(source_index, series)
-  recent <- stepwise_official_recent_quantities(series, map)
+  recent <- stepwise_cached_recent_quantities(
+    file.path(result_dir, "tables", "stepwise-recent-key-quantities.csv"), map
+  )
+  if (is.null(recent)) recent <- stepwise_official_recent_quantities(series, map)
   diagnostic <- recent[recent$Configuration == "22-Diagnostic", , drop = FALSE]
   stopifnot(
     abs(diagnostic[["SB recent / SB F=0"]] - 0.1731393) < 5e-7,
     abs(diagnostic[["SB recent / SB MSY"]] - 1.025495) < 5e-7,
     abs(diagnostic[["F recent / F MSY"]] - 1.143641) < 5e-7
+  )
+}
+
+report_html <- "results/stepwise-report/bet-2026-stepwise-model-development.html"
+if (file.exists(report_html)) {
+  html <- paste(readLines(report_html, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  stopifnot(
+    grepl('src="data:text/html;charset=utf-8;base64,', html, fixed = TRUE),
+    grepl("releases/latest/download/interactive-model-viewer.html", html, fixed = TRUE),
+    grepl("KS D-statistic cutoff of 0.20", html, fixed = TRUE),
+    grepl("maximum-likelihood estimates", html, fixed = TRUE),
+    grepl("Copy table for Word", html, fixed = TRUE),
+    grepl("Copy LaTeX", html, fixed = TRUE)
   )
 }
 
@@ -80,6 +98,17 @@ private_patterns <- c(
 )
 for (file in text_outputs) {
   text <- readLines(file, warn = FALSE, encoding = "UTF-8")
+  if (grepl("[.]html$", file, ignore.case = TRUE)) {
+    # Embedded figures and the self-contained viewer are base64 data URIs.
+    # Strip their encoded bytes before checking readable report metadata;
+    # arbitrary base64 substrings can otherwise resemble path fragments.
+    text <- gsub("data:[^\"']+", "", text, perl = TRUE)
+    text <- text[!grepl(
+      "^[[:space:]]*[A-Za-z0-9+/=]{40,}[[:space:]]*$",
+      text,
+      perl = TRUE
+    )]
+  }
   stopifnot(!any(vapply(
     private_patterns, function(pattern) any(grepl(pattern, text, fixed = TRUE)),
     logical(1)

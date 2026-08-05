@@ -18,8 +18,8 @@ MFCL reads five reporting-rate matrices from `bet.ini`:
 | 02-04 | 41 | 118 | INI 1007-compatible diagnostic layout; reporting assumptions retained. |
 | 05-07 | 33 | 96 | Five-region 2023 tag family with audited fishery/program reporting rates. |
 | 08-15 | 33 | 98 | 2026 tag family; base mixing and reporting-rate matrices retained. |
-| 16 | 33 | 98 | K=0.20 release-specific mixing; `tag_flags(:,2)=0`. |
-| 17-19 | 33 | 98 | Same K=0.20 mixing; `tag_flags(:,2)=1`. |
+| 16 | 33 | 98 | Release-group-specific mixing periods estimated using a KS D-statistic cutoff of 0.20; `tag_flags(:,2)=0`. |
+| 17-19 | 33 | 98 | Same KS D-statistic mixing-period treatment; `tag_flags(:,2)=1`. |
 
 Step 05 is the first step that applies the current reporting-rate
 specification. The preceding 41-fishery matrices cannot be used directly

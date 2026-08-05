@@ -262,8 +262,12 @@ stepwise_simplify_viewer <- function(
         matched <- match(models, audit$step_id)
         found <- !is.na(matched)
         pdh[found] <- as.character(audit$pdh[matched[found]])
-        nonpositive[found] <- as.list(as.numeric(audit$nonpositive_eigenvalues[matched[found]]))
-        smallest[found] <- as.list(as.numeric(audit$smallest_eigenvalue[matched[found]]))
+        numeric_or_blank <- function(value) {
+          parsed <- suppressWarnings(as.numeric(value))
+          as.list(ifelse(is.finite(parsed), parsed, ""))
+        }
+        nonpositive[found] <- numeric_or_blank(audit$nonpositive_eigenvalues[matched[found]])
+        smallest[found] <- numeric_or_blank(audit$smallest_eigenvalue[matched[found]])
       }
       metric$records[["Hessian PDH"]] <- as.list(pdh)
       metric$records[["Non-positive eigenvalues"]] <- nonpositive
@@ -429,7 +433,7 @@ stepwise_dynamic_table_html <- function(table, id, max_rows = Inf) {
          paste(rows, collapse = ""), "</tbody></table>")
 }
 
-stepwise_figure_sections_html <- function(index) {
+stepwise_figure_sections_html <- function(index, output_dir, viewer_url) {
   if (!is.data.frame(index) || !nrow(index)) return("")
   index <- index[index$status == "ok" & nzchar(index$file), , drop = FALSE]
   if (!nrow(index)) return("")
@@ -446,6 +450,14 @@ stepwise_figure_sections_html <- function(index) {
   index <- index[order(ifelse(is.na(rank), length(priority) + seq_len(nrow(index)), rank)), , drop = FALSE]
   cards <- vapply(seq_len(nrow(index)), function(i) {
     file <- file.path("results", "figures", index$file[[i]])
+    source_file <- file.path(output_dir, file)
+    image_src <- file
+    if (file.exists(source_file)) {
+      image_src <- paste0(
+        "data:image/png;base64,",
+        jsonlite::base64_enc(readBin(source_file, "raw", n = file.info(source_file)$size))
+      )
+    }
     pdf_file <- sub("[.]png$", ".pdf", file, ignore.case = TRUE)
     id <- paste0("result-figure-", i)
     latex_caption <- if ("latex_caption" %in% names(index) && nzchar(index$latex_caption[[i]])) {
@@ -453,7 +465,6 @@ stepwise_figure_sections_html <- function(index) {
     } else {
       stepwise_latex_escape(index$caption[[i]])
     }
-    viewer_url <- "https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html"
     latex <- paste0(
       "% Requires \\usepackage{graphicx,hyperref}\n",
       "\\begin{figure}[htbp]\n\\centering\n",
@@ -464,15 +475,15 @@ stepwise_figure_sections_html <- function(index) {
       "\\end{figure}\n"
     )
     paste0(
-      "<figure class=\"result-figure\"><h3>", stepwise_html_escape(index$label[[i]]), "</h3>",
-      "<a href=\"interactive-model-viewer.html\" target=\"_blank\" title=\"Open the interactive viewer\"><img id=\"", id, "-image\" loading=\"lazy\" src=\"", stepwise_html_escape(file),
+      "<figure class=\"result-figure\">",
+      "<a href=\"", stepwise_html_escape(viewer_url), "\" target=\"_blank\" rel=\"noopener\" title=\"Open the interactive viewer\"><img id=\"", id, "-image\" loading=\"lazy\" src=\"", image_src,
       "\" alt=\"", stepwise_html_escape(index$alt_text[[i]]), "\"></a>",
       "<figcaption id=\"", id, "-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
-      stepwise_html_escape(index$caption[[i]]), " <a href=\"interactive-model-viewer.html\" target=\"_blank\">",
+      stepwise_html_escape(index$caption[[i]]), " <a href=\"", stepwise_html_escape(viewer_url), "\" target=\"_blank\" rel=\"noopener\">",
       "Explore individual configurations in the interactive viewer.</a></figcaption>",
       "<div class=\"actions\"><button onclick=\"copyResultFigure('", id, "-image','", id, "-caption',this)\">",
       "Copy figure + caption for Word</button>",
-      "<a class=\"button\" href=\"interactive-model-viewer.html\" target=\"_blank\">Open interactive viewer</a>",
+      "<a class=\"button\" href=\"", stepwise_html_escape(viewer_url), "\" target=\"_blank\" rel=\"noopener\">Open interactive viewer</a>",
       "<a class=\"button\" download href=\"", stepwise_html_escape(file), "\">Save PNG</a>",
       "<a class=\"button\" download href=\"", stepwise_html_escape(pdf_file), "\">Save vector PDF</a>",
       "<button class=\"secondary\" onclick=\"copyText('", id, "-latex',this)\">",

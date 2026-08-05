@@ -22,7 +22,7 @@ Exact public repository commits, paths, and SHA256 values are recorded in
 | 14a | All-five-region CAAL reweighting alternative. |
 | 14b | Selected sub-basin CAAL reweighting, combining regions 3 and 4. |
 | 15 | No data change; Job 18718 fishery-specific selectivity controls plus F10 fish flags 16=1 and 56=10000, using the ordinary no-jitter start. |
-| 16 | Only tag-flag column 1 changes, using region-mean K=0.20 mixing periods. |
+| 16 | Only tag-flag column 1 changes, using region-mean mixing periods selected with a KS D-statistic cutoff of 0.20. |
 | 17 | Only tag-flag column 2 changes from 0 to 1. |
 | 18 | Only positive effort for F29-F33 changes according to the effort-creep series. |
 | 19 | Only `doitall.sh` changes: DM-noRE G8/Nmax25 with concentration fixed at 7; the Step 15 F10 penalty is retained. |
@@ -59,7 +59,7 @@ are rebuilt for the revised 33-fishery structure rather than copied from the
 preceding 41-fishery model. This is a required part of the structural
 transition; Step 17 later changes only pre-mixing application.
 
-The K=0.20 source is:
+The source selected with a KS D-statistic cutoff of 0.20 is:
 
 ```text
 PacificCommunity/ofp-sam-2026-BET-YFT-build-ini

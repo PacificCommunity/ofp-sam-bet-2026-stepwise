@@ -1084,8 +1084,8 @@ common_late_step(
   regional_cpue = TRUE, time_varying_cv = TRUE
 )
 common_late_step(
-  "12-CPUEErrorCalibration", "12 Fixed regional CPUE SDs", "11-TimeVaryingCV",
-  "Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23.",
+  "12-CPUEErrorCalibration", "12 MLE-based regional CPUE observation-error SDs", "11-TimeVaryingCV",
+  "Fix R1-R5 observation-error SDs at their maximum-likelihood estimates: 0.35, 0.24, 0.21, 0.24 and 0.23.",
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE
 )
 common_late_step(
@@ -1124,10 +1124,10 @@ common_late_step(
   selectivity = TRUE, f10_weak_non_decreasing_penalty = TRUE
 )
 common_late_step(
-  "16-MIX020", "16 K=0.20 tag-mixing periods", "15-SelectivityUpdate",
+  "16-MIX020", "16 KS D-statistic cutoff 0.20 tag-mixing periods", "15-SelectivityUpdate",
   paste(
     "Copy only release-group mixing periods from",
-    "SC22-IP10-regionMean K=0.20; retain reporting-rate matrices unchanged."
+    "SC22-IP10-regionMean using a KS D-statistic cutoff of 0.20; retain reporting-rate matrices unchanged."
   ),
   age_source = sub_basin_age_075, age_ess = NA_real_,
   regional_cpue = TRUE, time_varying_cv = TRUE, fixed_cpue_sigma = TRUE,

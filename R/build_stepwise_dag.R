@@ -80,12 +80,12 @@ build_stepwise_dag <- function(
     "09-SizeDataQC" = "Apply PH/ID and domestic mixed-gear size-data rules.",
     "10-RegionalCPUE" = "Introduce regional CPUE indices and abundance scaling.",
     "11-TimeVaryingCV" = "Allow CPUE observation uncertainty to vary through time.",
-    "12-CPUEErrorCalibration" = "Fix the five regional CPUE observation-error SDs.",
+    "12-CPUEErrorCalibration" = "Fix the five regional CPUE observation-error SDs at their MLE-based estimates.",
     "13-NewAgeData" = "Add the new CAAL data with weight 0.75.",
     "14a-REG075" = "Evaluate CAAL reweighting across all five regions.",
     "14b-SUB075" = "Retain sub-basin CAAL reweighting for Regions 3 and 4.",
     "15-SelectivityUpdate" = "Update fishery selectivity and add the weak F10 penalty.",
-    "16-MIX020" = "Set release-group tag mixing periods using K = 0.20.",
+    "16-MIX020" = "Apply tag-mixing periods estimated with a KS D-statistic cutoff of 0.20.",
     "17-TagReportingExclusion" = "Exclude reporting rates during pre-mixing periods.",
     "18-EffortCreep" = "Apply effort-creep adjustments to the regional CPUE indices.",
     "19-DMG8Nmax25" = "Apply Dirichlet-multinomial weighting (G8; Nmax = 25).",
@@ -153,7 +153,7 @@ build_stepwise_dag <- function(
     ggplot2::geom_text(
       data = nodes[nodes$category != "final", , drop = FALSE],
       ggplot2::aes(x = 3.05, y = y, label = description),
-      hjust = 0, colour = "#516B73", size = 2.10
+      hjust = 0, colour = "#29444D", size = 2.16
     ) +
     ggplot2::geom_text(
       data = nodes[nodes$category == "final", , drop = FALSE],
@@ -167,15 +167,15 @@ build_stepwise_dag <- function(
     ) +
     ggplot2::annotate(
       "text", x = 0.55, y = nrow(nodes) + 1.05, label = "STEP",
-      colour = "#60757B", size = 2.2, fontface = "bold"
+      colour = "#3B535B", size = 2.2, fontface = "bold"
     ) +
     ggplot2::annotate(
       "text", x = 1.05, y = nrow(nodes) + 1.05, label = "MODEL CHANGE",
-      hjust = 0, colour = "#60757B", size = 2.2, fontface = "bold"
+      hjust = 0, colour = "#3B535B", size = 2.2, fontface = "bold"
     ) +
     ggplot2::annotate(
       "text", x = 3.05, y = nrow(nodes) + 1.05, label = "WHAT CHANGED",
-      hjust = 0, colour = "#60757B", size = 2.2, fontface = "bold"
+      hjust = 0, colour = "#3B535B", size = 2.2, fontface = "bold"
     ) +
     ggplot2::annotate(
       "segment", x = 0.05, xend = 7.75,

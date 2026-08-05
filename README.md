@@ -9,7 +9,7 @@ F10 non-decreasing penalty together at Step 15, then
 carries both controls through Step 19. The final three steps isolate the
 changes leading to the current Diagnostic model:
 
-- K = 0.20 region-mean tag-mixing periods.
+- Release-group-specific tag-mixing periods estimated using a KS D-statistic cutoff of 0.20.
 - Original 2023 negative-binomial tag likelihood through Step 19; direct
   negative-binomial `tau=2` fixed from Step 20.
 - Flexible fishery-specific selectivity: F1-F28 are independent,
@@ -50,7 +50,7 @@ Step 22 is SHA-locked to the public Diagnostic repository recipe.
 | 14a | `14a-REG075` | Apply all-five-region CAAL reweighting. | Alternative |
 | 14b | `14b-SUB075` | Apply selected sub-basin CAAL reweighting, combining regions 3 and 4. | Selected |
 | 15 | `15-SelectivityUpdate` | Apply the selectivity update, including the weak F10 non-decreasing penalty (flags 16=1 and 56=10000). | Selected |
-| 16 | `16-MIX020` | Apply release-group-specific K=0.20 mixing periods. | Selected |
+| 16 | `16-MIX020` | Apply release-group-specific tag-mixing periods estimated using a KS D-statistic cutoff of 0.20. | Selected |
 | 17 | `17-TagReportingExclusion` | Exclude reporting rates within pre-mixing windows. | Selected |
 | 18 | `18-EffortCreep` | Apply effort creep to regional CPUE indices. | Selected |
 | 19 | `19-DMG8Nmax25` | Apply DM-noRE composition weighting, G8 and `Nmax=25`, with concentration fixed at 7, from ordinary makepar. | Selected |
@@ -118,7 +118,7 @@ make validate
 ```
 
 The validator checks the full parent graph, all manifests and transition
-isolation, fixed M, size-data edits, reporting rates, K=0.20 mixing, tau mode,
+isolation, fixed M, size-data edits, reporting rates, KS D-statistic tag mixing, tau mode,
 the selectivity update, DM controls, the headerless v2.5 scaling file, the
 selected flexible-selectivity core-input hashes and the deterministic F10 penalty from
 Step 15 through Step 19. It additionally proves Step 20 uses direct fixed tau=2, isolates the

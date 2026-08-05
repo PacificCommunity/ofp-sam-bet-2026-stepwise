@@ -141,7 +141,7 @@ if (nrow(lock)) {
     assert(identical(mix$repository_commit, "efe3107c72774ee73b5e6dc45e44cf51f0fc20e8"),
            "provenance", "MIX020 is not locked to SC22-IP10-regionMean commit efe3107")
     assert(identical(mix$repository_path, "BET/ini.mix-period/bet.2026.mix-0.2.ini"),
-           "provenance", "MIX020 path is not the region-mean K=0.20 INI")
+           "provenance", "MIX020 path is not the region-mean KS D-statistic cutoff 0.20 INI")
     assert(identical(mix$source_sha256,
                      "1e8c589854274248efcb8b08cc85b476e718d2f5d985e03873e973181ae11e94"),
            "provenance", "MIX020 source SHA changed")
@@ -487,14 +487,14 @@ for (id in expected_ids[5:16]) {
          "tag reporting exclusion appeared before Step 17")
 }
 assert(length(unique(tag_flags[["16-MIX020"]][, 1L])) > 1L,
-       "16-MIX020", "K=0.20 release-specific mixing periods are absent")
+       "16-MIX020", "KS D-statistic cutoff 0.20 release-specific mixing periods are absent")
 assert(all(tag_flags[["16-MIX020"]][, 2L] == 0),
        "16-MIX020", "Step 16 must retain reporting rates during pre-mixing windows")
 for (id in expected_ids[18:length(expected_ids)]) {
   assert(all(tag_flags[[id]][, 2L] == 1), id,
          "tag_flags(:,2) must be one from Step 17 onward")
   assert(identical(tag_flags[[id]][, 1L], tag_flags[["16-MIX020"]][, 1L]),
-         id, "K=0.20 mixing periods were not carried forward")
+         id, "KS D-statistic cutoff 0.20 mixing periods were not carried forward")
 }
 
 ## Negative-binomial tau treatment: original through Step 19, direct fixed tau=2

@@ -1,6 +1,6 @@
-# 12 Fixed regional CPUE SDs
+# 12 MLE-based regional CPUE observation-error SDs
 
-Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23.
+Fix the R1-R5 observation-error SDs at their maximum-likelihood estimates: 0.35, 0.24, 0.21, 0.24 and 0.23.
 
 ## Snapshot
 
@@ -13,7 +13,7 @@ Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23.
 
 | # | Change |
 | --- | --- |
-| 1 | Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23. |
+| 1 | Fix the R1-R5 observation-error SDs at their maximum-likelihood estimates: 0.35, 0.24, 0.21, 0.24 and 0.23. |
 | 2 | F15 bins below 70 cm are zeroed without renormalisation. |
 | 3 | F21-F23 intervals with midpoint above 90 cm are removed. |
 | 4 | F14 and F15 youngest five ages are fixed at zero selectivity. |
@@ -39,7 +39,7 @@ Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23.
 | `.ini` | rrpttp26 reporting-rate matrices; tag_flags(:,2)=0 | All unlisted INI fields and cumulative RR/tag controls. |
 | `.tag` | Uses the selected TAG source without rollback or replacement. | All tag release and recapture records. |
 | `.age_length` | Sets only the effective-sample-size row to 0.75. | Age-length records and variant-specific structure. |
-| `Step-specific change` | Fix R1-R5 observation-error SDs at 0.35, 0.24, 0.21, 0.24 and 0.23. | All previously selected controls; no OPR or length-bin selectivity. |
+| `Step-specific change` | Fix the R1-R5 observation-error SDs at their maximum-likelihood estimates: 0.35, 0.24, 0.21, 0.24 and 0.23. | All previously selected controls; no OPR or length-bin selectivity. |
 
 ## Source Revisions
 

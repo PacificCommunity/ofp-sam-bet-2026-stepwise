@@ -1,2 +1,24 @@
 step_id,pdh,total_eigenvalues,nonpositive_eigenvalues,smallest_eigenvalue,source
-22-Diagnostic,Yes,1997,0,2.55194e-07,Native MFCL Hessian eigen analysis
+01-Diag2023,Yes,3067,0,9.61816e-08,Kflow Hessian merge Job 20227
+02-NewExeIni1007,Yes,3067,0,1.09636e-07,Kflow Hessian merge Job 20233
+03-FixM,Yes,3066,0,1.46048e-07,Kflow Hessian merge Job 20239
+04-LengthWeight,Yes,3066,0,1.45768e-07,Kflow Hessian merge Job 20245
+05-NewStructure,Yes,1874,0,9.83675e-08,Kflow Hessian merge Job 20251
+06-ConvertToLength,No,1874,1,-3.48544e-06,Kflow Hessian merge Job 20257
+07-AddLengthData,Pending,,,,Kflow dependent Hessian merge Job 23165
+08-DataTo2024,Pending,,,,Kflow dependent Hessian merge Job 23167
+09-SizeDataQC,Pending,,,,Kflow dependent Hessian merge Job 23169
+10-RegionalCPUE,Pending,,,,Kflow dependent Hessian merge Job 23171
+11-TimeVaryingCV,No,1945,1,-6.9803e-03,Kflow Hessian merge Job 20287
+12-CPUEErrorCalibration,No,1945,2,-1.11962e+01,Kflow Hessian merge Job 20293
+13-NewAgeData,No,1945,2,-4.18973e-02,Kflow Hessian merge Job 20299
+14a-REG075,Pending,,,,Kflow dependent Hessian merge Job 23173
+14b-SUB075,No,1945,2,-7.12543e-03,Kflow Hessian merge Job 20311
+15-SelectivityUpdate,No,1989,1,-2.59487e-06,Kflow Hessian merge Job 20317
+16-MIX020,No,1989,2,-7.35562e-01,Kflow Hessian merge Job 20323
+17-TagReportingExclusion,Yes,1989,0,3.43978e-07,Kflow Hessian merge Job 20329
+18-EffortCreep,Yes,1989,0,1.47613e-07,Kflow Hessian merge Job 20335
+19-DMG8Nmax25,Yes,1997,0,3.1366e-07,Kflow Hessian merge Job 20341
+20-Tau2Fixed,Yes,1997,0,3.38335e-07,Kflow Hessian merge Job 22394
+21-F33WeakPenalty,Yes,1997,0,2.40467e-07,Kflow Hessian merge Job 22398
+22-Diagnostic,Yes,1997,0,2.55194e-07,Kflow Hessian merge Job 22196

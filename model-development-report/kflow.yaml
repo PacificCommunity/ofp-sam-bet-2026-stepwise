@@ -8,6 +8,16 @@ remote_host: kflow-local-kyuhank-nc240124
 remote_user: kyuhank
 remote_base_dir: /home/kyuhank/KflowOutput
 
+checkout:
+  mode: sparse
+  paths:
+    - R
+    - job-config.R
+    - data/stepwise/source-index.csv
+    - data/stepwise/hessian-audit.csv
+    - data/stepwise/report-cache
+    - model-development-report
+
 resources:
   cpus: 2
   memory: 8GB

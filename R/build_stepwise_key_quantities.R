@@ -184,6 +184,40 @@ stepwise_official_recent_quantities <- function(series, map) {
   quantities
 }
 
+stepwise_cached_recent_quantities <- function(file, map) {
+  if (!file.exists(file)) return(NULL)
+  quantities <- utils::read.csv(
+    file, check.names = FALSE, stringsAsFactors = FALSE, encoding = "UTF-8"
+  )
+  required <- c(
+    "Step", "Configuration", "Terminal year", "SB recent period",
+    "SB F=0 period", "F recent period", "SB recent (10³ t)",
+    "SB F=0 (10³ t)", "SB recent / SB F=0", "SB recent / SB MSY",
+    "F recent / F MSY", "F multiplier at MSY", "SB MSY (t)"
+  )
+  missing <- setdiff(required, names(quantities))
+  if (length(missing)) {
+    stop("The cached recent-quantity table is missing: ", paste(missing, collapse = ", "), call. = FALSE)
+  }
+  matched <- match(map$step_id, quantities$Configuration)
+  if (anyNA(matched) || nrow(quantities) != nrow(map)) {
+    stop("The cached recent-quantity table does not contain the complete stepwise pathway.", call. = FALSE)
+  }
+  quantities <- quantities[matched, required, drop = FALSE]
+  if (!identical(as.character(quantities$Configuration), as.character(map$step_id))) {
+    stop("The cached recent-quantity table is not in source-index order.", call. = FALSE)
+  }
+  diagnostic <- quantities[quantities$Configuration == "22-Diagnostic", , drop = FALSE]
+  expected <- c(0.1731393, 1.025495, 1.143641)
+  actual <- suppressWarnings(as.numeric(diagnostic[1L, c(
+    "SB recent / SB F=0", "SB recent / SB MSY", "F recent / F MSY"
+  )]))
+  if (nrow(diagnostic) != 1L || any(!is.finite(actual)) || any(abs(actual - expected) > 5e-7)) {
+    stop("The cached Step 22 stock-status audit failed.", call. = FALSE)
+  }
+  quantities
+}
+
 stepwise_status_spec <- function() {
   list(
     depletion = list(
@@ -348,13 +382,13 @@ stepwise_custom_figure_index <- function(series, map) {
     paste0(
       "Annual estimates of dynamic spawning depletion, recruitment, spawning potential and fishing mortality ",
       "across the 23 model configurations evaluated during stepwise development. The colour and line-style key ",
-      "identifies each configuration by Step number; the final Diagnostic model (Step 22) is shown in red. The dashed ",
+      "identifies each configuration by step number; the final Diagnostic model (Step 22) is shown in red. The dashed ",
       "line in the depletion panel marks the limit reference point (LRP = 0.2)."
     ),
     paste0(
       "Stock-status quantities across the 23 model configurations evaluated during stepwise development. For each ",
       "configuration, recent periods are defined relative to its terminal year: spawning biomass uses T-3 to T, ",
-      "unfished spawning biomass uses T-10 to T-1, and fishing mortality uses T-4 to T-1. For the final Diagnostic ",
+      "unfished spawning biomass uses T-10 to T-1, and fishing mortality uses T-4 to T-1. For the final diagnostic ",
       "model (T = 2024), these periods are 2021-2024, 2014-2023 and 2020-2023, respectively. Step 22 is outlined ",
       "in red. The depletion line marks the limit reference point (LRP = 0.2); MSY-ratio lines mark 1.0."
     )
@@ -363,7 +397,7 @@ stepwise_custom_figure_index <- function(series, map) {
     paste0(
       "Annual estimates of dynamic spawning depletion ($SB/SB_{F=0}$), recruitment, spawning potential, and ",
       "fishing mortality across the 23 model configurations evaluated during stepwise development. The colour ",
-      "and line-style key identifies each configuration by Step number; the final Diagnostic model (Step~22) is shown ",
+      "and line-style key identifies each configuration by step number; the final Diagnostic model (Step~22) is shown ",
       "in red. The dashed line in the depletion panel marks the limit reference point (LRP = 0.2)."
     ),
     paste0(
@@ -457,7 +491,11 @@ build_stepwise_key_quantities <- function(result_dir, source_index) {
     patchwork::plot_annotation(tag_levels = "a") &
     ggplot2::theme(legend.position = "bottom")
 
-  recent <- stepwise_official_recent_quantities(series, map)
+  recent_file <- file.path(result_dir, "tables", "stepwise-recent-key-quantities.csv")
+  recent <- stepwise_cached_recent_quantities(recent_file, map)
+  if (is.null(recent)) {
+    recent <- stepwise_official_recent_quantities(series, map)
+  }
   status_specs <- stepwise_status_spec()
   recent_panels <- Map(
     function(spec, index) stepwise_recent_panel(recent, spec, map, show_x = index == length(status_specs)),

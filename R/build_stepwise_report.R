@@ -41,6 +41,19 @@ stepwise_sentence <- function(x) {
   x
 }
 
+stepwise_viewer_release_url <- paste0(
+  "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/",
+  "releases/latest/download/interactive-model-viewer.html"
+)
+
+stepwise_data_uri <- function(file, mime) {
+  if (!file.exists(file)) return("")
+  paste0(
+    "data:", mime, ";base64,",
+    jsonlite::base64_enc(readBin(file, "raw", n = file.info(file)$size))
+  )
+}
+
 stepwise_references <- c(
   paste0(
     "Peatman, T., Castillo-Jordán, C., Teears, T., Magnusson, A., Kim, K., ",
@@ -420,6 +433,48 @@ stepwise_named_table_latex <- function(table, headers, widths, caption, label,
   )
 }
 
+stepwise_report_table_latex <- function(table, headers, widths, caption, label) {
+  stopifnot(length(headers) == ncol(table), length(widths) == ncol(table))
+  # Leave space for inter-column padding inside an A4 landscape text block.
+  # Raw p-column fractions that sum to one overflow once tabular padding is
+  # added, even though the table appears visually close to the page width.
+  widths <- widths / sum(widths) * 0.92
+  columns <- paste0(
+    "@{}",
+    paste0(
+      ">{\\raggedright\\arraybackslash}p{", widths, "\\linewidth}",
+      collapse = ""
+    ),
+    "@{}"
+  )
+  format_cell <- function(value) {
+    if (!length(value) || is.na(value[[1L]]) || !nzchar(trimws(as.character(value[[1L]])))) return("")
+    if (is.numeric(value)) return(format(value[[1L]], digits = 7, trim = TRUE, scientific = FALSE))
+    as.character(value[[1L]])
+  }
+  rows <- vapply(seq_len(nrow(table)), function(i) {
+    values <- vapply(table[i, , drop = FALSE], format_cell, character(1))
+    values <- stepwise_latex_escape(values)
+    values[[1L]] <- paste0("\\textbf{", values[[1L]], "}")
+    paste0(paste(values, collapse = " & "), " \\\\")
+  }, character(1))
+  paste0(
+    "% Requires \\usepackage{booktabs,longtable,array,pdflscape}\n",
+    "\\begin{landscape}\n\\begingroup\n\\scriptsize\n",
+    "\\setlength{\\tabcolsep}{2pt}\n\\renewcommand{\\arraystretch}{1.08}\n",
+    "\\setlength{\\LTcapwidth}{\\linewidth}\n",
+    "\\begin{longtable}{", columns, "}\n",
+    "\\caption{", stepwise_latex_escape(caption), "}",
+    "\\label{", label, "}\\\\\n",
+    "\\toprule\n", paste(stepwise_latex_escape(headers), collapse = " & "),
+    " \\\\\n\\midrule\n\\endfirsthead\n",
+    "\\toprule\n", paste(stepwise_latex_escape(headers), collapse = " & "),
+    " \\\\\n\\midrule\n\\endhead\n",
+    paste(rows, collapse = "\n"),
+    "\n\\bottomrule\n\\end{longtable}\n\\endgroup\n\\end{landscape}\n"
+  )
+}
+
 stepwise_render_result_bundle <- function(discovered, output_dir) {
   payloads <- discovered$payload[nzchar(discovered$payload)]
   if (!length(payloads)) return("")
@@ -577,40 +632,73 @@ build_stepwise_report <- function(
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Configurations are ",
     "arranged in evaluation order from Step 1 to Step 22. Step 14a was evaluated ",
-    "before the Step 14b configuration that was carried forward. The dark-teal row marks ",
+    "before the Step 14b configuration that was carried forward. The dark-teal row identifies ",
     "the final Diagnostic model."
   )
   table_caption <- paste0(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
     "rationale. Step numbers correspond to the pathway in Figure XX."
   )
-  summary_html <- stepwise_dynamic_table_html(assets$model_summary, "dynamic-model-summary")
-  objective_html <- stepwise_dynamic_table_html(assets$objective_components, "dynamic-objective-components")
+  summary_table <- assets$model_summary
+  summary_headers <- names(summary_table)
+  summary_headers[summary_headers == "Max gradient"] <- "Maximum gradient component (MGC)"
+  summary_headers[summary_headers == "Objective value"] <- "Objective function value"
+  summary_headers[summary_headers == "Hessian PDH"] <- "PDH"
+  names(summary_table) <- summary_headers
+  objective_table <- assets$objective_components
+  summary_html <- stepwise_dynamic_table_html(summary_table, "dynamic-model-summary")
+  objective_html <- stepwise_dynamic_table_html(objective_table, "dynamic-objective-components")
+  summary_caption <- paste0(
+    "Convergence and native Hessian diagnostics for the configurations evaluated during stepwise development ",
+    "of the BET 2026 assessment. PDH denotes a positive-definite Hessian based on native MFCL eigenvalue analysis."
+  )
+  objective_caption <- paste0(
+    "Objective-function and likelihood-component values for the configurations evaluated during stepwise ",
+    "development of the BET 2026 assessment. Values are reported on the native MFCL objective scale; the ",
+    "composition-likelihood formulation changes at Step 19."
+  )
+  summary_latex <- stepwise_report_table_latex(
+    summary_table, names(summary_table),
+    c(0.17, 0.16, 0.15, 0.12, 0.10, 0.13, 0.14),
+    summary_caption, "tab:bet-stepwise-fit-diagnostics"
+  )
+  objective_latex <- stepwise_report_table_latex(
+    objective_table, names(objective_table),
+    c(0.17, 0.12, 0.10, 0.12, 0.12, 0.09, 0.09, 0.08, 0.09),
+    objective_caption, "tab:bet-stepwise-likelihood-components"
+  )
+  viewer_data_uri <- stepwise_data_uri(assets$viewer, "text/html;charset=utf-8")
+  viewer_url <- stepwise_viewer_release_url
   viewer_link <- if (nzchar(assets$viewer)) {
     paste0(
-      "<div class=\"viewer-actions\"><a class=\"button\" href=\"interactive-model-viewer.html\" target=\"_blank\">",
-      "Open interactive viewer</a><a class=\"button alt\" href=\"interactive-model-viewer.html\" download>",
-      "Download offline viewer</a></div>",
+      "<div class=\"viewer-actions\"><a class=\"button\" href=\"", viewer_url, "\" target=\"_blank\" rel=\"noopener\">",
+      "Open interactive viewer</a><a class=\"button alt\" href=\"", viewer_url, "\" download>",
+      "Download standalone viewer</a></div>",
       "<iframe class=\"viewer-frame\" loading=\"lazy\" title=\"Interactive stepwise model viewer\" ",
-      "src=\"interactive-model-viewer.html\"></iframe>"
+      "src=\"", viewer_data_uri, "\"></iframe>"
     )
   } else {
     "<p class=\"note\">The interactive viewer could not be generated from the supplied inputs.</p>"
   }
   result_section <- paste0(
     "<section class=\"model-card\" id=\"interactive-viewer\"><h2>Interactive model viewer</h2>",
-    "<p>The viewer and this report are generated from the same checksum-locked fitted-model payloads.</p>",
+    "<p>The embedded viewer and the standalone release asset are generated from the same checksum-locked fitted-model payloads.</p>",
     viewer_link, "</section>",
     "<section class=\"model-card\"><h2>Fit diagnostics and likelihood components</h2>",
-    "<p>The compact diagnostics table reports convergence and positive-definite Hessian (PDH) status where a native Hessian analysis was available.</p>",
-    "<h3>Fit diagnostics</h3><div class=\"table-shell\">", summary_html, "</div>",
-    "<div class=\"actions\"><a class=\"button\" href=\"stepwise-model-summary.csv\" download>Download model summary</a></div>",
-    "<h3>Likelihood components</h3><div class=\"table-shell\">", objective_html, "</div>",
-    "<div class=\"actions\"><a class=\"button\" href=\"stepwise-objective-components.csv\" download>Download objective components</a></div>",
+    "<h3>Fit diagnostics</h3><p class=\"caption\" id=\"fit-caption\"><strong>Table <span contenteditable=\"true\">XX</span>.</strong> ",
+    stepwise_html_escape(summary_caption), "</p><div class=\"table-shell\">", summary_html, "</div>",
+    "<div class=\"actions\"><button onclick=\"copyReportTable('fit-caption','dynamic-model-summary',this)\">Copy table for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('fit-latex',this)\">Copy LaTeX</button>",
+    "<a class=\"button\" href=\"stepwise-model-summary.csv\" download>Download CSV</a></div>",
+    "<h3>Likelihood components</h3><p class=\"caption\" id=\"likelihood-caption\"><strong>Table <span contenteditable=\"true\">XX</span>.</strong> ",
+    stepwise_html_escape(objective_caption), "</p><div class=\"table-shell\">", objective_html, "</div>",
+    "<div class=\"actions\"><button onclick=\"copyReportTable('likelihood-caption','dynamic-objective-components',this)\">Copy table for Word</button>",
+    "<button class=\"secondary\" onclick=\"copyText('likelihood-latex',this)\">Copy LaTeX</button>",
+    "<a class=\"button\" href=\"stepwise-objective-components.csv\" download>Download CSV</a></div>",
     "</section>",
     "<section class=\"model-card\"><h2>SC assessment figures</h2>",
     "<p>Priority stock-status, population-dynamics, fit, selectivity, spatial and tagging figures are read from the upstream figure index.</p>",
-    stepwise_figure_sections_html(assets$figure_index), "</section>",
+    stepwise_figure_sections_html(assets$figure_index, output_dir, viewer_url), "</section>",
     "<section class=\"model-card\"><h2>Supporting tables</h2>",
     stepwise_table_downloads_html(assets$table_index), "</section>"
   )
@@ -621,7 +709,7 @@ build_stepwise_report <- function(
     "\\includegraphics[width=\\linewidth,height=0.88\\textheight,keepaspectratio]{pathway/figures/bet-2026-stepwise-pathway.pdf}\n",
     "\\caption{", stepwise_latex_escape(figure_caption), "}\n",
     "\\label{fig:bet-stepwise-pathway}\n",
-    "\\par\\small\\href{https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html}",
+    "\\par\\small\\href{", viewer_url, "}",
     "{Explore individual model configurations in the interactive viewer.}\n",
     "\\end{figure}\n"
   )
@@ -675,9 +763,9 @@ build_stepwise_report <- function(
     "<section class=\"overview\"><h2>Model-development approach</h2><p id=\"method-text\">", stepwise_html_escape(method_text), "</p>",
     "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy methods text for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy methods text for LaTeX</button></div>",
-    "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><a href=\"interactive-model-viewer.html\" target=\"_blank\" title=\"Open the interactive viewer\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\"></a>",
+    "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><a href=\"", viewer_url, "\" target=\"_blank\" rel=\"noopener\" title=\"Open the interactive viewer\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\"></a>",
     "</div><figcaption id=\"figure-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
-    stepwise_html_escape(figure_caption), " <a href=\"interactive-model-viewer.html\" target=\"_blank\">",
+    stepwise_html_escape(figure_caption), " <a href=\"", viewer_url, "\" target=\"_blank\" rel=\"noopener\">",
     "Explore individual configurations in the interactive viewer.</a></figcaption></figure>",
     "<div class=\"actions\"><button onclick=\"copyFigure(this)\">Copy figure + caption for Word</button>",
     "<a class=\"button\" download href=\"data:image/png;base64,", png_data, "\">Save PNG</a>",
@@ -700,6 +788,8 @@ build_stepwise_report <- function(
     "<pre id=\"method-latex\" class=\"hidden-copy\">", stepwise_html_escape(method_latex), "</pre>",
     "<pre id=\"figure-latex\" class=\"hidden-copy\">", stepwise_html_escape(latex_figure), "</pre>",
     "<pre id=\"table-latex\" class=\"hidden-copy\">", stepwise_html_escape(table_latex), "</pre>",
+    "<pre id=\"fit-latex\" class=\"hidden-copy\">", stepwise_html_escape(summary_latex), "</pre>",
+    "<pre id=\"likelihood-latex\" class=\"hidden-copy\">", stepwise_html_escape(objective_latex), "</pre>",
     "<pre id=\"references-bibtex\" class=\"hidden-copy\">", stepwise_html_escape(stepwise_references_bibtex), "</pre>",
     "<img id=\"dag-png\" hidden src=\"data:image/png;base64,", png_data, "\">",
     "<div id=\"action-status\" class=\"action-status\" role=\"status\" aria-live=\"polite\"></div>",
@@ -742,6 +832,8 @@ build_stepwise_report <- function(
     row.names = FALSE
   )
   writeLines(table_latex, file.path(output_dir, "stepwise-model-configurations.tex"))
+  writeLines(summary_latex, file.path(output_dir, "stepwise-fit-diagnostics.tex"))
+  writeLines(objective_latex, file.path(output_dir, "stepwise-likelihood-components.tex"))
   writeLines(stepwise_references_bibtex, file.path(output_dir, "stepwise-references.bib"))
   writeLines(paste0("Figure XX. ", figure_caption), file.path(output_dir, "stepwise-pathway-caption.txt"))
   writeLines(
