@@ -36,7 +36,7 @@ stopifnot(
   nrow(hessian_audit) == 23L,
   identical(hessian_audit$step_id, source_index$step_id),
   all(hessian_audit$pdh %in% c("Yes", "No", "Pending")),
-  sum(hessian_audit$pdh == "Pending") <= 5L,
+  !any(hessian_audit$pdh == "Pending"),
   nrow(diagnostic_hessian) == 1L,
   diagnostic_hessian$pdh == "Yes",
   diagnostic_hessian$total_eigenvalues == 1997L,

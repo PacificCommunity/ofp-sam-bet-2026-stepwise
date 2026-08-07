@@ -12,9 +12,10 @@ The repository stores one compact, checksum-locked payload per model under
 ./run-report
 ```
 
-The source index retains the Kflow provenance needed to audit each payload. The report
+The published report and viewer use stable step identifiers. Local execution
+references and archive locations are tracked outside the public assets. The report
 builder reads the repository payloads and generates the pathway, model inventory,
-diagnostic tables, SC figures, downloads and bundled offline viewer without rerunning MFCL.
+diagnostic tables, figures, downloads and bundled offline viewer without rerunning MFCL.
 
 Use `--include-source-jobs` only when the upstream job does not already contain its viewer
 and report-ready figure bundle. In that mode, the task stages the source model payloads and

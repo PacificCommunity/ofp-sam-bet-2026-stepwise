@@ -22,7 +22,7 @@ stopifnot(
   nrow(hessian) == 23L,
   identical(hessian$step_id, models$step_id),
   all(hessian$pdh %in% c("Yes", "No", "Pending")),
-  sum(hessian$pdh == "Pending") <= 5L,
+  !any(hessian$pdh == "Pending"),
   identical(hessian$pdh[hessian$step_id == "22-Diagnostic"], "Yes"),
   hessian$nonpositive_eigenvalues[hessian$step_id == "22-Diagnostic"] == 0L,
   hessian$total_eigenvalues[hessian$step_id == "22-Diagnostic"] == 1997L,
@@ -131,7 +131,7 @@ text_outputs <- list.files(
 )
 private_patterns <- c(
   "/home/", "/var/lib/condor", "KflowOutput", "suvofp", "corp.spc",
-  "AKIA", "ghp_"
+  "Kflow Hessian merge Job", "AKIA", "ghp_"
 )
 for (file in text_outputs) {
   text <- readLines(file, warn = FALSE, encoding = "UTF-8")

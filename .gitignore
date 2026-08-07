@@ -5,6 +5,8 @@
 !/data/SHA256SUMS
 !/data/stepwise/
 !/data/stepwise/**
+# Internal execution references are retained locally but never committed.
+/data/stepwise/.private/
 /results/
 /.R-library/
 /.kflow-runtime-cache/

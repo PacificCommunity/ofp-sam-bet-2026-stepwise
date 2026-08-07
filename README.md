@@ -175,10 +175,11 @@ After the GitHub workflow completes, the public outputs are available as the
 [stepwise report](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/bet-2026-stepwise-model-development.html)
 and [interactive model viewer](https://pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html).
 The viewer retains scientific fit diagnostics, likelihood components and
-Hessian positive-definiteness (PDH) status where it has actually been evaluated.
-Completed native Hessian analyses are reported as `Yes` or `No`; submitted but
-unfinished dependent analyses are reported as `Pending`, and a missing result
-is never interpreted as a non-positive-definite Hessian.
+Hessian positive-definiteness (PDH) status. `Yes` denotes no non-positive
+native Hessian eigenvalues; `No` denotes one or more non-positive eigenvalues.
+Public report assets use stable step identifiers and validation summaries only.
+Execution IDs, host locations and archive references are retained in a local
+ignored tracking manifest and are not published.
 
 Stock-status summaries follow the BET assessment definitions in
 WCPFC-SC19-2023/SA-WP-05. For a model with terminal year T,
