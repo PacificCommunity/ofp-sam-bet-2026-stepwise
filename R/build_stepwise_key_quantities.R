@@ -12,8 +12,6 @@ stepwise_line_styles <- function(map) {
     length.out = nrow(map)
   )
   linetypes <- rep(c("solid", "22", "42"), each = 8L, length.out = nrow(map))
-  colours[[nrow(map)]] <- "#c92f2a"
-  linetypes[[nrow(map)]] <- "solid"
   names(colours) <- map$row
   names(linetypes) <- map$row
   list(colours = colours, linetypes = linetypes)
@@ -328,8 +326,6 @@ stepwise_trajectory_panel <- function(data, spec, map, show_x = TRUE) {
   values <- data[[spec$column]]
   plot_data <- data[is.finite(data$year) & is.finite(values), , drop = FALSE]
   plot_data$value <- plot_data[[spec$column]]
-  final_order <- max(map$order)
-  final <- plot_data[plot_data$order == final_order, , drop = FALSE]
   plot_data$row <- factor(plot_data$row, levels = map$row)
   styles <- stepwise_line_styles(map)
   ymax <- max(plot_data$value, na.rm = TRUE)
@@ -341,14 +337,9 @@ stepwise_trajectory_panel <- function(data, spec, map, show_x = TRUE) {
       ggplot2::aes(x = year, y = value, group = model_token, colour = row, linetype = row),
       linewidth = 0.48, alpha = 0.86, lineend = "round"
     ) +
-    ggplot2::geom_line(
-      data = final,
-      ggplot2::aes(x = year, y = value, group = model_token),
-      colour = "#c92f2a", linewidth = 1.08, lineend = "round"
-    ) +
     ggplot2::scale_colour_manual(
       values = styles$colours, breaks = map$row,
-      name = "Step (see pathway and table)",
+      name = "Step",
       guide = ggplot2::guide_legend(
         title.position = "top", title.hjust = 0.5, nrow = 4, byrow = TRUE,
         keywidth = grid::unit(7.5, "mm"), keyheight = grid::unit(3.1, "mm"),
@@ -357,7 +348,7 @@ stepwise_trajectory_panel <- function(data, spec, map, show_x = TRUE) {
     ) +
     ggplot2::scale_linetype_manual(
       values = styles$linetypes, breaks = map$row,
-      name = "Step (see pathway and table)"
+      name = "Step"
     ) +
     ggplot2::scale_x_continuous(
       breaks = seq(1960, 2020, by = 20),
@@ -391,19 +382,14 @@ stepwise_recent_panel <- function(data, spec, map, show_x = FALSE) {
   if (any(!is.finite(plot_data$value))) {
     stop("Recent values are incomplete for ", spec$column, ".", call. = FALSE)
   }
-  final_order <- max(plot_data$order)
   ymax <- max(plot_data$value, na.rm = TRUE)
   if (identical(spec$column, "SB recent / SB F=0")) ymax <- max(0.25, ymax)
-  point_colours <- c(stepwise_key_palette(nrow(plot_data) - 1L), "#c92f2a")
+  point_colours <- stepwise_key_palette(nrow(plot_data))
   names(point_colours) <- plot_data$row
 
   plot <- ggplot2::ggplot(plot_data, ggplot2::aes(order, value)) +
     ggplot2::geom_line(colour = "#315f68", linewidth = 0.62, lineend = "round") +
     ggplot2::geom_point(ggplot2::aes(colour = row), size = 2.0) +
-    ggplot2::geom_point(
-      data = plot_data[plot_data$order == final_order, , drop = FALSE],
-      colour = "#c92f2a", fill = "white", shape = 21, stroke = 1.05, size = 3.1
-    ) +
     ggplot2::scale_colour_manual(values = point_colours, guide = "none") +
     ggplot2::scale_x_continuous(
       breaks = plot_data$order, labels = plot_data$row,
@@ -445,30 +431,30 @@ stepwise_custom_figure_index <- function(series, map) {
     paste0(
       "Annual estimates of dynamic spawning depletion, recruitment, spawning potential and fishing mortality ",
       "across the 23 model configurations evaluated during stepwise development. The colour and line-style key ",
-      "identifies each configuration by step number; the final Diagnostic model (Step 22) is shown in red. The dashed ",
+      "identifies each configuration by step number. The dashed ",
       "line in the depletion panel marks the limit reference point (LRP = 0.2)."
     ),
     paste0(
       "Stock-status quantities across the 23 model configurations evaluated during stepwise development. For each ",
       "configuration, recent periods are defined relative to its terminal year: spawning biomass uses T-3 to T, ",
-      "unfished spawning biomass uses T-9 to T, and fishing mortality uses T-4 to T-1. For the final Diagnostic ",
-      "model (T = 2024), these periods are 2021-2024, 2015-2024 and 2020-2023, respectively. Step 22 is outlined ",
-      "in red. The depletion line marks the limit reference point (LRP = 0.2); MSY-ratio lines mark 1.0."
+      "unfished spawning biomass uses T-9 to T, and fishing mortality uses T-4 to T-1. For Step 22 ",
+      "(T = 2024), these periods are 2021-2024, 2015-2024 and 2020-2023, respectively. The depletion line marks ",
+      "the limit reference point (LRP = 0.2); MSY-ratio lines mark 1.0."
     )
   )
   latex <- c(
     paste0(
       "Annual estimates of dynamic spawning depletion ($SB/SB_{F=0}$), recruitment, spawning potential, and ",
       "fishing mortality across the 23 model configurations evaluated during stepwise development. The colour ",
-      "and line-style key identifies each configuration by step number; the final Diagnostic model (Step~22) is shown ",
-      "in red. The dashed line in the depletion panel marks the limit reference point (LRP = 0.2)."
+      "and line-style key identifies each configuration by step number. The dashed line in the depletion panel ",
+      "marks the limit reference point (LRP = 0.2)."
     ),
     paste0(
       "Stock-status quantities across the 23 model configurations evaluated during stepwise development. For each ",
       "configuration, recent periods are defined relative to its terminal year: spawning biomass uses $T-3$ to $T$, ",
-      "unfished spawning biomass uses $T-9$ to $T$, and fishing mortality uses $T-4$ to $T-1$. For the final ",
-      "Diagnostic model ($T=2024$), these periods are 2021--2024, 2015--2024, and 2020--2023, respectively. ",
-      "Step~22 is outlined in red. The depletion line marks the limit reference point (LRP = 0.2); MSY-ratio ",
+      "unfished spawning biomass uses $T-9$ to $T$, and fishing mortality uses $T-4$ to $T-1$. For Step~22 ",
+      "($T=2024$), these periods are 2021--2024, 2015--2024, and 2020--2023, respectively. The depletion line ",
+      "marks the limit reference point (LRP = 0.2); MSY-ratio ",
       "lines mark 1.0."
     )
   )
@@ -484,11 +470,11 @@ stepwise_custom_figure_index <- function(series, map) {
     latex_caption = latex,
     alt_text = captions,
     description = c(
-      "A4 four-panel annual time-series comparison of all stepwise model configurations.",
+      "Wide four-panel annual time-series comparison of all stepwise model configurations.",
       "A4 four-panel comparison of native stock-status quantities by model-development step."
     ),
     format = "png", rows = c(nrow(series), nrow(map) * 4L), models = nrow(map),
-    width = 7.15, height = 9.25, dpi = 300L, status = "ok",
+    width = c(11.2, 7.15), height = c(7.4, 9.25), dpi = 300L, status = "ok",
     stringsAsFactors = FALSE, check.names = FALSE
   )
 }
@@ -571,7 +557,9 @@ build_stepwise_key_quantities <- function(result_dir, source_index) {
   stepwise_save_a4_figure(
     trajectory,
     file.path(figure_dir, "stepwise-key-quantity-trajectories.png"),
-    file.path(figure_dir, "stepwise-key-quantity-trajectories.pdf")
+    file.path(figure_dir, "stepwise-key-quantity-trajectories.pdf"),
+    width = 11.2,
+    height = 7.4
   )
   stepwise_save_a4_figure(
     changes,

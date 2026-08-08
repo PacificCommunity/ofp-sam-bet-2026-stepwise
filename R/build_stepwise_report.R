@@ -747,7 +747,7 @@ build_stepwise_report <- function(
     "background:#eff5f5;color:#3a5967}.hidden-copy{display:none}.viewer-actions{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}",
     ".viewer-actions .alt{background:#fff;color:var(--sea);border:1px solid var(--sea)}.viewer-frame{width:100%;height:860px;",
     "border:1px solid var(--line);background:#fff}.result-grid{display:block}",
-    ".result-figure{max-width:980px;margin:0 auto 30px;border:1px solid var(--line);padding:16px;background:#fff}.result-figure h3{margin:0 0 12px;color:var(--ink)}",
+    ".result-figure{max-width:1280px;margin:0 auto 30px;border:1px solid var(--line);padding:16px;background:#fff}.result-figure h3{margin:0 0 12px;color:var(--ink)}",
     ".result-figure img{display:block;width:100%;height:auto}.download-list{list-style:none;padding:0}.download-list li{display:grid;grid-template-columns:minmax(220px,32%) 1fr;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}",
     ".download-list li span{color:var(--muted)}.compact{max-width:700px}.action-status{position:fixed;right:22px;bottom:22px;z-index:20;",
     "background:var(--ink);color:#fff;padding:10px 15px;box-shadow:0 8px 24px rgba(18,59,93,.2);opacity:0;transform:translateY(8px);",
