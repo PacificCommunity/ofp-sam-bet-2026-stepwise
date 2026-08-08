@@ -1,0 +1,44 @@
+% Requires \usepackage{booktabs,longtable,array,pdflscape}
+\begin{landscape}
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.161237113402062\linewidth}>{\raggedright\arraybackslash}p{0.151752577319588\linewidth}>{\raggedright\arraybackslash}p{0.142268041237113\linewidth}>{\raggedright\arraybackslash}p{0.113814432989691\linewidth}>{\raggedright\arraybackslash}p{0.0948453608247423\linewidth}>{\raggedright\arraybackslash}p{0.123298969072165\linewidth}>{\raggedright\arraybackslash}p{0.132783505154639\linewidth}@{}}
+\caption{Convergence and native Hessian diagnostics for the configurations evaluated during stepwise development of the BET 2026 assessment. PDH denotes a positive-definite Hessian based on native MFCL eigenvalue analysis.}\label{tab:bet-stepwise-fit-diagnostics}\\
+\toprule
+Model & Maximum gradient component (MGC) & Objective function value & Active parameters & PDH & Non-positive eigenvalues & Smallest eigenvalue \\
+\midrule
+\endfirsthead
+\toprule
+Model & Maximum gradient component (MGC) & Objective function value & Active parameters & PDH & Non-positive eigenvalues & Smallest eigenvalue \\
+\midrule
+\endhead
+\textbf{01-Diag2023} & 0.000051 & -1027494 & 3067 & Yes & 0 & 0.0000000961816 \\
+\textbf{02-NewExeIni1007} & 0.000098 & -1030982 & 3067 & Yes & 0 & 0.000000109636 \\
+\textbf{03-FixM} & 0.000086 & -1030911 & 3066 & Yes & 0 & 0.000000146048 \\
+\textbf{04-LengthWeight} & 0.000093 & -1030847 & 3066 & Yes & 0 & 0.000000145768 \\
+\textbf{05-NewStructure} & 0.000098 & -864747.7 & 1874 & Yes & 0 & 0.0000000983675 \\
+\textbf{06-ConvertToLength} & 0.000074 & -354502.4 & 1874 & No & 1 & -0.00000348544 \\
+\textbf{07-AddLengthData} & 0.000077 & -365237.9 & 1874 & No & 1 & -0.00000000605 \\
+\textbf{08-DataTo2024} & 0.000091 & -380853.1 & 1945 & Yes & 0 & 0.0000000367 \\
+\textbf{09-SizeDataQC} & 0.000099 & -364674.7 & 1945 & No & 1 & -0.0000155 \\
+\textbf{10-RegionalCPUE} & 0.000042 & -364329.2 & 1945 & Yes & 0 & 0.0000000415 \\
+\textbf{11-TimeVaryingCV} & 0.000059 & -364340.2 & 1945 & No & 1 & -0.0069803 \\
+\textbf{12-CPUEErrorCalibration} & 0.000053 & -364375.2 & 1945 & No & 2 & -11.1962 \\
+\textbf{13-NewAgeData} & 0.000078 & -363391.8 & 1945 & No & 2 & -0.0418973 \\
+\textbf{14a-REG075} & 0.000092 & -364163.9 & 1945 & Yes & 0 & 0.0000000890668 \\
+\textbf{14b-SUB075} & 0.000098 & -363503.7 & 1945 & No & 2 & -0.00712543 \\
+\textbf{15-SelectivityUpdate} & 0.00005 & -364044.2 & 1989 & No & 1 & -0.00000259487 \\
+\textbf{16-MIX020} & 0.000074 & -363521.1 & 1989 & No & 2 & -0.735562 \\
+\textbf{17-TagReportingExclusion} & 0.000098 & -363294.7 & 1989 & Yes & 0 & 0.000000343978 \\
+\textbf{18-EffortCreep} & 0.00009 & -363297.3 & 1989 & Yes & 0 & 0.000000147613 \\
+\textbf{19-DMG8Nmax25} & 0.000098 & 90697.83 & 1997 & Yes & 0 & 0.00000031366 \\
+\textbf{20-Tau2Fixed} & 0.000059 & 90814.79 & 1997 & Yes & 0 & 0.000000338335 \\
+\textbf{21-F33WeakPenalty} & 0.000098 & 90814.91 & 1997 & Yes & 0 & 0.000000240467 \\
+\textbf{22-Diagnostic} & 0.000097 & 90814.86 & 1997 & Yes & 0 & 0.000000255194 \\
+\bottomrule
+\end{longtable}
+\endgroup
+\end{landscape}

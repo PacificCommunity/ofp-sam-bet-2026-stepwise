@@ -1,0 +1,2 @@
+"table","file","relative_path","label","caption","description","format","rows","columns","status"
+"stepwise_recent_key_quantities","stepwise-recent-key-quantities.csv","tables/stepwise-recent-key-quantities.csv","Stock-status quantities by step","Native stock-status quantities and exact recent periods for each model configuration evaluated during stepwise development. Periods are defined relative to each configuration's terminal year.","Values plotted in the model-development step comparison figure.","csv",23,13,"ok"

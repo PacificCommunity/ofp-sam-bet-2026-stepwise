@@ -1,0 +1,49 @@
+% Requires \usepackage{booktabs,longtable,array}
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{@{}>{\centering\arraybackslash}p{0.05\linewidth}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}p{0.29\linewidth}>{\raggedright\arraybackslash}p{0.40\linewidth}@{}}
+\caption{Changes evaluated during stepwise development of the BET 2026 assessment and their rationale.}\label{tab:bet-stepwise-development}\\
+\toprule
+Step & Configuration & What changed & Why it was evaluated \\
+\midrule
+\endfirsthead
+\toprule
+Step & Configuration & What changed & Why it was evaluated \\
+\midrule
+\endhead
+\textbf{01} & 2023 diagnostic-model refit & 2023 diagnostic-model refit & Provide a reproducible reference for subsequent comparisons. \\
+\textbf{02} & New executable and INI 1007 & New MFCL executable (2.2.7.9-based) and INI 1007 & Isolate the combined executable and required INI-format update. \\
+\textbf{03} & Natural mortality fixed & Lorenzen natural-mortality scaling fixed to the 2023 diagnostic estimate & Improve model stability as recommended at the PAW. \\
+\textbf{04} & Length-weight update & BET 2026 bias-corrected length-weight parameters & Update biomass conversion for the 2026 assessment. \\
+\textbf{05} & Five-region structure & Five-region, 33-fishery structure and reporting-rate remapping & Represent the revised spatial and fishery definitions and rebuild the current reporting-rate controls for the new fishery map. \\
+\textbf{06} & Weight-as-length compositions & Reweighted weight data converted to length frequencies through 2021 & Evaluate conversion of reweighted weight data to length. \\
+\textbf{07} & Observed-length supplementation & Weight-as-length plus observed-length compositions & Use observed lengths where their catch coverage exceeded weight samples. \\
+\textbf{08} & Data through 2024 & Data updated through 2024 except CAAL & Extend the temporal coverage of the assessment. \\
+\textbf{09} & PH/ID and domestic size-data rules & PH/ID and domestic mixed-gear size-data rules & Apply the agreed PH/ID and domestic mixed-gear size-data treatment. \\
+\textbf{10} & Regional CPUE and scaling & Regional CPUE indices and regional scaling & Allow region-specific indices while penalising inconsistent regional abundance scaling. \\
+\textbf{11} & Time-varying CPUE uncertainty & Time-varying CPUE uncertainty & Account for temporal variation in CPUE precision. \\
+\textbf{12} & MLE-based regional CPUE SDs & Regional CPUE observation-error SDs fixed at their maximum-likelihood estimates (0.35, 0.24, 0.21, 0.24 and 0.23) & Retain the five maximum-likelihood CPUE observation-error SDs. \\
+\textbf{13} & New CAAL data & New CAAL data with weight 0.75 & Use the 2023 BET age-data weighting as the reference treatment. \\
+\textbf{14a} & Regional CAAL reweighting & Regional CAAL reweighting & Test region-level spatial CAAL weighting. \\
+\textbf{14b} & Sub-basin CAAL reweighting & Sub-basin CAAL reweighting with regions 3 and 4 combined & Apply the selected sub-basin CAAL weighting. \\
+\textbf{15} & Selectivity update & Flexible fishery-specific selectivity plus weak F10 non-decreasing penalty & Apply the selected flexible-selectivity treatment and deterministic weak F10 tail-stability penalty to the revised 33-fishery structure. \\
+\textbf{16} & KS D-statistic tag mixing & Release-group-specific tag-mixing periods estimated using a KS D-statistic cutoff of 0.20 & Apply the release-group-specific mixing periods estimated for the 2026 assessment using a KS D-statistic cutoff of 0.20 (Scutt Phillips et al., 2026). \\
+\textbf{17} & Pre-mixing reporting-rate exclusion & Pre-mixing reporting-rate exclusion & Avoid applying reporting rates in pre-mixing windows. \\
+\textbf{18} & Effort-creep adjustment & Effort-creep adjustment & Account for gradual changes in fishing efficiency. \\
+\textbf{19} & DM composition weighting & Dirichlet-multinomial composition weighting & Use DM-noRE G8/Nmax25 composition weighting with concentration intercepts fixed at 7. \\
+\textbf{20} & Tag tau fixed at 2 & Negative-binomial tag tau fixed at 2 & Evaluate direct fixed tau=2 from the ordinary-makepar Step 19 basis. \\
+\textbf{21} & F33 weak non-decreasing penalty & Weak F33 non-decreasing selectivity penalty & Stabilize F33 selectivity where Region 5 length-frequency information is limited: a weak non-decreasing penalty discourages unsupported dome-shaped tails without forcing strongly asymptotic selectivity, so the fitted shape remains data informed. \\
+\textbf{22} & BET 2026 Diagnostic model & Steepness fixed at 0.90 & Adopt fixed h=0.90 and reproduce the current public BET 2026 Diagnostic model. \\
+\bottomrule
+\end{longtable}
+\endgroup
+\begingroup\footnotesize\sloppy\setlength{\emergencystretch}{2em}\noindent\textit{References:}\par
+Peatman, T., Castillo-Jordán, C., Teears, T., Magnusson, A., Kim, K., Hampton, J. and Hamer, P. (2026). Analysis of size frequency data for the 2026 yellowfin and bigeye assessments. WCPFC-SC22-2026-SA-IP06.\par
+Day, J., Magnusson, A., Teears, T., Hampton, J., Davies, N., Castillo-Jordán, C., Peatman, T., Scott, R., Scutt Phillips, J., McKechnie, S., Scott, F., Yao, N., Natadra, R., Pilling, G., Williams, P. and Hamer, P. (2023). Stock assessment of bigeye tuna in the western and central Pacific Ocean: 2023. WCPFC-SC19-2023/SA-WP-05, Rev. 2.\par
+Scutt Phillips, J., Senina, I. and Bonin, L. (2026). Estimation of tag mixing periods for the 2026 WCPO tuna stock assessments. WCPFC-SC22-2026-SA-IP10.\par
+Lorenzen, K. (1996). The relationship between body weight and natural mortality in juvenile and adult fish: a comparison of natural ecosystems and aquaculture. Journal of Fish Biology, 49, 627-642. doi:10.1111/j.1095-8649.1996.tb00060.x.\par
+Thorson, J.T., Johnson, K.F., Methot, R.D. and Taylor, I.G. (2017). Model-based estimates of effective sample size in stock assessment models using the Dirichlet-multinomial distribution. Fisheries Research, 192, 84-93. doi:10.1016/j.fishres.2016.06.005.\par
+Davies, N., Fournier, D.A., Hampton, J., Kleiber, P., Bouye, F., Kim, K., Magnusson, A. and Hoyle, S. (2026). MULTIFAN-CL User's Guide, version 2.2.7.8. July 13, 2026.\par\endgroup

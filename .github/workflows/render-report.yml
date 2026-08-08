@@ -3,49 +3,72 @@ name: Render BET 2026 stepwise report
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ["v*"]
+    paths:
+      - "R/**"
+      - "data/**"
+      - "model-development-report/**"
+      - "tests/**"
+      - "run-report"
+      - ".github/workflows/render-report.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: stepwise-report-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   render:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     container:
-      image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+      image: ghcr.io/pacificcommunity/tuna-flow-private:v2.7@sha256:4fee4c40cb6439ff920b1dd233a84bf19d5cc0e37278c99ceff3fd79cb9c8852
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Verify immutable TunaFlow 2.5 report runtime
+      - name: Verify TunaFlow 2.7 report runtime
         shell: bash
         run: |
-          test "${MFCL_EXECUTABLE_VERSION}" = "v25-strict-tag-nb-dm-report"
           Rscript -e 'required <- c("ggplot2", "jsonlite", "patchwork", "ragg", "rmarkdown"); stopifnot(all(vapply(required, requireNamespace, logical(1), quietly = TRUE)))'
-          pandoc --version | head -1
+          pandoc --version | head -n 1
+          quarto --version
 
       - name: Validate and render
         run: ./run-report
+
+      - name: Verify browser-ready outputs
+        shell: bash
+        run: |
+          test -s results/stepwise-report/bet-2026-stepwise-model-development.html
+          test -s results/stepwise-report/interactive-model-viewer.html
+          test -s results/stepwise-report/pathway/figures/bet-2026-stepwise-pathway.png
+          grep -q 'data:image/png;base64,' results/stepwise-report/bet-2026-stepwise-model-development.html
+          grep -q 'pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html' results/stepwise-report/bet-2026-stepwise-model-development.html
+          ! grep -q 'releases/latest/download/interactive-model-viewer.html' results/stepwise-report/bet-2026-stepwise-model-development.html
+
+      - name: Prepare GitHub Pages root
+        if: github.ref == 'refs/heads/main'
+        run: install -m 0644 results/stepwise-report/interactive-model-viewer.html results/stepwise-report/index.html
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
         with:
           name: bet-2026-stepwise-report
-          path: results/
+          path: results/stepwise-report/
           if-no-files-found: error
+          retention-days: 30
 
       - name: Configure GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload GitHub Pages artifact
         if: github.ref == 'refs/heads/main'
@@ -53,23 +76,13 @@ jobs:
         with:
           path: results/stepwise-report
 
-      - name: Build standalone report archive
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: zip -r "bet-2026-stepwise-report-${GITHUB_REF_NAME}.zip" results/stepwise-report data/stepwise data/SHA256SUMS run-report
-
-      - name: Publish tagged release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            bet-2026-stepwise-report-${{ github.ref_name }}.zip
-            results/stepwise-report/interactive-model-viewer.html
-            results/stepwise-report/bet-2026-stepwise-model-development.html
-
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: render
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -77,3 +90,24 @@ jobs:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: render
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bet-2026-stepwise-report
+          path: release/report
+      - name: Build report bundle
+        run: (cd release/report && zip -q -r ../bet-2026-stepwise-report-${{ github.ref_name }}.zip .)
+      - name: Publish report release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/report/interactive-model-viewer.html
+            release/report/bet-2026-stepwise-model-development.html
+            release/bet-2026-stepwise-report-${{ github.ref_name }}.zip

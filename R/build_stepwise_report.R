@@ -42,8 +42,8 @@ stepwise_sentence <- function(x) {
 }
 
 stepwise_viewer_release_url <- paste0(
-  "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/",
-  "releases/latest/download/interactive-model-viewer.html"
+  "https://pacificcommunity.github.io/",
+  "ofp-sam-bet-2026-stepwise/interactive-model-viewer.html"
 )
 
 stepwise_data_uri <- function(file, mime) {
@@ -672,8 +672,7 @@ build_stepwise_report <- function(
   viewer_link <- if (nzchar(assets$viewer)) {
     paste0(
       "<div class=\"viewer-actions\"><a class=\"button\" href=\"", viewer_url, "\" target=\"_blank\" rel=\"noopener\">",
-      "Open interactive viewer</a><a class=\"button alt\" href=\"", viewer_url, "\" download>",
-      "Download standalone viewer</a></div>",
+      "Open interactive viewer in browser</a></div>",
       "<iframe class=\"viewer-frame\" loading=\"lazy\" title=\"Interactive stepwise model viewer\" ",
       "src=\"", viewer_data_uri, "\"></iframe>"
     )
@@ -682,7 +681,7 @@ build_stepwise_report <- function(
   }
   result_section <- paste0(
     "<section class=\"model-card\" id=\"interactive-viewer\"><h2>Interactive model viewer</h2>",
-    "<p>The embedded viewer and the standalone release asset are generated from the same checksum-locked fitted-model payloads.</p>",
+    "<p>The embedded viewer and the GitHub Pages viewer are generated from the same checksum-locked fitted-model payloads.</p>",
     viewer_link, "</section>",
     "<section class=\"model-card\"><h2>Fit diagnostics and likelihood components</h2>",
     "<h3>Fit diagnostics</h3><p class=\"caption\" id=\"fit-caption\"><strong>Table <span contenteditable=\"true\">XX</span>.</strong> ",

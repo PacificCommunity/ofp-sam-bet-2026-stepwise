@@ -99,7 +99,7 @@ if (file.exists(report_html)) {
   html <- paste(readLines(report_html, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
   stopifnot(
     grepl('src="data:text/html;charset=utf-8;base64,', html, fixed = TRUE),
-    grepl("releases/latest/download/interactive-model-viewer.html", html, fixed = TRUE),
+    grepl("pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html", html, fixed = TRUE),
     grepl("KS D-statistic cutoff of 0.20", html, fixed = TRUE),
     grepl("maximum-likelihood estimates", html, fixed = TRUE),
     grepl("Copy table for Word", html, fixed = TRUE),

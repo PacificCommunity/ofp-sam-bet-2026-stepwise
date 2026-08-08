@@ -7,7 +7,9 @@
 !/data/stepwise/**
 # Internal execution references are retained locally but never committed.
 /data/stepwise/.private/
-/results/
+/results/*
+!/results/stepwise-report/
+!/results/stepwise-report/**
 /.R-library/
 /.kflow-runtime-cache/
 .Rhistory

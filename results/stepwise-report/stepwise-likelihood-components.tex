@@ -1,0 +1,44 @@
+% Requires \usepackage{booktabs,longtable,array,pdflscape}
+\begin{landscape}
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.159591836734694\linewidth}>{\raggedright\arraybackslash}p{0.11265306122449\linewidth}>{\raggedright\arraybackslash}p{0.0938775510204082\linewidth}>{\raggedright\arraybackslash}p{0.11265306122449\linewidth}>{\raggedright\arraybackslash}p{0.11265306122449\linewidth}>{\raggedright\arraybackslash}p{0.0844897959183674\linewidth}>{\raggedright\arraybackslash}p{0.0844897959183674\linewidth}>{\raggedright\arraybackslash}p{0.0751020408163265\linewidth}>{\raggedright\arraybackslash}p{0.0844897959183674\linewidth}@{}}
+\caption{Objective-function and likelihood-component values for the configurations evaluated during stepwise development of the BET 2026 assessment. Values are reported on the native MFCL objective scale; the composition-likelihood formulation changes at Step 19.}\label{tab:bet-stepwise-likelihood-components}\\
+\toprule
+Model & Total objective & Tag & Length frequency & Weight frequency & Age & CPUE & Catch & Penalty \\
+\midrule
+\endfirsthead
+\toprule
+Model & Total objective & Tag & Length frequency & Weight frequency & Age & CPUE & Catch & Penalty \\
+\midrule
+\endhead
+\textbf{01-Diag2023} & -1027494 & 6216.375 & -74453.45 & -962270.2 & 1575.761 & 1041.55 & 0 & 0.436045 \\
+\textbf{02-NewExeIni1007} & -1030982 & 6230.398 & -74420.8 & -962358.3 & 1581.221 & -2407.811 & 0 & 275.6806 \\
+\textbf{03-FixM} & -1030911 & 6214.92 & -74441.39 & -962275 & 1588.241 & -2396.347 & 0 & 278.0176 \\
+\textbf{04-LengthWeight} & -1030847 & 6195.274 & -74452.09 & -962179.8 & 1578.989 & -2392.861 & 0 & 277.5554 \\
+\textbf{05-NewStructure} & -864747.7 & 5720.068 & -72258.46 & -799889.1 & 2737.395 & -1367.305 & 0 & 223.6073 \\
+\textbf{06-ConvertToLength} & -354502.4 & 5522.717 & -361507.9 & 0 & 2574.427 & -1394.352 & 0 & 219.0771 \\
+\textbf{07-AddLengthData} & -365237.9 & 5522.684 & -372386.7 & 0 & 2718.322 & -1392.632 & 0 & 221.6485 \\
+\textbf{08-DataTo2024} & -380853.1 & 6230.099 & -388697.4 & 0 & 2735.797 & -1434.349 & 0 & 226.8314 \\
+\textbf{09-SizeDataQC} & -364674.7 & 6215.741 & -372488.2 & 0 & 2727.843 & -1435.204 & 0 & 217.6498 \\
+\textbf{10-RegionalCPUE} & -364329.2 & 6203.38 & -372400.5 & 0 & 2757.219 & -1247.574 & 0 & 262.5487 \\
+\textbf{11-TimeVaryingCV} & -364340.2 & 6160.546 & -372327.2 & 0 & 2735.812 & -1194.923 & 0 & 194.7836 \\
+\textbf{12-CPUEErrorCalibration} & -364375.2 & 6211.261 & -372430.1 & 0 & 2740.21 & -1253.098 & 0 & 259.5643 \\
+\textbf{13-NewAgeData} & -363391.8 & 6191.671 & -372354.1 & 0 & 3673.37 & -1254.682 & 0 & 249.3335 \\
+\textbf{14a-REG075} & -364163.9 & 6133.102 & -372365.5 & 0 & 2986.13 & -1276.684 & 0 & 255.9235 \\
+\textbf{14b-SUB075} & -363503.7 & 6203.879 & -372394.9 & 0 & 3586.282 & -1252.393 & 0 & 257.2588 \\
+\textbf{15-SelectivityUpdate} & -364044.2 & 6135.937 & -372683.4 & 0 & 3493.16 & -1254.03 & 0 & 173.6055 \\
+\textbf{16-MIX020} & -363521.1 & 6687.593 & -372713.9 & 0 & 3503.863 & -1282.063 & 0 & 191.5591 \\
+\textbf{17-TagReportingExclusion} & -363294.7 & 6841.803 & -372756.7 & 0 & 3583.7 & -1288.028 & 0 & 233.8005 \\
+\textbf{18-EffortCreep} & -363297.3 & 6811.097 & -372746.2 & 0 & 3614.822 & -1296.532 & 0 & 233.9275 \\
+\textbf{19-DMG8Nmax25} & 90697.83 & 7071.096 & 80706.97 & 0 & 3610.28 & -1047.84 & 0 & 276.9083 \\
+\textbf{20-Tau2Fixed} & 90814.79 & 7380.121 & 80584.4 & 0 & 3633.388 & -1070.527 & 0 & 210.2911 \\
+\textbf{21-F33WeakPenalty} & 90814.91 & 7379.631 & 80583.58 & 0 & 3633.585 & -1069.52 & 0 & 210.4053 \\
+\textbf{22-Diagnostic} & 90814.86 & 7379.62 & 80583.59 & 0 & 3633.593 & -1069.518 & 0 & 210.3477 \\
+\bottomrule
+\end{longtable}
+\endgroup
+\end{landscape}
