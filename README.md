@@ -164,8 +164,17 @@ rerunning MFCL:
 ./run-report
 ```
 
-Report rendering uses the same immutable TunaFlow v2.5 image as Kflow. A small,
-checksum-locked public report cache under `data/stepwise/report-cache/` contains
+GitHub Actions renders the report with the immutable TunaFlow v2.7 image. If
+the local runtime is unavailable, run the same renderer with Docker:
+
+```bash
+docker run --rm \
+  -v "$PWD:/work" -w /work \
+  ghcr.io/pacificcommunity/tuna-flow-private:v2.7@sha256:4fee4c40cb6439ff920b1dd233a84bf19d5cc0e37278c99ceff3fd79cb9c8852 \
+  ./run-report
+```
+
+A small, checksum-locked public report cache under `data/stepwise/report-cache/` contains
 only the portable offline viewer and derived annual series needed to render the
 paper-ready figures. This avoids a private-package download in GitHub Actions;
 the 23 sanitized fitted-model payloads remain the archived source fits and the
