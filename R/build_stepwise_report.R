@@ -621,14 +621,12 @@ build_stepwise_report <- function(
   method_text <- paste0(
     "Development of the BET 2026 assessment model proceeded sequentially. At each step, one ",
     "model component or data treatment was modified, while all other settings were held ",
-    "constant where practicable (Figure XX; Table XX). The configurations are presented in ",
+    "constant where practicable, as summarised in the pathway figure and accompanying table. The configurations are presented in ",
     "evaluation order; Step 14a documents the regional CAAL weighting evaluated immediately ",
     "before the Step 14b treatment that was carried forward. Model diagnostics, fitted quantities, figures, and supporting ",
     "tables were reconstructed from the checksum-locked repository payloads."
   )
-  method_latex <- gsub(
-    "Figure XX; Table XX", "Figure~XX; Table~XX", method_text, fixed = TRUE
-  )
+  method_latex <- method_text
   figure_caption <- paste0(
     "Stepwise model-development pathway for the BET 2026 assessment. Configurations are ",
     "arranged in evaluation order from Step 1 to Step 22. Step 14a was evaluated ",
@@ -637,7 +635,7 @@ build_stepwise_report <- function(
   )
   table_caption <- paste0(
     "Changes evaluated during stepwise development of the BET 2026 assessment and their ",
-    "rationale. Step numbers correspond to the pathway in Figure XX."
+    "rationale. Step numbers correspond to the pathway shown above."
   )
   summary_table <- assets$model_summary
   summary_headers <- names(summary_table)
@@ -763,15 +761,15 @@ build_stepwise_report <- function(
     "<div class=\"actions\"><button onclick=\"copyHtml('method-text',this)\">Copy methods text for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('method-latex',this)\">Copy methods text for LaTeX</button></div>",
     "<div class=\"format-block\"><h2>Model pathway</h2><figure><div class=\"figure-shell\"><a href=\"", viewer_url, "\" target=\"_blank\" rel=\"noopener\" title=\"Open the interactive viewer\"><img class=\"dag-figure\" alt=\"BET 2026 stepwise model-development pathway\" src=\"data:image/png;base64,", png_data, "\"></a>",
-    "</div><figcaption id=\"figure-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
+    "</div><figcaption id=\"figure-caption\"><strong>Figure.</strong> ",
     stepwise_html_escape(figure_caption), " <a href=\"", viewer_url, "\" target=\"_blank\" rel=\"noopener\">",
     "Explore individual configurations in the interactive viewer.</a></figcaption></figure>",
     "<div class=\"actions\"><button onclick=\"copyFigure(this)\">Copy figure + caption for Word</button>",
     "<a class=\"button\" download href=\"data:image/png;base64,", png_data, "\">Save PNG</a>",
     "<a class=\"button\" download href=\"pathway/figures/bet-2026-stepwise-pathway.pdf\">Save vector PDF</a>",
     "<button class=\"secondary\" onclick=\"copyText('figure-latex',this)\">Copy figure + caption for LaTeX</button></div></div>",
-    "<div class=\"format-block\"><h2>Stepwise changes</h2><p class=\"caption\" id=\"table-caption\"><strong>Table ",
-    "<span contenteditable=\"true\">XX</span>.</strong> ", stepwise_html_escape(table_caption), "</p>",
+    "<div class=\"format-block\"><h2>Stepwise changes</h2><p class=\"caption\" id=\"table-caption\"><strong>Table.</strong> ",
+    stepwise_html_escape(table_caption), "</p>",
     "<div class=\"table-shell\">", table_html, "</div><div class=\"actions\"><button onclick=\"copyTable(this)\">Copy table + caption for Word</button>",
     "<button class=\"secondary\" onclick=\"copyText('table-latex',this)\">Copy table + caption for LaTeX</button></div></div></section>",
     result_section,
@@ -834,10 +832,10 @@ build_stepwise_report <- function(
   writeLines(summary_latex, file.path(output_dir, "stepwise-fit-diagnostics.tex"))
   writeLines(objective_latex, file.path(output_dir, "stepwise-likelihood-components.tex"))
   writeLines(stepwise_references_bibtex, file.path(output_dir, "stepwise-references.bib"))
-  writeLines(paste0("Figure XX. ", figure_caption), file.path(output_dir, "stepwise-pathway-caption.txt"))
+  writeLines(paste0("Figure. ", figure_caption), file.path(output_dir, "stepwise-pathway-caption.txt"))
   writeLines(
     c(
-      paste0("Table XX. ", table_caption),
+      paste0("Table. ", table_caption),
       "References.",
       stepwise_references
     ),

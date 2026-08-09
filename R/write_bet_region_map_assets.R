@@ -204,7 +204,10 @@ bet_region_map_world_data <- function() {
   world
 }
 
-bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
+bet_region_map_plot <- function(vertices = bet_region_map_default_vertices(),
+                                show_vertices = TRUE,
+                                show_coordinate_labels = TRUE,
+                                region_label_size = 6.3) {
   # Preview plots are useful for auditing boundaries, but optional.
   if (!requireNamespace("ggplot2", quietly = TRUE)) return(NULL)
   vertices <- bet_region_map_normalize_vertices(vertices)
@@ -226,7 +229,7 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
         linewidth = 0.2
       )
   }
-  plot +
+  plot <- plot +
     ggplot2::geom_polygon(
       data = closed,
       ggplot2::aes(.data$lon, .data$lat, group = .data$region_factor, fill = .data$region_factor),
@@ -240,8 +243,9 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
       colour = "#102b38",
       linewidth = 0.92,
       linejoin = "mitre"
-    ) +
-    ggplot2::geom_point(
+    )
+  if (isTRUE(show_vertices)) {
+    plot <- plot + ggplot2::geom_point(
       data = vertices,
       ggplot2::aes(.data$lon, .data$lat),
       size = 2.1,
@@ -249,8 +253,10 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
       fill = "#c62830",
       shape = 21,
       stroke = 0.45
-    ) +
-    ggplot2::geom_label(
+    )
+  }
+  if (isTRUE(show_coordinate_labels)) {
+    plot <- plot + ggplot2::geom_label(
       data = coord_labels,
       ggplot2::aes(.data$lon, .data$lat, label = .data$label, hjust = .data$hjust, vjust = .data$vjust),
       size = 3.8,
@@ -261,11 +267,13 @@ bet_region_map_plot <- function(vertices = bet_region_map_default_vertices()) {
       fill = "#fffdf7",
       colour = "#8a2730",
       alpha = 0.95
-    ) +
+    )
+  }
+  plot +
     ggplot2::geom_text(
       data = labels,
       ggplot2::aes(.data$lon, .data$lat, label = .data$label),
-      size = 6.3,
+      size = region_label_size,
       fontface = "bold",
       colour = "#0e1720"
     ) +

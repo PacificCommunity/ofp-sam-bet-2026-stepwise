@@ -50,6 +50,8 @@ jobs:
           test -s results/stepwise-report/bet-2026-stepwise-model-development.html
           test -s results/stepwise-report/interactive-model-viewer.html
           test -s results/stepwise-report/pathway/figures/bet-2026-stepwise-pathway.png
+          test -s results/stepwise-report/results/figures/spatial-structure-comparison.png
+          test -s results/stepwise-report/results/figures/maturity-comparison.png
           grep -q 'data:image/png;base64,' results/stepwise-report/bet-2026-stepwise-model-development.html
           grep -q 'pacificcommunity.github.io/ofp-sam-bet-2026-stepwise/interactive-model-viewer.html' results/stepwise-report/bet-2026-stepwise-model-development.html
           ! grep -q 'releases/latest/download/interactive-model-viewer.html' results/stepwise-report/bet-2026-stepwise-model-development.html
@@ -90,6 +92,26 @@ jobs:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Trigger Rev.01 assessment-report refresh
+        env:
+          REPORT_REPO_DISPATCH_TOKEN: ${{ secrets.REPORT_REPO_DISPATCH_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$REPORT_REPO_DISPATCH_TOKEN" ]; then
+            echo "REPORT_REPO_DISPATCH_TOKEN is not configured; the assessment report was not triggered."
+            exit 0
+          fi
+          payload=$(jq -nc \
+            --arg sha "$GITHUB_SHA" \
+            '{event_type:"stepwise-report-updated",client_payload:{sha:$sha}}')
+          curl --fail --silent --show-error \
+            --request POST \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $REPORT_REPO_DISPATCH_TOKEN" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --data "$payload" \
+            https://api.github.com/repos/PacificCommunity/ofp-sam-bet-2026-report/dispatches
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')

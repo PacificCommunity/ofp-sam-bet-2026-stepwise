@@ -438,6 +438,7 @@ stepwise_figure_sections_html <- function(index, output_dir, viewer_url) {
   index <- index[index$status == "ok" & nzchar(index$file), , drop = FALSE]
   if (!nrow(index)) return("")
   priority <- c(
+    "spatial-structure-comparison", "maturity-comparison",
     "stepwise-key-quantity-trajectories", "stepwise-key-quantity-changes",
     "key-quantities", "spawning-potential-with-without-fishing", "depletion-by-area",
     "recruitment-by-area", "f-juvenile-adult-by-area", "f-area-contribution",
@@ -460,6 +461,7 @@ stepwise_figure_sections_html <- function(index, output_dir, viewer_url) {
     }
     pdf_file <- sub("[.]png$", ".pdf", file, ignore.case = TRUE)
     id <- paste0("result-figure-", i)
+    figure_anchor <- paste0("fig-", gsub("[^a-z0-9]+", "-", tolower(index$figure[[i]])))
     latex_caption <- if ("latex_caption" %in% names(index) && nzchar(index$latex_caption[[i]])) {
       index$latex_caption[[i]]
     } else {
@@ -475,10 +477,10 @@ stepwise_figure_sections_html <- function(index, output_dir, viewer_url) {
       "\\end{figure}\n"
     )
     paste0(
-      "<figure class=\"result-figure\">",
+      "<figure class=\"result-figure\" id=\"", figure_anchor, "\">",
       "<a href=\"", stepwise_html_escape(viewer_url), "\" target=\"_blank\" rel=\"noopener\" title=\"Open the interactive viewer\"><img id=\"", id, "-image\" loading=\"lazy\" src=\"", image_src,
       "\" alt=\"", stepwise_html_escape(index$alt_text[[i]]), "\"></a>",
-      "<figcaption id=\"", id, "-caption\"><strong>Figure <span contenteditable=\"true\">XX</span>.</strong> ",
+      "<figcaption id=\"", id, "-caption\"><strong>Figure.</strong> ",
       stepwise_html_escape(index$caption[[i]]), " <a href=\"", stepwise_html_escape(viewer_url), "\" target=\"_blank\" rel=\"noopener\">",
       "Explore individual configurations in the interactive viewer.</a></figcaption>",
       "<div class=\"actions\"><button onclick=\"copyResultFigure('", id, "-image','", id, "-caption',this)\">",

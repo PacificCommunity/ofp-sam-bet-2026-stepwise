@@ -47,6 +47,108 @@ stepwise_save_a4_figure <- function(plot, png, pdf, width = 7.15, height = 9.25)
   )
 }
 
+stepwise_payload_object <- function(payload_file, object_name) {
+  payload <- readRDS(payload_file)
+  object <- payload$object_cache$objects[[object_name]]
+  if (is.null(object) || !identical(object$storage, "serialized-object") || !is.raw(object$bytes)) {
+    stop("The compact payload does not contain serialized object ", object_name, ": ", payload_file, call. = FALSE)
+  }
+  bytes <- object$bytes
+  if (identical(object$compression, "xz")) {
+    bytes <- memDecompress(bytes, type = "xz")
+  } else if (identical(object$compression, "gzip")) {
+    bytes <- memDecompress(bytes, type = "gzip")
+  } else if (!identical(object$compression, "none")) {
+    stop("Unsupported object compression in ", payload_file, ": ", object$compression, call. = FALSE)
+  }
+  unserialize(bytes)
+}
+
+stepwise_build_spatial_comparison <- function(figure_dir) {
+  map_script <- file.path("R", "write_bet_region_map_assets.R")
+  if (!file.exists(map_script)) stop("Missing region-map source: ", map_script, call. = FALSE)
+  map_environment <- new.env(parent = globalenv())
+  sys.source(map_script, envir = map_environment)
+  plot_map <- function(vertices, title, region_label_size) {
+    map_environment$bet_region_map_plot(
+      vertices,
+      show_vertices = FALSE,
+      show_coordinate_labels = FALSE,
+      region_label_size = region_label_size
+    ) +
+      ggplot2::labs(title = title) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(
+          family = "sans", face = "bold", colour = "#17394b",
+          size = 12, hjust = 0.5, margin = ggplot2::margin(b = 5)
+        )
+      )
+  }
+  comparison <- patchwork::wrap_plots(
+    plot_map(map_environment$bet_nine_region_map_default_vertices(), "2023 diagnostic: nine regions", 5.0),
+    plot_map(map_environment$bet_region_map_default_vertices(), "2026 diagnostic: five regions", 5.8),
+    ncol = 2
+  )
+  stepwise_save_a4_figure(
+    comparison,
+    file.path(figure_dir, "spatial-structure-comparison.png"),
+    file.path(figure_dir, "spatial-structure-comparison.pdf"),
+    width = 11.2, height = 5.9
+  )
+}
+
+stepwise_build_maturity_comparison <- function(figure_dir) {
+  payloads <- c(
+    "2023 diagnostic" = file.path("data", "stepwise", "models", "01-Diag2023", "model_payload.rds"),
+    "2026 diagnostic" = file.path("data", "stepwise", "models", "22-Diagnostic", "model_payload.rds")
+  )
+  missing <- payloads[!file.exists(payloads)]
+  if (length(missing)) stop("Missing maturity source payload(s): ", paste(missing, collapse = ", "), call. = FALSE)
+  schedules <- lapply(payloads, function(path) {
+    par <- stepwise_payload_object(path, "ParOut")
+    suppressWarnings(as.numeric(methods::slot(par, "mat")))
+  })
+  if (length(unique(lengths(schedules))) != 1L || any(!is.finite(unlist(schedules)))) {
+    stop("Maturity schedules are incomplete or have different dimensions.", call. = FALSE)
+  }
+  maturity <- do.call(rbind, Map(function(values, model) {
+    data.frame(
+      age = (seq_along(values) - 1) / 4,
+      maturity = values,
+      model = model,
+      stringsAsFactors = FALSE
+    )
+  }, schedules, names(schedules)))
+  maturity$model <- factor(maturity$model, levels = names(schedules))
+  plot <- ggplot2::ggplot(
+    maturity, ggplot2::aes(.data$age, .data$maturity, colour = .data$model, linetype = .data$model)
+  ) +
+    ggplot2::geom_line(linewidth = 1.05, lineend = "round") +
+    ggplot2::scale_colour_manual(
+      values = c("2023 diagnostic" = "#687982", "2026 diagnostic" = "#0B5267"), name = NULL
+    ) +
+    ggplot2::scale_linetype_manual(
+      values = c("2023 diagnostic" = "22", "2026 diagnostic" = "solid"), name = NULL
+    ) +
+    ggplot2::scale_x_continuous(
+      limits = c(0, max(maturity$age)), breaks = seq(0, 10, 2),
+      expand = ggplot2::expansion(mult = c(0, 0.01))
+    ) +
+    ggplot2::scale_y_continuous(
+      limits = c(0, 1), breaks = seq(0, 1, 0.25),
+      expand = ggplot2::expansion(mult = c(0, 0.01))
+    ) +
+    ggplot2::labs(x = "Age (years)", y = "Maturity at age") +
+    stepwise_key_theme(10.5) +
+    ggplot2::theme(legend.position = "bottom")
+  stepwise_save_a4_figure(
+    plot,
+    file.path(figure_dir, "maturity-comparison.png"),
+    file.path(figure_dir, "maturity-comparison.pdf"),
+    width = 7.15, height = 5.2
+  )
+}
+
 stepwise_metric_spec <- function() {
   list(
     depletion = list(
@@ -440,6 +542,15 @@ stepwise_custom_figure_index <- function(series, map) {
       "unfished spawning biomass uses T-9 to T, and fishing mortality uses T-4 to T-1. For Step 22 ",
       "(T = 2024), these periods are 2021-2024, 2015-2024 and 2020-2023, respectively. The depletion line marks ",
       "the limit reference point (LRP = 0.2); MSY-ratio lines mark 1.0."
+    ),
+    paste0(
+      "Spatial structures used in the 2023 and 2026 diagnostic models. The left panel shows the nine-region ",
+      "structure retained through Step 4; the right panel shows the five-region, 33-fishery structure adopted ",
+      "at Step 5 and retained in the 2026 diagnostic model."
+    ),
+    paste0(
+      "Maturity at age in the fitted 2023 and 2026 diagnostic models. Both assessments use the same fixed ",
+      "maturity-at-length relationship; differences in maturity at age arise from their fitted growth curves."
     )
   )
   latex <- c(
@@ -456,25 +567,49 @@ stepwise_custom_figure_index <- function(series, map) {
       "($T=2024$), these periods are 2021--2024, 2015--2024, and 2020--2023, respectively. The depletion line ",
       "marks the limit reference point (LRP = 0.2); MSY-ratio ",
       "lines mark 1.0."
+    ),
+    paste0(
+      "Spatial structures used in the 2023 and 2026 diagnostic models. The left panel shows the nine-region ",
+      "structure retained through Step~4; the right panel shows the five-region, 33-fishery structure adopted ",
+      "at Step~5 and retained in the 2026 diagnostic model."
+    ),
+    paste0(
+      "Maturity at age in the fitted 2023 and 2026 diagnostic models. Both assessments use the same fixed ",
+      "maturity-at-length relationship; differences in maturity at age arise from their fitted growth curves."
     )
   )
   data.frame(
-    figure = c("stepwise-key-quantity-trajectories", "stepwise-key-quantity-changes"),
-    file = c("stepwise-key-quantity-trajectories.png", "stepwise-key-quantity-changes.png"),
+    figure = c(
+      "stepwise-key-quantity-trajectories", "stepwise-key-quantity-changes",
+      "spatial-structure-comparison", "maturity-comparison"
+    ),
+    file = c(
+      "stepwise-key-quantity-trajectories.png", "stepwise-key-quantity-changes.png",
+      "spatial-structure-comparison.png", "maturity-comparison.png"
+    ),
     relative_path = c(
       "figures/stepwise-key-quantity-trajectories.png",
-      "figures/stepwise-key-quantity-changes.png"
+      "figures/stepwise-key-quantity-changes.png",
+      "figures/spatial-structure-comparison.png",
+      "figures/maturity-comparison.png"
     ),
-    label = c("Key-quantity trajectories", "Key quantities by model-development step"),
+    label = c(
+      "Key-quantity trajectories", "Key quantities by model-development step",
+      "Spatial-structure comparison", "Maturity comparison"
+    ),
     caption = captions,
     latex_caption = latex,
     alt_text = captions,
     description = c(
       "Wide four-panel annual time-series comparison of all stepwise model configurations.",
-      "A4 four-panel comparison of native stock-status quantities by model-development step."
+      "A4 four-panel comparison of native stock-status quantities by model-development step.",
+      "Side-by-side maps of the 2023 nine-region and 2026 five-region model structures.",
+      "Comparison of maturity-at-age schedules calculated from the fitted 2023 and 2026 model payloads."
     ),
-    format = "png", rows = c(nrow(series), nrow(map) * 4L), models = nrow(map),
-    width = c(11.2, 7.15), height = c(7.4, 9.25), dpi = 300L, status = "ok",
+    format = "png", rows = c(nrow(series), nrow(map) * 4L, 14L, 80L),
+    models = c(nrow(map), nrow(map), 2L, 2L),
+    width = c(11.2, 7.15, 11.2, 7.15), height = c(7.4, 9.25, 5.9, 5.2),
+    dpi = 300L, status = "ok",
     stringsAsFactors = FALSE, check.names = FALSE
   )
 }
@@ -566,6 +701,8 @@ build_stepwise_key_quantities <- function(result_dir, source_index) {
     file.path(figure_dir, "stepwise-key-quantity-changes.png"),
     file.path(figure_dir, "stepwise-key-quantity-changes.pdf")
   )
+  stepwise_build_spatial_comparison(figure_dir)
+  stepwise_build_maturity_comparison(figure_dir)
 
   recent_export <- recent
   dir.create(file.path(result_dir, "tables"), recursive = TRUE, showWarnings = FALSE)
