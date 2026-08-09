@@ -104,21 +104,43 @@ stepwise_build_maturity_comparison <- function(figure_dir) {
   )
   missing <- payloads[!file.exists(payloads)]
   if (length(missing)) stop("Missing maturity source payload(s): ", paste(missing, collapse = ", "), call. = FALSE)
-  schedules <- lapply(payloads, function(path) {
+  schedules <- Map(function(path, model) {
     par <- stepwise_payload_object(path, "ParOut")
-    suppressWarnings(as.numeric(methods::slot(par, "mat")))
-  })
-  if (length(unique(lengths(schedules))) != 1L || any(!is.finite(unlist(schedules)))) {
-    stop("Maturity schedules are incomplete or have different dimensions.", call. = FALSE)
-  }
-  maturity <- do.call(rbind, Map(function(values, model) {
+    maturity_at_age <- methods::slot(par, "mat")
+    maturity_dim <- dim(maturity_at_age)
+    if (
+      length(maturity_dim) != 6L ||
+      any(maturity_dim[c(2L, 3L, 5L, 6L)] != 1L) ||
+      maturity_dim[[1L]] < 1L || maturity_dim[[4L]] < 1L
+    ) {
+      stop(
+        "Unexpected maturity dimensions for ", model, ": ",
+        paste(maturity_dim, collapse = " x "), call. = FALSE
+      )
+    }
+    age_labels <- suppressWarnings(as.numeric(dimnames(maturity_at_age)$age))
+    if (length(age_labels) != maturity_dim[[1L]] || any(!is.finite(age_labels))) {
+      age_labels <- seq_len(maturity_dim[[1L]]) - 1L
+    }
+    n_seasons <- maturity_dim[[4L]]
+    values <- as.numeric(maturity_at_age[, 1L, 1L, , 1L, 1L, drop = FALSE])
+    age_years <- rep(age_labels, times = n_seasons) +
+      rep((seq_len(n_seasons) - 1L) / n_seasons, each = length(age_labels))
+    if (length(values) != length(age_years) || any(!is.finite(values))) {
+      stop("The maturity schedule is incomplete for ", model, ".", call. = FALSE)
+    }
     data.frame(
-      age = (seq_along(values) - 1) / 4,
+      age = age_years,
       maturity = values,
       model = model,
       stringsAsFactors = FALSE
     )
-  }, schedules, names(schedules)))
+  }, payloads, names(payloads))
+  maturity <- do.call(rbind, schedules)
+  maturity <- maturity[order(maturity$model, maturity$age), , drop = FALSE]
+  if (any(unlist(tapply(maturity$maturity, maturity$model, diff)) < 0)) {
+    stop("A maturity-at-age schedule is not monotonic after quarterly ordering.", call. = FALSE)
+  }
   maturity$model <- factor(maturity$model, levels = names(schedules))
   plot <- ggplot2::ggplot(
     maturity, ggplot2::aes(.data$age, .data$maturity, colour = .data$model, linetype = .data$model)
@@ -549,7 +571,7 @@ stepwise_custom_figure_index <- function(series, map) {
       "at Step 5 and retained in the 2026 diagnostic model."
     ),
     paste0(
-      "Maturity at age in the fitted 2023 and 2026 diagnostic models. Both assessments use the same fixed ",
+      "Maturity at quarterly model age in the fitted 2023 and 2026 diagnostic models. Both assessments use the same fixed ",
       "maturity-at-length relationship; differences in maturity at age arise from their fitted growth curves."
     )
   )
@@ -574,7 +596,7 @@ stepwise_custom_figure_index <- function(series, map) {
       "at Step~5 and retained in the 2026 diagnostic model."
     ),
     paste0(
-      "Maturity at age in the fitted 2023 and 2026 diagnostic models. Both assessments use the same fixed ",
+      "Maturity at quarterly model age in the fitted 2023 and 2026 diagnostic models. Both assessments use the same fixed ",
       "maturity-at-length relationship; differences in maturity at age arise from their fitted growth curves."
     )
   )
