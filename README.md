@@ -28,7 +28,11 @@ the locked Step 15–18 scientific inputs. Step 15 adds executable fishery
 controls 16 and 56 together with the selectivity update, and Steps 16–19 retain
 them. From ordinary-makepar Step 19, Step 20 fixes tau at 2, Step 21 adds the weak F33
 non-decreasing penalty, and Step 22 changes fixed steepness from 0.80 to 0.90.
-Step 22 is SHA-locked to the public Diagnostic repository recipe.
+Step 22 scientific inputs are SHA-locked to the public Diagnostic repository
+recipe; the runtime input-integrity wrapper is maintained locally.
+For Steps 20-22, the committed `bet.ini` is the runtime-effective INI:
+`doitall.sh` requires exact equality with the step configuration and copies it
+byte-for-byte instead of rewriting steepness at runtime.
 
 ## Step sequence
 
@@ -122,8 +126,9 @@ isolation, fixed M, size-data edits, reporting rates, KS D-statistic tag mixing,
 the selectivity update, DM controls, the headerless v2.5 scaling file, the
 selected flexible-selectivity core-input hashes and the deterministic F10 penalty from
 Step 15 through Step 19. It additionally proves Step 20 uses direct fixed tau=2, isolates the
-Step 21 F33 flags, and checks every Step 22 Diagnostic file against public
-Diagnostic `main@d57127a`.
+Step 21 F33 flags, checks the explicit INI/config contract and Phase 1/5
+selectivity controls for Steps 20-22, and checks the Step 22 scientific inputs
+against public Diagnostic `main@d57127a`.
 
 ## Kflow runtime
 

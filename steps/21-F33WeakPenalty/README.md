@@ -15,7 +15,8 @@ Retain Step 20 and add the weak F33 non-decreasing selectivity penalty.
 | --- | --- |
 | 1 | Only F33 flags 16 and 56 change, from 0/0 to 1/10000. |
 | 2 | No seed, jitter or fitted checkpoint is used. |
-| 3 | The model files are extracted from the public fixed-tau exploration recipe. |
+| 3 | The committed bet.ini must match the model configuration exactly and is copied byte-for-byte at runtime; scientific input values are not rewritten. |
+| 4 | The model files are extracted from the public fixed-tau exploration recipe. |
 
 ## Inputs
 
@@ -23,7 +24,7 @@ Retain Step 20 and add the weak F33 non-decreasing selectivity penalty.
 | --- | --- |
 | `.frq` | Diagnostic FRQ with unused weight-frequency structure removed; no observation changed |
 | `.ini` | Fixed h=0.80 tau=2 exploration INI |
-| `doitall.sh` | Locked no-seed direct-tau fitting and audit recipe |
+| `doitall.sh` | Locked no-seed direct-tau fitting, explicit-input and audit recipe |
 | `model-inputs/S0.80-F2.conf` | Fixed steepness/selectivity selection |
 | `selectivity-models/F2.csv` | Explicit 33-fishery selectivity controls |
 

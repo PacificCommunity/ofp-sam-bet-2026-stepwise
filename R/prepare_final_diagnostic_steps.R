@@ -50,11 +50,12 @@ stepwise_write_locked_manifest <- function(step_dir, provenance) {
         role = "carried_audit", repository = stepwise_repository_url,
         commit = stepwise_base_commit,
         path = file.path("steps", "19a-DMG8Nmax25", "model", file),
-        note = "Carried unchanged from Step 19; not an MFCL fitting input."
+        note = "Carried unchanged from Step 19a; not an MFCL fitting input."
       )
     }
-    source_sha <- ""
-    if (identical(record$repository, stepwise_repository_url) &&
+    source_sha <- if (!is.null(record$source_sha256)) record$source_sha256 else ""
+    if (!nzchar(source_sha) &&
+        identical(record$repository, stepwise_repository_url) &&
         identical(record$commit, stepwise_base_commit) &&
         startsWith(record$path, "steps/19a-DMG8Nmax25/")) {
       source_file <- file.path(
@@ -95,6 +96,74 @@ stepwise_external_record <- function(commit, path, role = "diagnostic_recipe",
   )
 }
 
+stepwise_harden_explicit_ini <- function(model_dir, model_input) {
+  config_path <- file.path(model_dir, model_input)
+  config <- readLines(config_path, warn = FALSE)
+  steepness_lines <- grep("^STEEPNESS=", config, value = TRUE)
+  if (length(steepness_lines) != 1L) {
+    stop("Expected exactly one STEEPNESS value in ", config_path, call. = FALSE)
+  }
+  steepness <- sub("^STEEPNESS=", "", steepness_lines)
+  if (!grepl("^[0-9]+[.][0-9]+$", steepness)) {
+    stop("STEEPNESS must be an explicit decimal scalar in ", config_path, call. = FALSE)
+  }
+
+  ini_path <- file.path(model_dir, "bet.ini")
+  ini <- readLines(ini_path, warn = FALSE)
+  marker <- which(ini == "# sv(29)")
+  if (length(marker) != 1L || marker == length(ini) ||
+      length(strsplit(trimws(ini[[marker + 1L]]), "[[:space:]]+")[[1L]]) != 1L) {
+    stop("bet.ini must contain exactly one scalar sv(29) value.", call. = FALSE)
+  }
+  ini[[marker + 1L]] <- steepness
+  writeLines(ini, ini_path, useBytes = TRUE)
+
+  script_path <- file.path(model_dir, "doitall.sh")
+  script <- readLines(script_path, warn = FALSE)
+  start <- which(script ==
+    "# Write the selected fixed steepness into the actual INI passed to MFCL. The")
+  makepar <- which(script == "$program_path bet.frq bet.model.ini 00.par -makepar")
+  if (length(start) != 1L || length(makepar) != 1L || start >= makepar) {
+    stop("Could not replace the locked runtime steepness rewrite.", call. = FALSE)
+  }
+  explicit_input_block <- c(
+    "# The committed INI must already be the effective model input. Require its sole",
+    "# sv(29) value to match the explicit model configuration, then preserve every",
+    "# input byte in the run-local filename passed to MFCL.",
+    "if ! ini_steepness=$(awk '",
+    "  /^# sv[(]29[)]/ {",
+    "    found++",
+    "    if (getline != 1 || NF != 1) exit 37",
+    "    value=$1",
+    "  }",
+    "  END {",
+    "    if (found != 1) exit 37",
+    "    print value",
+    "  }",
+    "' bet.ini); then",
+    "  echo \"bet.ini must contain exactly one scalar sv(29) value.\" >&2",
+    "  exit 37",
+    "fi",
+    "if [ \"$ini_steepness\" != \"$fixed_steepness\" ]; then",
+    "  echo \"bet.ini sv(29)=$ini_steepness does not match STEEPNESS=$fixed_steepness in $model_input.\" >&2",
+    "  exit 37",
+    "fi",
+    "cp bet.ini bet.model.ini",
+    "if ! cmp -s bet.ini bet.model.ini; then",
+    "  echo \"bet.model.ini is not a byte-for-byte copy of bet.ini.\" >&2",
+    "  exit 37",
+    "fi",
+    ""
+  )
+  script <- c(
+    script[seq_len(start - 1L)],
+    explicit_input_block,
+    script[makepar:length(script)]
+  )
+  writeLines(script, script_path, useBytes = TRUE)
+  invisible(TRUE)
+}
+
 write_final_diagnostic_steps <- function(diagnostic_repo) {
   stepwise_repository_url <<- "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise"
   diagnostic_repository_url <<- "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic"
@@ -125,7 +194,7 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
     list(
       id = "22-Diagnostic", commit = diagnostic_main_commit,
       input = "Diagnostic", selectivity = "Diagnostic", title = "22 BET 2026 Diagnostic model",
-      summary = "Retain Step 21 and fix steepness at 0.90, reproducing the public Diagnostic model.",
+      summary = "Retain Step 21 and fix steepness at 0.90, reproducing public Diagnostic Job 21641.",
       change = "Only INI sv(29) changes from 0.80 to 0.90; age flag 162 remains zero."
     )
   )
@@ -144,6 +213,10 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
       )
       provenance[[file]] <- stepwise_external_record(specification$commit, source_path)
     }
+    provenance[["bet.ini"]]$source_sha256 <-
+      stepwise_sha256_file(file.path(model_dir, "bet.ini"))
+    provenance[["doitall.sh"]]$source_sha256 <-
+      stepwise_sha256_file(file.path(model_dir, "doitall.sh"))
     input_source <- file.path("model", "model-inputs", paste0(specification$input, ".conf"))
     input_target <- file.path("model-inputs", paste0(specification$input, ".conf"))
     stepwise_git_blob_to_file(
@@ -178,11 +251,33 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
       }
       lines[lines == expected] <- "requested_model_id=${MODEL_ID:-S0.80-F2}"
       writeLines(lines, script_path, useBytes = TRUE)
-      provenance[["doitall.sh"]]$note <- paste(
-        provenance[["doitall.sh"]]$note,
-        "The default model ID is deterministically set to S0.80-F2 for this standalone folder."
+    }
+    source_ini_sha <- provenance[["bet.ini"]]$source_sha256
+    stepwise_harden_explicit_ini(model_dir, input_target)
+    effective_ini_sha <- stepwise_sha256_file(file.path(model_dir, "bet.ini"))
+    provenance[["bet.ini"]]$note <- if (identical(source_ini_sha, effective_ini_sha)) {
+      paste(
+        "Exact file from the locked public Diagnostic recipe; its committed sv(29)",
+        "already equals the configured value and the old runtime-effective INI."
+      )
+    } else {
+      paste(
+        "Derived from the locked public Diagnostic recipe only by expressing sv(29)",
+        "with the exact configured decimal token; it is byte-identical to the old",
+        "runtime-effective INI and the numerical value is unchanged."
       )
     }
+    doitall_note <- c(
+      "Derived from the locked public Diagnostic recipe only by",
+      if (identical(specification$id, "21-F33WeakPenalty")) {
+        "setting the standalone default model ID to S0.80-F2 and"
+      } else {
+        character()
+      },
+      "replacing the runtime sv(29) rewrite with strict committed-INI/config equality",
+      "and a byte-for-byte copy; phase and selectivity controls are unchanged."
+    )
+    provenance[["doitall.sh"]]$note <- paste(doitall_note, collapse = " ")
     Sys.chmod(file.path(model_dir, "doitall.sh"), mode = "0755")
 
     ## Preserve stepwise-only audit sidecars. They do not enter the MFCL fit.
@@ -198,6 +293,10 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
       c(
         specification$change,
         "No seed, jitter or fitted checkpoint is used.",
+        paste(
+          "The committed bet.ini must match the model configuration exactly and is",
+          "copied byte-for-byte at runtime; scientific input values are not rewritten."
+        ),
         if (identical(specification$id, "22-Diagnostic")) {
           "The model files are extracted from the current public Diagnostic main recipe."
         } else {
@@ -207,7 +306,7 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
       stats::setNames(c(
         "bet.frq" = "Diagnostic FRQ with unused weight-frequency structure removed; no observation changed",
         "bet.ini" = if (identical(specification$id, "22-Diagnostic")) "Fixed h=0.90 Diagnostic INI" else "Fixed h=0.80 tau=2 exploration INI",
-        "doitall.sh" = "Locked no-seed direct-tau fitting and audit recipe",
+        "doitall.sh" = "Locked no-seed direct-tau fitting, explicit-input and audit recipe",
         "Fixed steepness/selectivity selection",
         "Explicit 33-fishery selectivity controls"
       ), c("bet.frq", "bet.ini", "doitall.sh", input_target, selectivity_target)),
@@ -217,7 +316,7 @@ write_final_diagnostic_steps <- function(diagnostic_repo) {
         "DM G8/Nmax25, fixed concentration 7, M, mixing, reporting rates, CPUE and biological inputs are retained."
       ),
       status = if (identical(specification$id, "22-Diagnostic")) {
-        "Locked to the completed fit on the public Diagnostic main branch."
+        "Locked to the public Diagnostic main and completed Job 21641 reference."
       } else {
         "Ready for an independent Suva fit."
       }

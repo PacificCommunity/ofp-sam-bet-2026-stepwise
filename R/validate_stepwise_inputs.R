@@ -593,7 +593,7 @@ transitions <- list(
   c("17-TagReportingExclusion", "18-EffortCreep", "bet.frq"),
   c("18-EffortCreep", "19-DMG8Nmax25", "doitall.sh"),
   c("19-DMG8Nmax25", "20-Tau2Fixed",
-    "bet.frq,doitall.sh,fishery_map.R,tag_rep_map.R"),
+    "bet.frq,bet.ini,doitall.sh,fishery_map.R,tag_rep_map.R"),
   c("20-Tau2Fixed", "21-F33WeakPenalty", "doitall.sh"),
   c("21-F33WeakPenalty", "22-Diagnostic", "bet.ini,doitall.sh")
 )
@@ -780,21 +780,127 @@ assert(identical(step21_sel, step22_sel),
        "21-F33WeakPenalty -> 22-Diagnostic",
        "Diagnostic selectivity must be byte-equivalent to the Step 21 F2 table")
 
-ini_sv29 <- function(path) {
-  lines <- trimws(read_text(path))
+ini_sv29_token <- function(path) {
+  lines <- read_text(path)
   marker <- which(lines == "# sv(29)")
-  if (length(marker) != 1L || marker == length(lines)) return(NA_real_)
-  suppressWarnings(as.numeric(lines[[marker + 1L]]))
+  if (length(marker) != 1L || marker == length(lines)) return(NA_character_)
+  fields <- strsplit(trimws(lines[[marker + 1L]]), "[[:space:]]+")[[1L]]
+  if (length(fields) != 1L || !nzchar(fields)) return(NA_character_)
+  fields
 }
-for (id in c("19-DMG8Nmax25", "20-Tau2Fixed", "21-F33WeakPenalty")) {
+ini_sv29 <- function(path) {
+  suppressWarnings(as.numeric(ini_sv29_token(path)))
+}
+read_model_input <- function(path) {
+  lines <- trimws(read_text(path))
+  lines <- lines[nzchar(lines) & !startsWith(lines, "#")]
+  equals <- regexpr("=", lines, fixed = TRUE)
+  if (!length(lines) || any(equals < 2L)) return(character())
+  keys <- substr(lines, 1L, equals - 1L)
+  values <- substr(lines, equals + 1L, nchar(lines))
+  if (anyDuplicated(keys)) return(character())
+  stats::setNames(values, keys)
+}
+run_script_output <- function(directory, environment) {
+  previous <- getwd()
+  on.exit(setwd(previous), add = TRUE)
+  setwd(directory)
+  output <- suppressWarnings(system2(
+    "sh", "doitall.sh", stdout = TRUE, stderr = TRUE, env = environment
+  ))
+  status <- attr(output, "status")
+  list(output = output, status = if (is.null(status)) 0L else as.integer(status))
+}
+for (id in "19-DMG8Nmax25") {
   assert(isTRUE(all.equal(ini_sv29(file.path(model_dir(id), "bet.ini")),
                           0.80, tolerance = 1e-12)),
          id, "steepness must remain fixed at h=0.80 before Step 22")
 }
-assert(isTRUE(all.equal(
-  ini_sv29(file.path(model_dir("22-Diagnostic"), "bet.ini")),
-  0.90, tolerance = 1e-12
-)), "22-Diagnostic", "Step 22 committed INI must fix sv(29)=0.90")
+
+late_models <- data.frame(
+  id = c("20-Tau2Fixed", "21-F33WeakPenalty", "22-Diagnostic"),
+  config = c("S0.80-F1.conf", "S0.80-F2.conf", "Diagnostic.conf"),
+  model_id = c("S0.80-F1", "S0.80-F2", "Diagnostic"),
+  steepness = c("0.80", "0.80", "0.90"),
+  selectivity_model = c("F1", "F2", "Diagnostic"),
+  selectivity_input = unname(late_selectivity_files),
+  effective_ini_sha256 = c(
+    "6700a85c8f476eebdcec92f079f793578e9c66d9b2d68aa0f01d28a893214ed6",
+    "6700a85c8f476eebdcec92f079f793578e9c66d9b2d68aa0f01d28a893214ed6",
+    "fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e"
+  ),
+  doitall_sha256 = c(
+    "7a00788deed86a4b043f5044cdde909d5ce1c57a1755c24a3d9fb84d174cb6ad",
+    "8932a134bfb4de94fe8497af695802c42dc14d3190ef8fcd4e12d0a9f8314383",
+    "e4d9a402202eb3ecca2eeb532c002cea441c57b5840a60f370c2d3f4b7a8a2ee"
+  ),
+  stringsAsFactors = FALSE
+)
+for (i in seq_len(nrow(late_models))) {
+  specification <- late_models[i, , drop = FALSE]
+  id <- specification$id
+  directory <- model_dir(id)
+  config <- read_model_input(file.path(directory, "model-inputs", specification$config))
+  expected_config <- c(
+    MODEL_ID = specification$model_id,
+    STEEPNESS = specification$steepness,
+    SELECTIVITY_MODEL = specification$selectivity_model,
+    SELECTIVITY_INPUT = specification$selectivity_input
+  )
+  assert(identical(config, expected_config), id,
+         "explicit model configuration changed or contains unexpected fields")
+  assert(identical(ini_sv29_token(file.path(directory, "bet.ini")),
+                   unname(config[["STEEPNESS"]])), id,
+         "committed bet.ini sv(29) must textually equal configured STEEPNESS")
+  assert(identical(sha256_file(file.path(directory, "bet.ini")),
+                   specification$effective_ini_sha256), id,
+         "committed bet.ini differs from the locked pre-policy runtime-effective INI")
+
+  script_path <- file.path(directory, "doitall.sh")
+  script_lines <- read_text(script_path)
+  script <- paste(script_lines, collapse = "\n")
+  assert(sum(script_lines == "cp bet.ini bet.model.ini") == 1L &&
+           sum(script_lines == "if ! cmp -s bet.ini bet.model.ini; then") == 1L &&
+           grepl(
+             "if [ \"$ini_steepness\" != \"$fixed_steepness\" ]; then",
+             script, fixed = TRUE
+           ) &&
+           !grepl("awk -v steepness=\"$fixed_steepness\"", script, fixed = TRUE),
+         id, "runtime must validate the explicit INI and copy it byte-for-byte")
+  assert(identical(sha256_file(script_path), specification$doitall_sha256), id,
+         "locked explicit-input doitall.sh changed")
+
+  emitted <- run_script_output(
+    directory,
+    c("PROGRAM_PATH=/bin/true", "SELECTIVITY_PRINT_CONTROLS=1")
+  )
+  assert(emitted$status == 0L, id,
+         "could not emit the Phase 1/5 controls from the explicit selectivity CSV")
+  control_lines <- grep("^[[:space:]]*-[0-9]+[[:space:]]", emitted$output, value = TRUE)
+  observed <- if (length(control_lines)) {
+    do.call(rbind, lapply(control_lines, function(line) {
+      values <- strsplit(trimws(sub("#.*$", "", line)), "[[:space:]]+")[[1L]]
+      suppressWarnings(as.numeric(values[1:3]))
+    }))
+  } else {
+    matrix(numeric(), ncol = 3L)
+  }
+  table <- late_selectivity[[id]]
+  expected <- do.call(rbind, c(
+    lapply(seq_len(nrow(table)), function(row) {
+      cbind(
+        -table$fishery[[row]],
+        c(16, 24, 56, 57, 61),
+        unname(as.numeric(table[row, c("flag16", "flag24", "flag56", "flag57", "flag61")]))
+      )
+    }),
+    lapply(seq_len(nrow(table)), function(row) {
+      c(-table$fishery[[row]], 24, table$flag24[[row]])
+    })
+  ))
+  assert(nrow(observed) == 198L && identical(unname(observed), unname(expected)), id,
+         "emitted Phase 1/5 controls do not exactly match the explicit selectivity CSV")
+}
 assert(effective_flag(controls_by_id[["21-F33WeakPenalty"]], 2L, 162L, 1L) == 0 &&
          effective_flag(controls_by_id[["22-Diagnostic"]], 2L, 162L, 1L) == 0,
        "21-F33WeakPenalty -> 22-Diagnostic",
@@ -831,7 +937,8 @@ for (file in names(final_static_hashes)) {
          paste0(file, " differs from the locked final static-input target"))
 }
 
-## Step 22 is the exact current public Diagnostic model recipe at d57127a.
+## Step 22 retains the scientific inputs from public Diagnostic main@d57127a;
+## its local doitall is locked separately to the explicit-input runtime policy.
 diagnostic_static_hashes <- c(
   "bet.frq" = "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
   "bet.ini" = "fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e",
@@ -840,7 +947,6 @@ diagnostic_static_hashes <- c(
   "bet.reg_scaling" = "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
   "mfcl.cfg" = "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
   "cpue_mle_sigma_audit.csv" = "cd2d9a9b61f6efda432318be34c856029b355f0ea35f33681dc1dc37820cbc86",
-  "doitall.sh" = "244255622950aace6ee66e9b15a13e94a8abb020cb744e9ff70c2b37cd351583",
   "fishery_map.R" = "0e989f4692c4a2a54abf22f12a1c53c7bd29cb7f0f3bd7c4457cdd3d6e1a125c",
   "tag_rep_map.R" = "e1bddfe316a8b3e39333d0792f58db8f070d3f6f370770507e2f500f9d88786c",
   "model-inputs/Diagnostic.conf" = "45ed73f3d53f6ab24e477353e310b0cf4a50c2dd8413375a7befc0e5d4f7790e",
@@ -862,7 +968,8 @@ cat(
   "Validated 23 frozen models / 22 numbered steps.\n",
   "Step 19 is the ordinary-makepar DM basis. ",
   "Step 20 fixes tau=2 from Step 19; Step 21 adds only F33 weak penalty; ",
-  "Step 22 changes only h=0.80 to 0.90 and matches Diagnostic main@d57127a.\n",
+  "Step 22 changes only h=0.80 to 0.90 and retains Diagnostic main@d57127a scientific inputs.\n",
+  "Steps 20-22 use explicit runtime-effective INIs and CSV-derived Phase 1/5 selectivity controls.\n",
   "Runtime: Suva, immutable tuna-flow v2.5, pinned mfclkit/mfclshiny.\n",
   sep = ""
 )

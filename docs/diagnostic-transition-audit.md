@@ -13,12 +13,19 @@ unused weight-frequency dimensions and trailing placeholder are removed. The
 7,449 catch, effort and length-frequency observation records are unchanged, so
 this is not an additional scientific model change.
 
+Steps 20-22 commit the exact runtime-effective INI. Each `doitall.sh` requires
+the single scalar `sv(29)` token to equal its model configuration, copies
+`bet.ini` byte-for-byte to `bet.model.ini`, and performs no runtime steepness
+rewrite. The explicit per-step selectivity CSV remains applied at Phases 1 and
+5 and audited against each resulting PAR.
+
 ## Locked identities
 
 | Item | Locked value |
 | --- | --- |
 | Step 19 pre-cleanup `bet.frq` | `9b8f4630b5b8bec8b8292e8207cc789b00542d29338faf6187f3c9af55504aa3` |
 | Steps 20-22 cleaned `bet.frq` | `d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004` |
+| Steps 20-21 explicit `bet.ini` (`sv(29)=0.80`) | `6700a85c8f476eebdcec92f079f793578e9c66d9b2d68aa0f01d28a893214ed6` |
 | Step 22 `bet.ini` (`sv(29)=0.90`) | `fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e` |
 | Step 22 Diagnostic recipe | public Diagnostic `main@d57127a01fa1de33d56280438cda5b425fc25e7d` |
 | Diagnostic Job 21641 reference `final.par` | `21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3` |

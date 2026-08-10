@@ -15,7 +15,8 @@ Retain Step 21 and fix steepness at 0.90, reproducing public Diagnostic Job 2164
 | --- | --- |
 | 1 | Only INI sv(29) changes from 0.80 to 0.90; age flag 162 remains zero. |
 | 2 | No seed, jitter or fitted checkpoint is used. |
-| 3 | The model files are extracted from the current public Diagnostic main recipe. |
+| 3 | The committed bet.ini must match the model configuration exactly and is copied byte-for-byte at runtime; scientific input values are not rewritten. |
+| 4 | The model files are extracted from the current public Diagnostic main recipe. |
 
 ## Inputs
 
@@ -23,7 +24,7 @@ Retain Step 21 and fix steepness at 0.90, reproducing public Diagnostic Job 2164
 | --- | --- |
 | `.frq` | Diagnostic FRQ with unused weight-frequency structure removed; no observation changed |
 | `.ini` | Fixed h=0.90 Diagnostic INI |
-| `doitall.sh` | Locked no-seed direct-tau fitting and audit recipe |
+| `doitall.sh` | Locked no-seed direct-tau fitting, explicit-input and audit recipe |
 | `model-inputs/Diagnostic.conf` | Fixed steepness/selectivity selection |
 | `selectivity-models/Diagnostic.csv` | Explicit 33-fishery selectivity controls |
 
