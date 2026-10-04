@@ -1,6 +1,11 @@
 # Saved stepwise fits
 
-The compact archive retains the original final PARs for all 23 completed cases.
+[Download native.tar.gz](https://raw.githubusercontent.com/PacificCommunity/ofp-sam-bet-2026-stepwise/main/reproduce/native.tar.gz). It is included in a normal clone;
+[files.json](files.json) lists the archived files and checksums.
+
+The package restores the original final PARs for all 23 completed cases.
+The archive contains 22 PARs and the Step 01 executable; the final Diagnostic
+PAR is restored from a pinned public Git file.
 Their native inputs and original `doitall.sh` reuse pinned public Git files.
 The older Step 01 executable is included; later cases use the checksum-verified
 public 2.2.7.9 executable. Pre-Step10 cases do not use regional scaling priors.
