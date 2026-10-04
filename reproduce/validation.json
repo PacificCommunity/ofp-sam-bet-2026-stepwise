@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "family": "stepwise",
+  "comparison": "native central REP fields",
+  "objective_abs_tolerance": 1e-06,
+  "native_relative_tolerance": 1e-10,
+  "cases": {
+    "01-Diag2023": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/01-Diag2023/model_payload.rds",
+        "sha256": "6025635a086655b80b7580313148639992ec46b439335e2d5612a9d2d0d34513",
+        "bytes": 4213236
+      },
+      "reference_rep": {
+        "sha256": "76cb5bbd08167d140dd7a93a852b3dd4a88d769d51fd64f071208e1fe64da053",
+        "bytes": 4205523
+      },
+      "source_par_sha256": "87bb55f34080f2726cd74cb809d297309aa4a89cb5a8b14621c935d12fb199ff"
+    },
+    "02-NewExeIni1007": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/02-NewExeIni1007/model_payload.rds",
+        "sha256": "fdc0549b6f7353a9720115b0dbd345aadcf9ecc1b558ba4b9e39061f25fd2653",
+        "bytes": 4338403
+      },
+      "reference_rep": {
+        "sha256": "be5dc4313fc20c482ca12e35da4089a44ba446cb7bc758003e4545f8efc881e1",
+        "bytes": 4205938
+      },
+      "source_par_sha256": "1848d54f05784b1760e66d5b52527817aa8c1acc975a78cf6b742a9581ddc7b9"
+    },
+    "03-FixM": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/03-FixM/model_payload.rds",
+        "sha256": "76ee041cf0761c908fe150a9ead3c16eb86e8bcbf2faa3fb944186db2a3bd9d6",
+        "bytes": 4332533
+      },
+      "reference_rep": {
+        "sha256": "d951581551db618fc7781f9aebbf9810164ece0bc5c80c52bc783356a994e8ec",
+        "bytes": 4206522
+      },
+      "source_par_sha256": "f2ff308ded81f199e792d8d0ff84f8fc5040b4a96702ac2735a06762eaba98d6"
+    },
+    "04-LengthWeight": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/04-LengthWeight/model_payload.rds",
+        "sha256": "ef31bfc1680e216ba3f18cb3fde27ab3bd38bd500a2efc348e23c83d246d3c8c",
+        "bytes": 4324838
+      },
+      "reference_rep": {
+        "sha256": "9985e07fab83f818c3ff819a786abb84a1b157ca7a9699982b13aa2e0edc4005",
+        "bytes": 4206675
+      },
+      "source_par_sha256": "ba8f22cddd6f42b0e57f081c77e2da48e1b61848d4159db8883342bf85f9a628"
+    },
+    "05-NewStructure": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/05-NewStructure/model_payload.rds",
+        "sha256": "a448259f9d1b3ca28091beb54ae6ca1e836e7da56eb0aa2db2aa67370c729ed9",
+        "bytes": 2932011
+      },
+      "reference_rep": {
+        "sha256": "41abc308f753dcffc758c65f2ad25ebedb508d36a9614618b5cc6629b6fbfe2c",
+        "bytes": 2729813
+      },
+      "source_par_sha256": "eb79613e6daee0b42e2d55e342b31016785cae28c823f2da7253bc2bfb643e99"
+    },
+    "06-ConvertToLength": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/06-ConvertToLength/model_payload.rds",
+        "sha256": "a940a12d1f6084e3c14c4aa7a9ce077a7349a1bc08b862c3198205009c875925",
+        "bytes": 2672090
+      },
+      "reference_rep": {
+        "sha256": "a5839f35f39a3f24e6838218fa932ff98eac672cf45f582dca9089900b0f5c53",
+        "bytes": 2729679
+      },
+      "source_par_sha256": "f9138e3fe8c4686798ff635676c218abaff49d8a2518fd7cccad8e77bf861fc4"
+    },
+    "07-AddLengthData": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/07-AddLengthData/model_payload.rds",
+        "sha256": "383bd950de1004f037c1dabbcdf2a36f117a0fd1c804031e993acbfc3209b258",
+        "bytes": 2683818
+      },
+      "reference_rep": {
+        "sha256": "b2880f44414b15ccba040c8b2490751f8979792ba32856022ccf0fa1bacba5d2",
+        "bytes": 2730341
+      },
+      "source_par_sha256": "7aebfbc6eff8804c75c281d63847966fea4b6888f939e594d889b3ca02b1a949"
+    },
+    "08-DataTo2024": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/08-DataTo2024/model_payload.rds",
+        "sha256": "5a8855f1511ef9b4d39c891c946cc13fa40298cfae897e35837d256a29fb4489",
+        "bytes": 2791368
+      },
+      "reference_rep": {
+        "sha256": "3dcb37b4cf47599821ebe3fb7bd3230fb0a022f6ded276f5e0681014e1ebb16c",
+        "bytes": 2851454
+      },
+      "source_par_sha256": "505b744d3fd1cb7c08754db53dfae75610ade4ce9e6516dcc120dea5eced85eb"
+    },
+    "09-SizeDataQC": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/09-SizeDataQC/model_payload.rds",
+        "sha256": "62b581ac3ce015af3cdba5bc40d92f0f5b93aa747ee5e7ab8d41d8c0d8561b28",
+        "bytes": 2783028
+      },
+      "reference_rep": {
+        "sha256": "f175b75dda4940816216efaff187b991b31e4ae70352c2062b310ef0cbedbde1",
+        "bytes": 2851187
+      },
+      "source_par_sha256": "060796fb959ccac348dd66c6538c2c26369e6dbc9cefbaf2c2f30c581f48cbea"
+    },
+    "10-RegionalCPUE": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/10-RegionalCPUE/model_payload.rds",
+        "sha256": "d6fc21ee83c8c5cffe168391dfb8f3d40cedb360ab72fd83986e7827008c90d2",
+        "bytes": 2787124
+      },
+      "reference_rep": {
+        "sha256": "4f237c8626ddb6ac60e6b91fda0a2412eeae646afe104d9c360a84f7b60de5bc",
+        "bytes": 2848176
+      },
+      "source_par_sha256": "e5772b5af358903e99917270e8df026e16027c5b9b97328f933cef51d0efc2fb"
+    },
+    "11-TimeVaryingCV": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/11-TimeVaryingCV/model_payload.rds",
+        "sha256": "8be2bb968a33e2e2e9558f576e7e3f3cbdd6f527bf2eb9ca191be99e85ed60d8",
+        "bytes": 2785086
+      },
+      "reference_rep": {
+        "sha256": "2a2706649f322799bc1d794a73451fa6dbd73460577058723a642a6276700069",
+        "bytes": 2849470
+      },
+      "source_par_sha256": "a3f7f03100f0e656ed40e5439762b186d42b8f00424c5af0ee7f16496dd6ea94"
+    },
+    "12-CPUEErrorCalibration": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/12-CPUEErrorCalibration/model_payload.rds",
+        "sha256": "0d59bdf3f48531d5cf492e174ce37eebdfc3087452d21dc9ca3ce699266aadb8",
+        "bytes": 2781848
+      },
+      "reference_rep": {
+        "sha256": "e2917d79ff047c69da8e4e18e673019a60117b1b5df14801b3bc28318fb163d2",
+        "bytes": 2847868
+      },
+      "source_par_sha256": "fe0794b3bd131ec9af9624838c6b4fdf747fe804de5df91ab621a10ae3835912"
+    },
+    "13-NewAgeData": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/13-NewAgeData/model_payload.rds",
+        "sha256": "3dbb3b36034fe4fc01663be6ecf2b7c00703c892463fd4922ccd1a87fd72076f",
+        "bytes": 2789063
+      },
+      "reference_rep": {
+        "sha256": "1d4afa74241ae2b5fc884ef9f14215252776972fce1ee669789caebbcf625551",
+        "bytes": 2847428
+      },
+      "source_par_sha256": "80ddfbf6c528f827efaaee9c88c365f778bb2dabb47019106beadd5a28ddfb5a"
+    },
+    "14a-REG075": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/14a-REG075/model_payload.rds",
+        "sha256": "dbd19fd65b686fd7e4beda1f19ea85fb89c290659fc68f2fc92cc8bda1667f7f",
+        "bytes": 2787099
+      },
+      "reference_rep": {
+        "sha256": "5a8356df950ccf03f6b12fe204cc3d4429e8c0ec63b0af1353e546b97ff742a8",
+        "bytes": 2848145
+      },
+      "source_par_sha256": "e3f34f8174ab200f9691d4f2b19f00bb3176256a2a6b92004c68a257eab83262"
+    },
+    "14b-SUB075": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/14b-SUB075/model_payload.rds",
+        "sha256": "8d0a40dc219cbff81c3c9d812cff15dfbf00a1d14138875d237d85931bdaf2d7",
+        "bytes": 2786513
+      },
+      "reference_rep": {
+        "sha256": "c4c55b8ff75fe030cc6f9437ec37f3a39d2b927838588bc56c5ffdc369e27d80",
+        "bytes": 2847668
+      },
+      "source_par_sha256": "6a9486142e5cf3cd42f8339fd59c909b33f2709f525124f0cedb04bbe4341b03"
+    },
+    "15-SelectivityUpdate": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/15-SelectivityUpdate/model_payload.rds",
+        "sha256": "8c5bbfe3a43b623677448eb937d45ecc10d86b0ee63ef17a27c2056331474cdd",
+        "bytes": 2792198
+      },
+      "reference_rep": {
+        "sha256": "0245d78b4d5096454150ba8756571ac26af9072e780477ec00ff7f795179d327",
+        "bytes": 2849102
+      },
+      "source_par_sha256": "e5d6fce5a912b1ecab44ca3e3f1a9867b083849480bc79f9e4770e9b1f955e52"
+    },
+    "16-MIX020": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/16-MIX020/model_payload.rds",
+        "sha256": "6b61fb728602787fdbd053207d60d4b97aeb50e94e3d1f807fe11d5ed1babf06",
+        "bytes": 2795226
+      },
+      "reference_rep": {
+        "sha256": "b0d9e781071d21a4eaca15d739609b0ec464bcf89b5906de279b50bb7ea5b243",
+        "bytes": 2846546
+      },
+      "source_par_sha256": "f3652458aec665a22aee550d965dd8af99b7d14fa645afe08ed9101dfa02c9e0"
+    },
+    "17-TagReportingExclusion": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/17-TagReportingExclusion/model_payload.rds",
+        "sha256": "0cc34a9c14530c4869967009f52f80692bbf0d5a3b2558e4d63bc807f0e2cd59",
+        "bytes": 2803970
+      },
+      "reference_rep": {
+        "sha256": "3070be28085c1fed62931a727405200536c2419ddeaed9b0fb262a774ebde2f1",
+        "bytes": 2849903
+      },
+      "source_par_sha256": "359cd742cb327fc0366911a610ee53e8b8e23e66c0340267aafa6069cc27c17c"
+    },
+    "18-EffortCreep": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/18-EffortCreep/model_payload.rds",
+        "sha256": "e258447827357e0cbb606eedaa149b6be357d4dc5a05c4928d2a82761a368581",
+        "bytes": 2808690
+      },
+      "reference_rep": {
+        "sha256": "9f92b5a0f46cc1b9b336650e4281f131f0c2a6b5bd9b197aea82190b52959ccc",
+        "bytes": 2850360
+      },
+      "source_par_sha256": "f8fca7fff8e90d1fc09259121786c0017dfef01e29061c47c3b3ad9a7f4e36c0"
+    },
+    "19-DMG8Nmax25": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/19-DMG8Nmax25/model_payload.rds",
+        "sha256": "3bd6ff62ecb59707ee5c9c412edde51df54055a5f3c6b02e853529dd54450d76",
+        "bytes": 2814686
+      },
+      "reference_rep": {
+        "sha256": "69ac7e68d3e41cb1fb1fa43d3c11f4f5e99d1e2ea9b523f6012d19db682bf26c",
+        "bytes": 2849894
+      },
+      "source_par_sha256": "e4d55906c8298582eed5d533108b6af59b3b70f377c575ea5a7d80a753a53c55"
+    },
+    "20-Tau2Fixed": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/20-Tau2Fixed/model_payload.rds",
+        "sha256": "a5910e8e11fc3a4d6afc816daea18403dd2a817664c8dfc48a8f9482e6114f42",
+        "bytes": 2802903
+      },
+      "reference_rep": {
+        "sha256": "2034a6881f083a52311580350c0281157a3344b5a08f5b3a5a81ea16e082419d",
+        "bytes": 2844480
+      },
+      "source_par_sha256": "02fad3785e5b4e7a1992f8d7d2837716c4b1e748fa3273041540a845887d3f7d"
+    },
+    "21-F33WeakPenalty": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/21-F33WeakPenalty/model_payload.rds",
+        "sha256": "e6dc44179c2bd4b4658d3be207ec1e4a787f0ca4546858f38d399d18919f2718",
+        "bytes": 2804189
+      },
+      "reference_rep": {
+        "sha256": "fce9565a84e48109a8c3e943df6a4e058a935b2f6936152c544ebe7e710a01b9",
+        "bytes": 2844534
+      },
+      "source_par_sha256": "7db4decd97101bfcf85e1ec0c7e2633329a1245409a1ff5f1d6799074ef20775"
+    },
+    "S0.90-F2-tau2-fixed": {
+      "mode": "reference-rep",
+      "payload": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d",
+        "path": "data/stepwise/models/22-Diagnostic/model_payload.rds",
+        "sha256": "d165e7fff518f33e7e414298c60831690f9244310498c374b3dd4f7f50af54f2",
+        "bytes": 12477117
+      },
+      "reference_rep": {
+        "sha256": "bdc4468ea540da966bed821c2179c0d0e8bcc82698d4ac4665bfa04685928e3f",
+        "bytes": 2846950
+      },
+      "source_par_sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3"
+    }
+  }
+}

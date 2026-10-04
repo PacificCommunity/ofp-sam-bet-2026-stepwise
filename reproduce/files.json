@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "family": "stepwise",
+  "files": [
+    {
+      "path": "02-NewExeIni1007/final.par",
+      "sha256": "1848d54f05784b1760e66d5b52527817aa8c1acc975a78cf6b742a9581ddc7b9",
+      "bytes": 3773575,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "01-Diag2023/final.par",
+      "sha256": "87bb55f34080f2726cd74cb809d297309aa4a89cb5a8b14621c935d12fb199ff",
+      "bytes": 3773495,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "05-NewStructure/final.par",
+      "sha256": "eb79613e6daee0b42e2d55e342b31016785cae28c823f2da7253bc2bfb643e99",
+      "bytes": 2821521,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "10-RegionalCPUE/final.par",
+      "sha256": "e5772b5af358903e99917270e8df026e16027c5b9b97328f933cef51d0efc2fb",
+      "bytes": 2955358,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "09-SizeDataQC/final.par",
+      "sha256": "060796fb959ccac348dd66c6538c2c26369e6dbc9cefbaf2c2f30c581f48cbea",
+      "bytes": 2956029,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "04-LengthWeight/final.par",
+      "sha256": "ba8f22cddd6f42b0e57f081c77e2da48e1b61848d4159db8883342bf85f9a628",
+      "bytes": 3773523,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "06-ConvertToLength/final.par",
+      "sha256": "f9138e3fe8c4686798ff635676c218abaff49d8a2518fd7cccad8e77bf861fc4",
+      "bytes": 2821540,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "03-FixM/final.par",
+      "sha256": "f2ff308ded81f199e792d8d0ff84f8fc5040b4a96702ac2735a06762eaba98d6",
+      "bytes": 3773578,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "07-AddLengthData/final.par",
+      "sha256": "7aebfbc6eff8804c75c281d63847966fea4b6888f939e594d889b3ca02b1a949",
+      "bytes": 2821532,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "08-DataTo2024/final.par",
+      "sha256": "505b744d3fd1cb7c08754db53dfae75610ade4ce9e6516dcc120dea5eced85eb",
+      "bytes": 2955938,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "11-TimeVaryingCV/final.par",
+      "sha256": "a3f7f03100f0e656ed40e5439762b186d42b8f00424c5af0ee7f16496dd6ea94",
+      "bytes": 2955391,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "12-CPUEErrorCalibration/final.par",
+      "sha256": "fe0794b3bd131ec9af9624838c6b4fdf747fe804de5df91ab621a10ae3835912",
+      "bytes": 2955380,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "14b-SUB075/final.par",
+      "sha256": "6a9486142e5cf3cd42f8339fd59c909b33f2709f525124f0cedb04bbe4341b03",
+      "bytes": 2955385,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "14a-REG075/final.par",
+      "sha256": "e3f34f8174ab200f9691d4f2b19f00bb3176256a2a6b92004c68a257eab83262",
+      "bytes": 2955362,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "13-NewAgeData/final.par",
+      "sha256": "80ddfbf6c528f827efaaee9c88c365f778bb2dabb47019106beadd5a28ddfb5a",
+      "bytes": 2955371,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "c3bc4d457d1f6f245c055c13a4fd10e9d71d0366"
+      }
+    },
+    {
+      "path": "16-MIX020/final.par",
+      "sha256": "f3652458aec665a22aee550d965dd8af99b7d14fa645afe08ed9101dfa02c9e0",
+      "bytes": 2955418,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "b3bc4c5cb30200c7c5e7faa77ad26d3ebcef2eba"
+      }
+    },
+    {
+      "path": "15-SelectivityUpdate/final.par",
+      "sha256": "e5d6fce5a912b1ecab44ca3e3f1a9867b083849480bc79f9e4770e9b1f955e52",
+      "bytes": 2955494,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "b3bc4c5cb30200c7c5e7faa77ad26d3ebcef2eba"
+      }
+    },
+    {
+      "path": "17-TagReportingExclusion/final.par",
+      "sha256": "359cd742cb327fc0366911a610ee53e8b8e23e66c0340267aafa6069cc27c17c",
+      "bytes": 2955411,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "b3bc4c5cb30200c7c5e7faa77ad26d3ebcef2eba"
+      }
+    },
+    {
+      "path": "18-EffortCreep/final.par",
+      "sha256": "f8fca7fff8e90d1fc09259121786c0017dfef01e29061c47c3b3ad9a7f4e36c0",
+      "bytes": 2955446,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "b3bc4c5cb30200c7c5e7faa77ad26d3ebcef2eba"
+      }
+    },
+    {
+      "path": "19-DMG8Nmax25/final.par",
+      "sha256": "e4d55906c8298582eed5d533108b6af59b3b70f377c575ea5a7d80a753a53c55",
+      "bytes": 2956542,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "b3bc4c5cb30200c7c5e7faa77ad26d3ebcef2eba"
+      }
+    },
+    {
+      "path": "20-Tau2Fixed/final.par",
+      "sha256": "02fad3785e5b4e7a1992f8d7d2837716c4b1e748fa3273041540a845887d3f7d",
+      "bytes": 2956592,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "2cfa1e61727d83a34315e46575b071316e132962"
+      }
+    },
+    {
+      "path": "21-F33WeakPenalty/final.par",
+      "sha256": "7db4decd97101bfcf85e1ec0c7e2633329a1245409a1ff5f1d6799074ef20775",
+      "bytes": 2956592,
+      "mode": 384,
+      "role": "last_PAR",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "2cfa1e61727d83a34315e46575b071316e132962"
+      }
+    },
+    {
+      "path": "01-Diag2023/mfclo64",
+      "sha256": "b872c4d049a305d6d89600aea50ffb5d714ab1e5083c44cc712464612dd66aa2",
+      "bytes": 9732024,
+      "mode": 493,
+      "role": "native_MFCL_executable",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d"
+      }
+    },
+    {
+      "path": "01-Diag2023/mfclo64.version",
+      "sha256": "b31510da3cc7b7ba7ccde4312427ba1a7f12e830d52c7e50dad8e424c78fdb8c",
+      "bytes": 369,
+      "mode": 420,
+      "role": "native_MFCL_version_text",
+      "source_git_pin": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+        "commit": "f4d5da6f3c27de7c705e263abeb6c304b2b2df2d"
+      }
+    }
+  ],
+  "native_byte_scope": "All final PAR and executable bytes are unchanged. Archive paths are compact case keys; original extraction paths remain in the private preservation receipt.",
+  "losslessly_recovered_native_file_count": 22,
+  "source_git_pin_scope": "PAR pins identify the original analysis source. The Step01 engine pin identifies its source-selected runtime path, not a Git-hosted binary or proof of the historical executed SHA-256."
+}

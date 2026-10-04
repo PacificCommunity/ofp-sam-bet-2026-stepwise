@@ -1,0 +1,96 @@
+{
+  "archive": {
+    "path": "native.tar.gz",
+    "sha256": "39b3ee8f98f4a0cd2d85519ec5bfd3c7ad7fc353bb2f4a9856de6f9277957b4a",
+    "bytes": 5368445
+  },
+  "manifest": {
+    "path": "files.json",
+    "sha256": "6a3da3411374dc01ae4af38bf1c9b6dc10fa2d3b6d5a9e62d5bfc087728925de"
+  },
+  "closure": {
+    "path": "closure.json",
+    "sha256": "dd0ab7f555a0dca7dc8f210932443f0504831c4a2c44c8e8d9ca60e8d9aaee5a"
+  },
+  "engine": {
+    "repository": "PacificCommunity/ofp-sam-bet-2026-jitter",
+    "commit": "bb3f4016b2d145f42c7a76072ed2b10b49aff71f",
+    "path": "data/diagnostic/mfcl/mfclo64",
+    "sha256": "f5bc1e232a86e51f920bce7271d8e0930d0b160e4d18dc46de44078f0fa24cd0",
+    "bytes": 34549392,
+    "mode": 493,
+    "role": "static_native_evaluation_engine_candidate"
+  },
+  "engine_by_model": {
+    "01-Diag2023": null
+  },
+  "required_inputs_by_model": {
+    "01-Diag2023": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "02-NewExeIni1007": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "03-FixM": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "04-LengthWeight": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "05-NewStructure": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "06-ConvertToLength": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "07-AddLengthData": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "08-DataTo2024": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ],
+    "09-SizeDataQC": [
+      "bet.frq",
+      "bet.ini",
+      "bet.tag",
+      "bet.age_length",
+      "mfcl.cfg"
+    ]
+  },
+  "validation": {
+    "path": "validation.json",
+    "sha256": "4324193c4e8ed2194c7031076ef17ebebfe5457cdbaa8e33e7be4bacd56f1d48"
+  }
+}
