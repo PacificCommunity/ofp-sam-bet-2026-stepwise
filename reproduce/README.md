@@ -17,7 +17,7 @@ python3 reproduce/run-native.py all /tmp/bet-steps
 ```
 
 Choose `20-Tau2Fixed` instead of `all` for one case. The final Diagnostic case
-is `S0.90-F2-tau2-fixed`. Each run uses one function evaluation, preserves every
+is `S0.90-F2-tau2-fixed`. Each run uses a function-evaluation ceiling of 1, preserves every
 input and checks the original objective, native dimensions, spawning biomass,
 no-fishing biomass and MSY quantities. Reference reports are restored from
 existing public payloads using base R; large generated outputs are omitted.
