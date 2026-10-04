@@ -24,6 +24,8 @@ jobs:
             curl --fail --location --retry 3 https://cran.r-project.org/src/contrib/Archive/jsonlite/jsonlite_2.0.0.tar.gz --output "$RUNNER_TEMP/jsonlite_2.0.0.tar.gz"
           printf '%s  %s\n' '75eb910c82b350ec33f094779da0f87bff154c232e4ae39c9896a9b89f3ac82d' "$RUNNER_TEMP/jsonlite_2.0.0.tar.gz" | sha256sum --check -
           Rscript -e 'install.packages(file.path(Sys.getenv("RUNNER_TEMP"), "jsonlite_2.0.0.tar.gz"), repos=NULL, type="source"); stopifnot(as.character(utils::packageVersion("jsonlite")) == "2.0.0")'
+      - name: Check Make entry points without executing models
+        run: python3 ci/check-make-entrypoints.py
       - name: Verify preserved assessment files
         run: python3 ci/verify-preserved-files.py
       - name: Check preserved inputs and results
@@ -51,7 +53,7 @@ jobs:
           python3 ci/verify-preserved-files.py
           python3 reproduce/restore.py --verify
       - name: Regenerate native outputs and compare original results
-        run: python3 reproduce/run-native.py all "$RUNNER_TEMP/bet-native"
+        run: make rerun CASE=all OUT="$RUNNER_TEMP/bet-native"
       - name: Confirm source files are unchanged
         run: |
           python3 ci/verify-preserved-files.py

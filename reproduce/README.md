@@ -13,7 +13,8 @@ public 2.2.7.9 executable. Pre-Step10 cases do not use regional scaling priors.
 On 64-bit x86 Linux, from the repository root:
 
 ```sh
-python3 reproduce/run-native.py all /tmp/bet-steps
+make verify
+make rerun CASE=all OUT=/tmp/bet-steps
 ```
 
 Choose `20-Tau2Fixed` instead of `all` for one case. The final Diagnostic case
@@ -22,10 +23,17 @@ input and checks the original objective, native dimensions, spawning biomass,
 no-fishing biomass and MSY quantities. Reference reports are restored from
 existing public payloads using base R; large generated outputs are omitted.
 
-`python3 reproduce/restore.py --verify` checks the compact archive without
-executing MFCL. Full fits use the original case directory and `doitall.sh`, with
-`PROGRAM_PATH` pointing to its matching executable. Retain that directory's
-configuration and selectivity files.
+`make verify` checks the compact archive without executing MFCL. For a full
+fit, restore its matching executable and use the original fitting runner:
+
+```sh
+make restore CASE=20-Tau2Fixed OUT=/tmp/bet-step-inputs
+make refit CASE=20-Tau2Fixed OUT=/tmp/bet-step-refit PROGRAM_PATH=/tmp/bet-step-inputs/mfclo64
+```
+
+This runs one step from `doitall.sh`, with its original configuration and
+selectivity files. The full runner also requires the pinned R packages listed
+in the existing reproduction details.
 
 Published results and figures remain unchanged. The historical executed binary
 hashes remain unconfirmed; native output checks establish compatibility.

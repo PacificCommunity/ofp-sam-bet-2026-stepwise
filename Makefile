@@ -259,3 +259,32 @@ kflow-register-chain:
 	@for repo in $(KFLOW_CHAIN_REPOS); do \
 	  python3 scripts/register_kflow_task.py --repo-root "$$repo" --config "$$repo/kflow.yaml" --kflow-url '$(KFLOW_URL)'; \
 	done
+
+CASE ?= all
+OUT ?=
+export CASE OUT
+.PHONY: verify rerun restore refit results rerun-help _check-output
+
+rerun-help:
+	@printf '%s\n' 'make verify                                  Check saved files' 'make results                                 Rebuild cached reports' 'make rerun CASE=all OUT=/tmp/bet-steps         Regenerate saved native outputs' 'make restore CASE=20-Tau2Fixed OUT=/tmp/bet-inputs' 'make refit CASE=20-Tau2Fixed OUT=/tmp/bet-refit PROGRAM_PATH=/tmp/bet-inputs/mfclo64' 'Step 01 requires its preserved older executable.'
+
+verify:
+	@python3 ci/verify-preserved-files.py
+	@python3 reproduce/restore.py --verify
+
+rerun: verify _check-output
+	@python3 reproduce/run-native.py "$$CASE" "$$OUT"
+
+restore: verify _check-output
+	@python3 reproduce/restore.py "$$CASE" "$$OUT"
+
+refit: verify _check-output
+	@test "$$CASE" != all && test "$$CASE" != '*' || { echo 'Choose one step with CASE.' >&2; exit 2; }
+	@test -x '$(PROGRAM_PATH)' || { echo 'Set PROGRAM_PATH to the matching restored mfclo64.' >&2; exit 2; }
+	@$(MAKE) --no-print-directory local STEP_SELECT="$$CASE" RUN_MODE=doitall INPUT_PAR= OUTPUT_DIR="$$OUT" PROGRAM_PATH='$(PROGRAM_PATH)' TRIGGER_NEXT=false STEPWISE_SAVE_FINAL_PAR=true STEPWISE_COMMIT_FINAL_PARS=false STEPWISE_PUSH_FINAL_PARS=false KFLOW_REPO_RUNTIME_UPDATE=never KFLOW_RUNTIME_UPDATE=never TUNA_FLOW_RUNTIME_UPDATE=never
+
+results:
+	@./run-report
+
+_check-output:
+	@python3 -c 'import os; from pathlib import Path; raw=os.environ.get("OUT",""); p=Path(raw); root=Path.cwd().resolve(); assert raw and p.is_absolute(), "Set OUT to an absolute, new directory"; assert not os.path.lexists(p), "OUT already exists"; q=p.resolve(); assert q != root and root not in q.parents, "OUT must be outside this repository"'
