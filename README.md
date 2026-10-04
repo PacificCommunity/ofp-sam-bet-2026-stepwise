@@ -1,3 +1,5 @@
+[![Preservation checks](https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/actions/workflows/verify-preserved-results.yml/badge.svg?branch=main)](https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/actions/workflows/verify-preserved-results.yml?query=branch%3Amain)
+
 # BET 2026 stepwise pathway to the Diagnostic model — 04 Aug
 
 <a id="step-sequence"></a>
