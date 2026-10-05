@@ -37,3 +37,32 @@ in the existing reproduction details.
 
 Published results and figures remain unchanged. The historical executed binary
 hashes remain unconfirmed; native output checks establish compatibility.
+
+## Saved Hessians
+
+[Model index](hessian-index.csv) lists the original Hessian files, final PARs and
+checksums. Download only the required case:
+
+```sh
+make hessian CASE=01-Diag2023 OUT=/tmp/bet-hessian
+```
+
+Native part archives retain the original row blocks and matching final PAR.
+They do not require another derivative calculation. `make hessian-verify` checks
+the manifest; pass `CASE=... ARCHIVE=/absolute/model.tar.gz` to verify an offline archive.
+
+The final Diagnostic case includes its original complete `bet.hes`. The index
+preserves the published PDH indicators. Cases whose original parts are still
+being recovered are not included yet.
+
+To assemble the saved parts with the pinned MFCL executable on
+Linux x86-64:
+
+```sh
+make hessian-stitch-plan CASE=01-Diag2023
+make hessian-stitch CASE=01-Diag2023 OUT=/tmp/bet-hessian-stitch
+```
+
+This uses switch `145=11`; original parts and PAR remain alongside the derived
+`stitched/` files and `stitch.json` checks. The historical executable hash and
+byte equality to the historical merged matrix are unconfirmed.

@@ -24,6 +24,13 @@ jobs:
             curl --fail --location --retry 3 https://cran.r-project.org/src/contrib/Archive/jsonlite/jsonlite_2.0.0.tar.gz --output "$RUNNER_TEMP/jsonlite_2.0.0.tar.gz"
           printf '%s  %s\n' '75eb910c82b350ec33f094779da0f87bff154c232e4ae39c9896a9b89f3ac82d' "$RUNNER_TEMP/jsonlite_2.0.0.tar.gz" | sha256sum --check -
           Rscript -e 'install.packages(file.path(Sys.getenv("RUNNER_TEMP"), "jsonlite_2.0.0.tar.gz"), repos=NULL, type="source"); stopifnot(as.character(utils::packageVersion("jsonlite")) == "2.0.0")'
+      - name: Check saved Hessian restoration
+        run: |
+          make hessian-verify
+          python3 -m unittest discover -s reproduce -p 'test_hessian*.py' -v
+          make hessian-stitch-plan CASE=01-Diag2023
+          make hessian CASE=01-Diag2023 OUT="$RUNNER_TEMP/bet-hessian"
+          make hessian-stitch CASE=01-Diag2023 OUT="$RUNNER_TEMP/bet-hessian-stitch"
       - name: Check Make entry points without executing models
         run: python3 ci/check-make-entrypoints.py
       - name: Verify preserved assessment files

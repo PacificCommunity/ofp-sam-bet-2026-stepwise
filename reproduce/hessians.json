@@ -1,0 +1,750 @@
+{
+  "cases": {
+    "01-diag2023": {
+      "archive": {
+        "bytes": 72439428,
+        "sha256": "587aa65a1d7c6ae0f145c6ee9bb5b3c4c8b74e269c6649c5672c1115f506f954",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/01-Diag2023.tar.gz"
+      },
+      "final_par_sha256": "87bb55f34080f2726cd74cb809d297309aa4a89cb5a8b14621c935d12fb199ff",
+      "hessian_parts": [
+        {
+          "bytes_hex": "fb0b00000100000066020000",
+          "n_parameter": 3067,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            614
+          ],
+          "sha256": "46077b78d6e09e24e2882e1c511af249f0833cdb2ae38a7eefa604dc750dfb07"
+        },
+        {
+          "bytes_hex": "fb0b000067020000cc040000",
+          "n_parameter": 3067,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            615,
+            1228
+          ],
+          "sha256": "71ea17f55b6cd9a2a476d19c66edbcb0d08365a1d90c9c08ba631d3584800258"
+        },
+        {
+          "bytes_hex": "fb0b0000cd04000031070000",
+          "n_parameter": 3067,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            1229,
+            1841
+          ],
+          "sha256": "91d62aff07eb49827129b896c9adfd2c65b8e8f25f27b55efee6be3bfcc74866"
+        },
+        {
+          "bytes_hex": "fb0b00003207000096090000",
+          "n_parameter": 3067,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1842,
+            2454
+          ],
+          "sha256": "c9e23c4cc1ec51cc73612f437829bec3e3a23e7f47ec39cd119d5e8a139a72ae"
+        },
+        {
+          "bytes_hex": "fb0b000097090000fb0b0000",
+          "n_parameter": 3067,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            2455,
+            3067
+          ],
+          "sha256": "36cd62cec88cc86723686da79c59ed1a75e1d192156dfb0e65ff3b1aa44ec4ff"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 3773495,
+          "sha256": "87bb55f34080f2726cd74cb809d297309aa4a89cb5a8b14621c935d12fb199ff"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 15065116,
+          "sha256": "46077b78d6e09e24e2882e1c511af249f0833cdb2ae38a7eefa604dc750dfb07"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 15065116,
+          "sha256": "71ea17f55b6cd9a2a476d19c66edbcb0d08365a1d90c9c08ba631d3584800258"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 15040580,
+          "sha256": "91d62aff07eb49827129b896c9adfd2c65b8e8f25f27b55efee6be3bfcc74866"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 15040580,
+          "sha256": "c9e23c4cc1ec51cc73612f437829bec3e3a23e7f47ec39cd119d5e8a139a72ae"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 15040580,
+          "sha256": "36cd62cec88cc86723686da79c59ed1a75e1d192156dfb0e65ff3b1aa44ec4ff"
+        }
+      },
+      "model_id": "01-Diag2023",
+      "pdh_status": "Yes"
+    },
+    "02-newexeini1007": {
+      "archive": {
+        "bytes": 72434786,
+        "sha256": "02d2fd021747fb182e14c7737ef91364ba4d8bf878540b00d2d3ca07e0c2834e",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/02-NewExeIni1007.tar.gz"
+      },
+      "final_par_sha256": "1848d54f05784b1760e66d5b52527817aa8c1acc975a78cf6b742a9581ddc7b9",
+      "hessian_parts": [
+        {
+          "bytes_hex": "fb0b00000100000066020000",
+          "n_parameter": 3067,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            614
+          ],
+          "sha256": "bffa9a8c17c11b236332f290b958fcb375b930930736497f56658227f0874a9d"
+        },
+        {
+          "bytes_hex": "fb0b000067020000cc040000",
+          "n_parameter": 3067,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            615,
+            1228
+          ],
+          "sha256": "f974b6a419b6a1d2d1cdc232ece82345d8b0f234fa453e562030696d4685eec5"
+        },
+        {
+          "bytes_hex": "fb0b0000cd04000031070000",
+          "n_parameter": 3067,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            1229,
+            1841
+          ],
+          "sha256": "160d6885500788573f60e12edec81e5b2e8bfbe2b8a470144f0e8b8b8827aec8"
+        },
+        {
+          "bytes_hex": "fb0b00003207000096090000",
+          "n_parameter": 3067,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1842,
+            2454
+          ],
+          "sha256": "90d203055e7d94012165fd354d375287b7c77f21958f15cf3f112b8a3dd35954"
+        },
+        {
+          "bytes_hex": "fb0b000097090000fb0b0000",
+          "n_parameter": 3067,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            2455,
+            3067
+          ],
+          "sha256": "278756226d3b93d70dd15711d0fb2e95094286496dd2a3c60a3e847f1498ebb9"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 3773575,
+          "sha256": "1848d54f05784b1760e66d5b52527817aa8c1acc975a78cf6b742a9581ddc7b9"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 15065116,
+          "sha256": "bffa9a8c17c11b236332f290b958fcb375b930930736497f56658227f0874a9d"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 15065116,
+          "sha256": "f974b6a419b6a1d2d1cdc232ece82345d8b0f234fa453e562030696d4685eec5"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 15040580,
+          "sha256": "160d6885500788573f60e12edec81e5b2e8bfbe2b8a470144f0e8b8b8827aec8"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 15040580,
+          "sha256": "90d203055e7d94012165fd354d375287b7c77f21958f15cf3f112b8a3dd35954"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 15040580,
+          "sha256": "278756226d3b93d70dd15711d0fb2e95094286496dd2a3c60a3e847f1498ebb9"
+        }
+      },
+      "model_id": "02-NewExeIni1007",
+      "pdh_status": "Yes"
+    },
+    "03-fixm": {
+      "archive": {
+        "bytes": 72389414,
+        "sha256": "0d6d48ed7374066947f9c48882177a11f4461dee4d9fb4c14244c5a70ec4d689",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/03-FixM.tar.gz"
+      },
+      "final_par_sha256": "f2ff308ded81f199e792d8d0ff84f8fc5040b4a96702ac2735a06762eaba98d6",
+      "hessian_parts": [
+        {
+          "bytes_hex": "fa0b00000100000066020000",
+          "n_parameter": 3066,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            614
+          ],
+          "sha256": "d5763fdcb1a42306b617922c82cbc65d319f238b1081dc70685eb7aeacc9159a"
+        },
+        {
+          "bytes_hex": "fa0b000067020000cb040000",
+          "n_parameter": 3066,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            615,
+            1227
+          ],
+          "sha256": "74f1faebd6fe655868bbe3ed1a70ce64decbcc4e8db6d7b7484d6e5384d6f52b"
+        },
+        {
+          "bytes_hex": "fa0b0000cc04000030070000",
+          "n_parameter": 3066,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            1228,
+            1840
+          ],
+          "sha256": "175be4f8ee47fff6374ae0a58747687e08b346e01fa0e964317e37161801ae09"
+        },
+        {
+          "bytes_hex": "fa0b00003107000095090000",
+          "n_parameter": 3066,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1841,
+            2453
+          ],
+          "sha256": "28751f05ab092e0e8384411586a23240ffd675ad534796cd29b16bafd1136d3e"
+        },
+        {
+          "bytes_hex": "fa0b000096090000fa0b0000",
+          "n_parameter": 3066,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            2454,
+            3066
+          ],
+          "sha256": "3c8cd8e15c830f2b81760c406cd18858b718a6f8abfa957a58f60988d6eccf3d"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 3773578,
+          "sha256": "f2ff308ded81f199e792d8d0ff84f8fc5040b4a96702ac2735a06762eaba98d6"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 15060204,
+          "sha256": "d5763fdcb1a42306b617922c82cbc65d319f238b1081dc70685eb7aeacc9159a"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "74f1faebd6fe655868bbe3ed1a70ce64decbcc4e8db6d7b7484d6e5384d6f52b"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "175be4f8ee47fff6374ae0a58747687e08b346e01fa0e964317e37161801ae09"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "28751f05ab092e0e8384411586a23240ffd675ad534796cd29b16bafd1136d3e"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "3c8cd8e15c830f2b81760c406cd18858b718a6f8abfa957a58f60988d6eccf3d"
+        }
+      },
+      "model_id": "03-FixM",
+      "pdh_status": "Yes"
+    },
+    "04-lengthweight": {
+      "archive": {
+        "bytes": 72385587,
+        "sha256": "73bc1264fb635af8568236465cd620b8a417530d95eaae51a47746881146ab8f",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/04-LengthWeight.tar.gz"
+      },
+      "final_par_sha256": "ba8f22cddd6f42b0e57f081c77e2da48e1b61848d4159db8883342bf85f9a628",
+      "hessian_parts": [
+        {
+          "bytes_hex": "fa0b00000100000066020000",
+          "n_parameter": 3066,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            614
+          ],
+          "sha256": "ca39fee14d9ed8c0adfa992b14a0b7e2f5882ae3a6eb7ad9f4091af2b047c19d"
+        },
+        {
+          "bytes_hex": "fa0b000067020000cb040000",
+          "n_parameter": 3066,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            615,
+            1227
+          ],
+          "sha256": "1596d12b65e512f18cf61808b0ddcd672a52676059046cd937ac6d0739576f66"
+        },
+        {
+          "bytes_hex": "fa0b0000cc04000030070000",
+          "n_parameter": 3066,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            1228,
+            1840
+          ],
+          "sha256": "26411c63474b19d2b54738998481b27e808ec805f2cdcc4ce99804e8270a51c4"
+        },
+        {
+          "bytes_hex": "fa0b00003107000095090000",
+          "n_parameter": 3066,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1841,
+            2453
+          ],
+          "sha256": "99a23ef35dea65a7678f6894e1bb17d4db354bb64dcb8c90baccdc541ec6d506"
+        },
+        {
+          "bytes_hex": "fa0b000096090000fa0b0000",
+          "n_parameter": 3066,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            2454,
+            3066
+          ],
+          "sha256": "875c2c0a1043800d46d6701b9af1943551a07c87c0c3c14c9391b91369174920"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 3773523,
+          "sha256": "ba8f22cddd6f42b0e57f081c77e2da48e1b61848d4159db8883342bf85f9a628"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 15060204,
+          "sha256": "ca39fee14d9ed8c0adfa992b14a0b7e2f5882ae3a6eb7ad9f4091af2b047c19d"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "1596d12b65e512f18cf61808b0ddcd672a52676059046cd937ac6d0739576f66"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "26411c63474b19d2b54738998481b27e808ec805f2cdcc4ce99804e8270a51c4"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "99a23ef35dea65a7678f6894e1bb17d4db354bb64dcb8c90baccdc541ec6d506"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 15035676,
+          "sha256": "875c2c0a1043800d46d6701b9af1943551a07c87c0c3c14c9391b91369174920"
+        }
+      },
+      "model_id": "04-LengthWeight",
+      "pdh_status": "Yes"
+    },
+    "05-newstructure": {
+      "archive": {
+        "bytes": 27099024,
+        "sha256": "96823864ba27d4b616053cb230926d6439a7f621d2df6c6cd08b59b21fcf8da4",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/05-NewStructure.tar.gz"
+      },
+      "final_par_sha256": "eb79613e6daee0b42e2d55e342b31016785cae28c823f2da7253bc2bfb643e99",
+      "hessian_parts": [
+        {
+          "bytes_hex": "520700000100000077010000",
+          "n_parameter": 1874,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            375
+          ],
+          "sha256": "558e350aab7bfa8c91992d6d2bc36e71e2014ace61db8e6eaced5f453a2a00dc"
+        },
+        {
+          "bytes_hex": "5207000078010000ee020000",
+          "n_parameter": 1874,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            376,
+            750
+          ],
+          "sha256": "3e808d1d3d982a77f5e37f1bd885d5f0c07057e7a0af00d96034553e1cc8c585"
+        },
+        {
+          "bytes_hex": "52070000ef02000065040000",
+          "n_parameter": 1874,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            751,
+            1125
+          ],
+          "sha256": "ad4d74aaf39b0476150a14251beaa57e988b4f102a528be125d7f74f01159a93"
+        },
+        {
+          "bytes_hex": "5207000066040000dc050000",
+          "n_parameter": 1874,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1126,
+            1500
+          ],
+          "sha256": "65542289f08ccec8e1ce9dc0870e34ba2abf5d391dfd47b969f26d64fe914202"
+        },
+        {
+          "bytes_hex": "52070000dd05000052070000",
+          "n_parameter": 1874,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            1501,
+            1874
+          ],
+          "sha256": "5aad2fad7f85beda6d0c54d62db76d3388138f9432a07cf790c1628d7fe9f728"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 2821521,
+          "sha256": "eb79613e6daee0b42e2d55e342b31016785cae28c823f2da7253bc2bfb643e99"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "558e350aab7bfa8c91992d6d2bc36e71e2014ace61db8e6eaced5f453a2a00dc"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "3e808d1d3d982a77f5e37f1bd885d5f0c07057e7a0af00d96034553e1cc8c585"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "ad4d74aaf39b0476150a14251beaa57e988b4f102a528be125d7f74f01159a93"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "65542289f08ccec8e1ce9dc0870e34ba2abf5d391dfd47b969f26d64fe914202"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 5607020,
+          "sha256": "5aad2fad7f85beda6d0c54d62db76d3388138f9432a07cf790c1628d7fe9f728"
+        }
+      },
+      "model_id": "05-NewStructure",
+      "pdh_status": "Yes"
+    },
+    "06-converttolength": {
+      "archive": {
+        "bytes": 27089422,
+        "sha256": "5063d6aebf474d8c48d463c32c1668fef25f28009de327f344232f8416523b76",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/06-ConvertToLength.tar.gz"
+      },
+      "final_par_sha256": "f9138e3fe8c4686798ff635676c218abaff49d8a2518fd7cccad8e77bf861fc4",
+      "hessian_parts": [
+        {
+          "bytes_hex": "520700000100000077010000",
+          "n_parameter": 1874,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            375
+          ],
+          "sha256": "86c06031d259d65246cf646dda393aded61ed357cf077abaf73b5bd1847fbeef"
+        },
+        {
+          "bytes_hex": "5207000078010000ee020000",
+          "n_parameter": 1874,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            376,
+            750
+          ],
+          "sha256": "55778c3b32c6802bfd4eac0ebb4a4ab409711f1d04516a8c69e2055eb4dff5b3"
+        },
+        {
+          "bytes_hex": "52070000ef02000065040000",
+          "n_parameter": 1874,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            751,
+            1125
+          ],
+          "sha256": "8cc2eb713bd2413a3793b57deee5f8527906f9a14af7be89005c342b3f8a3532"
+        },
+        {
+          "bytes_hex": "5207000066040000dc050000",
+          "n_parameter": 1874,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1126,
+            1500
+          ],
+          "sha256": "b0fe34617a3a80c4c075cacbc0ed1c4ca54b68441fa88ed1eae34dfdf68cca4b"
+        },
+        {
+          "bytes_hex": "52070000dd05000052070000",
+          "n_parameter": 1874,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            1501,
+            1874
+          ],
+          "sha256": "779d862bbc72ec6af3bc13356a2da2273741c7751531a975fedd5bde33e2d38e"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 2821540,
+          "sha256": "f9138e3fe8c4686798ff635676c218abaff49d8a2518fd7cccad8e77bf861fc4"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "86c06031d259d65246cf646dda393aded61ed357cf077abaf73b5bd1847fbeef"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "55778c3b32c6802bfd4eac0ebb4a4ab409711f1d04516a8c69e2055eb4dff5b3"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "8cc2eb713bd2413a3793b57deee5f8527906f9a14af7be89005c342b3f8a3532"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 5622012,
+          "sha256": "b0fe34617a3a80c4c075cacbc0ed1c4ca54b68441fa88ed1eae34dfdf68cca4b"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 5607020,
+          "sha256": "779d862bbc72ec6af3bc13356a2da2273741c7751531a975fedd5bde33e2d38e"
+        }
+      },
+      "model_id": "06-ConvertToLength",
+      "pdh_status": "No"
+    },
+    "09-sizedataqc": {
+      "archive": {
+        "bytes": 29183637,
+        "sha256": "759099075cd950a63bee2ff50df440f50bcfd940f7f9ad4304467f48ca458c40",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/09-SizeDataQC.tar.gz"
+      },
+      "final_par_sha256": "060796fb959ccac348dd66c6538c2c26369e6dbc9cefbaf2c2f30c581f48cbea",
+      "hessian_parts": [
+        {
+          "bytes_hex": "990700000100000099070000",
+          "n_parameter": 1945,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            1945
+          ],
+          "sha256": "5436194e527854af92866268f117d50eeecd5b272c983c900d068f1f06c83179"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 2956029,
+          "sha256": "060796fb959ccac348dd66c6538c2c26369e6dbc9cefbaf2c2f30c581f48cbea"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 30264212,
+          "sha256": "5436194e527854af92866268f117d50eeecd5b272c983c900d068f1f06c83179"
+        }
+      },
+      "model_id": "09-SizeDataQC",
+      "pdh_status": "No"
+    },
+    "10-regionalcpue": {
+      "archive": {
+        "bytes": 29229079,
+        "sha256": "e6ec963a1f8e0f4ee29427fa2ae9c1448adca7d2477c40af2871fdc43c3eb87b",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/10-RegionalCPUE.tar.gz"
+      },
+      "final_par_sha256": "e5772b5af358903e99917270e8df026e16027c5b9b97328f933cef51d0efc2fb",
+      "hessian_parts": [
+        {
+          "bytes_hex": "990700000100000099070000",
+          "n_parameter": 1945,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            1945
+          ],
+          "sha256": "5101c6b33b5ea86f58f45066352ad51802d7ce83027214670dce0073b08368fc"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 2955358,
+          "sha256": "e5772b5af358903e99917270e8df026e16027c5b9b97328f933cef51d0efc2fb"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 30264212,
+          "sha256": "5101c6b33b5ea86f58f45066352ad51802d7ce83027214670dce0073b08368fc"
+        }
+      },
+      "model_id": "10-RegionalCPUE",
+      "pdh_status": "Yes"
+    },
+    "11-timevaryingcv": {
+      "archive": {
+        "bytes": 29219408,
+        "sha256": "40ef1064241b86bddf1c4e9539a409cb31218d17344737462f4e678b661ae130",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/11-TimeVaryingCV.tar.gz"
+      },
+      "final_par_sha256": "a3f7f03100f0e656ed40e5439762b186d42b8f00424c5af0ee7f16496dd6ea94",
+      "hessian_parts": [
+        {
+          "bytes_hex": "990700000100000085010000",
+          "n_parameter": 1945,
+          "path": "parts/part_1/bet.hes",
+          "row_bounds": [
+            1,
+            389
+          ],
+          "sha256": "c7c389d259ad69f5727d99b90f55382188e3c257556a4a18ff54608e0aa906ee"
+        },
+        {
+          "bytes_hex": "99070000860100000a030000",
+          "n_parameter": 1945,
+          "path": "parts/part_2/bet.hes",
+          "row_bounds": [
+            390,
+            778
+          ],
+          "sha256": "5b3686e7b00f1b999b7e8df096046ed37b6069c9b32eff5ff487cc5a35e2d21c"
+        },
+        {
+          "bytes_hex": "990700000b0300008f040000",
+          "n_parameter": 1945,
+          "path": "parts/part_3/bet.hes",
+          "row_bounds": [
+            779,
+            1167
+          ],
+          "sha256": "ab20ed76e646e112ccb4429d5d0d1da1aab7d530e227523b2ae47cda6aa5bda3"
+        },
+        {
+          "bytes_hex": "990700009004000014060000",
+          "n_parameter": 1945,
+          "path": "parts/part_4/bet.hes",
+          "row_bounds": [
+            1168,
+            1556
+          ],
+          "sha256": "bf8fb2204fb91e5b5f999067fc8a6d525a1c21ee8004d2ad07d899a780848eb1"
+        },
+        {
+          "bytes_hex": "990700001506000099070000",
+          "n_parameter": 1945,
+          "path": "parts/part_5/bet.hes",
+          "row_bounds": [
+            1557,
+            1945
+          ],
+          "sha256": "5a57992a4c775795370a1166f1a340f11965f72881c2fb85db3a40bdf6e0ea1f"
+        }
+      ],
+      "kind": "native_parts",
+      "members": {
+        "final.par": {
+          "bytes": 2955391,
+          "sha256": "a3f7f03100f0e656ed40e5439762b186d42b8f00424c5af0ee7f16496dd6ea94"
+        },
+        "parts/part_1/bet.hes": {
+          "bytes": 6052852,
+          "sha256": "c7c389d259ad69f5727d99b90f55382188e3c257556a4a18ff54608e0aa906ee"
+        },
+        "parts/part_2/bet.hes": {
+          "bytes": 6052852,
+          "sha256": "5b3686e7b00f1b999b7e8df096046ed37b6069c9b32eff5ff487cc5a35e2d21c"
+        },
+        "parts/part_3/bet.hes": {
+          "bytes": 6052852,
+          "sha256": "ab20ed76e646e112ccb4429d5d0d1da1aab7d530e227523b2ae47cda6aa5bda3"
+        },
+        "parts/part_4/bet.hes": {
+          "bytes": 6052852,
+          "sha256": "bf8fb2204fb91e5b5f999067fc8a6d525a1c21ee8004d2ad07d899a780848eb1"
+        },
+        "parts/part_5/bet.hes": {
+          "bytes": 6052852,
+          "sha256": "5a57992a4c775795370a1166f1a340f11965f72881c2fb85db3a40bdf6e0ea1f"
+        }
+      },
+      "model_id": "11-TimeVaryingCV",
+      "pdh_status": "No"
+    },
+    "22-diagnostic": {
+      "archive": {
+        "bytes": 30866022,
+        "sha256": "fbc801ca3bddfacd4bb29836fe11be9085a671748eeb3b7fe9cf8504b0be147d",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/releases/download/bet2026-hessians-20261006/22-diagnostic.tar.gz"
+      },
+      "final_par_sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3",
+      "hessian_header": {
+        "bytes_hex": "cd070000",
+        "n_parameter": 1997,
+        "row_bounds": [
+          1,
+          1997
+        ]
+      },
+      "hessian_sha256": "e289a150c45930c2f4f164fb43432d5c034d8caec7bda7ce664caca9e4ad20c5",
+      "kind": "matrix",
+      "members": {
+        "bet.hes": {
+          "bytes": 31904076,
+          "sha256": "e289a150c45930c2f4f164fb43432d5c034d8caec7bda7ce664caca9e4ad20c5"
+        },
+        "check-summary.csv": {
+          "bytes": 699,
+          "sha256": "37158f037b3903c02bd288aaf2f3437370accddf7c9659f1e02d301e028efea6"
+        },
+        "check-unit-status.csv": {
+          "bytes": 10491,
+          "sha256": "573b53d715de0428b93e975948a32fc7ef74ef3319cb1529917c8edc851900fd"
+        },
+        "final.par": {
+          "bytes": 2956541,
+          "sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3"
+        },
+        "hessian_info.rds": {
+          "bytes": 47188,
+          "sha256": "67f65e3655d505f5c8bc916b7bfeb6cfb59c4e38a608c8a61e74af73f6f9e296"
+        },
+        "mfcl_eigen_log.txt": {
+          "bytes": 21853,
+          "sha256": "eda4de903bb814267256341a2a6fd6c4c5f4f2a35d2a2aafd8a3cb39bcda7c3d"
+        },
+        "mfcl_stitch_log.txt": {
+          "bytes": 26491,
+          "sha256": "d8cf3304f08c3715449595deeeb6235d175eb6579958d5d09e016f3ba9cde914"
+        },
+        "neigenvalues": {
+          "bytes": 7,
+          "sha256": "88850137b94b2e0048fc2573a878575d7f5dde42de8b4fff6bc9b107e0fd181c"
+        }
+      },
+      "model_id": "22-Diagnostic",
+      "pdh_status": "Yes"
+    }
+  },
+  "classification": "PUBLIC",
+  "repository": "PacificCommunity/ofp-sam-bet-2026-stepwise",
+  "schema_version": 1
+}
