@@ -51,9 +51,8 @@ Native part archives retain the original row blocks and matching final PAR.
 They do not require another derivative calculation. `make hessian-verify` checks
 the manifest; pass `CASE=... ARCHIVE=/absolute/model.tar.gz` to verify an offline archive.
 
-The final Diagnostic case includes its original complete `bet.hes`. The index
-preserves the published PDH indicators. Cases whose original parts are still
-being recovered are not included yet.
+All 23 cases are available: 22 original native Hessian part sets and the final
+Diagnostic model's complete `bet.hes`. The index retains the published PDH indicators.
 
 To assemble the saved parts with the pinned MFCL executable on
 Linux x86-64:
