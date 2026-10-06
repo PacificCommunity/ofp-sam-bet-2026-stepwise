@@ -320,3 +320,20 @@ hessian-stitch:
 	else \
 		python3 reproduce/hessian_stitch.py --case "$$CASE" --out "$$OUT"; \
 	fi
+
+# Optional original native MFCL derivative traces; no model execution.
+.PHONY: hessian-logs hessian-logs-verify
+
+hessian-logs:
+	@if [ -n "$$ARCHIVE" ]; then \
+		python3 reproduce/native_logs.py --out "$$OUT" --archive "$$ARCHIVE"; \
+	else \
+		python3 reproduce/native_logs.py --out "$$OUT"; \
+	fi
+
+hessian-logs-verify:
+	@if [ -n "$$ARCHIVE" ]; then \
+		python3 reproduce/native_logs.py --verify --archive "$$ARCHIVE"; \
+	else \
+		python3 reproduce/native_logs.py --verify; \
+	fi
