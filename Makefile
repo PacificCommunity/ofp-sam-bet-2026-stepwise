@@ -81,7 +81,7 @@ maintenance-help:
 	  'make validate PROGRAM_PATH=/path/to/mfclo64' \
 	  '  Fail closed on provenance, folder, parent-graph, input, and MFCL-control drift.' \
 	  '' \
-	  'make list' \
+	  'make list-maintenance' \
 	  '  Refresh docs/run-configuration.md, enable the commit hook, then show configured model rows from job-config.R.' \
 	  '' \
 	  'make local STEP_SELECT=all PROGRAM_PATH=/path/to/mfclo64' \
@@ -284,7 +284,7 @@ restore rerun refit:
 	@"$(RSCRIPT)" reproduce/run-final.R "$@" "$$CASE" "$$OUT"
 
 results:
-	@./run-report
+	@./run-results
 
 export ARCHIVE
 .PHONY: hessian hessian-verify

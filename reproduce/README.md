@@ -45,6 +45,8 @@ source `bet.ini` and `bet.model.ini` are both retained as different files.
 
 ## Saved Hessians
 
+The optional Hessian and derivative-log commands below require Python 3.
+
 [Model index](hessian-index.csv) lists the original Hessian files, final PARs and
 checksums. Download only the required case:
 

@@ -2766,9 +2766,14 @@
     }
   ],
   "approved_reader_updates": {
-    "Makefile": "32bde6e9a23c69e713f817bac2e1ee5fc55efd40b29f563ed8a771090d91e2d7"
+    "Makefile": "ae3038ae5d0d6cbf754193ab36be9ae348fe81a12657498798eed620edeecd15"
   },
   "approved_additions": [
+    {
+      "path": "run-results",
+      "mode": "100755",
+      "sha256": "9fa7bc42066c02af03a8515052924619104b0bd091dc01bb15424667858495df"
+    },
     {
       "path": "reproduce/run-final.R",
       "mode": "100644",
