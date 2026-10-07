@@ -1,42 +1,46 @@
 # Saved stepwise fits
 
-[Download native.tar.gz](https://raw.githubusercontent.com/PacificCommunity/ofp-sam-bet-2026-stepwise/main/reproduce/native.tar.gz). It is included in a normal clone;
-[files.json](files.json) lists the archived files and checksums.
+[standalone.zip](standalone.zip) is included in a normal clone. It contains
+23 original final PARs, native inputs, `doitall.sh`, required nested fitting
+settings, compact reference values and shared MFCL engines. The native archive
+uses ordinary named files, with no Python reader or runtime.
 
-The package restores the original final PARs for all 23 completed cases.
-The archive contains 22 PARs and the Step 01 executable; the final Diagnostic
-PAR is restored from a pinned public Git file.
-Their native inputs and original `doitall.sh` reuse pinned public Git files.
-The older Step 01 executable is included; later cases use the checksum-verified
-public 2.2.7.9 executable. Pre-Step10 cases do not use regional scaling priors.
-
-On 64-bit x86 Linux, from the repository root:
+From the repository root:
 
 ```sh
+make list
 make verify
-make rerun CASE=all OUT=/tmp/bet-steps
+make prepare CASE=20-Tau2Fixed OUT=/tmp/bet-inputs
+make rerun CASE=20-Tau2Fixed OUT=/tmp/bet-native
 ```
 
-Choose `20-Tau2Fixed` instead of `all` for one case. The final Diagnostic case
-is `S0.90-F2-tau2-fixed`. Each run uses a function-evaluation ceiling of 1, preserves every
-input and checks the original objective, native dimensions, spawning biomass,
-no-fishing biomass and MSY quantities. Reference reports are restored from
-existing public payloads using base R; large generated outputs are omitted.
+Choose a fresh absolute OUT. Preparation and verification use base R plus system
+archive/hash tools. `rerun` requires Linux x86-64: it uses the original ceiling-one
+controls `1 1 1` and `1 246 1`, checks the reported zero iteration/function
+counters, and compares the saved objective, case-specific parameter count,
+dimensions and central REP values. Detailed outputs stay in OUT.
+Use `CASE=all` for every saved case.
 
-`make verify` checks the compact archive without executing MFCL. For a full
-fit, restore its matching executable and use the original fitting runner:
+For a full fit:
 
 ```sh
-make restore CASE=20-Tau2Fixed OUT=/tmp/bet-step-inputs
-make refit CASE=20-Tau2Fixed OUT=/tmp/bet-step-refit PROGRAM_PATH=/tmp/bet-step-inputs/mfclo64
+make refit CASE=20-Tau2Fixed OUT=/tmp/bet-refit
 ```
 
-This runs one step from `doitall.sh`, with its original configuration and
-selectivity files. The full runner also requires the pinned R packages listed
-in the existing reproduction details.
+This runs the preserved `doitall.sh` from the saved inputs. It is a longer fit,
+not part of the saved-PAR CI checks. `models.csv` records each engine and the
+refit-dependency status; unsupported full-fit cases refuse to run.
 
-Published results and figures remain unchanged. The historical executed binary
-hashes remain unconfirmed; native output checks establish compatibility.
+The ZIP can also be unzipped and used independently with its own Makefile.
+`FILES.csv`, `models.csv` and `CONTENTS.sha256` bind the native files and reference
+values. The original [native.tar.gz](native.tar.gz), [closure](closure.json) and
+[validation policies](validation.json) remain available for provenance.
+Historical externally executed binary identities remain unconfirmed.
+Published report data and HTML links are unchanged.
+
+Step 01 uses its preserved older engine; Steps 01–09 have five native input
+files and omit `bet.reg_scaling`. The final case is `S0.90-F2-tau2-fixed`; its
+source `bet.ini` and `bet.model.ini` are both retained as different files.
 
 ## Saved Hessians
 

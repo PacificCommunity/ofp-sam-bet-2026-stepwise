@@ -104,19 +104,26 @@ jobs:
         run: |
           python3 ci/verify-preserved-files.py
           python3 reproduce/restore.py --verify
-      - name: Regenerate native outputs and compare original results
-        run: make rerun CASE=all OUT="$RUNNER_TEMP/bet-native"
+      - name: Evaluate every saved PAR from the standalone kit
+        shell: bash
+        run: |
+          unzip -q reproduce/standalone.zip -d "$RUNNER_TEMP/reader-kit"
+          kit="$RUNNER_TEMP/reader-kit/bet-2026-stepwise-standalone"
+          make --no-print-directory -C "$kit" verify
+          make --no-print-directory -C "$kit" rerun CASE=all OUT="$RUNNER_TEMP/bet-native"
       - name: Confirm source files are unchanged
         run: |
           python3 ci/verify-preserved-files.py
           git diff --exit-code
       - name: Retain numerical verification receipts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: saved-stepwise-native-checks
           path: |
-            ${{ runner.temp }}/bet-native/native-checks.json
-            ${{ runner.temp }}/bet-native/*/native-check.json
+            ${{ runner.temp }}/bet-native/*/evaluation-check.csv
+            ${{ runner.temp }}/bet-native/*/central-results.csv
+            ${{ runner.temp }}/bet-native/*/mfcl-native.log
           if-no-files-found: error
           retention-days: 14
 

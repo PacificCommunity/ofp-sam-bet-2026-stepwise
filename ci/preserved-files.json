@@ -175,8 +175,8 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "git_blob": "11f9d1bc74ee0680c6fda2e3cb4429c8d898b9e6",
-      "sha256": "1265640ffa120042798722de3b6a8b5dfed3c4941c9ff137fef456f0b0901477"
+      "git_blob": "580a39497f984d58ab2093ac56348962e839f56b",
+      "sha256": "cf6197a623b5319205fc4f1b03d9a8679534e202c3ea5500b032d80e85288fd9"
     },
     {
       "path": "assets/maps/bet-2023-nine-region.geojson",
@@ -2766,6 +2766,23 @@
     }
   ],
   "approved_reader_updates": {
-    "Makefile": "07dcf5ee51b48df8678c86d75fbc820a3a1735325f9d576e3d8841175ec5e855"
-  }
+    "Makefile": "00517e6fdf24c422819ec9bd315cd09087029ef38f45c5c236bb298c67fb5a96"
+  },
+  "approved_additions": [
+    {
+      "path": "reproduce/run-final.R",
+      "mode": "100644",
+      "sha256": "4f460bba04d09c3eacdf6cbc5accf843fce4d98ea084620e1815ba0a60a45ffc"
+    },
+    {
+      "path": "reproduce/standalone.zip",
+      "mode": "100644",
+      "sha256": "59a791442dabe94b1074db1b316b4f1e012fc9180f835664ed8d359e815eb3a3"
+    },
+    {
+      "path": "reproduce/standalone.sha256",
+      "mode": "100644",
+      "sha256": "5ac3b0fed9cbdc795b42465f2755c02d13ae8ce3a970929b1661a8584c03156f"
+    }
+  ]
 }

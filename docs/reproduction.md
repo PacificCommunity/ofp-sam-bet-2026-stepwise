@@ -1,5 +1,10 @@
 # BET 2026 stepwise pathway to the Diagnostic model — 04 Aug — reproduction details
 
+Saved-model readers use base R and Make. See [native-file instructions](../reproduce/README.md)
+for preparation, zero-counter evaluations and original full-fit scripts.
+The configuration-building workflow below remains available to maintainers through
+`make prepare-inputs` and `make list-maintenance`.
+
 
 Saved native files, checksum verification and current restoration limits are
 documented in [native-file instructions](../reproduce/README.md).

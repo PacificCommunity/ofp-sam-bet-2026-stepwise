@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := help
 SHELL := /usr/bin/env bash
 
 CONFIG_R ?= job-config.R
@@ -66,15 +67,15 @@ STEPWISE_BASE_INPUT_JOB ?= $(call yml,y$$env$$STEPWISE_BASE_INPUT_JOB,)
 STEPWISE_CHECK_INPUT_JOBS ?= $(call yml,y$$env$$STEPWISE_CHECK_INPUT_JOBS,)
 ATTACH_CHECK_TYPES ?= $(call yml,y$$env$$ATTACH_CHECK_TYPES,)
 
-.PHONY: help setup hooks prepare validate readme list dag report clean fix-permissions local docker kflow kflow-register kflow-register-report kflow-register-chain
+.PHONY: help maintenance-help setup hooks prepare-inputs validate readme list-maintenance dag report clean fix-permissions local docker kflow kflow-register kflow-register-report kflow-register-chain
 
-help:
+maintenance-help:
 	@printf '%s\n' \
 	  'BET 2026 stepwise shortcuts' \
 	  '' \
 	  'Models live in job-config.R; Kflow/runtime defaults live in kflow.yaml.' \
 	  '' \
-	  'make prepare PROGRAM_PATH=/path/to/mfclo64' \
+	  'make prepare-inputs PROGRAM_PATH=/path/to/mfclo64' \
 	  '  Rebuild all configured public-run inputs, then validate without fitting MFCL.' \
 	  '' \
 	  'make validate PROGRAM_PATH=/path/to/mfclo64' \
@@ -110,7 +111,7 @@ help:
 
 setup: hooks
 
-prepare:
+prepare-inputs:
 	@PUBLIC_RUN_PROVENANCE='$(PROVENANCE_LOCK)' Rscript '$(PREPARE_R)'
 	@$(MAKE) --no-print-directory validate \
 	  CONFIG_R='$(CONFIG_R)' \
@@ -137,7 +138,7 @@ $(RUN_CONFIG_MD): $(RUN_CONFIG_SOURCES)
 readme: hooks
 	@CONFIG_R='$(CONFIG_R)' README_MD='$(RUN_CONFIG_MD)' Rscript R/update_readme.R
 
-list: readme
+list-maintenance: readme
 	@Rscript -e "source('$(CONFIG_R)'); print(stepwise_models, row.names = FALSE)"
 
 dag:
@@ -262,33 +263,21 @@ kflow-register-chain:
 
 CASE ?= all
 OUT ?=
+RSCRIPT ?= Rscript
 export CASE OUT
-.PHONY: verify rerun restore refit results rerun-help _check-output
+.PHONY: verify rerun restore refit results prepare list rerun-help
 
-rerun-help:
-	@printf '%s\n' 'make verify                                  Check saved files' 'make results                                 Rebuild cached reports' 'make rerun CASE=all OUT=/tmp/bet-steps         Regenerate saved native outputs' 'make restore CASE=20-Tau2Fixed OUT=/tmp/bet-inputs' 'make refit CASE=20-Tau2Fixed OUT=/tmp/bet-refit PROGRAM_PATH=/tmp/bet-inputs/mfclo64' 'Step 01 requires its preserved older executable.'
+help rerun-help:
+	@printf '%s\n' 'make list' 'make verify' 'make prepare CASE=CASE OUT=/absolute/new-folder' 'make rerun CASE=CASE OUT=/absolute/new-folder' 'make refit CASE=CASE OUT=/absolute/new-folder' 'Use CASE=all for saved-model preparation or evaluation. Native runs require Linux x86-64.'
 
-verify:
-	@python3 reproduce/hessian.py --verify
-	@python3 ci/verify-preserved-files.py
-	@python3 reproduce/restore.py --verify
+list verify:
+	@"$(RSCRIPT)" reproduce/run-final.R "$@"
 
-rerun: verify _check-output
-	@python3 reproduce/run-native.py "$$CASE" "$$OUT"
-
-restore: verify _check-output
-	@python3 reproduce/restore.py "$$CASE" "$$OUT"
-
-refit: verify _check-output
-	@test "$$CASE" != all && test "$$CASE" != '*' || { echo 'Choose one step with CASE.' >&2; exit 2; }
-	@test -x '$(PROGRAM_PATH)' || { echo 'Set PROGRAM_PATH to the matching restored mfclo64.' >&2; exit 2; }
-	@$(MAKE) --no-print-directory local STEP_SELECT="$$CASE" RUN_MODE=doitall INPUT_PAR= OUTPUT_DIR="$$OUT" PROGRAM_PATH='$(PROGRAM_PATH)' TRIGGER_NEXT=false STEPWISE_SAVE_FINAL_PAR=true STEPWISE_COMMIT_FINAL_PARS=false STEPWISE_PUSH_FINAL_PARS=false KFLOW_REPO_RUNTIME_UPDATE=never KFLOW_RUNTIME_UPDATE=never TUNA_FLOW_RUNTIME_UPDATE=never
+prepare restore rerun refit:
+	@"$(RSCRIPT)" reproduce/run-final.R "$@" "$$CASE" "$$OUT"
 
 results:
 	@./run-report
-
-_check-output:
-	@python3 -c 'import os; from pathlib import Path; raw=os.environ.get("OUT",""); p=Path(raw); root=Path.cwd().resolve(); assert raw and p.is_absolute(), "Set OUT to an absolute, new directory"; assert not os.path.lexists(p), "OUT already exists"; q=p.resolve(); assert q != root and root not in q.parents, "OUT must be outside this repository"'
 
 export ARCHIVE
 .PHONY: hessian hessian-verify
@@ -337,3 +326,8 @@ hessian-logs-verify:
 	else \
 		python3 reproduce/native_logs.py --verify; \
 	fi
+
+.PHONY: verify-source
+verify: verify-source
+verify-source:
+	@sha256sum --quiet -c ci/PRESERVED.sha256

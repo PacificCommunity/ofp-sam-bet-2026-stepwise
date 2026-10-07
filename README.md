@@ -28,17 +28,20 @@ The checks verify the saved files. The report uses
 the archived fitted-model payloads and portable cache, so results can be
 reviewed immediately without refitting.
 
-Saved native PARs and input-source checksums are retained in `reproduce/`.
-Verify the compact archive without executing MFCL:
+The self-contained [native bundle](reproduce/standalone.zip) includes all 23
+final PARs, the matching input files, fitting scripts and shared engines.
 
 ```sh
-make verify
+make list
+make prepare CASE=20-Tau2Fixed OUT=/tmp/bet-inputs
+make rerun CASE=20-Tau2Fixed OUT=/tmp/bet-step
 ```
 
-See [native restoration](reproduce/README.md) for case keys and engine checks.
-Step 01 uses its preserved older executable. To regenerate every saved native
-fit on 64-bit x86 Linux, run `make rerun CASE=all OUT=/tmp/bet-steps`.
-Full fits use the original case-specific `doitall.sh` and its inputs.
+Preparation uses base R and does not execute MFCL. Native reruns require Linux
+x86-64; they check the original objective, parameter count and central values.
+Use `CASE=all` for every saved fit. Step 01 uses its preserved older executable;
+Steps 01–09 intentionally omit regional scaling. See [native restoration](reproduce/README.md)
+for the original full-fit scripts and source checks.
 
 See [step sequence and reproduction details](docs/reproduction.md),
 [selectivity changes](docs/selectivity-update.md) and the source locks in
