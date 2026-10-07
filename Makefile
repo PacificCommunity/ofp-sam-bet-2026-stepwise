@@ -273,7 +273,14 @@ help rerun-help:
 list verify:
 	@"$(RSCRIPT)" reproduce/run-final.R "$@"
 
-prepare restore rerun refit:
+ifneq ($(strip $(OUT)),)
+prepare:
+	@"$(RSCRIPT)" reproduce/run-final.R prepare "$$CASE" "$$OUT"
+else
+prepare: prepare-inputs
+endif
+
+restore rerun refit:
 	@"$(RSCRIPT)" reproduce/run-final.R "$@" "$$CASE" "$$OUT"
 
 results:

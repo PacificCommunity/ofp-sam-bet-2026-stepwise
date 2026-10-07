@@ -2766,23 +2766,23 @@
     }
   ],
   "approved_reader_updates": {
-    "Makefile": "00517e6fdf24c422819ec9bd315cd09087029ef38f45c5c236bb298c67fb5a96"
+    "Makefile": "32bde6e9a23c69e713f817bac2e1ee5fc55efd40b29f563ed8a771090d91e2d7"
   },
   "approved_additions": [
     {
       "path": "reproduce/run-final.R",
       "mode": "100644",
-      "sha256": "4f460bba04d09c3eacdf6cbc5accf843fce4d98ea084620e1815ba0a60a45ffc"
+      "sha256": "a76033a2505cd5a5458ad73ea359cc6a2714e80a6f67a0f426cd571809b38c36"
     },
     {
       "path": "reproduce/standalone.zip",
       "mode": "100644",
-      "sha256": "59a791442dabe94b1074db1b316b4f1e012fc9180f835664ed8d359e815eb3a3"
+      "sha256": "f80e38a61750a7a46a355a66a0f878dd5701ff748c892fcdf54b411bbc61f2d1"
     },
     {
       "path": "reproduce/standalone.sha256",
       "mode": "100644",
-      "sha256": "5ac3b0fed9cbdc795b42465f2755c02d13ae8ce3a970929b1661a8584c03156f"
+      "sha256": "bb839ce4bd90ad34d967c22eac16c054b3835752acc4518a6f25e5938038880d"
     }
   ]
 }

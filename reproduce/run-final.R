@@ -6,7 +6,7 @@ require_true <- function(x, ...) if (!isTRUE(x)) fail(...)
 family <- "stepwise"
 reader_checkout <- NULL
 expected_models <- c("01-Diag2023","02-NewExeIni1007","03-FixM","04-LengthWeight","05-NewStructure","06-ConvertToLength","07-AddLengthData","08-DataTo2024","09-SizeDataQC","10-RegionalCPUE","11-TimeVaryingCV","12-CPUEErrorCalibration","13-NewAgeData","14a-REG075","14b-SUB075","15-SelectivityUpdate","16-MIX020","17-TagReportingExclusion","18-EffortCreep","19-DMG8Nmax25","20-Tau2Fixed","21-F33WeakPenalty","S0.90-F2-tau2-fixed")
-controls <- c("1 1 1", "1 246 1")
+controls <- c("1 1 1", "1 50 0", "1 246 1")
 dimension_labels <- c("Number of time periods", "Year 1", "Number of regions", "Number of species", "Number of age classes", "Number of recruitments per year")
 central_labels <- c(dimension_labels, "Adult biomass", "Adult biomass in absence of fishing", "Adult biomass at MSY", "F multiplier at MSY")
 exists_path <- function(path) {
@@ -154,9 +154,14 @@ native_log <- function(path, parameters) {
   lines <- readLines(path, warn = FALSE)
   limits <- grep("^[[:space:]]*optfile\\.cpp[[:space:]]+", lines, value = TRUE)
   observed <- 0L
+  convergence_controls <- 0L
   for (line in limits) {
     values <- strsplit(trimws(sub("^[[:space:]]*optfile\\.cpp[[:space:]]+", "", line)), "[[:space:]]+")[[1L]]
     require_true(length(values) >= 3L && all(grepl("^[-+]?[0-9]+$",values[1:3])), "Malformed native control.")
+    if (identical(as.numeric(values[1:2]), c(1,50))) {
+      require_true(as.numeric(values[3L]) == 0, "Evaluation convergence control differs.")
+      convergence_controls <- convergence_controls+1L
+    }
     if (identical(as.numeric(values[1:2]), c(1,1))) {
       require_true(as.numeric(values[3L]) == 1, "Native ceiling differs from one."); observed <- observed+1L
     }
@@ -164,10 +169,11 @@ native_log <- function(path, parameters) {
   counters <- lines[grepl("variables;", lines, fixed=TRUE) & grepl("function[[:space:]]+evaluation",lines)]
   pattern <- "^[[:space:]]*([0-9]+)[[:space:]]+variables;[[:space:]]+iteration[[:space:]]+([0-9]+);[[:space:]]+function[[:space:]]+evaluation[[:space:]]+([0-9]+)[[:space:]]*$"
   for (line in counters) {
-    match <- regmatches(line,regexec(pattern,line))[[1L]]
+    counter_line <- sub("^[[:space:]]*Initial statistics:[[:space:]]*", "", line)
+    match <- regmatches(counter_line,regexec(pattern,counter_line))[[1L]]
     require_true(length(match)==4L && identical(as.numeric(match[2:4]), c(parameters,0,0)), "Native parameter/iteration/function counter differs.")
   }
-  require_true(observed>0 && length(counters)>0, "Native ceiling/zero-counter evidence absent.")
+  require_true(observed>0 && convergence_controls==1L && length(counters)>0, "Native controls/zero-counter evidence absent.")
   objectives <- grep("^[[:space:]]*Total func[[:space:]]+[^[:space:]]+[[:space:]]*$",lines,value=TRUE)
   require_true(length(objectives)>0, "Native objective absent.")
   objective <- suppressWarnings(as.numeric(trimws(sub("^[[:space:]]*Total func[[:space:]]+", "", objectives[1L]))))
@@ -187,6 +193,11 @@ read_inventory <- function(root) {
   columns <- c("model","objective","parameters","source_par_sha256","engine","engine_sha256","engine_bytes","inputs_count","validation_mode","annual_policy","reference_rep_sha256","source_whole_rep_sha256","series_sha256","refit_supported","refit_model_id","refit_note","periods","year1","regions","species","ages","seasons")
   require_true(identical(names(models),columns) && nrow(models)==length(expected_models) && !anyDuplicated(models$model) && setequal(models$model,expected_models), "Saved model roster/schema differs.")
   require_true(all(models$validation_mode %in% c("reference-rep","annual-series")) && all(models$refit_supported %in% c("yes","no")), "Unknown model policy.")
+  expected_refit_ids <- setNames(rep("", length(expected_models)), expected_models)
+  expected_refit_ids[c("20-Tau2Fixed", "21-F33WeakPenalty", "S0.90-F2-tau2-fixed")] <-
+    c("S0.80-F1", "S0.80-F2", "S0.90-F2")
+  require_true(identical(models$refit_model_id, unname(expected_refit_ids[models$model])),
+               "Refit selector differs from the original step-specific case.")
   require_true(identical(names(files),c("path","bytes","sha256","mode")) && safe_paths(files$path) && !anyDuplicated(files$path), "Invalid native file index.")
   require_true(all(grepl("^[0-9]+$",files$bytes)) && all(grepl("^[0-9]+$",files$mode)) && all(as.numeric(files$mode)<=511) && all(grepl("^[0-9a-f]{64}$",files$sha256)), "Invalid native file metadata.")
   require_true(all(grepl("^[0-9a-f]{64}$",models$source_par_sha256)) && all(grepl("^[0-9a-f]{64}$",models$reference_rep_sha256)) && all(grepl("^[0-9a-f]{64}$",models$source_whole_rep_sha256)), "Invalid source scientific hashes.")
