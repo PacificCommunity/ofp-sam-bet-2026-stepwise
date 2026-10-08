@@ -175,8 +175,8 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "git_blob": "580a39497f984d58ab2093ac56348962e839f56b",
-      "sha256": "cf6197a623b5319205fc4f1b03d9a8679534e202c3ea5500b032d80e85288fd9"
+      "git_blob": "26e5b9cdfd75af9f1ff01ba25c69cd08c2ee4b84",
+      "sha256": "601698cf6cb0897b74ca5507694ba9860383ec5c4793e93442058521858df318"
     },
     {
       "path": "assets/maps/bet-2023-nine-region.geojson",
@@ -2762,11 +2762,20 @@
       "expected_sha256": "aa082d96d215e1737ed02007a7b399fd8034ebbc12f74bd88d5df18a4fdc53bd",
       "expected_git_blob": "e04f048320dec1d3219baf709a42e0f6d7006d42",
       "exact_added_prefix": "[![Preservation checks](https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/actions/workflows/verify-preserved-results.yml/badge.svg?branch=main)](https://github.com/PacificCommunity/ofp-sam-bet-2026-stepwise/actions/workflows/verify-preserved-results.yml?query=branch%3Amain)\n\n",
-      "authorization": "Task-scoped human instruction: CI\ub41c\uac83\ub4e4\uc740 \ub9ac\ub4dc\ubbf8\uc5d0 \uadf8 \uccb4\ud06c\ubc43\uc9c0\ub098 \uc774\ub7f0\uac70\ub3c4 \uc880 \ub123\uc5b4\uc8fc\uba74 \uc88b\uaca0\ub2e4"
+      "authorization": "Task-scoped human instruction: CI된것들은 리드미에 그 체크뱃지나 이런거도 좀 넣어주면 좋겠다"
+    },
+    {
+      "path": "README.md",
+      "reason": "Add a concise cached-results and saved-fit reader guide; all existing links and scientific text remain unchanged.",
+      "previous_sha256": "cf6197a623b5319205fc4f1b03d9a8679534e202c3ea5500b032d80e85288fd9",
+      "previous_git_blob": "580a39497f984d58ab2093ac56348962e839f56b",
+      "expected_sha256": "601698cf6cb0897b74ca5507694ba9860383ec5c4793e93442058521858df318",
+      "expected_git_blob": "26e5b9cdfd75af9f1ff01ba25c69cd08c2ee4b84",
+      "authorization": "Task-scoped human instruction: README는 짧고 명료하게: 결과 링크, 필요한 도구, 몇 가지 Make 예제, 중요한 제한 정도면 돼."
     }
   ],
   "approved_reader_updates": {
-    "Makefile": "ae3038ae5d0d6cbf754193ab36be9ae348fe81a12657498798eed620edeecd15"
+    "Makefile": "9165692eab6a711a3714f80b1eafb9e523d7eae1d0c42644474aa8c11d5174db"
   },
   "approved_additions": [
     {
@@ -2788,6 +2797,51 @@
       "path": "reproduce/standalone.sha256",
       "mode": "100644",
       "sha256": "bb839ce4bd90ad34d967c22eac16c054b3835752acc4518a6f25e5938038880d"
+    },
+    {
+      "path": "reproduce/hessian.R",
+      "mode": "100644",
+      "sha256": "0e40ac3cd9fcc472252e4cbe80de5b59bf980297ed5832df1e7440dd8e479897"
+    },
+    {
+      "path": "reproduce/native_logs.R",
+      "mode": "100644",
+      "sha256": "7d1b7401b13c0e074a4486d49b9aaeb8aab8f653e1ce0aa9a08ab0d1653d3169"
+    },
+    {
+      "path": "reproduce/test_saved_archives.R",
+      "mode": "100644",
+      "sha256": "b563e6e7d5a207e06dd9b7e7d9e54389262fe00851dabe921e7cd1b5d28e1742"
+    },
+    {
+      "path": "reproduce/hessian.py",
+      "mode": "100644",
+      "sha256": "336e359ebaf4a1a9723156022e7cbaf7347746fafd6f07027145de353584cb42"
+    },
+    {
+      "path": "reproduce/native_logs.py",
+      "mode": "100644",
+      "sha256": "eb6ff9d8955ac05d2a110f6cefdbf6f8c8eeeef06de54a1d5bee3f4b50325723"
+    },
+    {
+      "path": "reproduce/hessian_stitch.py",
+      "mode": "100644",
+      "sha256": "4960e884585b32482e7e08d3aa05d85674b62e7de6e76cc4597faddf05db37e8"
+    },
+    {
+      "path": "reproduce/hessians.json",
+      "mode": "100644",
+      "sha256": "5070a0034a9225bb906342e89d59b4eeb72dbcb54bcfb6972232352b95dbfc1f"
+    },
+    {
+      "path": "reproduce/native-logs.json",
+      "mode": "100644",
+      "sha256": "a16764b3d7511cb960cfce3b9038fa2825fa3551388f87fd30cdb89887c90b37"
+    },
+    {
+      "path": "reproduce/hessian-index.csv",
+      "mode": "100644",
+      "sha256": "e9812c05cc94f8968abb0de4ad91d528592230a6c314bd980ff543cf5aa91ffd"
     }
   ]
 }

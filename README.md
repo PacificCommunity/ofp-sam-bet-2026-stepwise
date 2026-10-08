@@ -39,6 +39,9 @@ make rerun CASE=20-Tau2Fixed OUT=/tmp/bet-step
 
 Preparation uses base R and does not execute MFCL. Native reruns require Linux
 x86-64; they check the original objective, parameter count and central values.
+Use R, Make and system archive/hash tools for these reader commands.
+For a complete fit, `make refit CASE=20-Tau2Fixed OUT=/tmp/bet-refit`
+runs the preserved `doitall.sh` and settings in a new directory.
 Use `CASE=all` for every saved fit. Step 01 uses its preserved older executable;
 Steps 01–09 intentionally omit regional scaling. See [native restoration](reproduce/README.md)
 for the original full-fit scripts and source checks.
